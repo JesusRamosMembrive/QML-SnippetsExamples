@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import utils
 import qdashboardstyle
 
+
 Item {
     id: root
 
@@ -40,10 +41,18 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                GridLayout {
+                    columns: 2
+                    rows: 2
+                    columnSpacing: Style.resize(20)
+                    rowSpacing: Style.resize(20)
+                    Layout.fillWidth: true
+
                 // Basic Sliders Section
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Style.resize(280)
+                    Layout.fillHeight: true
+                    Layout.minimumHeight: Style.resize(320)
                     color: "white"
                     radius: Style.resize(8)
 
@@ -62,6 +71,7 @@ Item {
                         // Horizontal Slider
                         ColumnLayout {
                             Layout.fillWidth: true
+                            Layout.maximumWidth: root.width - 10
                             spacing: Style.resize(8)
 
                             Label {
@@ -70,19 +80,27 @@ Item {
                                 color: "#333"
                             }
 
-                            Slider {
-                                id: horizontalSlider
-                                from: 0
-                                to: 100
-                                value: 50
+                            Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+                                Layout.preferredWidth: root.width - 10
+
+                                Slider {
+                                    id: horizontalSlider
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Style.resize(10)
+                                    anchors.rightMargin: Style.resize(10)
+                                    from: 0
+                                    to: 100
+                                    value: 50
+                                }
                             }
                         }
 
                         // Stepped Slider
                         ColumnLayout {
                             Layout.fillWidth: true
+                            Layout.maximumWidth: root.width - 10
                             spacing: Style.resize(8)
 
                             Label {
@@ -91,21 +109,28 @@ Item {
                                 color: "#333"
                             }
 
-                            Slider {
-                                id: steppedSlider
-                                from: 0
-                                to: 100
-                                stepSize: 10
-                                value: 50
-                                snapMode: Slider.SnapAlways
+                            Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+
+                                Slider {
+                                    id: steppedSlider
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Style.resize(10)
+                                    anchors.rightMargin: Style.resize(10)
+                                    from: 0
+                                    to: 100
+                                    stepSize: 10
+                                    value: 50
+                                    snapMode: Slider.SnapAlways
+                                }
                             }
                         }
 
                         // Disabled Slider
                         ColumnLayout {
                             Layout.fillWidth: true
+                            Layout.maximumWidth: root.width - 10
                             spacing: Style.resize(8)
 
                             Label {
@@ -114,13 +139,19 @@ Item {
                                 color: "#999"
                             }
 
-                            Slider {
-                                from: 0
-                                to: 100
-                                value: 75
-                                enabled: false
+                            Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+
+                                Slider {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Style.resize(10)
+                                    anchors.rightMargin: Style.resize(10)
+                                    from: 0
+                                    to: 100
+                                    value: 75
+                                    enabled: false
+                                }
                             }
                         }
                     }
@@ -129,7 +160,8 @@ Item {
                 // Vertical Sliders Section
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Style.resize(280)
+                    Layout.fillHeight: true
+                    Layout.minimumHeight: Style.resize(80)
                     color: "white"
                     radius: Style.resize(8)
 
@@ -160,7 +192,7 @@ Item {
                                     to: 100
                                     value: 30
                                     orientation: Qt.Vertical
-                                    Layout.preferredWidth: Style.resize(40)
+                                    Layout.preferredWidth: Style.resize(60)
                                     Layout.preferredHeight: Style.resize(150)
                                 }
 
@@ -182,7 +214,7 @@ Item {
                                     to: 100
                                     value: 60
                                     orientation: Qt.Vertical
-                                    Layout.preferredWidth: Style.resize(40)
+                                    Layout.preferredWidth: Style.resize(60)
                                     Layout.preferredHeight: Style.resize(150)
                                 }
 
@@ -204,7 +236,7 @@ Item {
                                     to: 100
                                     value: 90
                                     orientation: Qt.Vertical
-                                    Layout.preferredWidth: Style.resize(40)
+                                    Layout.preferredWidth: Style.resize(60)
                                     Layout.preferredHeight: Style.resize(150)
                                 }
 
@@ -230,7 +262,8 @@ Item {
                 // Interactive Demo - Component Reusability
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Style.resize(320)
+                    Layout.fillHeight: true
+                    Layout.minimumHeight: Style.resize(320)
                     color: "white"
                     radius: Style.resize(8)
 
@@ -267,6 +300,7 @@ Item {
                         // Glow Intensity Control
                         ColumnLayout {
                             Layout.fillWidth: true
+                            Layout.maximumWidth: root.width - 10
                             spacing: Style.resize(8)
 
                             Label {
@@ -275,20 +309,27 @@ Item {
                                 color: "#333"
                             }
 
-                            Slider {
-                                id: glowIntensitySlider
-                                from: 0
-                                to: 1
-                                value: 0.6
-                                stepSize: 0.1
+                            Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+
+                                Slider {
+                                    id: glowIntensitySlider
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Style.resize(10)
+                                    anchors.rightMargin: Style.resize(10)
+                                    from: 0
+                                    to: 1
+                                    value: 0.6
+                                    stepSize: 0.1
+                                }
                             }
                         }
 
                         // Glow Radius Control
                         ColumnLayout {
                             Layout.fillWidth: true
+                            Layout.maximumWidth: root.width - 10
                             spacing: Style.resize(8)
 
                             Label {
@@ -297,14 +338,20 @@ Item {
                                 color: "#333"
                             }
 
-                            Slider {
-                                id: glowRadiusSlider
-                                from: 5
-                                to: 50
-                                value: 20
-                                stepSize: 5
+                            Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+
+                                Slider {
+                                    id: glowRadiusSlider
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Style.resize(10)
+                                    anchors.rightMargin: Style.resize(10)
+                                    from: 5
+                                    to: 50
+                                    value: 20
+                                    stepSize: 5
+                                }
                             }
                         }
 
@@ -320,7 +367,8 @@ Item {
                 // Custom Range Slider
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Style.resize(220)
+                    Layout.fillHeight: true
+                    Layout.minimumHeight: Style.resize(220)
                     color: "white"
                     radius: Style.resize(8)
 
@@ -338,6 +386,7 @@ Item {
 
                         ColumnLayout {
                             Layout.fillWidth: true
+                            Layout.maximumWidth: root.width - 10
                             spacing: Style.resize(8)
 
                             Label {
@@ -346,13 +395,19 @@ Item {
                                 color: "#333"
                             }
 
-                            Slider {
-                                id: volumeSlider
-                                from: 0
-                                to: 100
-                                value: 50
+                            Item {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+
+                                Slider {
+                                    id: volumeSlider
+                                    anchors.fill: parent
+                                    anchors.leftMargin: Style.resize(10)
+                                    anchors.rightMargin: Style.resize(10)
+                                    from: 0
+                                    to: 100
+                                    value: 50
+                                }
                             }
                         }
 
@@ -393,6 +448,7 @@ Item {
                         }
                     }
                 }
+                } // End of GridLayout
             }
         }
     }

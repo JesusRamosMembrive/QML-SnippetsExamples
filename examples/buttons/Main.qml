@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import utils
+
+import utils 1.0
 import qdashboardstyle
 
 Item {

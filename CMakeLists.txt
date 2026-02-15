@@ -16,6 +16,8 @@ qt_policy(SET QTP0004 OLD)
 
 set(QML_IMPORT_PATH
     ${CMAKE_CURRENT_LIST_DIR}/imports
+    ${CMAKE_CURRENT_LIST_DIR}/styles
+    ${CMAKE_CURRENT_LIST_DIR}/mainui
     ${CMAKE_CURRENT_LIST_DIR}/examples
     CACHE STRING "" FORCE
 )

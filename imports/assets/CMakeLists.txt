@@ -25,6 +25,8 @@ qt_add_resources(QDashboardApp "assets"
         icons/pause.png
         icons/previous.png
         icons/stop.png
+        icons/buttons.png
+        icons/sliders.png
         images/card.png
         images/dark-texture-background.png
         images/dropdown.png
