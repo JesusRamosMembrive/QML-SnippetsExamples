@@ -1,0 +1,50 @@
+# Qt Creator files
+/.qmake.cache
+/.qmake.stash
+*.pro.user
+*.pro.user.*
+*.qmlproject.user
+*.qmlproject.user*
+CMakeLists.txt.user
+CMakeLists.txt.user*
+
+# Build directories
+build/
+build-*/
+.build/
+*build*/
+
+# Qt compiled files
+*.qmlc
+*.jsc
+*.rcc
+*.qrc.depends
+*.moc
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake.in
+
+# IDE and OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiled libraries
+*.so
+*.a
+*.dylib
+*.dll
+*.exe
+
+# Generated import directories
+imports/com/
