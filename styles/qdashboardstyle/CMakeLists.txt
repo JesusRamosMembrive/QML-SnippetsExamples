@@ -12,4 +12,9 @@ qt_add_qml_module(qdashboardstyle
         Slider.qml
         Switch.qml
         ToolButton.qml
+        # Componentes especializados - Buttons
+        buttons/GlowButton.qml
+        buttons/GradientButton.qml
+        buttons/PulseButton.qml
+        buttons/NeumorphicButton.qml
 )

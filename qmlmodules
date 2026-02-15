@@ -15,5 +15,6 @@ target_link_libraries(QDashboardApp PRIVATE
     utilsplugin
     controlsplugin
     mainuiplugin
-    buttonsplugin
+    buttonspluginplugin
+    sliderspluginplugin
 )

@@ -8,3 +8,9 @@ RadioButton 1.0 RadioButton.qml
 Slider 1.0 Slider.qml
 Switch 1.0 Switch.qml
 ToolButton 1.0 ToolButton.qml
+
+# Componentes especializados - Buttons
+GlowButton 1.0 buttons/GlowButton.qml
+GradientButton 1.0 buttons/GradientButton.qml
+PulseButton 1.0 buttons/PulseButton.qml
+NeumorphicButton 1.0 buttons/NeumorphicButton.qml

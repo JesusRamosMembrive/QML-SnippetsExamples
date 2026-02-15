@@ -17,6 +17,7 @@ Item {
         id: menuModel
         ListElement { text: "Dashboard" }
         ListElement { text: "Buttons" }
+        ListElement { text: "Sliders" }
     }
 
     ListView {
