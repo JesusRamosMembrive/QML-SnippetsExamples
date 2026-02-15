@@ -2,9 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-
 import utils 1.0
-import qdashboardstyle
+import qmlsnippetsstyle
 
 Item {
     id: root
@@ -13,7 +12,11 @@ Item {
 
     opacity: fullSize ? 1.0 : 0.0
     visible: opacity > 0.0
-    Behavior on opacity { NumberAnimation { duration: 200 } }
+    Behavior on opacity {
+        NumberAnimation {
+            duration: 200
+        }
+    }
 
     anchors.fill: parent
 
@@ -188,8 +191,8 @@ Item {
                             }
 
                             Button {
-                                text: hoverButton.hovered ? "Hovering" : "Hover Me"
                                 id: hoverButton
+                                text: hoverButton.hovered ? "Hovering" : "Hover Me"
                                 Layout.preferredWidth: Style.resize(150)
                                 Layout.preferredHeight: Style.resize(40)
                             }

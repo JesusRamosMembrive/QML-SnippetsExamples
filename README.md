@@ -1,6 +1,6 @@
-# QML Dashboard - Component Library
+# QML Snippets Examples - Component Library
 
-Proyecto QML Dashboard limpio para crear una biblioteca de componentes reutilizables y ejemplos.
+Proyecto QML Snippets Examples para crear una biblioteca de componentes reutilizables y ejemplos.
 
 ## 🚀 Inicio Rápido
 
@@ -9,7 +9,7 @@ Proyecto QML Dashboard limpio para crear una biblioteca de componentes reutiliza
 ```bash
 cmake -B build -S .
 cmake --build build
-./build/QDashboardApp
+./build/QMLSnippetsExamples
 ```
 
 ### Rebuild completo (recomendado después de cambios estructurales)
@@ -24,7 +24,7 @@ cmake --build build
 
 ## 🎨 Componentes Especializados
 
-El proyecto incluye componentes reutilizables en `styles/qdashboardstyle/buttons/`:
+El proyecto incluye componentes reutilizables en `styles/qmlsnippetsstyle/buttons/`:
 
 - **GlowButton** - Botón con efecto de resplandor
 - **GradientButton** - Botón con gradiente de colores
@@ -87,7 +87,7 @@ QML-Dashboard-jdqt-import/
 │   ├── home/                 # Página principal y dashboard
 │   └── mainmenu/             # Menú lateral
 ├── styles/                    # Estilos y temas
-│   └── qdashboardstyle/      # Estilo del dashboard
+│   └── qmlsnippetsstyle/      # Estilo de los snippets
 │       └── buttons/          # Componentes especializados de botones
 ├── Main.qml                   # Punto de entrada
 ├── rebuild.sh                 # Script de rebuild completo

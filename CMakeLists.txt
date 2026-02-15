@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(QDashboardApp VERSION 0.1 LANGUAGES CXX)
+project(QMLSnippetsExamples VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -24,9 +24,9 @@ set(QML_IMPORT_PATH
 
 qt_standard_project_setup(REQUIRES 6.5)
 
-qt_add_executable(QDashboardApp src/main.cpp)
+qt_add_executable(QMLSnippetsExamples src/main.cpp)
 
-qt_add_resources(QDashboardApp "configuration"
+qt_add_resources(QMLSnippetsExamples "configuration"
     PREFIX "/"
     FILES
         qtquickcontrols2.conf
@@ -34,12 +34,12 @@ qt_add_resources(QDashboardApp "configuration"
 
 include(qmlmodules)
 
-target_link_libraries(QDashboardApp PRIVATE
+target_link_libraries(QMLSnippetsExamples PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
 )
 
-install(TARGETS QDashboardApp
+install(TARGETS QMLSnippetsExamples
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

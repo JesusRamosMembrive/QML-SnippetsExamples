@@ -1,6 +1,6 @@
-qt_add_library(qdashboardstyle STATIC)
-qt_add_qml_module(qdashboardstyle
-    URI "qdashboardstyle"
+qt_add_library(qmlsnippetsstyle STATIC)
+qt_add_qml_module(qmlsnippetsstyle
+    URI "qmlsnippetsstyle"
     VERSION 1.0
     QML_FILES
         BusyIndicator.qml

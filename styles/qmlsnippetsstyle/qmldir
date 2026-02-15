@@ -1,4 +1,4 @@
-module qdashboardstyle
+module qmlsnippetsstyle
 BusyIndicator 1.0 BusyIndicator.qml
 Button 1.0 Button.qml
 Dial 1.0 Dial.qml

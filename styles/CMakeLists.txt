@@ -1,1 +1,1 @@
-add_subdirectory(qdashboardstyle)
+add_subdirectory(qmlsnippetsstyle)

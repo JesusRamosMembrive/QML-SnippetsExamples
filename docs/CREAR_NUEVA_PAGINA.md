@@ -132,8 +132,8 @@ add_subdirectory(examples)
 
 2. El plugin en target_link_libraries:
 ```cmake
-target_link_libraries(QDashboardApp PRIVATE
-    qdashboardstyleplugin
+target_link_libraries(QMLSnippetsExamples PRIVATE
+    qmlsnippetsstyleplugin
     utilsplugin
     controlsplugin
     mainuiplugin
@@ -155,9 +155,9 @@ set(QML_IMPORT_PATH
 )
 ```
 
-### 8. Actualizar QDashBoardApp.qmlproject
+### 8. Actualizar QMLSnippetsExamples.qmlproject
 
-Edita `/QDashBoardApp.qmlproject` y agrega "examples" al importPaths:
+Edita `/QMLSnippetsExamples.qmlproject` y agrega "examples" al importPaths:
 
 ```
 importPaths: [ ".", "styles", "imports", "mainui", "examples" ]
@@ -348,8 +348,8 @@ Si encuentras este error:
 
 3. **Verifica que esté linkeado en `/qmlmodules`:**
    ```cmake
-   target_link_libraries(QDashboardApp PRIVATE
-       qdashboardstyleplugin
+   target_link_libraries(QMLSnippetsExamples PRIVATE
+       qmlsnippetsstyleplugin
        utilsplugin
        controlsplugin
        mainuiplugin

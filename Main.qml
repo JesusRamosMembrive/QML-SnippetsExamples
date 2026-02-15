@@ -8,7 +8,7 @@ ApplicationWindow {
     id: root
     visible: true
     color: Style.bgColor
-    title: qsTr("QML Dashboard")
+    title: qsTr("QML Snippets Examples")
     width: Style.screenWidth
     height: Style.screenHeight
 
