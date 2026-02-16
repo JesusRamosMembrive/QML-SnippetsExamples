@@ -21,6 +21,7 @@ import graphs as GraphsPage
 import pfd as PfdPage
 import hud as HudPage
 import websocketex as WebSocketPage
+import ecam as EcamPage
 
 Item {
     id: root
@@ -299,5 +300,10 @@ Item {
     WebSocketPage.Main {
         visible: fullSize
         fullSize: (root.state === "WebSocket")
+    }
+
+    EcamPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "ECAM")
     }
 }

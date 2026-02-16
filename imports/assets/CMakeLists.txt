@@ -41,6 +41,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/pfd.png
         icons/hud.png
         icons/websocket.png
+        icons/ecam.png
         images/particle.png
         images/card.png
         images/dark-texture-background.png

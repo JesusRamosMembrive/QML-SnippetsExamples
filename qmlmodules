@@ -32,4 +32,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     hudpluginplugin
     websocketpluginplugin
     websocketexpluginplugin
+    ecampluginplugin
 )
