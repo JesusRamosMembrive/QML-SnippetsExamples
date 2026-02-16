@@ -10,6 +10,7 @@ qt_add_qml_module(qmlsnippetsstyle
         Dial.qml
         Label.qml
         Popup.qml
+        ProgressBar.qml
         RadioButton.qml
         Slider.qml
         SpinBox.qml

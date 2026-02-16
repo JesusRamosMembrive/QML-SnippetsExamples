@@ -6,6 +6,7 @@ import buttons as Buttons
 import sliders as Sliders
 import switches as Switches
 import textinputs as TextInputs
+import indicators as Indicators
 
 Item {
     id: root
@@ -30,5 +31,10 @@ Item {
     TextInputs.Main {
         visible: fullSize
         fullSize: (root.state === "TextInputs")
+    }
+
+    Indicators.Main {
+        visible: fullSize
+        fullSize: (root.state === "Indicators")
     }
 }

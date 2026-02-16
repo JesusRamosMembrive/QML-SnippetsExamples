@@ -29,6 +29,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/sliders.png
         icons/switches.png
         icons/textinputs.png
+        icons/indicators.png
         images/card.png
         images/dark-texture-background.png
         images/dropdown.png

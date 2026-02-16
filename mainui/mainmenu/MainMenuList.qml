@@ -20,6 +20,7 @@ Item {
         ListElement { text: "Sliders" }
         ListElement { text: "Switches" }
         ListElement { text: "TextInputs" }
+        ListElement { text: "Indicators" }
     }
 
     ListView {
