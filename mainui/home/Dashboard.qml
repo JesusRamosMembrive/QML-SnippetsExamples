@@ -12,6 +12,8 @@ import popups as Popups
 import lists as Lists
 import canvas as CanvasPage
 import layouts as LayoutsPage
+import transforms as Transforms
+import particles as Particles
 
 Item {
     id: root
@@ -66,5 +68,15 @@ Item {
     LayoutsPage.Main {
         visible: fullSize
         fullSize: (root.state === "Layouts")
+    }
+
+    Transforms.Main {
+        visible: fullSize
+        fullSize: (root.state === "Transforms")
+    }
+
+    Particles.Main {
+        visible: fullSize
+        fullSize: (root.state === "Particles")
     }
 }

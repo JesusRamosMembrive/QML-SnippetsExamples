@@ -26,6 +26,8 @@ Item {
         ListElement { text: "Lists" }
         ListElement { text: "Canvas" }
         ListElement { text: "Layouts" }
+        ListElement { text: "Transforms" }
+        ListElement { text: "Particles" }
     }
 
     ListView {
