@@ -1,0 +1,243 @@
+<---EXPLANATION--->
+### Namespaces Anidados en C++
+
+Los namespaces (espacios de nombres) anidados en C++ permiten organizar el código de manera jerárquica y modular. Utilizando namespaces anidados, se puede crear una estructura clara y coherente para los nombres de clases, funciones, y otras entidades, evitando conflictos de nombres y mejorando la legibilidad del código.
+
+#### Definición de Namespaces Anidados
+
+Un namespace anidado es simplemente un namespace que se declara dentro de otro namespace. Esto crea una jerarquía de namespaces que pueden contener definiciones más específicas dentro de un contexto más general.
+
+##### Sintaxis de Namespaces Anidados
+
+```cpp
+namespace NamespacePadre {
+    namespace NamespaceHijo {
+        // Definiciones de variables, funciones, clases, etc.
+    }
+}
+```
+
+##### Ejemplo de Namespaces Anidados
+
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace Proyecto {
+            void mostrarMensaje() {
+                std::cout << "Mensaje del proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+int main() {
+    Empresa::Departamento::Proyecto::mostrarMensaje();
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Empresa` es el namespace padre.
+- `Departamento` es un namespace anidado dentro de `Empresa`.
+- `Proyecto` es un namespace anidado dentro de `Departamento`.
+- La función `mostrarMensaje` se define dentro de `Proyecto` y se accede usando el operador de resolución de ámbito `::` con todos los niveles del namespace.
+
+#### Ventajas de Usar Namespaces Anidados
+
+1. **Organización Jerárquica:** Facilitan la organización jerárquica del código, lo que es especialmente útil en proyectos grandes.
+2. **Evitar Conflictos de Nombres:** Ayudan a evitar conflictos de nombres al agrupar definiciones relacionadas bajo nombres de espacios de nombres específicos.
+3. **Modularidad:** Permiten definir módulos y submódulos de manera clara y estructurada.
+4. **Claridad:** Mejoran la claridad del código al dejar claro a qué contexto pertenece cada definición.
+
+#### Alias para Namespaces Anidados
+
+Para simplificar el uso de namespaces anidados largos, se pueden crear alias.
+
+##### Ejemplo de Alias para Namespaces Anidados
+
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace Proyecto {
+            void mostrarMensaje() {
+                std::cout << "Mensaje del proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+// Crear un alias para un namespace anidado largo
+namespace ProyectoAlias = Empresa::Departamento::Proyecto;
+
+int main() {
+    ProyectoAlias::mostrarMensaje(); // Usando el alias para llamar a la función
+    return 0;
+}
+```
+
+En este ejemplo, `ProyectoAlias` es un alias para `Empresa::Departamento::Proyecto`, lo que simplifica la llamada a `mostrarMensaje`.
+
+#### Usando `using` con Namespaces Anidados
+
+La directiva `using` puede simplificar el acceso a los miembros de namespaces anidados.
+
+##### Ejemplo con `using`
+
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace Proyecto {
+            void mostrarMensaje() {
+                std::cout << "Mensaje del proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+using namespace Empresa::Departamento::Proyecto;
+
+int main() {
+    mostrarMensaje(); // Llamada directa sin necesidad de prefijo
+    return 0;
+}
+```
+
+En este ejemplo, `using namespace Empresa::Departamento::Proyecto` trae todos los miembros de `Proyecto` al ámbito actual, permitiendo el uso directo de `mostrarMensaje`.
+
+#### Namespaces Anónimos en Contexto Anidado
+
+Los namespaces anónimos se utilizan para definir miembros que deben tener un alcance de archivo (file scope) y no deben ser accesibles desde otros archivos, evitando conflictos de nombres.
+
+##### Ejemplo de Namespaces Anónimos Anidados
+
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace {
+            void funcionPrivada() {
+                std::cout << "Función en el namespace anónimo dentro de Proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+int main() {
+    Empresa::Departamento::funcionPrivada(); // Llamada válida dentro del mismo archivo
+    return 0;
+}
+```
+
+En este ejemplo:
+- `funcionPrivada` está en un namespace anónimo dentro de `Departamento`, y solo es accesible dentro del archivo en el que se define.
+
+### Conclusión
+
+Los namespaces anidados en C++ son una herramienta poderosa para organizar y modularizar el código en proyectos grandes. Permiten crear una estructura jerárquica clara, evitando conflictos de nombres y mejorando la legibilidad del código. El uso de alias y la directiva `using` puede simplificar el acceso a miembros de namespaces anidados, haciendo el código más manejable y fácil de entender. Comprender y utilizar namespaces anidados de manera efectiva es crucial para escribir código C++ bien estructurado y mantenible.
+<---FILES--->
+Sintaxis de Namespaces Anidados
+Sintaxis de Namespaces Anidados Result
+Ejemplo de Namespaces Anidados
+Ejemplo de Namespaces Anidados Result
+Ejemplo de Alias para Namespaces Anidados
+Ejemplo de Alias para Namespaces Anidados Result
+Ejemplo con `using`
+Ejemplo con `using` Result
+Ejemplo de Namespaces Anónimos Anidados
+Ejemplo de Namespaces Anónimos Anidados Result
+<---Sintaxis de Namespaces Anidados--->
+```cpp
+namespace NamespacePadre {
+    namespace NamespaceHijo {
+        // Definiciones de variables, funciones, clases, etc.
+    }
+}
+<---Sintaxis de Namespaces Anidados Result--->
+<---Ejemplo de Namespaces Anidados--->
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace Proyecto {
+            void mostrarMensaje() {
+                std::cout << "Mensaje del proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+int main() {
+    Empresa::Departamento::Proyecto::mostrarMensaje();
+    return 0;
+}
+<---Ejemplo de Namespaces Anidados Result--->
+<---Ejemplo de Alias para Namespaces Anidados--->
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace Proyecto {
+            void mostrarMensaje() {
+                std::cout << "Mensaje del proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+// Crear un alias para un namespace anidado largo
+namespace ProyectoAlias = Empresa::Departamento::Proyecto;
+
+int main() {
+    ProyectoAlias::mostrarMensaje(); // Usando el alias para llamar a la función
+    return 0;
+}
+<---Ejemplo de Alias para Namespaces Anidados Result--->
+<---Ejemplo con `using`--->
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace Proyecto {
+            void mostrarMensaje() {
+                std::cout << "Mensaje del proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+using namespace Empresa::Departamento::Proyecto;
+
+int main() {
+    mostrarMensaje(); // Llamada directa sin necesidad de prefijo
+    return 0;
+}
+<---Ejemplo con `using` Result--->
+<---Ejemplo de Namespaces Anónimos Anidados--->
+```cpp
+#include <iostream>
+
+namespace Empresa {
+    namespace Departamento {
+        namespace {
+            void funcionPrivada() {
+                std::cout << "Función en el namespace anónimo dentro de Proyecto" << std::endl;
+            }
+        }
+    }
+}
+
+int main() {
+    Empresa::Departamento::funcionPrivada(); // Llamada válida dentro del mismo archivo
+    return 0;
+}
+<---Ejemplo de Namespaces Anónimos Anidados Result--->

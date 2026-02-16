@@ -1,0 +1,473 @@
+<---EXPLANATION--->
+### Constructor de Movimiento en C++
+
+El constructor de movimiento es una característica introducida en C++11 que permite la transferencia eficiente de recursos de un objeto a otro sin la necesidad de realizar copias profundas. Es especialmente útil para optimizar el rendimiento de las aplicaciones que manejan grandes cantidades de datos o recursos dinámicos. Utilizar el constructor de movimiento puede reducir significativamente el costo de las operaciones de copia, mejorando la eficiencia general del programa.
+
+#### Fundamentos del Constructor de Movimiento
+
+1. **Definición:** Un constructor de movimiento toma un rvalue reference (un valor que puede ser movido) al objeto de la misma clase.
+2. **Sintaxis:** Se declara utilizando la notación `&&` para los rvalue references.
+3. **Objetivo:** Transferir los recursos del objeto fuente al objeto destino, dejando el objeto fuente en un estado válido pero no especificado.
+
+##### Sintaxis
+
+```cpp
+class Clase {
+public:
+    Clase(Clase&& other); // Constructor de movimiento
+    // Otros miembros...
+};
+```
+
+#### Ejemplo Básico de Constructor de Movimiento
+
+Consideremos una clase `Vector` que maneja un arreglo dinámico. Implementemos un constructor de movimiento para esta clase.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector {
+private:
+    int* data;
+    size_t size;
+
+public:
+    // Constructor parametrizado
+    Vector(size_t s) : size(s) {
+        data = new int[s];
+        for (size_t i = 0; i < s; ++i) {
+            data[i] = 0;
+        }
+    }
+
+    // Destructor
+    ~Vector() {
+        delete[] data;
+    }
+
+    // Constructor de copia
+    Vector(const Vector& other) : size(other.size) {
+        data = new int[other.size];
+        for (size_t i = 0; i < other.size; ++i) {
+            data[i] = other.data[i];
+        }
+    }
+
+    // Constructor de movimiento
+    Vector(Vector&& other) noexcept : data(other.data), size(other.size) {
+        other.data = nullptr; // Dejar el objeto fuente en un estado válido
+        other.size = 0;
+    }
+
+    // Operador de asignación de movimiento
+    Vector& operator=(Vector&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            size = other.size;
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+
+    // Método para mostrar el contenido del vector
+    void mostrar() const {
+        for (size_t i = 0; i < size; ++i) {
+            cout << data[i] << " ";
+        }
+        cout << endl;
+    }
+};
+
+int main() {
+    Vector v1(5);
+    v1.mostrar();
+
+    Vector v2 = move(v1); // Llamada al constructor de movimiento
+    v2.mostrar();
+
+    // El estado de v1 es válido pero no especificado
+    cout << "Después de mover, v1: ";
+    v1.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `Vector` implementa un constructor de movimiento que transfiere la propiedad del arreglo dinámico de `v1` a `v2`, dejando `v1` en un estado válido pero no especificado.
+
+#### Ventajas del Constructor de Movimiento
+
+1. **Eficiencia:** Reduce el costo de las copias profundas al transferir recursos en lugar de duplicarlos.
+2. **Optimización:** Mejora el rendimiento de las operaciones de copia en contenedores de la biblioteca estándar (como `std::vector`, `std::string`, etc.) y en clases que manejan recursos dinámicos.
+3. **Seguridad del Estado:** Asegura que el objeto fuente quede en un estado válido después del movimiento, evitando problemas de recursos compartidos o liberaciones dobles.
+
+#### Ejemplo con Recursos Dinámicos
+
+El constructor de movimiento es particularmente útil cuando una clase gestiona recursos como memoria dinámica, archivos, o conexiones de red.
+
+##### Ejemplo con Clase de Recursos
+
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class Cadena {
+private:
+    char* str;
+
+public:
+    // Constructor parametrizado
+    Cadena(const char* s) {
+        str = new char[strlen(s) + 1];
+        strcpy(str, s);
+    }
+
+    // Destructor
+    ~Cadena() {
+        delete[] str;
+    }
+
+    // Constructor de copia
+    Cadena(const Cadena& other) {
+        str = new char[strlen(other.str) + 1];
+        strcpy(str, other.str);
+    }
+
+    // Constructor de movimiento
+    Cadena(Cadena&& other) noexcept : str(other.str) {
+        other.str = nullptr;
+    }
+
+    // Operador de asignación de movimiento
+    Cadena& operator=(Cadena&& other) noexcept {
+        if (this != &other) {
+            delete[] str;
+            str = other.str;
+            other.str = nullptr;
+        }
+        return *this;
+    }
+
+    // Método para mostrar la cadena
+    void mostrar() const {
+        cout << (str ? str : "Cadena vacía") << endl;
+    }
+};
+
+int main() {
+    Cadena c1("Hola");
+    c1.mostrar();
+
+    Cadena c2 = move(c1); // Llamada al constructor de movimiento
+    c2.mostrar();
+
+    // El estado de c1 es válido pero no especificado
+    cout << "Después de mover, c1: ";
+    c1.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `Cadena` implementa un constructor de movimiento que transfiere la propiedad de la cadena dinámica de `c1` a `c2`, dejando `c1` en un estado válido pero no especificado.
+
+#### La Regla de Cinco
+
+La regla de cinco extiende la regla de tres (destructor, constructor de copia, y operador de asignación de copia) para incluir el constructor de movimiento y el operador de asignación de movimiento. Si una clase necesita cualquiera de estos cinco métodos especiales, probablemente necesite implementarlos todos para gestionar correctamente los recursos.
+
+##### Ejemplo Completo con la Regla de Cinco
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Recurso {
+private:
+    int* data;
+
+public:
+    // Constructor parametrizado
+    Recurso(int valor) {
+        data = new int(valor);
+    }
+
+    // Destructor
+    ~Recurso() {
+        delete data;
+    }
+
+    // Constructor de copia
+    Recurso(const Recurso& other) {
+        data = new int(*other.data);
+    }
+
+    // Operador de asignación de copia
+    Recurso& operator=(const Recurso& other) {
+        if (this != &other) {
+            delete data;
+            data = new int(*other.data);
+        }
+        return *this;
+    }
+
+    // Constructor de movimiento
+    Recurso(Recurso&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+    }
+
+    // Operador de asignación de movimiento
+    Recurso& operator=(Recurso&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+        }
+        return *this;
+    }
+
+    // Método para mostrar el valor
+    void mostrar() const {
+        cout << "Valor: " << *data << endl;
+    }
+};
+
+int main() {
+    Recurso r1(10);
+    Recurso r2 = move(r1); // Llamada al constructor de movimiento
+    Recurso r3(20);
+    r3 = move(r2); // Llamada al operador de asignación de movimiento
+
+    r1.mostrar(); // Estado válido pero no especificado
+    r2.mostrar(); // Estado válido pero no especificado
+    r3.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `Recurso` implementa la regla de cinco, asegurando una correcta gestión de la memoria dinámica mediante constructores y operadores de movimiento y copia.
+
+### Conclusión
+
+El constructor de movimiento es una herramienta poderosa en C++ que permite la transferencia eficiente de recursos entre objetos, mejorando el rendimiento y la eficiencia del programa. Junto con el operador de asignación de movimiento, forma parte de la regla de cinco, que es esencial para la correcta gestión de recursos en clases que manejan memoria dinámica u otros recursos no triviales. Implementar correctamente estos métodos asegura que los objetos se manejen de manera segura y eficiente, evitando problemas comunes como la doble liberación de memoria y las copias innecesarias.
+<---FILES--->
+Sintaxis
+Sintaxis Result
+Ejemplo con Clase de Recursos
+Ejemplo con Clase de Recursos Result
+Ejemplo Completo con la Regla de Cinco
+Ejemplo Completo con la Regla de Cinco Result
+<---Sintaxis--->
+```cpp
+class Clase {
+public:
+    Clase(Clase&& other); // Constructor de movimiento
+    // Otros miembros...
+};
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector {
+private:
+    int* data;
+    size_t size;
+
+public:
+    // Constructor parametrizado
+    Vector(size_t s) : size(s) {
+        data = new int[s];
+        for (size_t i = 0; i < s; ++i) {
+            data[i] = 0;
+        }
+    }
+
+    // Destructor
+    ~Vector() {
+        delete[] data;
+    }
+
+    // Constructor de copia
+    Vector(const Vector& other) : size(other.size) {
+        data = new int[other.size];
+        for (size_t i = 0; i < other.size; ++i) {
+            data[i] = other.data[i];
+        }
+    }
+
+    // Constructor de movimiento
+    Vector(Vector&& other) noexcept : data(other.data), size(other.size) {
+        other.data = nullptr; // Dejar el objeto fuente en un estado válido
+        other.size = 0;
+    }
+
+    // Operador de asignación de movimiento
+    Vector& operator=(Vector&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            size = other.size;
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+
+    // Método para mostrar el contenido del vector
+    void mostrar() const {
+        for (size_t i = 0; i < size; ++i) {
+            cout << data[i] << " ";
+        }
+        cout << endl;
+    }
+};
+
+int main() {
+    Vector v1(5);
+    v1.mostrar();
+
+    Vector v2 = move(v1); // Llamada al constructor de movimiento
+    v2.mostrar();
+
+    // El estado de v1 es válido pero no especificado
+    cout << "Después de mover, v1: ";
+    v1.mostrar();
+
+    return 0;
+}
+<---Sintaxis Result--->
+<---Ejemplo con Clase de Recursos--->
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class Cadena {
+private:
+    char* str;
+
+public:
+    // Constructor parametrizado
+    Cadena(const char* s) {
+        str = new char[strlen(s) + 1];
+        strcpy(str, s);
+    }
+
+    // Destructor
+    ~Cadena() {
+        delete[] str;
+    }
+
+    // Constructor de copia
+    Cadena(const Cadena& other) {
+        str = new char[strlen(other.str) + 1];
+        strcpy(str, other.str);
+    }
+
+    // Constructor de movimiento
+    Cadena(Cadena&& other) noexcept : str(other.str) {
+        other.str = nullptr;
+    }
+
+    // Operador de asignación de movimiento
+    Cadena& operator=(Cadena&& other) noexcept {
+        if (this != &other) {
+            delete[] str;
+            str = other.str;
+            other.str = nullptr;
+        }
+        return *this;
+    }
+
+    // Método para mostrar la cadena
+    void mostrar() const {
+        cout << (str ? str : "Cadena vacía") << endl;
+    }
+};
+
+int main() {
+    Cadena c1("Hola");
+    c1.mostrar();
+
+    Cadena c2 = move(c1); // Llamada al constructor de movimiento
+    c2.mostrar();
+
+    // El estado de c1 es válido pero no especificado
+    cout << "Después de mover, c1: ";
+    c1.mostrar();
+
+    return 0;
+}
+<---Ejemplo con Clase de Recursos Result--->
+<---Ejemplo Completo con la Regla de Cinco--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Recurso {
+private:
+    int* data;
+
+public:
+    // Constructor parametrizado
+    Recurso(int valor) {
+        data = new int(valor);
+    }
+
+    // Destructor
+    ~Recurso() {
+        delete data;
+    }
+
+    // Constructor de copia
+    Recurso(const Recurso& other) {
+        data = new int(*other.data);
+    }
+
+    // Operador de asignación de copia
+    Recurso& operator=(const Recurso& other) {
+        if (this != &other) {
+            delete data;
+            data = new int(*other.data);
+        }
+        return *this;
+    }
+
+    // Constructor de movimiento
+    Recurso(Recurso&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+    }
+
+    // Operador de asignación de movimiento
+    Recurso& operator=(Recurso&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+        }
+        return *this;
+    }
+
+    // Método para mostrar el valor
+    void mostrar() const {
+        cout << "Valor: " << *data << endl;
+    }
+};
+
+int main() {
+    Recurso r1(10);
+    Recurso r2 = move(r1); // Llamada al constructor de movimiento
+    Recurso r3(20);
+    r3 = move(r2); // Llamada al operador de asignación de movimiento
+
+    r1.mostrar(); // Estado válido pero no especificado
+    r2.mostrar(); // Estado válido pero no especificado
+    r3.mostrar();
+
+    return 0;
+}
+<---Ejemplo Completo con la Regla de Cinco Result--->

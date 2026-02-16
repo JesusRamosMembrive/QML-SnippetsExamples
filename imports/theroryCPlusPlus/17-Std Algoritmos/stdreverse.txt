@@ -1,0 +1,239 @@
+<---EXPLANATION--->
+### Algoritmo de la Biblioteca Estándar: `std::reverse`
+
+La función `std::reverse` es un algoritmo de la biblioteca estándar de C++ que se utiliza para invertir el orden de los elementos en un rango. Es parte del encabezado `<algorithm>` y se utiliza comúnmente para revertir el orden de los elementos de contenedores como vectores, listas, arrays, etc.
+
+#### Sintaxis de `std::reverse`
+
+```cpp
+#include <algorithm>
+
+template <class BidirectionalIt>
+void reverse(BidirectionalIt first, BidirectionalIt last);
+```
+
+- **`BidirectionalIt first`**: Iterador al primer elemento del rango.
+- **`BidirectionalIt last`**: Iterador al elemento después del último en el rango.
+
+#### Descripción
+
+`std::reverse` invierte el orden de los elementos en el rango `[first, last)`. Este algoritmo requiere que los iteradores proporcionados sean bidireccionales, lo que significa que se debe poder avanzar y retroceder a través del rango.
+
+#### Ejemplo de Uso de `std::reverse`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar std::reverse para invertir el orden de los elementos
+    std::reverse(vec.begin(), vec.end());
+
+    // Mostrar los elementos invertidos
+    std::cout << "Elementos del vector después de std::reverse: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::reverse(vec.begin(), vec.end())` invierte el orden de todos los elementos del vector `vec`.
+
+### Uso con Diferentes Tipos de Contenedores
+
+`std::reverse` se puede usar con cualquier contenedor que soporte iteradores bidireccionales, como `std::vector`, `std::list`, `std::deque`, etc.
+
+##### Ejemplo con `std::list`
+
+```cpp
+#include <iostream>
+#include <list>
+#include <algorithm>
+
+int main() {
+    std::list<int> lst = {1, 2, 3, 4, 5};
+
+    // Usar std::reverse para invertir el orden de los elementos
+    std::reverse(lst.begin(), lst.end());
+
+    // Mostrar los elementos invertidos
+    std::cout << "Elementos de la lista después de std::reverse: ";
+    for (int elem : lst) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::reverse` se utiliza para invertir el orden de los elementos en la lista `lst`.
+
+### Ejemplos Adicionales
+
+#### Invertir una Subsección de un Contenedor
+
+##### Ejemplo de Subsección
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8};
+
+    // Usar std::reverse para invertir el orden de los elementos en una subsección del vector
+    std::reverse(vec.begin() + 2, vec.begin() + 6);
+
+    // Mostrar los elementos del vector después de invertir la subsección
+    std::cout << "Elementos del vector después de invertir una subsección: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::reverse(vec.begin() + 2, vec.begin() + 6)` invierte el orden de los elementos en la subsección `[3, 4, 5, 6]` del vector `vec`.
+
+#### Invertir una Cadena de Texto
+
+##### Ejemplo con `std::string`
+
+```cpp
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+int main() {
+    std::string str = "Hello, World!";
+
+    // Usar std::reverse para invertir el orden de los caracteres en la cadena
+    std::reverse(str.begin(), str.end());
+
+    // Mostrar la cadena invertida
+    std::cout << "Cadena después de std::reverse: " << str << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::reverse` se utiliza para invertir el orden de los caracteres en la cadena `str`.
+
+### Consideraciones
+
+- **Rendimiento:** `std::reverse` es muy eficiente y tiene un rendimiento lineal (`O(n)`), ya que necesita recorrer todo el rango de elementos para invertirlos.
+- **Requisitos de Iteradores:** `std::reverse` requiere iteradores bidireccionales, lo que significa que no puede utilizarse con contenedores que solo proporcionan iteradores de avance, como `std::forward_list`.
+- **Inversión In-Situ:** `std::reverse` invierte los elementos en su lugar, lo que significa que no requiere espacio adicional significativo.
+
+### Conclusión
+
+`std::reverse` es un algoritmo de la biblioteca estándar de C++ que proporciona una manera eficiente y directa de invertir el orden de los elementos en un rango. Su uso es fundamental para tareas que requieren la manipulación de la ordenación de elementos en contenedores. Comprender y utilizar `std::reverse` es esencial para escribir código C++ claro y eficiente cuando se necesita invertir el orden de los elementos en contenedores.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con `std::list`
+Ejemplo con `std::list` Result
+Ejemplo de Subsección
+Ejemplo de Subsección Result
+Ejemplo con `std::string`
+Ejemplo con `std::string` Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar std::reverse para invertir el orden de los elementos
+    std::reverse(vec.begin(), vec.end());
+
+    // Mostrar los elementos invertidos
+    std::cout << "Elementos del vector después de std::reverse: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con `std::list`--->
+```cpp
+#include <iostream>
+#include <list>
+#include <algorithm>
+
+int main() {
+    std::list<int> lst = {1, 2, 3, 4, 5};
+
+    // Usar std::reverse para invertir el orden de los elementos
+    std::reverse(lst.begin(), lst.end());
+
+    // Mostrar los elementos invertidos
+    std::cout << "Elementos de la lista después de std::reverse: ";
+    for (int elem : lst) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo con `std::list` Result--->
+<---Ejemplo de Subsección--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8};
+
+    // Usar std::reverse para invertir el orden de los elementos en una subsección del vector
+    std::reverse(vec.begin() + 2, vec.begin() + 6);
+
+    // Mostrar los elementos del vector después de invertir la subsección
+    std::cout << "Elementos del vector después de invertir una subsección: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo de Subsección Result--->
+<---Ejemplo con `std::string`--->
+```cpp
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+int main() {
+    std::string str = "Hello, World!";
+
+    // Usar std::reverse para invertir el orden de los caracteres en la cadena
+    std::reverse(str.begin(), str.end());
+
+    // Mostrar la cadena invertida
+    std::cout << "Cadena después de std::reverse: " << str << std::endl;
+
+    return 0;
+}
+<---Ejemplo con `std::string` Result--->

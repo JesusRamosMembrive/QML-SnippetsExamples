@@ -1,0 +1,309 @@
+<---EXPLANATION--->
+### Funciones Virtuales en Herencia en C++
+
+Las funciones virtuales son una característica clave de la programación orientada a objetos en C++. Permiten que las funciones miembro se comporten de manera polimórfica, es decir, el comportamiento de la función se puede determinar en tiempo de ejecución en lugar de en tiempo de compilación. Esto es fundamental para la creación de interfaces flexibles y reutilizables y para la implementación del polimorfismo.
+
+#### Definición de Funciones Virtuales
+
+Una función virtual es una función miembro de una clase que se puede redefinir en una clase derivada. Se declara con la palabra clave `virtual` en la clase base. Las funciones virtuales permiten que las llamadas a funciones a través de punteros o referencias a la clase base se dirijan a la versión más derivada de la función, según el tipo del objeto que realmente está siendo apuntado o referenciado.
+
+##### Sintaxis Básica
+
+```cpp
+class Base {
+public:
+    virtual void funcion() {
+        // Implementación de la clase base
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion() override {
+        // Implementación de la clase derivada
+    }
+};
+```
+
+- **`virtual`**: Indica que la función puede ser anulada en una clase derivada.
+- **`override`**: Es opcional pero recomendable, ya que proporciona una verificación en tiempo de compilación de que la función está realmente anulando una función virtual de la clase base.
+
+#### Ejemplo Básico de Funciones Virtuales
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal a;
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Animal` define una función virtual `hacerSonido`.
+- `Perro` y `Gato` anulan `hacerSonido` para proporcionar implementaciones específicas.
+- La función `hacerSonidoAnimal` demuestra el polimorfismo al llamar a `hacerSonido` en un `Animal`, `Perro` y `Gato`.
+
+#### Polimorfismo y Tablas Virtuales
+
+El polimorfismo se logra en C++ mediante el uso de una estructura llamada "tabla virtual" (vtable). Una vtable es una tabla de punteros a funciones virtuales. Cada clase que tiene funciones virtuales tiene su propia vtable, y cada objeto de esa clase tiene un puntero a la vtable correspondiente.
+
+Cuando se llama a una función virtual, el compilador utiliza el puntero a la vtable para encontrar la implementación correcta de la función a ejecutar en tiempo de ejecución.
+
+#### Funciones Virtuales Puras y Clases Abstractas
+
+Una función virtual pura se declara con `= 0` y no tiene implementación en la clase base. Una clase que contiene al menos una función virtual pura es una clase abstracta y no puede instanciarse. Las clases derivadas deben proporcionar una implementación para las funciones virtuales puras para poder ser instanciadas.
+
+##### Ejemplo de Funciones Virtuales Puras
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función virtual pura
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    // Animal a; // Error: no se puede instanciar una clase abstracta
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+```
+
+En este ejemplo, `Animal` es una clase abstracta con una función virtual pura `hacerSonido`. `Perro` y `Gato` proporcionan implementaciones específicas de `hacerSonido`.
+
+#### Virtualidad y Constructores
+
+Las funciones virtuales no se comportan de manera polimórfica cuando son llamadas desde constructores y destructores. Durante la construcción y destrucción de un objeto, el tipo de objeto se considera el tipo de la clase en la que se está ejecutando el constructor o destructor, no el tipo de la clase derivada.
+
+##### Ejemplo de Virtualidad y Constructores
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        imprimir();
+    }
+
+    virtual void imprimir() const {
+        cout << "Base::imprimir()" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        imprimir();
+    }
+
+    void imprimir() const override {
+        cout << "Derivada::imprimir()" << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    return 0;
+}
+```
+
+En este ejemplo, durante la construcción de un objeto `Derivada`, la llamada a `imprimir` desde el constructor de `Base` invoca `Base::imprimir`, no `Derivada::imprimir`.
+
+### Conclusión
+
+Las funciones virtuales son fundamentales para la implementación del polimorfismo en C++. Permiten que las funciones miembro se comporten de manera polimórfica, lo que es crucial para la creación de interfaces flexibles y reutilizables. Las funciones virtuales puras definen interfaces que deben ser implementadas por clases derivadas, creando clases abstractas que no pueden ser instanciadas. Es importante comprender las limitaciones de la virtualidad, especialmente en el contexto de constructores y destructores, para utilizar de manera efectiva las funciones virtuales en el diseño de software orientado a objetos en C++.
+<---FILES--->
+Sintaxis Básica
+Sintaxis Básica Result
+Ejemplo de Funciones Virtuales Puras
+Ejemplo de Funciones Virtuales Puras Result
+Ejemplo de Virtualidad y Constructores
+Ejemplo de Virtualidad y Constructores Result
+<---Sintaxis Básica--->
+```cpp
+class Base {
+public:
+    virtual void funcion() {
+        // Implementación de la clase base
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion() override {
+        // Implementación de la clase derivada
+    }
+};
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal a;
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+<---Sintaxis Básica Result--->
+<---Ejemplo de Funciones Virtuales Puras--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función virtual pura
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    // Animal a; // Error: no se puede instanciar una clase abstracta
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+<---Ejemplo de Funciones Virtuales Puras Result--->
+<---Ejemplo de Virtualidad y Constructores--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        imprimir();
+    }
+
+    virtual void imprimir() const {
+        cout << "Base::imprimir()" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        imprimir();
+    }
+
+    void imprimir() const override {
+        cout << "Derivada::imprimir()" << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    return 0;
+}
+<---Ejemplo de Virtualidad y Constructores Result--->

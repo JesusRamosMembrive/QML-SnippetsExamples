@@ -1,0 +1,257 @@
+<---EXPLANATION--->
+### Algoritmo de la Biblioteca Estándar: `std::partition`
+
+La función `std::partition` es un algoritmo de la biblioteca estándar de C++ que se utiliza para reorganizar los elementos de un rango de modo que todos los elementos que satisfacen un predicado dado precedan a todos los que no lo satisfacen. Es parte del encabezado `<algorithm>` y es útil para particionar contenedores en base a una condición específica.
+
+#### Sintaxis de `std::partition`
+
+```cpp
+#include <algorithm>
+
+template <class ForwardIt, class UnaryPredicate>
+ForwardIt partition(ForwardIt first, ForwardIt last, UnaryPredicate p);
+```
+
+- **`ForwardIt first`**: Iterador al primer elemento del rango.
+- **`ForwardIt last`**: Iterador al elemento después del último en el rango.
+- **`UnaryPredicate p`**: Predicado que define la condición de partición. Debe devolver `true` para elementos que deben estar en la primera parte del rango y `false` para los demás.
+
+#### Descripción
+
+`std::partition` reorganiza los elementos en el rango `[first, last)` de modo que todos los elementos que satisfacen el predicado `p` estén antes que los elementos que no lo satisfacen. Devuelve un iterador al primer elemento de la segunda parte del rango (donde los elementos no satisfacen el predicado).
+
+#### Ejemplo de Uso de `std::partition`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool esPar(int n) {
+    return n % 2 == 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+
+    // Usar std::partition para particionar los elementos
+    auto it = std::partition(vec.begin(), vec.end(), esPar);
+
+    // Mostrar los elementos particionados
+    std::cout << "Elementos después de std::partition: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    // Mostrar el punto de partición
+    std::cout << "Punto de partición: " << *it << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::partition(vec.begin(), vec.end(), esPar)` reorganiza los elementos de `vec` para que todos los números pares estén antes de los impares. Devuelve un iterador al primer elemento que no satisface el predicado `esPar`.
+
+### Uso con Diferentes Tipos de Contenedores
+
+`std::partition` se puede usar con cualquier contenedor que soporte iteradores de avance, como `std::vector`, `std::list`, `std::deque`, etc.
+
+##### Ejemplo con `std::list`
+
+```cpp
+#include <iostream>
+#include <list>
+#include <algorithm>
+
+bool esPositivo(int n) {
+    return n > 0;
+}
+
+int main() {
+    std::list<int> lst = {-1, 2, -3, 4, -5, 6};
+
+    // Usar std::partition para particionar los elementos
+    auto it = std::partition(lst.begin(), lst.end(), esPositivo);
+
+    // Mostrar los elementos particionados
+    std::cout << "Elementos de la lista después de std::partition: ";
+    for (int elem : lst) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    // Mostrar el punto de partición
+    std::cout << "Punto de partición: " << *it << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::partition` se utiliza para reorganizar los elementos de la lista `lst` de modo que todos los números positivos estén antes de los negativos.
+
+### Variantes: `std::stable_partition`
+
+`std::stable_partition` es una variante de `std::partition` que preserva el orden relativo de los elementos que satisfacen el predicado y los que no lo satisfacen.
+
+#### Sintaxis de `std::stable_partition`
+
+```cpp
+#include <algorithm>
+
+template <class ForwardIt, class UnaryPredicate>
+ForwardIt stable_partition(ForwardIt first, ForwardIt last, UnaryPredicate p);
+```
+
+- **`ForwardIt first`**: Iterador al primer elemento del rango.
+- **`ForwardIt last`**: Iterador al elemento después del último en el rango.
+- **`UnaryPredicate p`**: Predicado que define la condición de partición.
+
+#### Ejemplo de Uso de `std::stable_partition`
+
+##### Ejemplo Básico con `std::stable_partition`
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool esPar(int n) {
+    return n % 2 == 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+
+    // Usar std::stable_partition para particionar los elementos
+    auto it = std::stable_partition(vec.begin(), vec.end(), esPar);
+
+    // Mostrar los elementos particionados
+    std::cout << "Elementos después de std::stable_partition: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    // Mostrar el punto de partición
+    std::cout << "Punto de partición: " << *it << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::stable_partition(vec.begin(), vec.end(), esPar)` reorganiza los elementos de `vec` para que todos los números pares estén antes de los impares, preservando el orden relativo de los elementos.
+
+### Consideraciones
+
+- **Rendimiento:** `std::partition` y `std::stable_partition` tienen un rendimiento lineal (`O(n)`), ya que necesitan recorrer todo el rango de elementos. `std::stable_partition` es generalmente más lento debido a que preserva el orden relativo de los elementos.
+- **Requisitos de Iteradores:** `std::partition` y `std::stable_partition` requieren iteradores de avance. Para contenedores que solo proporcionan iteradores de una sola dirección, se debe usar una alternativa.
+- **Uso de Predicados:** Ambos algoritmos pueden utilizar funciones, funtores y lambdas como predicados, proporcionando una gran flexibilidad.
+
+### Conclusión
+
+`std::partition` y `std::stable_partition` son algoritmos útiles de la biblioteca estándar de C++ que permiten reorganizar elementos de un contenedor en base a una condición específica. `std::partition` proporciona una partición eficiente, mientras que `std::stable_partition` preserva el orden relativo de los elementos. Comprender y utilizar estos algoritmos es esencial para realizar particiones eficientes y flexibles en contenedores en C++.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con `std::list`
+Ejemplo con `std::list` Result
+Ejemplo Básico con `std::stable_partition`
+Ejemplo Básico con `std::stable_partition` Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool esPar(int n) {
+    return n % 2 == 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+
+    // Usar std::partition para particionar los elementos
+    auto it = std::partition(vec.begin(), vec.end(), esPar);
+
+    // Mostrar los elementos particionados
+    std::cout << "Elementos después de std::partition: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    // Mostrar el punto de partición
+    std::cout << "Punto de partición: " << *it << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con `std::list`--->
+```cpp
+#include <iostream>
+#include <list>
+#include <algorithm>
+
+bool esPositivo(int n) {
+    return n > 0;
+}
+
+int main() {
+    std::list<int> lst = {-1, 2, -3, 4, -5, 6};
+
+    // Usar std::partition para particionar los elementos
+    auto it = std::partition(lst.begin(), lst.end(), esPositivo);
+
+    // Mostrar los elementos particionados
+    std::cout << "Elementos de la lista después de std::partition: ";
+    for (int elem : lst) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    // Mostrar el punto de partición
+    std::cout << "Punto de partición: " << *it << std::endl;
+
+    return 0;
+}
+```cpp
+#include <algorithm>
+
+template <class ForwardIt, class UnaryPredicate>
+ForwardIt stable_partition(ForwardIt first, ForwardIt last, UnaryPredicate p);
+<---Ejemplo con `std::list` Result--->
+<---Ejemplo Básico con `std::stable_partition`--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool esPar(int n) {
+    return n % 2 == 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+
+    // Usar std::stable_partition para particionar los elementos
+    auto it = std::stable_partition(vec.begin(), vec.end(), esPar);
+
+    // Mostrar los elementos particionados
+    std::cout << "Elementos después de std::stable_partition: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    // Mostrar el punto de partición
+    std::cout << "Punto de partición: " << *it << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico con `std::stable_partition` Result--->

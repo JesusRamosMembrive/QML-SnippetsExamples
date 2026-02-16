@@ -1,0 +1,266 @@
+<---EXPLANATION--->
+### Funciones Puras Virtuales en C++
+
+Las funciones puras virtuales son un elemento clave en la programación orientada a objetos en C++. Permiten definir interfaces que deben ser implementadas por las clases derivadas. Estas funciones no tienen implementación en la clase base y se utilizan para crear clases abstractas que no pueden ser instanciadas directamente.
+
+#### Definición de Función Pura Virtual
+
+Una función pura virtual es una función miembro que no tiene implementación en la clase base y debe ser implementada por cualquier clase derivada concreta. Se declara añadiendo `= 0` al final de su declaración dentro de la clase base.
+
+##### Sintaxis
+
+```cpp
+class NombreClaseAbstracta {
+public:
+    virtual void nombreFuncion() = 0; // Función pura virtual
+};
+```
+
+Cuando una clase contiene al menos una función pura virtual, se convierte en una clase abstracta y no puede ser instanciada directamente.
+
+#### Ejemplo de Función Pura Virtual
+
+Consideremos un ejemplo en el que queremos definir una jerarquía de clases para diferentes tipos de figuras geométricas. La clase base `Figura` será una clase abstracta con una función pura virtual `dibujar`.
+
+##### Ejemplo de Implementación
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Figura {
+public:
+    virtual void dibujar() const = 0; // Función pura virtual
+
+    virtual ~Figura() {
+        // Destructor virtual
+    }
+};
+
+class Circulo : public Figura {
+public:
+    void dibujar() const override {
+        cout << "Dibujando un círculo" << endl;
+    }
+};
+
+class Cuadrado : public Figura {
+public:
+    void dibujar() const override {
+        cout << "Dibujando un cuadrado" << endl;
+    }
+};
+
+int main() {
+    // Figura f; // Error: no se puede instanciar una clase abstracta
+
+    Figura* c = new Circulo();
+    Figura* s = new Cuadrado();
+
+    c->dibujar(); // Llama a Circulo::dibujar()
+    s->dibujar(); // Llama a Cuadrado::dibujar()
+
+    delete c;
+    delete s;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Figura` es una clase abstracta porque contiene una función pura virtual `dibujar`.
+- `Circulo` y `Cuadrado` son clases derivadas que implementan la función `dibujar`.
+
+#### Ventajas de Usar Funciones Puras Virtuales
+
+1. **Definición de Interfaces:** Permiten definir interfaces que deben ser implementadas por las clases derivadas, asegurando una estructura común.
+2. **Flexibilidad y Extensibilidad:** Facilitan la creación de sistemas extensibles y flexibles, ya que las nuevas clases derivadas pueden añadirse sin cambiar la interfaz de la clase base.
+3. **Polimorfismo:** Habilitan el polimorfismo, permitiendo que las funciones se comporten de manera diferente según el tipo de objeto.
+
+#### Uso de Funciones Puras Virtuales en Jerarquías de Clases
+
+Las funciones puras virtuales son particularmente útiles en jerarquías de clases donde se desea que las clases derivadas proporcionen implementaciones específicas de ciertas funciones definidas en la clase base.
+
+##### Ejemplo con Múltiples Clases Derivadas
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función pura virtual
+
+    virtual ~Animal() {
+        // Destructor virtual
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    vector<Animal*> animales;
+    animales.push_back(new Perro());
+    animales.push_back(new Gato());
+
+    for (const auto& animal : animales) {
+        animal->hacerSonido();
+    }
+
+    for (const auto& animal : animales) {
+        delete animal;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Animal` es una clase abstracta con una función pura virtual `hacerSonido`.
+- `Perro` y `Gato` son clases derivadas que implementan `hacerSonido`.
+- La función `hacerSonidoAnimal` demuestra el uso del polimorfismo con referencias a la clase base.
+
+#### Consideraciones Importantes
+
+1. **Destructores Virtuales:** Es crucial declarar destructores virtuales en clases abstractas para asegurar la correcta liberación de recursos en las clases derivadas.
+2. **Implementaciones Opcionales en Clases Base:** En algunos casos, puede ser útil proporcionar una implementación predeterminada para funciones virtuales no puras en la clase base, permitiendo a las clases derivadas anularlas si es necesario.
+3. **Evitar Instanciación Directa:** Las clases abstractas no pueden ser instanciadas directamente. Solo pueden ser usadas como clases base.
+
+### Conclusión
+
+Las funciones puras virtuales son un componente esencial de las clases abstractas en C++. Permiten definir interfaces que deben ser implementadas por las clases derivadas, promoviendo una estructura común y facilitando el polimorfismo. Usar funciones puras virtuales permite diseñar sistemas orientados a objetos que son flexibles, extensibles y fáciles de mantener. Comprender cómo y cuándo usar funciones puras virtuales es crucial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
+<---FILES--->
+Sintaxis
+Sintaxis Result
+Ejemplo de Implementación
+Ejemplo de Implementación Result
+Ejemplo con Múltiples Clases Derivadas
+Ejemplo con Múltiples Clases Derivadas Result
+<---Sintaxis--->
+```cpp
+class NombreClaseAbstracta {
+public:
+    virtual void nombreFuncion() = 0; // Función pura virtual
+};
+<---Sintaxis Result--->
+<---Ejemplo de Implementación--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Figura {
+public:
+    virtual void dibujar() const = 0; // Función pura virtual
+
+    virtual ~Figura() {
+        // Destructor virtual
+    }
+};
+
+class Circulo : public Figura {
+public:
+    void dibujar() const override {
+        cout << "Dibujando un círculo" << endl;
+    }
+};
+
+class Cuadrado : public Figura {
+public:
+    void dibujar() const override {
+        cout << "Dibujando un cuadrado" << endl;
+    }
+};
+
+int main() {
+    // Figura f; // Error: no se puede instanciar una clase abstracta
+
+    Figura* c = new Circulo();
+    Figura* s = new Cuadrado();
+
+    c->dibujar(); // Llama a Circulo::dibujar()
+    s->dibujar(); // Llama a Cuadrado::dibujar()
+
+    delete c;
+    delete s;
+
+    return 0;
+}
+<---Ejemplo de Implementación Result--->
+<---Ejemplo con Múltiples Clases Derivadas--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función pura virtual
+
+    virtual ~Animal() {
+        // Destructor virtual
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    vector<Animal*> animales;
+    animales.push_back(new Perro());
+    animales.push_back(new Gato());
+
+    for (const auto& animal : animales) {
+        animal->hacerSonido();
+    }
+
+    for (const auto& animal : animales) {
+        delete animal;
+    }
+
+    return 0;
+}
+<---Ejemplo con Múltiples Clases Derivadas Result--->

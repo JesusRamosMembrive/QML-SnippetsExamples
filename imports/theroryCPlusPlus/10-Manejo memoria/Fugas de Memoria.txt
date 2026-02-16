@@ -1,0 +1,364 @@
+<---EXPLANATION--->
+### Fugas de Memoria en C++
+
+Una fuga de memoria ocurre cuando un programa no libera la memoria que ha asignado dinámicamente, lo que puede llevar a un consumo excesivo de memoria y, eventualmente, al fallo del programa. En aplicaciones de larga duración o sistemas embebidos, las fugas de memoria pueden tener consecuencias graves.
+
+#### ¿Qué es una Fuga de Memoria?
+
+Una fuga de memoria se produce cuando la memoria que se ha asignado en el heap no se libera adecuadamente. Esto ocurre principalmente cuando se pierde la referencia al puntero que apunta a esa memoria, lo que impide que el programa la reutilice o la libere.
+
+#### Ejemplos Comunes de Fugas de Memoria
+
+##### Fuga de Memoria Simple
+
+```cpp
+#include <iostream>
+
+void funcion() {
+    int* ptr = new int(10); // Asignar memoria en el heap
+    // ptr se pierde al salir de la función sin liberar la memoria
+}
+
+int main() {
+    funcion();
+    // La memoria asignada no se libera
+    return 0;
+}
+```
+
+##### Fuga de Memoria en un Bucle
+
+```cpp
+#include <iostream>
+
+void funcion() {
+    for (int i = 0; i < 10; ++i) {
+        int* ptr = new int(i); // Asignar memoria en el heap en cada iteración
+        // Sin delete, cada iteración causa una fuga de memoria
+    }
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+```
+
+### Cómo Detectar y Evitar Fugas de Memoria
+
+#### 1. Liberar Memoria Manualmente
+
+Asegúrese de liberar toda la memoria asignada dinámicamente usando `delete` o `delete[]` cuando ya no se necesite.
+
+```cpp
+#include <iostream>
+
+void funcion() {
+    int* ptr = new int(10);
+    // Usar ptr
+    delete ptr; // Liberar la memoria
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+```
+
+#### 2. Uso de Smart Pointers
+
+Los punteros inteligentes, introducidos en C++11, ayudan a gestionar automáticamente la vida útil de los objetos en el heap, evitando fugas de memoria.
+
+##### `std::unique_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+void funcion() {
+    std::unique_ptr<int> ptr = std::make_unique<int>(10); // Memoria gestionada automáticamente
+    // Usar ptr
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+```
+
+##### `std::shared_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+void funcion() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(10);
+    std::shared_ptr<int> ptr2 = ptr1; // Compartir la propiedad del recurso
+    // Usar ptr1 y ptr2
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+```
+
+#### 3. Uso de Herramientas de Análisis de Memoria
+
+Existen varias herramientas que pueden ayudar a detectar fugas de memoria en el código, tales como:
+
+- **Valgrind**: Una herramienta de análisis de memoria que detecta fugas de memoria y errores de acceso a memoria.
+- **AddressSanitizer**: Un runtime que detecta errores de memoria como desbordamientos de buffer y fugas de memoria.
+
+##### Uso Básico de Valgrind
+
+```sh
+valgrind --leak-check=full ./mi_programa
+```
+
+### Ejemplos Avanzados
+
+#### Fugas de Memoria en Clases
+
+Las fugas de memoria pueden ser más complejas en clases, especialmente si las clases manejan recursos dinámicos.
+
+##### Ejemplo de Clase con Fuga de Memoria
+
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    MiClase() {
+        ptr_ = new int[10]; // Asignar memoria dinámica
+    }
+    ~MiClase() {
+        // Falta delete[] ptr_, causando una fuga de memoria
+    }
+
+private:
+    int* ptr_;
+};
+
+int main() {
+    MiClase obj;
+    return 0;
+}
+```
+
+##### Solución con Destructor Correcto
+
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    MiClase() {
+        ptr_ = new int[10]; // Asignar memoria dinámica
+    }
+    ~MiClase() {
+        delete[] ptr_; // Liberar la memoria asignada
+    }
+
+private:
+    int* ptr_;
+};
+
+int main() {
+    MiClase obj;
+    return 0;
+}
+```
+
+#### Uso de Smart Pointers en Clases
+
+Encapsular la gestión de memoria en clases usando punteros inteligentes.
+
+```cpp
+#include <iostream>
+#include <memory>
+
+class MiClase {
+public:
+    MiClase() {
+        ptr_ = std::make_unique<int[]>(10); // Uso de unique_ptr
+    }
+    // No se necesita destructor explícito
+
+private:
+    std::unique_ptr<int[]> ptr_;
+};
+
+int main() {
+    MiClase obj;
+    return 0;
+}
+```
+
+### Mejores Prácticas para Evitar Fugas de Memoria
+
+1. **Usar Smart Pointers**: Siempre que sea posible, use `std::unique_ptr` y `std::shared_ptr` en lugar de punteros crudos.
+2. **Liberar Memoria Manualmente**: Si usa `new`, asegúrese de emparejarlo siempre con `delete`.
+3. **RAII (Resource Acquisition Is Initialization)**: Utilice el principio RAII para asegurar que los recursos se liberen cuando los objetos salen de su ámbito.
+4. **Revisiones y Pruebas de Código**: Realice revisiones de código y pruebas exhaustivas para detectar y corregir fugas de memoria.
+5. **Herramientas de Análisis**: Use herramientas como Valgrind y AddressSanitizer para detectar fugas de memoria y otros errores de memoria en su código.
+
+### Conclusión
+
+Las fugas de memoria pueden tener efectos severos en el rendimiento y la estabilidad de un programa. Es crucial entender cómo se producen y adoptar buenas prácticas para prevenirlas. El uso de punteros inteligentes, la liberación manual de memoria y el uso de herramientas de análisis son estrategias efectivas para gestionar la memoria de manera eficiente y segura en C++. Al seguir estas prácticas, se puede escribir código más robusto y mantenible.
+<---FILES--->
+Fuga de Memoria Simple
+Fuga de Memoria Simple Result
+Fuga de Memoria en un Bucle
+Fuga de Memoria en un Bucle Result
+`std::unique_ptr`
+`std::unique_ptr` Result
+`std::shared_ptr`
+`std::shared_ptr` Result
+Uso Básico de Valgrind
+Uso Básico de Valgrind Result
+Ejemplo de Clase con Fuga de Memoria
+Ejemplo de Clase con Fuga de Memoria Result
+Solución con Destructor Correcto
+Solución con Destructor Correcto Result
+<---Fuga de Memoria Simple--->
+```cpp
+#include <iostream>
+
+void funcion() {
+    int* ptr = new int(10); // Asignar memoria en el heap
+    // ptr se pierde al salir de la función sin liberar la memoria
+}
+
+int main() {
+    funcion();
+    // La memoria asignada no se libera
+    return 0;
+}
+<---Fuga de Memoria Simple Result--->
+<---Fuga de Memoria en un Bucle--->
+```cpp
+#include <iostream>
+
+void funcion() {
+    for (int i = 0; i < 10; ++i) {
+        int* ptr = new int(i); // Asignar memoria en el heap en cada iteración
+        // Sin delete, cada iteración causa una fuga de memoria
+    }
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+```cpp
+#include <iostream>
+
+void funcion() {
+    int* ptr = new int(10);
+    // Usar ptr
+    delete ptr; // Liberar la memoria
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+<---Fuga de Memoria en un Bucle Result--->
+<---`std::unique_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+void funcion() {
+    std::unique_ptr<int> ptr = std::make_unique<int>(10); // Memoria gestionada automáticamente
+    // Usar ptr
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+<---`std::unique_ptr` Result--->
+<---`std::shared_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+void funcion() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(10);
+    std::shared_ptr<int> ptr2 = ptr1; // Compartir la propiedad del recurso
+    // Usar ptr1 y ptr2
+}
+
+int main() {
+    funcion();
+    return 0;
+}
+<---`std::shared_ptr` Result--->
+<---Uso Básico de Valgrind--->
+<---Uso Básico de Valgrind Result--->
+<---Ejemplo de Clase con Fuga de Memoria--->
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    MiClase() {
+        ptr_ = new int[10]; // Asignar memoria dinámica
+    }
+    ~MiClase() {
+        // Falta delete[] ptr_, causando una fuga de memoria
+    }
+
+private:
+    int* ptr_;
+};
+
+int main() {
+    MiClase obj;
+    return 0;
+}
+<---Ejemplo de Clase con Fuga de Memoria Result--->
+<---Solución con Destructor Correcto--->
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    MiClase() {
+        ptr_ = new int[10]; // Asignar memoria dinámica
+    }
+    ~MiClase() {
+        delete[] ptr_; // Liberar la memoria asignada
+    }
+
+private:
+    int* ptr_;
+};
+
+int main() {
+    MiClase obj;
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <memory>
+
+class MiClase {
+public:
+    MiClase() {
+        ptr_ = std::make_unique<int[]>(10); // Uso de unique_ptr
+    }
+    // No se necesita destructor explícito
+
+private:
+    std::unique_ptr<int[]> ptr_;
+};
+
+int main() {
+    MiClase obj;
+    return 0;
+}
+<---Solución con Destructor Correcto Result--->

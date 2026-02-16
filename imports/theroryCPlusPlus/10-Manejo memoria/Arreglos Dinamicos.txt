@@ -1,0 +1,368 @@
+<---EXPLANATION--->
+### Arreglos Dinámicos en C++
+
+Los arreglos dinámicos en C++ permiten la gestión flexible de la memoria, adaptándose a necesidades de tamaño que no se pueden determinar en tiempo de compilación. A diferencia de los arreglos estáticos, cuyo tamaño es fijo, los arreglos dinámicos pueden redimensionarse en tiempo de ejecución. Esto se logra mediante la asignación y liberación manual de memoria en el heap.
+
+#### Declaración y Uso Básico
+
+##### Asignación y Liberación de Memoria con `new` y `delete[]`
+
+Para manejar arreglos dinámicos en C++, se utilizan los operadores `new[]` y `delete[]`.
+
+```cpp
+#include <iostream>
+
+int main() {
+    int size = 5;
+    int* arr = new int[size]; // Asignar memoria para un arreglo de enteros
+
+    // Inicializar el arreglo
+    for (int i = 0; i < size; ++i) {
+        arr[i] = i * 10;
+    }
+
+    // Acceder y mostrar los elementos del arreglo
+    for (int i = 0; i < size; ++i) {
+        std::cout << arr[i] << " "; // Salida: 0 10 20 30 40
+    }
+    std::cout << std::endl;
+
+    delete[] arr; // Liberar la memoria asignada para el arreglo
+    return 0;
+}
+```
+
+#### Redimensionamiento de Arreglos Dinámicos
+
+Dado que los arreglos dinámicos no pueden cambiar de tamaño una vez asignados, para redimensionar un arreglo se debe:
+1. Asignar un nuevo bloque de memoria de mayor tamaño.
+2. Copiar los elementos existentes al nuevo bloque.
+3. Liberar el bloque de memoria original.
+
+##### Ejemplo de Redimensionamiento
+
+```cpp
+#include <iostream>
+#include <algorithm> // Para std::copy
+
+int main() {
+    int size = 5;
+    int* arr = new int[size]; // Asignar memoria para un arreglo de enteros
+
+    // Inicializar el arreglo
+    for (int i = 0; i < size; ++i) {
+        arr[i] = i * 10;
+    }
+
+    // Nuevo tamaño del arreglo
+    int newSize = 10;
+    int* newArr = new int[newSize]; // Asignar memoria para el nuevo arreglo
+
+    // Copiar elementos del arreglo original al nuevo arreglo
+    std::copy(arr, arr + size, newArr);
+
+    // Inicializar los nuevos elementos
+    for (int i = size; i < newSize; ++i) {
+        newArr[i] = i * 10;
+    }
+
+    // Liberar la memoria del arreglo original
+    delete[] arr;
+
+    // Asignar el puntero del nuevo arreglo al original
+    arr = newArr;
+
+    // Mostrar los elementos del nuevo arreglo
+    for (int i = 0; i < newSize; ++i) {
+        std::cout << arr[i] << " "; // Salida: 0 10 20 30 40 50 60 70 80 90
+    }
+    std::cout << std::endl;
+
+    delete[] arr; // Liberar la memoria del nuevo arreglo
+    return 0;
+}
+```
+
+### Arreglos Dinámicos con Clases
+
+#### Uso de Clases para Encapsular Arreglos Dinámicos
+
+Encapsular la gestión de arreglos dinámicos dentro de una clase es una buena práctica que mejora la legibilidad y mantenibilidad del código.
+
+##### Declaración en el Archivo de Cabecera (.h)
+
+```cpp
+// ArregloDinamico.h
+#ifndef ARREGLODINAMICO_H
+#define ARREGLODINAMICO_H
+
+class ArregloDinamico {
+public:
+    ArregloDinamico(int size);
+    ~ArregloDinamico();
+
+    void redimensionar(int newSize);
+    void mostrar() const;
+
+private:
+    int* datos_;
+    int size_;
+};
+
+#endif // ARREGLODINAMICO_H
+```
+
+##### Definición en el Archivo de Implementación (.cpp)
+
+```cpp
+// ArregloDinamico.cpp
+#include "ArregloDinamico.h"
+#include <iostream>
+#include <algorithm>
+
+ArregloDinamico::ArregloDinamico(int size) : size_(size) {
+    datos_ = new int[size_];
+    for (int i = 0; i < size_; ++i) {
+        datos_[i] = i * 10;
+    }
+}
+
+ArregloDinamico::~ArregloDinamico() {
+    delete[] datos_;
+}
+
+void ArregloDinamico::redimensionar(int newSize) {
+    int* nuevosDatos = new int[newSize];
+    std::copy(datos_, datos_ + size_, nuevosDatos);
+    for (int i = size_; i < newSize; ++i) {
+        nuevosDatos[i] = i * 10;
+    }
+    delete[] datos_;
+    datos_ = nuevosDatos;
+    size_ = newSize;
+}
+
+void ArregloDinamico::mostrar() const {
+    for (int i = 0; i < size_; ++i) {
+        std::cout << datos_[i] << " ";
+    }
+    std::cout << std::endl;
+}
+```
+
+##### Función Principal
+
+```cpp
+#include <iostream>
+#include "ArregloDinamico.h"
+
+int main() {
+    ArregloDinamico arreglo(5);
+    arreglo.mostrar(); // Salida: 0 10 20 30 40
+
+    arreglo.redimensionar(10);
+    arreglo.mostrar(); // Salida: 0 10 20 30 40 50 60 70 80 90
+
+    return 0;
+}
+```
+
+### Uso de `std::vector` para Arreglos Dinámicos
+
+Aunque manejar la memoria manualmente es una habilidad importante, la biblioteca estándar de C++ proporciona `std::vector`, que es una implementación optimizada y segura de un arreglo dinámico.
+
+#### Ejemplo Básico de `std::vector`
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    vec.push_back(6); // Agregar un nuevo elemento
+    vec.push_back(7);
+
+    for (const auto& val : vec) {
+        std::cout << val << " "; // Salida: 1 2 3 4 5 6 7
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+#### Ventajas de `std::vector`
+
+- **Redimensionamiento automático**: `std::vector` gestiona la memoria y se redimensiona automáticamente según sea necesario.
+- **Seguridad y facilidad de uso**: Proporciona métodos y operadores que facilitan el manejo de datos.
+- **Compatibilidad con algoritmos STL**: `std::vector` funciona perfectamente con los algoritmos de la biblioteca estándar.
+
+### Conclusión
+
+El manejo de arreglos dinámicos en C++ permite una mayor flexibilidad en la gestión de la memoria. Aunque es crucial comprender cómo funcionan `new[]` y `delete[]` para la asignación y liberación manual de memoria, el uso de `std::vector` es generalmente preferible por su simplicidad y eficiencia. Encapsular la lógica de manejo de arreglos dinámicos dentro de clases puede mejorar la estructura y mantenibilidad del código.
+<---FILES--->
+Asignación y Liberación de Memoria con `new` y `delete[]`
+Asignación y Liberación de Memoria con `new` y `delete[]` Result
+Ejemplo de Redimensionamiento
+Ejemplo de Redimensionamiento Result
+Declaración en el Archivo de Cabecera (.h)
+Declaración en el Archivo de Cabecera (.h) Result
+Definición en el Archivo de Implementación (.cpp)
+Definición en el Archivo de Implementación (.cpp) Result
+Función Principal
+Función Principal Result
+<---Asignación y Liberación de Memoria con `new` y `delete[]`--->
+```cpp
+#include <iostream>
+
+int main() {
+    int size = 5;
+    int* arr = new int[size]; // Asignar memoria para un arreglo de enteros
+
+    // Inicializar el arreglo
+    for (int i = 0; i < size; ++i) {
+        arr[i] = i * 10;
+    }
+
+    // Acceder y mostrar los elementos del arreglo
+    for (int i = 0; i < size; ++i) {
+        std::cout << arr[i] << " "; // Salida: 0 10 20 30 40
+    }
+    std::cout << std::endl;
+
+    delete[] arr; // Liberar la memoria asignada para el arreglo
+    return 0;
+}
+<---Asignación y Liberación de Memoria con `new` y `delete[]` Result--->
+<---Ejemplo de Redimensionamiento--->
+```cpp
+#include <iostream>
+#include <algorithm> // Para std::copy
+
+int main() {
+    int size = 5;
+    int* arr = new int[size]; // Asignar memoria para un arreglo de enteros
+
+    // Inicializar el arreglo
+    for (int i = 0; i < size; ++i) {
+        arr[i] = i * 10;
+    }
+
+    // Nuevo tamaño del arreglo
+    int newSize = 10;
+    int* newArr = new int[newSize]; // Asignar memoria para el nuevo arreglo
+
+    // Copiar elementos del arreglo original al nuevo arreglo
+    std::copy(arr, arr + size, newArr);
+
+    // Inicializar los nuevos elementos
+    for (int i = size; i < newSize; ++i) {
+        newArr[i] = i * 10;
+    }
+
+    // Liberar la memoria del arreglo original
+    delete[] arr;
+
+    // Asignar el puntero del nuevo arreglo al original
+    arr = newArr;
+
+    // Mostrar los elementos del nuevo arreglo
+    for (int i = 0; i < newSize; ++i) {
+        std::cout << arr[i] << " "; // Salida: 0 10 20 30 40 50 60 70 80 90
+    }
+    std::cout << std::endl;
+
+    delete[] arr; // Liberar la memoria del nuevo arreglo
+    return 0;
+}
+<---Ejemplo de Redimensionamiento Result--->
+<---Declaración en el Archivo de Cabecera (.h)--->
+```cpp
+// ArregloDinamico.h
+#ifndef ARREGLODINAMICO_H
+#define ARREGLODINAMICO_H
+
+class ArregloDinamico {
+public:
+    ArregloDinamico(int size);
+    ~ArregloDinamico();
+
+    void redimensionar(int newSize);
+    void mostrar() const;
+
+private:
+    int* datos_;
+    int size_;
+};
+
+#endif // ARREGLODINAMICO_H
+<---Declaración en el Archivo de Cabecera (.h) Result--->
+<---Definición en el Archivo de Implementación (.cpp)--->
+```cpp
+// ArregloDinamico.cpp
+#include "ArregloDinamico.h"
+#include <iostream>
+#include <algorithm>
+
+ArregloDinamico::ArregloDinamico(int size) : size_(size) {
+    datos_ = new int[size_];
+    for (int i = 0; i < size_; ++i) {
+        datos_[i] = i * 10;
+    }
+}
+
+ArregloDinamico::~ArregloDinamico() {
+    delete[] datos_;
+}
+
+void ArregloDinamico::redimensionar(int newSize) {
+    int* nuevosDatos = new int[newSize];
+    std::copy(datos_, datos_ + size_, nuevosDatos);
+    for (int i = size_; i < newSize; ++i) {
+        nuevosDatos[i] = i * 10;
+    }
+    delete[] datos_;
+    datos_ = nuevosDatos;
+    size_ = newSize;
+}
+
+void ArregloDinamico::mostrar() const {
+    for (int i = 0; i < size_; ++i) {
+        std::cout << datos_[i] << " ";
+    }
+    std::cout << std::endl;
+}
+<---Definición en el Archivo de Implementación (.cpp) Result--->
+<---Función Principal--->
+```cpp
+#include <iostream>
+#include "ArregloDinamico.h"
+
+int main() {
+    ArregloDinamico arreglo(5);
+    arreglo.mostrar(); // Salida: 0 10 20 30 40
+
+    arreglo.redimensionar(10);
+    arreglo.mostrar(); // Salida: 0 10 20 30 40 50 60 70 80 90
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    vec.push_back(6); // Agregar un nuevo elemento
+    vec.push_back(7);
+
+    for (const auto& val : vec) {
+        std::cout << val << " "; // Salida: 1 2 3 4 5 6 7
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Función Principal Result--->

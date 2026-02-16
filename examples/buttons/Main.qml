@@ -43,6 +43,14 @@ Item {
                     color: Style.mainColor
                     Layout.fillWidth: true
                 }
+                GridLayout{
+                    columns: 2
+                    rows: 2
+                    columnSpacing: Style.resize(20)
+                    rowSpacing: Style.resize(20)
+                    Layout.fillWidth: true
+
+
 
                 // Standard Buttons Section
                 Rectangle {
@@ -343,6 +351,7 @@ Item {
                             color: "#666"
                         }
                     }
+                }
                 }
             }
         }

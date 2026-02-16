@@ -1,0 +1,242 @@
+<---EXPLANATION--->
+### Algoritmo de la Biblioteca Estándar: `std::set_difference`
+
+El algoritmo `std::set_difference` es parte de la biblioteca estándar de C++ y se utiliza para calcular la diferencia de conjuntos entre dos rangos ordenados, es decir, los elementos que están presentes en el primer rango pero no en el segundo. Es parte del encabezado `<algorithm>`.
+
+#### Sintaxis de `std::set_difference`
+
+```cpp
+#include <algorithm>
+
+template <class InputIt1, class InputIt2, class OutputIt>
+OutputIt set_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first);
+
+template <class InputIt1, class InputIt2, class OutputIt, class Compare>
+OutputIt set_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Compare comp);
+```
+
+- **`InputIt1 first1`**: Iterador al primer elemento del primer rango.
+- **`InputIt1 last1`**: Iterador al elemento después del último en el primer rango.
+- **`InputIt2 first2`**: Iterador al primer elemento del segundo rango.
+- **`InputIt2 last2`**: Iterador al elemento después del último en el segundo rango.
+- **`OutputIt d_first`**: Iterador al primer elemento del rango de destino.
+- **`Compare comp`**: (Opcional) Función de comparación que toma dos argumentos.
+
+#### Descripción
+
+`std::set_difference` copia los elementos que están presentes en el primer rango ordenado `[first1, last1)` pero no en el segundo rango ordenado `[first2, last2)` en el rango comenzando en `d_first`. Si se proporciona una función de comparación `comp`, se utiliza para comparar los elementos en lugar del operador `<`.
+
+#### Ejemplo de Uso de `std::set_difference`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec1 = {1, 2, 3, 4, 5};
+    std::vector<int> vec2 = {4, 5, 6, 7, 8};
+    std::vector<int> result;
+
+    // Reservar espacio suficiente para el resultado
+    result.reserve(vec1.size());
+
+    // Usar std::set_difference para encontrar la diferencia de conjuntos
+    auto it = std::set_difference(vec1.begin(), vec1.end(), vec2.begin(), vec2.end(), std::back_inserter(result));
+
+    // Mostrar los elementos de la diferencia
+    std::cout << "Elementos de la diferencia: ";
+    for (int elem : result) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::set_difference(vec1.begin(), vec1.end(), vec2.begin(), vec2.end(), std::back_inserter(result))` encuentra los elementos que están presentes en `vec1` pero no en `vec2` y los copia en `result`.
+
+### Uso con Comparación Personalizada
+
+`std::set_difference` puede utilizar una función de comparación personalizada para comparar elementos según un criterio específico.
+
+##### Ejemplo con Comparación Personalizada
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct Persona {
+    std::string nombre;
+    int edad;
+};
+
+bool compararPorEdad(const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+}
+
+int main() {
+    std::vector<Persona> grupo1 = {{"Ana", 25}, {"Carlos", 30}, {"Jose", 28}};
+    std::vector<Persona> grupo2 = {{"Luis", 22}, {"Maria", 28}, {"Pedro", 30}};
+    std::vector<Persona> resultado;
+
+    // Ordenar los vectores por edad
+    std::sort(grupo1.begin(), grupo1.end(), compararPorEdad);
+    std::sort(grupo2.begin(), grupo2.end(), compararPorEdad);
+
+    // Usar std::set_difference con comparación personalizada para encontrar la diferencia
+    std::set_difference(grupo1.begin(), grupo1.end(), grupo2.begin(), grupo2.end(), std::back_inserter(resultado), compararPorEdad);
+
+    // Mostrar las personas en la diferencia
+    std::cout << "Personas en la diferencia: ";
+    for (const auto& persona : resultado) {
+        std::cout << persona.nombre << " (" << persona.edad << "), ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::set_difference(grupo1.begin(), grupo1.end(), grupo2.begin(), grupo2.end(), std::back_inserter(resultado), compararPorEdad)` encuentra las personas que están en `grupo1` pero no en `grupo2` basándose en la edad y las copia en `resultado`.
+
+### Consideraciones
+
+- **Rendimiento:** `std::set_difference` tiene una complejidad lineal (`O(N + M)`), donde `N` y `M` son los tamaños de los dos rangos de entrada.
+- **Orden:** Los rangos de entrada deben estar ordenados según el mismo criterio de comparación (ya sea por el operador `<` o una función de comparación personalizada).
+- **Tamaño del Rango de Salida:** El rango de salida debe ser lo suficientemente grande para contener todos los elementos de la diferencia. Utilizar `std::back_inserter` puede ser conveniente para manejar esto automáticamente.
+
+### Variantes Relacionadas
+
+Existen otros algoritmos similares que trabajan con conjuntos ordenados, como `std::set_union`, `std::set_intersection` y `std::set_symmetric_difference`, cada uno de los cuales realiza una operación específica sobre dos conjuntos ordenados.
+
+#### `std::set_union`
+
+Copia los elementos presentes en al menos uno de los dos rangos ordenados.
+
+##### Sintaxis
+
+```cpp
+template <class InputIt1, class InputIt2, class OutputIt>
+OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first);
+
+template <class InputIt1, class InputIt2, class OutputIt, class Compare>
+OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Compare comp);
+```
+
+#### `std::set_intersection`
+
+Copia los elementos presentes en ambos rangos ordenados.
+
+##### Sintaxis
+
+```cpp
+template <class InputIt1, class InputIt2, class OutputIt>
+OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first);
+
+template <class InputIt1, class InputIt2, class OutputIt, class Compare>
+OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Compare comp);
+```
+
+#### `std::set_symmetric_difference`
+
+Copia los elementos presentes en exactamente uno de los dos rangos ordenados.
+
+##### Sintaxis
+
+```cpp
+template <class InputIt1, class InputIt2, class OutputIt>
+OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first);
+
+template <class InputIt1, class InputIt2, class OutputIt, class Compare>
+OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Compare comp);
+```
+
+### Conclusión
+
+`std::set_difference` es un algoritmo eficiente de la biblioteca estándar de C++ que permite calcular la diferencia de conjuntos entre dos rangos ordenados, copiando los elementos que están presentes en el primer rango pero no en el segundo. Es fundamental para trabajar con conjuntos de datos ordenados y puede utilizar comparaciones personalizadas para manejar criterios específicos. Comprender y utilizar `std::set_difference`, junto con otros algoritmos relacionados como `std::set_union`, `std::set_intersection` y `std::set_symmetric_difference`, es esencial para realizar operaciones de conjuntos eficientes en C++.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con Comparación Personalizada
+Ejemplo con Comparación Personalizada Result
+Sintaxis
+Sintaxis Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec1 = {1, 2, 3, 4, 5};
+    std::vector<int> vec2 = {4, 5, 6, 7, 8};
+    std::vector<int> result;
+
+    // Reservar espacio suficiente para el resultado
+    result.reserve(vec1.size());
+
+    // Usar std::set_difference para encontrar la diferencia de conjuntos
+    auto it = std::set_difference(vec1.begin(), vec1.end(), vec2.begin(), vec2.end(), std::back_inserter(result));
+
+    // Mostrar los elementos de la diferencia
+    std::cout << "Elementos de la diferencia: ";
+    for (int elem : result) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con Comparación Personalizada--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct Persona {
+    std::string nombre;
+    int edad;
+};
+
+bool compararPorEdad(const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+}
+
+int main() {
+    std::vector<Persona> grupo1 = {{"Ana", 25}, {"Carlos", 30}, {"Jose", 28}};
+    std::vector<Persona> grupo2 = {{"Luis", 22}, {"Maria", 28}, {"Pedro", 30}};
+    std::vector<Persona> resultado;
+
+    // Ordenar los vectores por edad
+    std::sort(grupo1.begin(), grupo1.end(), compararPorEdad);
+    std::sort(grupo2.begin(), grupo2.end(), compararPorEdad);
+
+    // Usar std::set_difference con comparación personalizada para encontrar la diferencia
+    std::set_difference(grupo1.begin(), grupo1.end(), grupo2.begin(), grupo2.end(), std::back_inserter(resultado), compararPorEdad);
+
+    // Mostrar las personas en la diferencia
+    std::cout << "Personas en la diferencia: ";
+    for (const auto& persona : resultado) {
+        std::cout << persona.nombre << " (" << persona.edad << "), ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo con Comparación Personalizada Result--->
+<---Sintaxis--->
+```cpp
+template <class InputIt1, class InputIt2, class OutputIt>
+OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first);
+
+template <class InputIt1, class InputIt2, class OutputIt, class Compare>
+OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, OutputIt d_first, Compare comp);
+<---Sintaxis Result--->

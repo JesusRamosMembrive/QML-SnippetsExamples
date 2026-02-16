@@ -1,0 +1,282 @@
+<---EXPLANATION--->
+### Funciones con Tipo de Dato Deducido en el Retorno en C++
+
+En C++14, se introdujo la capacidad de deducir el tipo de retorno de una función automáticamente utilizando la palabra clave `auto`. Esta característica simplifica la declaración de funciones, especialmente cuando el tipo de retorno es complicado o depende de los parámetros de la función. A partir de C++14, esta funcionalidad se amplía con `decltype(auto)`, que proporciona aún más flexibilidad.
+
+#### `auto` para la Deducción del Tipo de Retorno
+
+La palabra clave `auto` permite al compilador deducir el tipo de retorno de una función basándose en la expresión de retorno dentro de la función.
+
+##### Sintaxis
+
+```cpp
+auto nombre_funcion(parametros) {
+    // Cuerpo de la función
+    return expresion;
+}
+```
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+auto sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    auto resultado = sumar(5, 3);
+    cout << "La suma es: " << resultado << endl;
+    return 0;
+}
+```
+
+En este ejemplo, el compilador deduce que la función `sumar` devuelve un `int` porque la expresión `a + b` es de tipo `int`.
+
+#### `decltype(auto)` para la Deducción del Tipo de Retorno
+
+La palabra clave `decltype(auto)` se utiliza cuando se desea que el tipo de retorno sea exactamente el tipo deducido de la expresión de retorno, incluyendo referencias.
+
+##### Sintaxis
+
+```cpp
+decltype(auto) nombre_funcion(parametros) {
+    // Cuerpo de la función
+    return expresion;
+}
+```
+
+##### Ejemplo con `decltype(auto)`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int global = 10;
+
+decltype(auto) obtenerGlobal() {
+    return global;
+}
+
+decltype(auto) obtenerReferenciaGlobal() {
+    return (global);
+}
+
+int main() {
+    auto valor = obtenerGlobal();
+    cout << "Valor: " << valor << endl;
+
+    obtenerReferenciaGlobal() = 20;
+    cout << "Nuevo valor global: " << global << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `obtenerGlobal` devuelve una copia de `global`.
+- `obtenerReferenciaGlobal` devuelve una referencia a `global`, permitiendo modificar la variable global.
+
+#### Ventajas de Usar `auto` y `decltype(auto)`
+
+1. **Simplicidad:** Simplifica la declaración de funciones, especialmente para tipos de retorno complejos.
+2. **Flexibilidad:** Permite que el tipo de retorno se adapte automáticamente a cambios en el cuerpo de la función.
+3. **Mantenimiento:** Reduce la necesidad de actualizar la declaración de la función si se cambia el tipo de retorno.
+
+#### Ejemplos Adicionales
+
+##### Función con Tipo de Retorno Complicado
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+auto encontrarMaximo(const vector<int>& vec) {
+    return max_element(vec.begin(), vec.end());
+}
+
+int main() {
+    vector<int> numeros = {1, 3, 5, 7, 9};
+    auto it = encontrarMaximo(numeros);
+    if (it != numeros.end()) {
+        cout << "El valor máximo es: " << *it << endl;
+    }
+    return 0;
+}
+```
+
+En este ejemplo, `encontrarMaximo` devuelve un iterador al elemento máximo del vector, y el tipo de retorno se deduce automáticamente.
+
+##### Función que Devuelve un `std::pair`
+
+```cpp
+#include <iostream>
+#include <utility>
+using namespace std;
+
+auto crearPar(int a, double b) {
+    return make_pair(a, b);
+}
+
+int main() {
+    auto p = crearPar(5, 3.14);
+    cout << "Par: (" << p.first << ", " << p.second << ")" << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `crearPar` devuelve un `std::pair<int, double>` y el tipo de retorno se deduce automáticamente.
+
+##### Uso de `decltype(auto)` para Tipos de Retorno con Referencias
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+vector<int> vec = {1, 2, 3, 4, 5};
+
+decltype(auto) obtenerElemento(size_t index) {
+    return (vec[index]);
+}
+
+int main() {
+    auto& elem = obtenerElemento(2);
+    cout << "Elemento original: " << elem << endl;
+
+    // Modificar el elemento
+    elem = 10;
+    cout << "Elemento modificado: " << vec[2] << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `obtenerElemento` devuelve una referencia al elemento del vector, permitiendo modificar el elemento directamente.
+
+### Conclusión
+
+El uso de `auto` y `decltype(auto)` para deducir el tipo de retorno de funciones en C++ mejora la flexibilidad y simplicidad del código, especialmente para funciones con tipos de retorno complejos o cuando se requiere mantener la compatibilidad con referencias. Estas características permiten a los desarrolladores escribir código más claro y adaptable, facilitando el mantenimiento y la evolución del software.
+<---FILES--->
+Sintaxis
+Sintaxis Result
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con `decltype(auto)`
+Ejemplo con `decltype(auto)` Result
+Función con Tipo de Retorno Complicado
+Función con Tipo de Retorno Complicado Result
+Función que Devuelve un `std::pair`
+Función que Devuelve un `std::pair` Result
+Uso de `decltype(auto)` para Tipos de Retorno con Referencias
+Uso de `decltype(auto)` para Tipos de Retorno con Referencias Result
+<---Sintaxis--->
+```cpp
+decltype(auto) nombre_funcion(parametros) {
+    // Cuerpo de la función
+    return expresion;
+}
+<---Sintaxis Result--->
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+auto sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    auto resultado = sumar(5, 3);
+    cout << "La suma es: " << resultado << endl;
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con `decltype(auto)`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int global = 10;
+
+decltype(auto) obtenerGlobal() {
+    return global;
+}
+
+decltype(auto) obtenerReferenciaGlobal() {
+    return (global);
+}
+
+int main() {
+    auto valor = obtenerGlobal();
+    cout << "Valor: " << valor << endl;
+
+    obtenerReferenciaGlobal() = 20;
+    cout << "Nuevo valor global: " << global << endl;
+
+    return 0;
+}
+<---Ejemplo con `decltype(auto)` Result--->
+<---Función con Tipo de Retorno Complicado--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+auto encontrarMaximo(const vector<int>& vec) {
+    return max_element(vec.begin(), vec.end());
+}
+
+int main() {
+    vector<int> numeros = {1, 3, 5, 7, 9};
+    auto it = encontrarMaximo(numeros);
+    if (it != numeros.end()) {
+        cout << "El valor máximo es: " << *it << endl;
+    }
+    return 0;
+}
+<---Función con Tipo de Retorno Complicado Result--->
+<---Función que Devuelve un `std::pair`--->
+```cpp
+#include <iostream>
+#include <utility>
+using namespace std;
+
+auto crearPar(int a, double b) {
+    return make_pair(a, b);
+}
+
+int main() {
+    auto p = crearPar(5, 3.14);
+    cout << "Par: (" << p.first << ", " << p.second << ")" << endl;
+    return 0;
+}
+<---Función que Devuelve un `std::pair` Result--->
+<---Uso de `decltype(auto)` para Tipos de Retorno con Referencias--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+vector<int> vec = {1, 2, 3, 4, 5};
+
+decltype(auto) obtenerElemento(size_t index) {
+    return (vec[index]);
+}
+
+int main() {
+    auto& elem = obtenerElemento(2);
+    cout << "Elemento original: " << elem << endl;
+
+    // Modificar el elemento
+    elem = 10;
+    cout << "Elemento modificado: " << vec[2] << endl;
+
+    return 0;
+}
+<---Uso de `decltype(auto)` para Tipos de Retorno con Referencias Result--->

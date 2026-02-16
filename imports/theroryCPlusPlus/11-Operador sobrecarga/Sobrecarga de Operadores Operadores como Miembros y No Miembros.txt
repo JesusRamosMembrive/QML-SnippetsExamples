@@ -1,0 +1,130 @@
+<---EXPLANATION--->
+### Sobrecarga de Operadores en C++: Operadores como Miembros y No Miembros
+
+La sobrecarga de operadores en C++ permite definir comportamientos personalizados para operadores con tipos de datos definidos por el usuario. Esto puede hacer que las clases sean más intuitivas y fáciles de usar. En esta lección, exploraremos cómo sobrecargar operadores tanto como miembros de una clase como no miembros (funciones amigas).
+
+#### Introducción a la Sobrecarga de Operadores
+
+La sobrecarga de operadores permite extender la funcionalidad de operadores estándar como `+`, `-`, `*`, `==`, entre otros, para que funcionen con objetos de clases definidas por el usuario. Esta funcionalidad es particularmente útil para clases que representan conceptos matemáticos o de contenedor.
+
+### Sobrecarga de Operadores como Miembros de Clase
+
+Cuando sobrecargamos un operador como miembro de una clase, el operador actúa sobre el objeto de la clase desde el cual se invoca. 
+
+#### Ejemplo: Sobrecarga del Operador `+` como Miembro
+
+Consideremos una clase `Vector2D` que representa un vector en dos dimensiones. Queremos sobrecargar el operador `+` para sumar dos vectores.
+
+```cpp
+// Vector2D.h
+#ifndef VECTOR2D_H
+#define VECTOR2D_H
+
+class Vector2D {
+private:
+    double x, y;
+public:
+    Vector2D(double _x, double _y) : x(_x), y(_y) {}
+
+    // Sobrecarga del operador + como miembro de clase
+    Vector2D operator+(const Vector2D& other) const {
+        return Vector2D(x + other.x, y + other.y);
+    }
+
+    // Métodos para obtener los valores de x e y
+    double getX() const { return x; }
+    double getY() const { return y; }
+};
+
+#endif // VECTOR2D_H
+```
+
+```cpp
+// main.cpp
+#include "Vector2D.h"
+#include <iostream>
+
+int main() {
+    Vector2D vec1(1.0, 2.0);
+    Vector2D vec2(3.0, 4.0);
+    Vector2D vec3 = vec1 + vec2;
+
+    std::cout << "vec3: (" << vec3.getX() << ", " << vec3.getY() << ")" << std::endl;
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Vector2D` define el operador `+` como un miembro.
+- El operador `+` toma otro `Vector2D` como argumento y devuelve un nuevo `Vector2D` que representa la suma de los dos vectores.
+
+### Sobrecarga de Operadores como No Miembros (Funciones Amigas)
+
+A veces, puede ser más apropiado sobrecargar un operador como una función no miembro, especialmente cuando el operador debe interactuar con varios tipos diferentes de objetos. Las funciones no miembros pueden ser declaradas como amigas de la clase para acceder a sus miembros privados.
+
+#### Ejemplo: Sobrecarga del Operador `==` como Función Amiga
+
+Queremos sobrecargar el operador `==` para comparar dos objetos `Vector2D`.
+
+```cpp
+// Vector2D.h
+#ifndef VECTOR2D_H
+#define VECTOR2D_H
+
+class Vector2D {
+private:
+    double x, y;
+public:
+    Vector2D(double _x, double _y) : x(_x), y(_y) {}
+
+    // Declaración de la función amiga para sobrecargar el operador ==
+    friend bool operator==(const Vector2D& lhs, const Vector2D& rhs);
+
+    // Métodos para obtener los valores de x e y
+    double getX() const { return x; }
+    double getY() const { return y; }
+};
+
+// Definición de la función amiga para sobrecargar el operador ==
+bool operator==(const Vector2D& lhs, const Vector2D& rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+#endif // VECTOR2D_H
+```
+
+```cpp
+// main.cpp
+#include "Vector2D.h"
+#include <iostream>
+
+int main() {
+    Vector2D vec1(1.0, 2.0);
+    Vector2D vec2(1.0, 2.0);
+    Vector2D vec3(3.0, 4.0);
+
+    if (vec1 == vec2) {
+        std::cout << "vec1 es igual a vec2" << std::endl;
+    } else {
+        std::cout << "vec1 no es igual a vec2" << std::endl;
+    }
+
+    if (vec1 == vec3) {
+        std::cout << "vec1 es igual a vec3" << std::endl;
+    } else {
+        std::cout << "vec1 no es igual a vec3" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Vector2D` declara la función amiga `operator==`.
+- La función `operator==` compara las coordenadas `x` e `y` de dos objetos `Vector2D` y devuelve `true` si son iguales.
+
+### Conclusión
+
+La sobrecarga de operadores en C++ mejora la legibilidad y usabilidad de las clases personalizadas. Al decidir si sobrecargar un operador como miembro de clase o como una función no miembro (amiga), considere cómo se utilizará el operador y si necesita acceso directo a los miembros privados de la clase. Las funciones no miembros son útiles cuando la operación debe interactuar con diferentes tipos de objetos, mientras que las funciones miembro son convenientes para operaciones que solo involucran objetos de la misma clase.
+<---FILES--->
+NA.

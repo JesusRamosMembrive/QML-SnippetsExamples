@@ -1,0 +1,239 @@
+<---EXPLANATION--->
+### Definición de Clase, Clase Base y Clase Derivada en C++
+
+En la programación orientada a objetos (POO) en C++, las clases son los bloques de construcción fundamentales que encapsulan datos y comportamientos relacionados. La herencia permite crear jerarquías de clases donde una clase puede heredar atributos y métodos de otra. Entender la diferencia entre clases base y clases derivadas es crucial para aprovechar al máximo las ventajas de la POO.
+
+#### Definición de Clase
+
+Una clase en C++ es una plantilla para crear objetos. Una clase define un conjunto de atributos (datos) y métodos (funciones) que operan sobre esos datos. Los atributos representan el estado del objeto, mientras que los métodos representan el comportamiento del objeto.
+
+##### Sintaxis Básica de una Clase
+
+```cpp
+class NombreClase {
+public:
+    // Atributos
+    tipo_atributo nombre_atributo;
+
+    // Métodos
+    tipo_retorno nombre_metodo(parametros);
+
+    // Otros componentes, como constructores, destructores, etc.
+};
+```
+
+##### Ejemplo de una Clase Básica
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona juan("Juan", 30);
+    juan.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, `Persona` es una clase con dos atributos (`nombre` y `edad`) y un método (`mostrarInformacion`).
+
+#### Definición de Clase Base
+
+Una clase base (también conocida como superclase o clase padre) es una clase que se utiliza como punto de partida para crear otras clases mediante herencia. La clase base proporciona atributos y métodos que son comunes a todas las clases derivadas.
+
+##### Ejemplo de una Clase Base
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() const {
+        cout << "El animal está comiendo." << endl;
+    }
+
+    void dormir() const {
+        cout << "El animal está durmiendo." << endl;
+    }
+};
+```
+
+En este ejemplo, `Animal` es una clase base que define dos métodos (`comer` y `dormir`) que son comunes a todos los animales.
+
+#### Definición de Clase Derivada
+
+Una clase derivada (también conocida como subclase o clase hija) es una clase que hereda atributos y métodos de otra clase (la clase base). La clase derivada puede extender o modificar el comportamiento de la clase base.
+
+##### Sintaxis Básica de una Clase Derivada
+
+```cpp
+class ClaseDerivada : public ClaseBase {
+public:
+    // Atributos y métodos adicionales
+};
+```
+
+- **`public`** indica que la herencia es pública, es decir, los miembros públicos y protegidos de la clase base permanecen públicos y protegidos en la clase derivada.
+
+##### Ejemplo de una Clase Derivada
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() const {
+        cout << "El animal está comiendo." << endl;
+    }
+
+    void dormir() const {
+        cout << "El animal está durmiendo." << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void ladrar() const {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de la clase base
+    miPerro.dormir(); // Método heredado de la clase base
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Animal` es la clase base que define métodos comunes (`comer` y `dormir`).
+- `Perro` es la clase derivada que hereda de `Animal` y añade un método adicional (`ladrar`).
+
+### Conclusión
+
+Las clases son los bloques de construcción fundamentales en la programación orientada a objetos en C++. Una clase encapsula datos y comportamientos, proporcionando una plantilla para crear objetos. Las clases base y derivadas permiten la reutilización y extensión del código a través de la herencia, donde las clases derivadas heredan y pueden extender los atributos y métodos de las clases base. Esta estructura facilita la organización, mantenimiento y expansión del código en proyectos de software complejos.
+<---FILES--->
+Sintaxis Básica de una Clase
+Sintaxis Básica de una Clase Result
+Ejemplo de una Clase Básica
+Ejemplo de una Clase Básica Result
+Ejemplo de una Clase Base
+Ejemplo de una Clase Base Result
+Sintaxis Básica de una Clase Derivada
+Sintaxis Básica de una Clase Derivada Result
+Ejemplo de una Clase Derivada
+Ejemplo de una Clase Derivada Result
+<---Sintaxis Básica de una Clase--->
+```cpp
+class NombreClase {
+public:
+    // Atributos
+    tipo_atributo nombre_atributo;
+
+    // Métodos
+    tipo_retorno nombre_metodo(parametros);
+
+    // Otros componentes, como constructores, destructores, etc.
+};
+<---Sintaxis Básica de una Clase Result--->
+<---Ejemplo de una Clase Básica--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona juan("Juan", 30);
+    juan.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo de una Clase Básica Result--->
+<---Ejemplo de una Clase Base--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() const {
+        cout << "El animal está comiendo." << endl;
+    }
+
+    void dormir() const {
+        cout << "El animal está durmiendo." << endl;
+    }
+};
+<---Ejemplo de una Clase Base Result--->
+<---Sintaxis Básica de una Clase Derivada--->
+```cpp
+class ClaseDerivada : public ClaseBase {
+public:
+    // Atributos y métodos adicionales
+};
+<---Sintaxis Básica de una Clase Derivada Result--->
+<---Ejemplo de una Clase Derivada--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() const {
+        cout << "El animal está comiendo." << endl;
+    }
+
+    void dormir() const {
+        cout << "El animal está durmiendo." << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void ladrar() const {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de la clase base
+    miPerro.dormir(); // Método heredado de la clase base
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+<---Ejemplo de una Clase Derivada Result--->

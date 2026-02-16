@@ -23,6 +23,7 @@ import hud as HudPage
 import websocketex as WebSocketPage
 import ecam as EcamPage
 import navdisplay as NavDisplayPage
+import theorycpp as TheoryCppPage
 
 Item {
     id: root
@@ -116,7 +117,7 @@ Item {
                         }
 
                         Label {
-                            text: "18 pages"
+                            text: "19 pages"
                             font.pixelSize: Style.resize(14)
                             color: "#999"
                         }
@@ -149,6 +150,7 @@ Item {
                             ListElement { name: "HUD";        desc: "Head-up display, pitch ladder, flight path vector" }
                             ListElement { name: "WebSocket"; desc: "C++ class exposed to QML, live echo server" }
                             ListElement { name: "NavDisplay"; desc: "Moving map, compass rose, flight plan" }
+                            ListElement { name: "Teoria";     desc: "C++ theory: fundamentals through advanced topics" }
                         }
 
                         ColumnLayout {
@@ -311,5 +313,10 @@ Item {
     NavDisplayPage.Main {
         visible: fullSize
         fullSize: (root.state === "NavDisplay")
+    }
+
+    TheoryCppPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Teoria")
     }
 }

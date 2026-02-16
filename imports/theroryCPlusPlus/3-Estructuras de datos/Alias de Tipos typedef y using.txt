@@ -1,0 +1,285 @@
+<---EXPLANATION--->
+### Alias de Tipos en C++: `typedef` y `using`
+
+En C++, `typedef` y `using` se utilizan para crear alias de tipos de datos, lo que puede hacer que el código sea más legible y manejable. Ambos permiten definir un nombre alternativo para un tipo existente, pero `using` ofrece más flexibilidad y características adicionales en C++11 y posteriores.
+
+#### `typedef`
+
+`typedef` es una palabra clave tradicional en C++ que se utiliza para crear alias de tipos de datos. Es especialmente útil para simplificar tipos complejos y mejorar la legibilidad del código.
+
+##### Sintaxis
+
+```cpp
+typedef tipo_original nuevo_nombre;
+```
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+typedef unsigned long ulong;
+
+int main() {
+    ulong numero = 1000000;
+    cout << "Número: " << numero << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `unsigned long` se ha renombrado como `ulong`, lo que simplifica el uso del tipo de datos.
+
+##### Alias para Tipos Complejos
+
+```cpp
+#include <iostream>
+using namespace std;
+
+typedef int (*FuncionPtr)(int, int);
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    FuncionPtr fp = sumar;
+    cout << "Suma: " << fp(5, 3) << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `typedef` se usa para crear un alias `FuncionPtr` para un puntero a función que toma dos `int` y devuelve un `int`.
+
+#### `using`
+
+`using` es una forma más moderna y flexible de crear alias de tipos en C++. Introducido en C++11, `using` puede hacer todo lo que `typedef` hace y más, como alias de plantillas.
+
+##### Sintaxis
+
+```cpp
+using nuevo_nombre = tipo_original;
+```
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+using ulong = unsigned long;
+
+int main() {
+    ulong numero = 1000000;
+    cout << "Número: " << numero << endl;
+    return 0;
+}
+```
+
+##### Alias para Tipos Complejos
+
+```cpp
+#include <iostream>
+using namespace std;
+
+using FuncionPtr = int(*)(int, int);
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    FuncionPtr fp = sumar;
+    cout << "Suma: " << fp(5, 3) << endl;
+    return 0;
+}
+```
+
+##### Alias de Plantillas
+
+Una de las características más poderosas de `using` es su capacidad para crear alias de plantillas, lo que `typedef` no puede hacer.
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+template <typename T>
+using Vec = vector<T>;
+
+int main() {
+    Vec<int> numeros = {1, 2, 3, 4, 5};
+    for (int num : numeros) {
+        cout << num << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `Vec<T>` es un alias de plantilla para `std::vector<T>`, simplificando la declaración de vectores.
+
+#### Comparación entre `typedef` y `using`
+
+| Característica            | `typedef`                      | `using`                                |
+|---------------------------|--------------------------------|----------------------------------------|
+| Sintaxis                  | Tradicional                    | Moderna (C++11 y posteriores)          |
+| Alias para Tipos Simples  | Sí                             | Sí                                     |
+| Alias para Tipos Complejos| Sí                             | Sí                                     |
+| Alias de Plantillas       | No                             | Sí                                     |
+| Legibilidad               | Menos intuitivo                | Más claro y legible                    |
+
+#### Ejemplo Completo
+
+A continuación, un ejemplo que muestra el uso de `typedef` y `using` para crear alias de tipos simples, complejos y plantillas:
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Alias con typedef
+typedef unsigned long ulong;
+typedef int (*FuncionPtr)(int, int);
+
+// Alias con using
+using ulong_alias = unsigned long;
+using FuncionPtr_alias = int(*)(int, int);
+
+template <typename T>
+using Vec = vector<T>;
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    // Uso de typedef
+    ulong numero1 = 1000000;
+    FuncionPtr fp1 = sumar;
+    cout << "Número1: " << numero1 << endl;
+    cout << "Suma1: " << fp1(5, 3) << endl;
+
+    // Uso de using
+    ulong_alias numero2 = 2000000;
+    FuncionPtr_alias fp2 = sumar;
+    cout << "Número2: " << numero2 << endl;
+    cout << "Suma2: " << fp2(7, 2) << endl;
+
+    // Uso de alias de plantilla con using
+    Vec<int> numeros = {1, 2, 3, 4, 5};
+    for (int num : numeros) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+
+### Conclusión
+
+`typedef` y `using` son herramientas útiles en C++ para crear alias de tipos de datos, mejorando la legibilidad y manejabilidad del código. Mientras que `typedef` ha sido la forma tradicional de hacerlo, `using` introduce una sintaxis más moderna y flexible, especialmente útil para alias de plantillas. Comprender cómo y cuándo usar cada uno es esencial para escribir código C++ limpio y eficiente.
+<---FILES--->
+Sintaxis
+Sintaxis Result
+Ejemplo Básico
+Ejemplo Básico Result
+Alias para Tipos Complejos
+Alias para Tipos Complejos Result
+Alias de Plantillas
+Alias de Plantillas Result
+<---Sintaxis--->
+```cpp
+using nuevo_nombre = tipo_original;
+<---Sintaxis Result--->
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+using ulong = unsigned long;
+
+int main() {
+    ulong numero = 1000000;
+    cout << "Número: " << numero << endl;
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Alias para Tipos Complejos--->
+```cpp
+#include <iostream>
+using namespace std;
+
+using FuncionPtr = int(*)(int, int);
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    FuncionPtr fp = sumar;
+    cout << "Suma: " << fp(5, 3) << endl;
+    return 0;
+}
+<---Alias para Tipos Complejos Result--->
+<---Alias de Plantillas--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+template <typename T>
+using Vec = vector<T>;
+
+int main() {
+    Vec<int> numeros = {1, 2, 3, 4, 5};
+    for (int num : numeros) {
+        cout << num << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Alias con typedef
+typedef unsigned long ulong;
+typedef int (*FuncionPtr)(int, int);
+
+// Alias con using
+using ulong_alias = unsigned long;
+using FuncionPtr_alias = int(*)(int, int);
+
+template <typename T>
+using Vec = vector<T>;
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    // Uso de typedef
+    ulong numero1 = 1000000;
+    FuncionPtr fp1 = sumar;
+    cout << "Número1: " << numero1 << endl;
+    cout << "Suma1: " << fp1(5, 3) << endl;
+
+    // Uso de using
+    ulong_alias numero2 = 2000000;
+    FuncionPtr_alias fp2 = sumar;
+    cout << "Número2: " << numero2 << endl;
+    cout << "Suma2: " << fp2(7, 2) << endl;
+
+    // Uso de alias de plantilla con using
+    Vec<int> numeros = {1, 2, 3, 4, 5};
+    for (int num : numeros) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+<---Alias de Plantillas Result--->

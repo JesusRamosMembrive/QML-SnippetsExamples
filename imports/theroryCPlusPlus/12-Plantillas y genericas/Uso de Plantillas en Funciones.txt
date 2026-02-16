@@ -1,0 +1,216 @@
+<---EXPLANATION--->
+### Uso de Plantillas en Funciones
+
+Las plantillas de función en C++ permiten crear funciones genéricas que pueden trabajar con diferentes tipos de datos. Esto hace que el código sea más flexible y reutilizable.
+
+#### Definición de Plantillas de Función
+
+Las plantillas de función se definen utilizando la palabra clave `template` seguida de una lista de parámetros de tipo entre corchetes angulares (`< >`). Estos parámetros de tipo actúan como marcadores de posición que se reemplazan con tipos específicos cuando se llama a la función.
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función
+template <typename T>
+T obtenerMayor(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+int main() {
+    std::cout << "Mayor entre 3 y 7: " << obtenerMayor(3, 7) << std::endl; // Uso con int
+    std::cout << "Mayor entre 5.5 y 2.2: " << obtenerMayor(5.5, 2.2) << std::endl; // Uso con double
+    std::cout << "Mayor entre 'a' y 'z': " << obtenerMayor('a', 'z') << std::endl; // Uso con char
+    return 0;
+}
+```
+
+En este ejemplo:
+- La función `obtenerMayor` se define como una plantilla que puede trabajar con cualquier tipo de dato (`int`, `double`, `char`, etc.).
+- La palabra clave `template` seguida de `<typename T>` define una plantilla de función donde `T` es un parámetro de tipo.
+- La función `obtenerMayor` devuelve el mayor de los dos valores pasados como argumentos.
+
+#### Especialización de Plantillas de Función
+
+En algunos casos, puede ser necesario definir una implementación específica de una plantilla de función para un tipo de dato particular. Esto se conoce como especialización de plantilla.
+
+##### Ejemplo de Especialización
+
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función genérica
+template <typename T>
+T obtenerMayor(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+// Especialización para const char*
+template <>
+const char* obtenerMayor<const char*>(const char* a, const char* b) {
+    return (std::strcmp(a, b) > 0) ? a : b;
+}
+
+int main() {
+    std::cout << "Mayor entre 3 y 7: " << obtenerMayor(3, 7) << std::endl; // Uso con int
+    std::cout << "Mayor entre 5.5 y 2.2: " << obtenerMayor(5.5, 2.2) << std::endl; // Uso con double
+    std::cout << "Mayor entre \"abc\" y \"xyz\": " << obtenerMayor("abc", "xyz") << std::endl; // Uso con const char*
+    return 0;
+}
+```
+
+En este ejemplo:
+- La función `obtenerMayor` se especializa para el tipo `const char*`.
+- La especialización utiliza `std::strcmp` para comparar cadenas de caracteres.
+
+#### Plantillas de Función con Múltiples Parámetros de Tipo
+
+Las plantillas de función también pueden tener múltiples parámetros de tipo, lo que permite crear funciones más versátiles.
+
+##### Ejemplo con Múltiples Parámetros de Tipo
+
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función con múltiples parámetros de tipo
+template <typename T1, typename T2>
+void imprimirAmbos(T1 a, T2 b) {
+    std::cout << "Valor 1: " << a << ", Valor 2: " << b << std::endl;
+}
+
+int main() {
+    imprimirAmbos(3, 4.5); // Uso con int y double
+    imprimirAmbos('a', "Hola"); // Uso con char y const char*
+    imprimirAmbos(5, std::string("Mundo")); // Uso con int y std::string
+    return 0;
+}
+```
+
+En este ejemplo:
+- La función `imprimirAmbos` se define como una plantilla con dos parámetros de tipo (`T1` y `T2`).
+- La función puede imprimir valores de diferentes tipos en una sola llamada.
+
+### Buenas Prácticas para el Uso de Plantillas en Funciones
+
+#### 1. Utilizar Nombres Claros y Significativos para los Parámetros de Tipo
+
+Usar nombres de parámetros de tipo que sean claros y significativos ayuda a mejorar la legibilidad del código.
+
+##### Ejemplo
+
+```cpp
+template <typename TipoElemento>
+TipoElemento obtenerMayor(TipoElemento a, TipoElemento b) {
+    return (a > b) ? a : b;
+}
+```
+
+#### 2. Documentar las Plantillas de Función
+
+Documentar adecuadamente las plantillas de función para explicar el propósito de cada parámetro de tipo y cómo se deben utilizar.
+
+##### Ejemplo
+
+```cpp
+// Función plantilla que devuelve el mayor de dos valores de cualquier tipo
+// T: tipo de los valores (puede ser int, double, etc.)
+template <typename T>
+T obtenerMayor(T a, T b) {
+    return (a > b) ? a : b;
+}
+```
+
+#### 3. Probar las Plantillas con Diferentes Tipos
+
+Asegurarse de probar las plantillas de función con diferentes tipos de datos para verificar su funcionamiento y detectar posibles problemas.
+
+##### Ejemplo
+
+```cpp
+int main() {
+    std::cout << "Mayor entre 3 y 7: " << obtenerMayor(3, 7) << std::endl; // int
+    std::cout << "Mayor entre 5.5 y 2.2: " << obtenerMayor(5.5, 2.2) << std::endl; // double
+    std::cout << "Mayor entre 'a' y 'z': " << obtenerMayor('a', 'z') << std::endl; // char
+    return 0;
+}
+```
+
+### Conclusión
+
+Las plantillas de función en C++ permiten escribir funciones genéricas que pueden trabajar con diferentes tipos de datos, mejorando la reutilización y flexibilidad del código. Seguir buenas prácticas como utilizar nombres claros para los parámetros de tipo, documentar adecuadamente y probar con diferentes tipos, ayuda a crear código más robusto y mantenible. Las plantillas son una herramienta esencial para cualquier desarrollador de C++ que busca escribir código eficiente y reutilizable.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo de Especialización
+Ejemplo de Especialización Result
+Ejemplo con Múltiples Parámetros de Tipo
+Ejemplo con Múltiples Parámetros de Tipo Result
+Ejemplo
+Ejemplo Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función
+template <typename T>
+T obtenerMayor(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+int main() {
+    std::cout << "Mayor entre 3 y 7: " << obtenerMayor(3, 7) << std::endl; // Uso con int
+    std::cout << "Mayor entre 5.5 y 2.2: " << obtenerMayor(5.5, 2.2) << std::endl; // Uso con double
+    std::cout << "Mayor entre 'a' y 'z': " << obtenerMayor('a', 'z') << std::endl; // Uso con char
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo de Especialización--->
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función genérica
+template <typename T>
+T obtenerMayor(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+// Especialización para const char*
+template <>
+const char* obtenerMayor<const char*>(const char* a, const char* b) {
+    return (std::strcmp(a, b) > 0) ? a : b;
+}
+
+int main() {
+    std::cout << "Mayor entre 3 y 7: " << obtenerMayor(3, 7) << std::endl; // Uso con int
+    std::cout << "Mayor entre 5.5 y 2.2: " << obtenerMayor(5.5, 2.2) << std::endl; // Uso con double
+    std::cout << "Mayor entre \"abc\" y \"xyz\": " << obtenerMayor("abc", "xyz") << std::endl; // Uso con const char*
+    return 0;
+}
+<---Ejemplo de Especialización Result--->
+<---Ejemplo con Múltiples Parámetros de Tipo--->
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función con múltiples parámetros de tipo
+template <typename T1, typename T2>
+void imprimirAmbos(T1 a, T2 b) {
+    std::cout << "Valor 1: " << a << ", Valor 2: " << b << std::endl;
+}
+
+int main() {
+    imprimirAmbos(3, 4.5); // Uso con int y double
+    imprimirAmbos('a', "Hola"); // Uso con char y const char*
+    imprimirAmbos(5, std::string("Mundo")); // Uso con int y std::string
+    return 0;
+}
+<---Ejemplo con Múltiples Parámetros de Tipo Result--->
+<---Ejemplo--->
+```cpp
+int main() {
+    std::cout << "Mayor entre 3 y 7: " << obtenerMayor(3, 7) << std::endl; // int
+    std::cout << "Mayor entre 5.5 y 2.2: " << obtenerMayor(5.5, 2.2) << std::endl; // double
+    std::cout << "Mayor entre 'a' y 'z': " << obtenerMayor('a', 'z') << std::endl; // char
+    return 0;
+}
+<---Ejemplo Result--->

@@ -1,0 +1,152 @@
+<---EXPLANATION--->
+### Uso de Concepts con Métodos de Clase en C++
+
+Los Concepts en C++20 no solo se pueden utilizar para restringir los tipos de parámetros en funciones y clases plantilla, sino también para definir restricciones en métodos de clase. Esto permite una mayor granularidad al especificar qué tipos pueden ser utilizados con métodos específicos dentro de una clase.
+
+### Definición de Concepts en Métodos de Clase
+
+Vamos a ver cómo se pueden utilizar los Concepts para restringir los métodos de una clase, asegurando que solo ciertos tipos sean válidos para esos métodos.
+
+#### Ejemplo 1: Restricción de Métodos con Conceptos Predefinidos
+
+Supongamos que tenemos una clase `Calculadora` que tiene métodos para sumar y multiplicar, pero queremos restringir el método `sumar` a tipos integrales y el método `multiplicar` a tipos de punto flotante.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Clase Calculadora con métodos restringidos por Concepts
+class Calculadora {
+public:
+    // Método sumar restringido a tipos integrales
+    template<std::integral T>
+    T sumar(T a, T b) {
+        return a + b;
+    }
+
+    // Método multiplicar restringido a tipos de punto flotante
+    template<std::floating_point T>
+    T multiplicar(T a, T b) {
+        return a * b;
+    }
+};
+
+int main() {
+    Calculadora calc;
+    
+    int x = 5, y = 3;
+    std::cout << "Suma (int): " << calc.sumar(x, y) << std::endl; // Funciona: int es un tipo integral
+
+    double a = 2.5, b = 4.0;
+    std::cout << "Multiplicación (double): " << calc.multiplicar(a, b) << std::endl; // Funciona: double es un tipo de punto flotante
+
+    // std::cout << calc.sumar(a, b) << std::endl; // Error de compilación: double no es un tipo integral
+    // std::cout << calc.multiplicar(x, y) << std::endl; // Error de compilación: int no es un tipo de punto flotante
+}
+```
+
+#### Ejemplo 2: Concept Personalizado `HasSizeMethod` en Métodos de Clase
+
+Definamos un Concept personalizado `HasSizeMethod` que verifica si un tipo tiene un método `size()` y usemos este Concept para restringir un método de una clase `Coleccion`.
+
+```cpp
+#include <concepts>
+#include <iostream>
+#include <vector>
+
+// Concept personalizado que requiere que T tenga un método `size()`
+template<typename T>
+concept HasSizeMethod = requires(T a) {
+    { a.size() } -> std::convertible_to<std::size_t>;
+};
+
+// Clase Coleccion con un método restringido por el Concept HasSizeMethod
+class Coleccion {
+public:
+    // Método mostrarTamano restringido a tipos que cumplen con HasSizeMethod
+    template<HasSizeMethod T>
+    void mostrarTamano(const T& contenedor) {
+        std::cout << "Tamaño: " << contenedor.size() << std::endl;
+    }
+};
+
+int main() {
+    Coleccion col;
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    col.mostrarTamano(vec); // Funciona: std::vector tiene método size()
+
+    // int num = 42;
+    // col.mostrarTamano(num); // Error de compilación: int no tiene método size()
+}
+```
+
+### Combinación de Concepts en Métodos de Clase
+
+#### Ejemplo 3: Métodos con Múltiples Concepts
+
+Vamos a definir una clase `Comparador` que tiene métodos para comparar si dos elementos son iguales y si un elemento es menor que otro. Usaremos Concepts para restringir estos métodos.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept personalizado que verifica si T es comparable por igualdad
+template<typename T>
+concept EqualityComparable = requires(T a, T b) {
+    { a == b } -> std::convertible_to<bool>;
+};
+
+// Concept personalizado que verifica si T es comparable por menos que
+template<typename T>
+concept LessThanComparable = requires(T a, T b) {
+    { a < b } -> std::convertible_to<bool>;
+};
+
+// Clase Comparador con métodos restringidos por Concepts
+class Comparador {
+public:
+    // Método esIgual restringido a tipos que cumplen con EqualityComparable
+    template<EqualityComparable T>
+    bool esIgual(const T& a, const T& b) {
+        return a == b;
+    }
+
+    // Método esMenor restringido a tipos que cumplen con LessThanComparable
+    template<LessThanComparable T>
+    bool esMenor(const T& a, const T& b) {
+        return a < b;
+    }
+};
+
+int main() {
+    Comparador comp;
+
+    int a = 5, b = 5, c = 3;
+    std::cout << std::boolalpha << "a == b: " << comp.esIgual(a, b) << std::endl; // Funciona: int es EqualityComparable
+    std::cout << "a < c: " << comp.esMenor(a, c) << std::endl; // Funciona: int es LessThanComparable
+
+    std::string str1 = "hello", str2 = "world";
+    std::cout << "str1 == str2: " << comp.esIgual(str1, str2) << std::endl; // Funciona: std::string es EqualityComparable
+    std::cout << "str1 < str2: " << comp.esMenor(str1, str2) << std::endl; // Funciona: std::string es LessThanComparable
+
+    // double d1 = 1.1, d2 = 2.2;
+    // std::cout << "d1 == d2: " << comp.esIgual(d1, d2) << std::endl; // Error de compilación: double no cumple con EqualityComparable
+    // std::cout << "d1 < d2: " << comp.esMenor(d1, d2) << std::endl; // Error de compilación: double no cumple con LessThanComparable
+}
+```
+
+En este ejemplo:
+- La clase `Comparador` tiene dos métodos, `esIgual` y `esMenor`, que están restringidos a tipos que cumplen con `EqualityComparable` y `LessThanComparable`, respectivamente.
+
+### Buenas Prácticas al Usar Concepts en Métodos de Clase
+
+1. **Definir Concepts Claros y Específicos**: Asegúrese de que los Concepts sean claros y específicos para evitar confusiones.
+2. **Reutilizar Concepts**: Defina Concepts reutilizables que puedan ser aplicados en múltiples métodos y contextos.
+3. **Documentar los Concepts y Métodos**: Documente los Concepts y los métodos que los utilizan para facilitar la comprensión del código.
+4. **Evitar Complejidad Innecesaria**: Mantenga los Concepts y las restricciones lo más simples posible para no complicar innecesariamente el código.
+
+### Conclusión
+
+Los Concepts en C++ permiten imponer restricciones claras y precisas en los métodos de clase, mejorando la seguridad y la robustez del código. Al definir y utilizar Concepts personalizados en métodos de clase, puede asegurar que sus métodos solo acepten los tipos adecuados, evitando errores en tiempo de compilación y mejorando la mantenibilidad del código.
+<---FILES--->
+NA.

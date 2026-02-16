@@ -1,0 +1,263 @@
+<---EXPLANATION--->
+### Estructuras de Datos: Pilas y Conjuntos en C++
+
+Las pilas y los conjuntos son estructuras de datos fundamentales en C++ que permiten almacenar y manipular colecciones de elementos de manera específica. En C++, estas estructuras se implementan comúnmente utilizando la biblioteca estándar (STL).
+
+#### Pilas
+
+Una pila (stack) es una estructura de datos lineal que sigue el principio LIFO (Last In, First Out), donde el último elemento en entrar es el primero en salir. La STL proporciona la clase `std::stack` para manejar pilas.
+
+##### Características de `std::stack`
+
+- **LIFO:** Los elementos se insertan y se eliminan desde el mismo extremo.
+- **Acceso Restringido:** Solo se puede acceder al elemento en la parte superior de la pila.
+
+##### Ejemplo de Uso de `std::stack`
+
+```cpp
+#include <iostream>
+#include <stack>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de una pila
+    stack<int> miPila;
+
+    // Inserción de elementos
+    miPila.push(10);
+    miPila.push(20);
+    miPila.push(30);
+
+    // Acceso al elemento superior
+    cout << "Elemento superior: " << miPila.top() << endl;
+
+    // Eliminación de elementos
+    miPila.pop(); // Elimina el elemento superior (30)
+
+    // Acceso después de la eliminación
+    cout << "Elemento superior después de pop: " << miPila.top() << endl;
+
+    return 0;
+}
+```
+
+### Operaciones Comunes en `std::stack`
+
+- **`push(valor)`**: Añade un elemento al tope de la pila.
+- **`pop()`**: Elimina el elemento en el tope de la pila.
+- **`top()`**: Devuelve una referencia al elemento en el tope de la pila.
+- **`size()`**: Devuelve el número de elementos en la pila.
+- **`empty()`**: Devuelve `true` si la pila está vacía.
+
+### Conjuntos
+
+Un conjunto (set) es una estructura de datos que almacena elementos únicos en orden. La STL proporciona la clase `std::set` para manejar conjuntos.
+
+##### Características de `std::set`
+
+- **Elementos Únicos:** No se permiten duplicados.
+- **Ordenado:** Los elementos se almacenan en orden ascendente.
+- **Operaciones Eficientes:** Inserción, eliminación y búsqueda en O(log n).
+
+##### Ejemplo de Uso de `std::set`
+
+```cpp
+#include <iostream>
+#include <set>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de un conjunto
+    set<int> miConjunto = {30, 10, 20, 40};
+
+    // Inserción de elementos
+    miConjunto.insert(50);
+    miConjunto.insert(20); // No se añade ya que 20 ya existe
+
+    // Iteración y acceso a los elementos
+    cout << "Conjunto: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+
+    // Eliminación de un elemento
+    miConjunto.erase(30);
+
+    // Iteración y acceso a los elementos después de la eliminación
+    cout << "Conjunto después de erase: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+
+### Operaciones Comunes en `std::set`
+
+- **`insert(valor)`**: Añade un elemento al conjunto.
+- **`erase(valor)`**: Elimina un elemento del conjunto.
+- **`find(valor)`**: Devuelve un iterador al elemento si se encuentra, o `end()` si no.
+- **`size()`**: Devuelve el número de elementos en el conjunto.
+- **`empty()`**: Devuelve `true` si el conjunto está vacío.
+
+### Comparación de Pilas y Conjuntos
+
+| Característica     | Pila (`std::stack`)                  | Conjunto (`std::set`)                 |
+|--------------------|--------------------------------------|---------------------------------------|
+| Orden              | LIFO (Last In, First Out)            | Orden ascendente                      |
+| Duplicados         | Permitidos                           | No permitidos                         |
+| Acceso a Elementos | Solo al elemento superior            | A cualquier elemento usando iteradores|
+| Complejidad        | O(1) para `push` y `pop`             | O(log n) para `insert`, `erase` y `find` |
+
+### Ejemplo Completo
+
+A continuación, un ejemplo que utiliza tanto pilas como conjuntos para ilustrar sus diferencias y usos comunes:
+
+```cpp
+#include <iostream>
+#include <stack>
+#include <set>
+using namespace std;
+
+int main() {
+    // Uso de std::stack
+    stack<int> miPila;
+    miPila.push(10);
+    miPila.push(20);
+    miPila.push(30);
+    cout << "Pila elemento superior: " << miPila.top() << endl;
+    miPila.pop();
+    cout << "Pila elemento superior después de pop: " << miPila.top() << endl;
+
+    // Uso de std::set
+    set<int> miConjunto = {30, 10, 20, 40};
+    miConjunto.insert(50);
+    cout << "Conjunto: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+    miConjunto.erase(30);
+    cout << "Conjunto después de erase: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+
+### Conclusión
+
+Las pilas y los conjuntos son estructuras de datos esenciales en C++ que proporcionan soluciones eficientes para diferentes tipos de problemas. Las pilas siguen el principio LIFO y son útiles para tareas como la evaluación de expresiones y el seguimiento de contexto. Los conjuntos garantizan la unicidad de los elementos y mantienen el orden, siendo útiles para tareas de búsqueda y eliminación de duplicados. Comprender cómo y cuándo usar estas estructuras de datos es fundamental para escribir programas eficientes y bien estructurados en C++.
+<---FILES--->
+Características de `std::stack`
+Características de `std::stack` Result
+Ejemplo de Uso de `std::stack`
+Ejemplo de Uso de `std::stack` Result
+Características de `std::set`
+Características de `std::set` Result
+Ejemplo de Uso de `std::set`
+Ejemplo de Uso de `std::set` Result
+<---Características de `std::stack`--->
+<---Características de `std::stack` Result--->
+<---Ejemplo de Uso de `std::stack`--->
+```cpp
+#include <iostream>
+#include <stack>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de una pila
+    stack<int> miPila;
+
+    // Inserción de elementos
+    miPila.push(10);
+    miPila.push(20);
+    miPila.push(30);
+
+    // Acceso al elemento superior
+    cout << "Elemento superior: " << miPila.top() << endl;
+
+    // Eliminación de elementos
+    miPila.pop(); // Elimina el elemento superior (30)
+
+    // Acceso después de la eliminación
+    cout << "Elemento superior después de pop: " << miPila.top() << endl;
+
+    return 0;
+}
+<---Ejemplo de Uso de `std::stack` Result--->
+<---Características de `std::set`--->
+<---Características de `std::set` Result--->
+<---Ejemplo de Uso de `std::set`--->
+```cpp
+#include <iostream>
+#include <set>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de un conjunto
+    set<int> miConjunto = {30, 10, 20, 40};
+
+    // Inserción de elementos
+    miConjunto.insert(50);
+    miConjunto.insert(20); // No se añade ya que 20 ya existe
+
+    // Iteración y acceso a los elementos
+    cout << "Conjunto: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+
+    // Eliminación de un elemento
+    miConjunto.erase(30);
+
+    // Iteración y acceso a los elementos después de la eliminación
+    cout << "Conjunto después de erase: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <stack>
+#include <set>
+using namespace std;
+
+int main() {
+    // Uso de std::stack
+    stack<int> miPila;
+    miPila.push(10);
+    miPila.push(20);
+    miPila.push(30);
+    cout << "Pila elemento superior: " << miPila.top() << endl;
+    miPila.pop();
+    cout << "Pila elemento superior después de pop: " << miPila.top() << endl;
+
+    // Uso de std::set
+    set<int> miConjunto = {30, 10, 20, 40};
+    miConjunto.insert(50);
+    cout << "Conjunto: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+    miConjunto.erase(30);
+    cout << "Conjunto después de erase: ";
+    for (int elemento : miConjunto) {
+        cout << elemento << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+<---Ejemplo de Uso de `std::set` Result--->

@@ -1,0 +1,187 @@
+<---EXPLANATION--->
+### Definición de R-Value en C++
+
+En C++, un **R-value** (Right value) es una expresión que no tiene una dirección en memoria accesible directamente y es generalmente temporal. Los R-values típicamente aparecen en el lado derecho de una asignación, de ahí su nombre. A diferencia de los L-values, los R-values no tienen un identificador persistente ni una dirección en memoria que pueda ser tomada con el operador `&`.
+
+#### Características de los R-Values
+
+1. **Temporalidad:** Los R-values son generalmente temporales y solo existen durante la evaluación de una expresión.
+2. **No Asignables:** No se pueden asignar valores a R-values porque no tienen un identificador persistente ni una ubicación en memoria accesible.
+3. **Optimización:** Los R-values son fundamentales para las optimizaciones como las move semantics, que permiten la transferencia eficiente de recursos.
+
+#### Ejemplos de R-Values
+
+- Literales de datos, como números y cadenas.
+- El resultado de operaciones aritméticas.
+- Objetos temporales creados como resultado de una expresión.
+
+##### Ejemplos Prácticos
+
+```cpp
+int x = 5;         // '5' es un R-value
+int y = x + 2;     // 'x + 2' es un R-value
+
+std::string s1 = "hello";        // "hello" es un R-value
+std::string s2 = s1 + " world";  // 's1 + " world"' es un R-value
+```
+
+En estos ejemplos:
+- `5` y `x + 2` son R-values porque son valores temporales que no tienen un identificador persistente.
+- `"hello"` y `s1 + " world"` son R-values porque son valores temporales que resultan de expresiones.
+
+#### R-Value References
+
+Introducidas en C++11, las **R-value references** permiten tomar posesión de un R-value, proporcionando un mecanismo para implementar move semantics y optimizar el manejo de recursos.
+
+##### Sintaxis
+
+```cpp
+int&& rvalue_ref = 10;  // rvalue_ref es una referencia a un R-value
+```
+
+##### Ejemplo con R-Value References
+
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    int* data;
+
+    // Constructor normal
+    MiClase(int value) : data(new int(value)) {
+        std::cout << "Constructor llamado para " << *data << std::endl;
+    }
+
+    // Destructor
+    ~MiClase() {
+        delete data;
+        std::cout << "Destructor llamado" << std::endl;
+    }
+
+    // Move Constructor
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+
+    // Move Assignment Operator
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    void mostrar() const {
+        if (data) {
+            std::cout << "Valor: " << *data << std::endl;
+        } else {
+            std::cout << "No hay datos" << std::endl;
+        }
+    }
+};
+
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = std::move(obj1);  // Move Constructor llamado
+    obj2.mostrar();
+    obj1.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    MiClase obj3(20);
+    obj3 = std::move(obj2);  // Move Assignment Operator llamado
+    obj3.mostrar();
+    obj2.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::move` convierte un L-value en un R-value, permitiendo que las move semantics se apliquen.
+- `MiClase` utiliza un move constructor y un move assignment operator para transferir eficientemente recursos de un objeto a otro.
+
+### Conclusión
+
+En C++, un R-value es una expresión temporal que no tiene una dirección en memoria accesible directamente. Los R-values son fundamentales para las optimizaciones de rendimiento como las move semantics, que permiten la transferencia eficiente de recursos en el lenguaje. Entender los R-values y cómo utilizarlos a través de R-value references es esencial para escribir código C++ eficiente y moderno.
+<---FILES--->
+Ejemplos Prácticos
+Ejemplos Prácticos Result
+Sintaxis
+Sintaxis Result
+Ejemplo con R-Value References
+Ejemplo con R-Value References Result
+<---Ejemplos Prácticos--->
+```cpp
+int x = 5;         // '5' es un R-value
+int y = x + 2;     // 'x + 2' es un R-value
+
+std::string s1 = "hello";        // "hello" es un R-value
+std::string s2 = s1 + " world";  // 's1 + " world"' es un R-value
+<---Ejemplos Prácticos Result--->
+<---Sintaxis--->
+```cpp
+int&& rvalue_ref = 10;  // rvalue_ref es una referencia a un R-value
+<---Sintaxis Result--->
+<---Ejemplo con R-Value References--->
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    int* data;
+
+    // Constructor normal
+    MiClase(int value) : data(new int(value)) {
+        std::cout << "Constructor llamado para " << *data << std::endl;
+    }
+
+    // Destructor
+    ~MiClase() {
+        delete data;
+        std::cout << "Destructor llamado" << std::endl;
+    }
+
+    // Move Constructor
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+
+    // Move Assignment Operator
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    void mostrar() const {
+        if (data) {
+            std::cout << "Valor: " << *data << std::endl;
+        } else {
+            std::cout << "No hay datos" << std::endl;
+        }
+    }
+};
+
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = std::move(obj1);  // Move Constructor llamado
+    obj2.mostrar();
+    obj1.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    MiClase obj3(20);
+    obj3 = std::move(obj2);  // Move Assignment Operator llamado
+    obj3.mostrar();
+    obj2.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    return 0;
+}
+<---Ejemplo con R-Value References Result--->

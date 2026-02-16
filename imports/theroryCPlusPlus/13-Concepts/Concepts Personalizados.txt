@@ -1,0 +1,164 @@
+<---EXPLANATION--->
+### Concepts Personalizados en C++
+
+Además de los Concepts predefinidos, C++ permite definir Concepts personalizados para imponer restricciones específicas a los tipos utilizados en plantillas. Los Concepts personalizados son especialmente útiles cuando se trabaja con tipos de datos y operaciones específicos que no están cubiertos por los Concepts predefinidos.
+
+### Definición de Concepts Personalizados
+
+Para definir un Concept personalizado, se utiliza la palabra clave `concept` seguida del nombre del Concept y una expresión que representa la condición que debe cumplir el tipo. Veamos algunos ejemplos de cómo definir y utilizar Concepts personalizados.
+
+#### Ejemplo 1: Concepto `HasSizeMethod`
+
+Este Concept verifica si un tipo tiene un método `size()` que retorna un valor convertible a `std::size_t`.
+
+```cpp
+#include <concepts>
+#include <type_traits>
+#include <iostream>
+
+// Definir un Concept que requiere que T tenga un método `size()`
+template<typename T>
+concept HasSizeMethod = requires(T a) {
+    { a.size() } -> std::convertible_to<std::size_t>;
+};
+
+// Clase con método `size()`
+class ConSize {
+public:
+    std::size_t size() const {
+        return 42;
+    }
+};
+
+// Clase sin método `size()`
+class SinSize {
+public:
+    int length() const {
+        return 84;
+    }
+};
+
+// Función plantilla que utiliza el Concept HasSizeMethod
+template<HasSizeMethod T>
+std::size_t obtenerSize(const T& obj) {
+    return obj.size();
+}
+
+int main() {
+    ConSize cs;
+    std::cout << obtenerSize(cs) << std::endl; // Funciona: ConSize tiene método `size()`
+
+    // SinSize ss;
+    // std::cout << obtenerSize(ss) << std::endl; // Error de compilación: SinSize no tiene método `size()`
+}
+```
+
+#### Ejemplo 2: Concepto `Addable`
+
+Este Concept verifica si dos instancias de un tipo pueden sumarse utilizando el operador `+`.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Definir un Concept que requiere que T soporte la operación de suma
+template<typename T>
+concept Addable = requires(T a, T b) {
+    { a + b } -> std::same_as<T>;
+};
+
+// Función plantilla que utiliza el Concept Addable
+template<Addable T>
+T sumar(T a, T b) {
+    return a + b;
+}
+
+int main() {
+    int x = 5, y = 3;
+    std::cout << sumar(x, y) << std::endl; // Funciona: int soporta la suma
+
+    double p = 5.5, q = 3.5;
+    std::cout << sumar(p, q) << std::endl; // Funciona: double soporta la suma
+
+    // std::string s1 = "Hola, ", s2 = "Mundo!";
+    // std::cout << sumar(s1, s2) << std::endl; // Funciona: std::string soporta la suma (concatenación)
+}
+```
+
+#### Ejemplo 3: Concepto `EqualityComparable`
+
+Este Concept verifica si dos instancias de un tipo pueden compararse por igualdad utilizando el operador `==`.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Definir un Concept que requiere que T soporte la comparación de igualdad
+template<typename T>
+concept EqualityComparable = requires(T a, T b) {
+    { a == b } -> std::convertible_to<bool>;
+};
+
+// Función plantilla que utiliza el Concept EqualityComparable
+template<EqualityComparable T>
+bool sonIguales(T a, T b) {
+    return a == b;
+}
+
+int main() {
+    int a = 5, b = 5;
+    std::cout << std::boolalpha << sonIguales(a, b) << std::endl; // Funciona: int soporta la comparación de igualdad
+
+    double x = 3.14, y = 3.14;
+    std::cout << std::boolalpha << sonIguales(x, y) << std::endl; // Funciona: double soporta la comparación de igualdad
+
+    // std::string s1 = "Hola", s2 = "Hola";
+    // std::cout << std::boolalpha << sonIguales(s1, s2) << std::endl; // Funciona: std::string soporta la comparación de igualdad
+}
+```
+
+### Cómo Utilizar Concepts Personalizados
+
+Para utilizar Concepts personalizados en funciones y clases plantilla, simplemente incluya el Concept en la declaración de la plantilla utilizando la sintaxis `template<Concept Nombre>`.
+
+#### Ejemplo: Uso de Concepts en Clases Plantilla
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept personalizado que verifica si T es default constructible
+template<typename T>
+concept DefaultConstructible = std::is_default_constructible_v<T>;
+
+// Clase plantilla que utiliza el Concept DefaultConstructible
+template<DefaultConstructible T>
+class Contenedor {
+    T valor;
+public:
+    Contenedor() : valor{} {} // Requiere que T sea default constructible
+    void mostrarValor() const {
+        std::cout << valor << std::endl;
+    }
+};
+
+int main() {
+    Contenedor<int> c; // Funciona: int es default constructible
+    c.mostrarValor();
+
+    // Contenedor<std::ostream> c2; // Error de compilación: std::ostream no es default constructible
+}
+```
+
+### Buenas Prácticas al Definir Concepts Personalizados
+
+1. **Definir Requirements Claros**: Asegúrese de que los requisitos del Concept sean claros y específicos.
+2. **Mantener la Simplicidad**: Evite hacer Concepts demasiado complejos o incluir demasiados requisitos.
+3. **Documentación**: Documente cada Concept personalizado para facilitar su comprensión y uso correcto.
+4. **Reutilización**: Defina Concepts reutilizables que puedan aplicarse en múltiples contextos.
+
+### Conclusión
+
+Los Concepts personalizados en C++ permiten definir restricciones específicas para los tipos utilizados en plantillas, mejorando la claridad y la robustez del código. Al aprovechar los Concepts personalizados, puede asegurarse de que solo se utilicen tipos adecuados en sus plantillas, evitando errores en tiempo de compilación y mejorando la mantenibilidad del código.
+<---FILES--->
+NA.

@@ -1,0 +1,553 @@
+<---EXPLANATION--->
+### `std::shared_ptr` en Profundidad
+
+`std::shared_ptr` es un puntero inteligente que permite compartir la propiedad de un recurso entre múltiples punteros. Este puntero inteligente utiliza un mecanismo de conteo de referencias para asegurarse de que el recurso se libera automáticamente cuando el último `std::shared_ptr` que lo posee es destruido. Aquí exploraremos su uso en profundidad, mejores prácticas y ejemplos de cómo integrarlo en proyectos más grandes.
+
+#### Declaraciones y Uso Básico
+
+##### Declaración y Asignación
+
+Para declarar un `std::shared_ptr`, se incluye la cabecera `<memory>` y se puede utilizar `std::make_shared` para asignar memoria.
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(10);
+    std::shared_ptr<int> ptr2 = ptr1; // ptr1 y ptr2 comparten la propiedad del mismo recurso
+
+    std::cout << *ptr1 << std::endl; // Salida: 10
+    std::cout << "Use count: " << ptr1.use_count() << std::endl; // Salida: 2
+
+    // Memoria liberada automáticamente cuando el último shared_ptr sale del alcance
+    return 0;
+}
+```
+
+#### En Clases y Archivos de Cabecera
+
+El uso de `std::shared_ptr` en clases permite una gestión de recursos compartida y segura. Aquí se muestra cómo declarar y definir una clase que utiliza `std::shared_ptr`.
+
+##### Declaración en el Archivo de Cabecera (.h)
+
+```cpp
+// MiClase.h
+#ifndef MICLASE_H
+#define MICLASE_H
+
+#include <memory>
+#include <string>
+
+class MiClase {
+public:
+    MiClase(const std::string& nombre);
+    void mostrar() const;
+
+private:
+    std::shared_ptr<std::string> nombre_;
+};
+
+#endif // MICLASE_H
+```
+
+##### Definición en el Archivo de Implementación (.cpp)
+
+```cpp
+// MiClase.cpp
+#include "MiClase.h"
+#include <iostream>
+
+// Constructor
+MiClase::MiClase(const std::string& nombre)
+    : nombre_(std::make_shared<std::string>(nombre)) {}
+
+// Método mostrar
+void MiClase::mostrar() const {
+    std::cout << "Nombre: " << *nombre_ << std::endl;
+}
+```
+
+#### Mejor Uso de `std::shared_ptr`
+
+##### 1. Compartición de Recursos
+
+`std::shared_ptr` es ideal para situaciones donde múltiples partes del código necesitan compartir la propiedad de un recurso. Por ejemplo, en estructuras de datos complejas como gráficos o árboles donde los nodos pueden ser compartidos por múltiples padres.
+
+```cpp
+#include <memory>
+#include <vector>
+#include <iostream>
+
+class Nodo {
+public:
+    Nodo(int valor) : valor_(valor) {}
+
+    void agregarHijo(std::shared_ptr<Nodo> hijo) {
+        hijos_.push_back(hijo);
+    }
+
+    void mostrar() const {
+        std::cout << "Nodo: " << valor_ << std::endl;
+        for (const auto& hijo : hijos_) {
+            hijo->mostrar();
+        }
+    }
+
+private:
+    int valor_;
+    std::vector<std::shared_ptr<Nodo>> hijos_;
+};
+
+int main() {
+    auto raiz = std::make_shared<Nodo>(1);
+    auto hijo1 = std::make_shared<Nodo>(2);
+    auto hijo2 = std::make_shared<Nodo>(3);
+
+    raiz->agregarHijo(hijo1);
+    raiz->agregarHijo(hijo2);
+
+    raiz->mostrar(); // Muestra toda la jerarquía de nodos
+
+    return 0;
+}
+```
+
+##### 2. Evitar Ciclos de Referencia
+
+Para evitar ciclos de referencia que pueden causar fugas de memoria, `std::shared_ptr` se utiliza junto con `std::weak_ptr`. Un `std::weak_ptr` es un puntero no propietario que permite referenciar un `std::shared_ptr` sin incrementar su contador de referencias.
+
+##### Ejemplo de Ciclo de Referencia
+
+```cpp
+#include <memory>
+#include <iostream>
+
+class Nodo;
+
+class Nodo {
+public:
+    Nodo(int valor) : valor_(valor) {}
+
+    void establecerPadre(std::shared_ptr<Nodo> padre) {
+        padre_ = padre;
+    }
+
+    void establecerHijo(std::shared_ptr<Nodo> hijo) {
+        hijo_ = hijo;
+    }
+
+    ~Nodo() {
+        std::cout << "Destruyendo nodo: " << valor_ << std::endl;
+    }
+
+private:
+    int valor_;
+    std::shared_ptr<Nodo> hijo_;
+    std::shared_ptr<Nodo> padre_; // Ciclo de referencia
+};
+
+int main() {
+    {
+        auto nodo1 = std::make_shared<Nodo>(1);
+        auto nodo2 = std::make_shared<Nodo>(2);
+
+        nodo1->establecerHijo(nodo2);
+        nodo2->establecerPadre(nodo1);
+    } // Ciclo de referencia evita que los nodos sean destruidos
+
+    return 0;
+}
+```
+
+##### Solución usando `std::weak_ptr`
+
+```cpp
+#include <memory>
+#include <iostream>
+
+class Nodo;
+
+class Nodo {
+public:
+    Nodo(int valor) : valor_(valor) {}
+
+    void establecerPadre(std::shared_ptr<Nodo> padre) {
+        padre_ = padre;
+    }
+
+    void establecerHijo(std::shared_ptr<Nodo> hijo) {
+        hijo_ = hijo;
+    }
+
+    ~Nodo() {
+        std::cout << "Destruyendo nodo: " << valor_ << std::endl;
+    }
+
+private:
+    int valor_;
+    std::shared_ptr<Nodo> hijo_;
+    std::weak_ptr<Nodo> padre_; // Evitar ciclo de referencia
+};
+
+int main() {
+    {
+        auto nodo1 = std::make_shared<Nodo>(1);
+        auto nodo2 = std::make_shared<Nodo>(2);
+
+        nodo1->establecerHijo(nodo2);
+        nodo2->establecerPadre(nodo1);
+    } // Nodos correctamente destruidos
+
+    return 0;
+}
+```
+
+#### Ejemplo Completo
+
+A continuación, se muestra un ejemplo más completo que incluye la declaración y el uso de `std::shared_ptr` en una clase, mostrando la gestión de recursos compartidos y evitando ciclos de referencia con `std::weak_ptr`.
+
+##### Archivo de Cabecera (.h)
+
+```cpp
+// GestorRecurso.h
+#ifndef GESTORRECURSO_H
+#define GESTORRECURSO_H
+
+#include <memory>
+#include <string>
+
+class GestorRecurso {
+public:
+    GestorRecurso(const std::string& nombre);
+    void mostrarRecurso() const;
+
+private:
+    std::shared_ptr<std::string> recurso_;
+};
+
+class Contenedor {
+public:
+    void establecerRecurso(std::shared_ptr<GestorRecurso> recurso);
+    void mostrar() const;
+
+private:
+    std::shared_ptr<GestorRecurso> recurso_;
+};
+
+#endif // GESTORRECURSO_H
+```
+
+##### Archivo de Implementación (.cpp)
+
+```cpp
+// GestorRecurso.cpp
+#include "GestorRecurso.h"
+#include <iostream>
+
+GestorRecurso::GestorRecurso(const std::string& nombre)
+    : recurso_(std::make_shared<std::string>(nombre)) {}
+
+void GestorRecurso::mostrarRecurso() const {
+    std::cout << "Recurso: " << *recurso_ << std::endl;
+}
+
+void Contenedor::establecerRecurso(std::shared_ptr<GestorRecurso> recurso) {
+    recurso_ = recurso;
+}
+
+void Contenedor::mostrar() const {
+    if (recurso_) {
+        recurso_->mostrarRecurso();
+    } else {
+        std::cout << "Sin recurso" << std::endl;
+    }
+}
+```
+
+##### Función Principal
+
+```cpp
+#include <iostream>
+#include "GestorRecurso.h"
+
+int main() {
+    auto recurso = std::make_shared<GestorRecurso>("MiRecurso");
+    Contenedor contenedor;
+    contenedor.establecerRecurso(recurso);
+
+    recurso->mostrarRecurso();
+    contenedor.mostrar();
+
+    return 0;
+}
+```
+
+### Conclusión
+
+`std::shared_ptr` es una herramienta esencial en C++ para la gestión segura y eficiente de recursos compartidos. Su uso adecuado en clases, funciones y estructuras de datos complejas permite evitar muchos errores comunes relacionados con la gestión de memoria, como fugas de memoria y accesos a memoria inválida. Al seguir las mejores prácticas y entender cómo utilizar `std::shared_ptr` junto con `std::weak_ptr` para evitar ciclos de referencia, se puede escribir código más robusto y mantenible.
+<---FILES--->
+Declaración y Asignación
+Declaración y Asignación Result
+Declaración en el Archivo de Cabecera (.h)
+Declaración en el Archivo de Cabecera (.h) Result
+Definición en el Archivo de Implementación (.cpp)
+Definición en el Archivo de Implementación (.cpp) Result
+1. Compartición de Recursos
+1. Compartición de Recursos Result
+2. Evitar Ciclos de Referencia
+2. Evitar Ciclos de Referencia Result
+Ejemplo de Ciclo de Referencia
+Ejemplo de Ciclo de Referencia Result
+Solución usando `std::weak_ptr`
+Solución usando `std::weak_ptr` Result
+Archivo de Cabecera (.h)
+Archivo de Cabecera (.h) Result
+Archivo de Implementación (.cpp)
+Archivo de Implementación (.cpp) Result
+Función Principal
+Función Principal Result
+<---Declaración y Asignación--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(10);
+    std::shared_ptr<int> ptr2 = ptr1; // ptr1 y ptr2 comparten la propiedad del mismo recurso
+
+    std::cout << *ptr1 << std::endl; // Salida: 10
+    std::cout << "Use count: " << ptr1.use_count() << std::endl; // Salida: 2
+
+    // Memoria liberada automáticamente cuando el último shared_ptr sale del alcance
+    return 0;
+}
+<---Declaración y Asignación Result--->
+<---Declaración en el Archivo de Cabecera (.h)--->
+```cpp
+// MiClase.h
+#ifndef MICLASE_H
+#define MICLASE_H
+
+#include <memory>
+#include <string>
+
+class MiClase {
+public:
+    MiClase(const std::string& nombre);
+    void mostrar() const;
+
+private:
+    std::shared_ptr<std::string> nombre_;
+};
+
+#endif // MICLASE_H
+<---Declaración en el Archivo de Cabecera (.h) Result--->
+<---Definición en el Archivo de Implementación (.cpp)--->
+```cpp
+// MiClase.cpp
+#include "MiClase.h"
+#include <iostream>
+
+// Constructor
+MiClase::MiClase(const std::string& nombre)
+    : nombre_(std::make_shared<std::string>(nombre)) {}
+
+// Método mostrar
+void MiClase::mostrar() const {
+    std::cout << "Nombre: " << *nombre_ << std::endl;
+}
+<---Definición en el Archivo de Implementación (.cpp) Result--->
+<---1. Compartición de Recursos--->
+```cpp
+#include <memory>
+#include <vector>
+#include <iostream>
+
+class Nodo {
+public:
+    Nodo(int valor) : valor_(valor) {}
+
+    void agregarHijo(std::shared_ptr<Nodo> hijo) {
+        hijos_.push_back(hijo);
+    }
+
+    void mostrar() const {
+        std::cout << "Nodo: " << valor_ << std::endl;
+        for (const auto& hijo : hijos_) {
+            hijo->mostrar();
+        }
+    }
+
+private:
+    int valor_;
+    std::vector<std::shared_ptr<Nodo>> hijos_;
+};
+
+int main() {
+    auto raiz = std::make_shared<Nodo>(1);
+    auto hijo1 = std::make_shared<Nodo>(2);
+    auto hijo2 = std::make_shared<Nodo>(3);
+
+    raiz->agregarHijo(hijo1);
+    raiz->agregarHijo(hijo2);
+
+    raiz->mostrar(); // Muestra toda la jerarquía de nodos
+
+    return 0;
+}
+<---1. Compartición de Recursos Result--->
+<---2. Evitar Ciclos de Referencia--->
+<---2. Evitar Ciclos de Referencia Result--->
+<---Ejemplo de Ciclo de Referencia--->
+```cpp
+#include <memory>
+#include <iostream>
+
+class Nodo;
+
+class Nodo {
+public:
+    Nodo(int valor) : valor_(valor) {}
+
+    void establecerPadre(std::shared_ptr<Nodo> padre) {
+        padre_ = padre;
+    }
+
+    void establecerHijo(std::shared_ptr<Nodo> hijo) {
+        hijo_ = hijo;
+    }
+
+    ~Nodo() {
+        std::cout << "Destruyendo nodo: " << valor_ << std::endl;
+    }
+
+private:
+    int valor_;
+    std::shared_ptr<Nodo> hijo_;
+    std::shared_ptr<Nodo> padre_; // Ciclo de referencia
+};
+
+int main() {
+    {
+        auto nodo1 = std::make_shared<Nodo>(1);
+        auto nodo2 = std::make_shared<Nodo>(2);
+
+        nodo1->establecerHijo(nodo2);
+        nodo2->establecerPadre(nodo1);
+    } // Ciclo de referencia evita que los nodos sean destruidos
+
+    return 0;
+}
+<---Ejemplo de Ciclo de Referencia Result--->
+<---Solución usando `std::weak_ptr`--->
+```cpp
+#include <memory>
+#include <iostream>
+
+class Nodo;
+
+class Nodo {
+public:
+    Nodo(int valor) : valor_(valor) {}
+
+    void establecerPadre(std::shared_ptr<Nodo> padre) {
+        padre_ = padre;
+    }
+
+    void establecerHijo(std::shared_ptr<Nodo> hijo) {
+        hijo_ = hijo;
+    }
+
+    ~Nodo() {
+        std::cout << "Destruyendo nodo: " << valor_ << std::endl;
+    }
+
+private:
+    int valor_;
+    std::shared_ptr<Nodo> hijo_;
+    std::weak_ptr<Nodo> padre_; // Evitar ciclo de referencia
+};
+
+int main() {
+    {
+        auto nodo1 = std::make_shared<Nodo>(1);
+        auto nodo2 = std::make_shared<Nodo>(2);
+
+        nodo1->establecerHijo(nodo2);
+        nodo2->establecerPadre(nodo1);
+    } // Nodos correctamente destruidos
+
+    return 0;
+}
+<---Solución usando `std::weak_ptr` Result--->
+<---Archivo de Cabecera (.h)--->
+```cpp
+// GestorRecurso.h
+#ifndef GESTORRECURSO_H
+#define GESTORRECURSO_H
+
+#include <memory>
+#include <string>
+
+class GestorRecurso {
+public:
+    GestorRecurso(const std::string& nombre);
+    void mostrarRecurso() const;
+
+private:
+    std::shared_ptr<std::string> recurso_;
+};
+
+class Contenedor {
+public:
+    void establecerRecurso(std::shared_ptr<GestorRecurso> recurso);
+    void mostrar() const;
+
+private:
+    std::shared_ptr<GestorRecurso> recurso_;
+};
+
+#endif // GESTORRECURSO_H
+<---Archivo de Cabecera (.h) Result--->
+<---Archivo de Implementación (.cpp)--->
+```cpp
+// GestorRecurso.cpp
+#include "GestorRecurso.h"
+#include <iostream>
+
+GestorRecurso::GestorRecurso(const std::string& nombre)
+    : recurso_(std::make_shared<std::string>(nombre)) {}
+
+void GestorRecurso::mostrarRecurso() const {
+    std::cout << "Recurso: " << *recurso_ << std::endl;
+}
+
+void Contenedor::establecerRecurso(std::shared_ptr<GestorRecurso> recurso) {
+    recurso_ = recurso;
+}
+
+void Contenedor::mostrar() const {
+    if (recurso_) {
+        recurso_->mostrarRecurso();
+    } else {
+        std::cout << "Sin recurso" << std::endl;
+    }
+}
+<---Archivo de Implementación (.cpp) Result--->
+<---Función Principal--->
+```cpp
+#include <iostream>
+#include "GestorRecurso.h"
+
+int main() {
+    auto recurso = std::make_shared<GestorRecurso>("MiRecurso");
+    Contenedor contenedor;
+    contenedor.establecerRecurso(recurso);
+
+    recurso->mostrarRecurso();
+    contenedor.mostrar();
+
+    return 0;
+}
+<---Función Principal Result--->

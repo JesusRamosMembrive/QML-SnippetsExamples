@@ -34,6 +34,7 @@ Item {
         ListElement { text: "WebSocket" }
         ListElement { text: "ECAM" }
         ListElement { text: "NavDisplay" }
+        ListElement { text: "Teoria" }
     }
 
     ListView {

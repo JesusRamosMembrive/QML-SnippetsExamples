@@ -1,0 +1,238 @@
+<---EXPLANATION--->
+### Algoritmos de la Biblioteca Estándar: `std::all_of`
+
+La función `std::all_of` es un algoritmo de la biblioteca estándar de C++ que se utiliza para verificar si todos los elementos en un rango satisfacen una determinada condición. Es parte del encabezado `<algorithm>` y es muy útil para realizar verificaciones globales sobre los elementos de contenedores como vectores, listas, arrays, etc.
+
+#### Sintaxis de `std::all_of`
+
+```cpp
+#include <algorithm>
+
+template <class InputIt, class UnaryPredicate>
+bool all_of(InputIt first, InputIt last, UnaryPredicate p);
+```
+
+- **`InputIt first`**: Iterador al primer elemento del rango.
+- **`InputIt last`**: Iterador al elemento después del último en el rango.
+- **`UnaryPredicate p`**: Una función o función objeto que toma un elemento del rango y devuelve un valor convertible a `bool`.
+
+#### Descripción
+
+`std::all_of` aplica el predicado `p` a todos los elementos en el rango `[first, last)` y devuelve `true` si el predicado devuelve `true` para todos los elementos. De lo contrario, devuelve `false`.
+
+#### Ejemplo de Uso de `std::all_of`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool esPositivo(int n) {
+    return n > 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Verificar si todos los elementos son positivos
+    bool todosPositivos = std::all_of(vec.begin(), vec.end(), esPositivo);
+
+    if (todosPositivos) {
+        std::cout << "Todos los elementos son positivos." << std::endl;
+    } else {
+        std::cout << "No todos los elementos son positivos." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `esPositivo` es una función que verifica si un número es mayor que cero.
+- `std::all_of(vec.begin(), vec.end(), esPositivo)` verifica si todos los elementos del vector son positivos.
+
+##### Ejemplo con Lambda
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar una lambda para verificar si todos los elementos son positivos
+    bool todosPositivos = std::all_of(vec.begin(), vec.end(), [](int n) {
+        return n > 0;
+    });
+
+    if (todosPositivos) {
+        std::cout << "Todos los elementos son positivos." << std::endl;
+    } else {
+        std::cout << "No todos los elementos son positivos." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- Se usa una expresión lambda para definir el predicado en línea.
+
+### Más Ejemplos
+
+#### Verificar si Todos los Elementos son Pares
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {2, 4, 6, 8, 10};
+
+    // Usar una lambda para verificar si todos los elementos son pares
+    bool todosPares = std::all_of(vec.begin(), vec.end(), [](int n) {
+        return n % 2 == 0;
+    });
+
+    if (todosPares) {
+        std::cout << "Todos los elementos son pares." << std::endl;
+    } else {
+        std::cout << "No todos los elementos son pares." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+#### Verificar si Todos los Elementos Están en un Rango
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {5, 6, 7, 8, 9};
+
+    // Usar una lambda para verificar si todos los elementos están en el rango [5, 10]
+    bool enRango = std::all_of(vec.begin(), vec.end(), [](int n) {
+        return n >= 5 && n <= 10;
+    });
+
+    if (enRango) {
+        std::cout << "Todos los elementos están en el rango [5, 10]." << std::endl;
+    } else {
+        std::cout << "No todos los elementos están en el rango [5, 10]." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Consideraciones
+
+- **Rendimiento:** `std::all_of` detiene la evaluación tan pronto como encuentra el primer elemento que no satisface el predicado, lo que puede mejorar el rendimiento en comparación con un bucle que siempre recorre todos los elementos.
+- **Uso con Diferentes Contenedores:** Funciona con cualquier contenedor que soporte iteradores, como `std::vector`, `std::list`, `std::array`, etc.
+
+### Conclusión
+
+`std::all_of` es una función útil y poderosa de la biblioteca estándar de C++ que permite verificar de manera eficiente si todos los elementos en un rango cumplen con una condición específica. Su uso con funciones, funtores y lambdas proporciona una gran flexibilidad y es esencial para escribir código conciso y claro en C++.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con Lambda
+Ejemplo con Lambda Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+bool esPositivo(int n) {
+    return n > 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Verificar si todos los elementos son positivos
+    bool todosPositivos = std::all_of(vec.begin(), vec.end(), esPositivo);
+
+    if (todosPositivos) {
+        std::cout << "Todos los elementos son positivos." << std::endl;
+    } else {
+        std::cout << "No todos los elementos son positivos." << std::endl;
+    }
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con Lambda--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar una lambda para verificar si todos los elementos son positivos
+    bool todosPositivos = std::all_of(vec.begin(), vec.end(), [](int n) {
+        return n > 0;
+    });
+
+    if (todosPositivos) {
+        std::cout << "Todos los elementos son positivos." << std::endl;
+    } else {
+        std::cout << "No todos los elementos son positivos." << std::endl;
+    }
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {2, 4, 6, 8, 10};
+
+    // Usar una lambda para verificar si todos los elementos son pares
+    bool todosPares = std::all_of(vec.begin(), vec.end(), [](int n) {
+        return n % 2 == 0;
+    });
+
+    if (todosPares) {
+        std::cout << "Todos los elementos son pares." << std::endl;
+    } else {
+        std::cout << "No todos los elementos son pares." << std::endl;
+    }
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {5, 6, 7, 8, 9};
+
+    // Usar una lambda para verificar si todos los elementos están en el rango [5, 10]
+    bool enRango = std::all_of(vec.begin(), vec.end(), [](int n) {
+        return n >= 5 && n <= 10;
+    });
+
+    if (enRango) {
+        std::cout << "Todos los elementos están en el rango [5, 10]." << std::endl;
+    } else {
+        std::cout << "No todos los elementos están en el rango [5, 10]." << std::endl;
+    }
+
+    return 0;
+}
+<---Ejemplo con Lambda Result--->

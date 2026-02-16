@@ -17,7 +17,8 @@
       "Bash(python3:*)",
       "Bash(if exist build rmdir /s /q build)",
       "WebSearch",
-      "Bash(cmd /c dir \"C:\\\\Qt\\\\Examples\\\\Qt-6.10.1\")"
+      "Bash(cmd /c dir \"C:\\\\Qt\\\\Examples\\\\Qt-6.10.1\")",
+      "Bash(cd:*)"
     ]
   }
 }

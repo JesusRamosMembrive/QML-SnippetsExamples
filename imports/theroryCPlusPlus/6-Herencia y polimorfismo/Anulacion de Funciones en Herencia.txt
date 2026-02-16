@@ -1,0 +1,386 @@
+<---EXPLANATION--->
+### Anulación de Funciones en Herencia en C++
+
+La anulación de funciones (también conocida como "sobrescritura" de funciones) es un concepto clave en la programación orientada a objetos en C++. Permite a las clases derivadas proporcionar una implementación específica de una función que ya está definida en su clase base. Este mecanismo es fundamental para el polimorfismo, ya que permite que las funciones se comporten de manera diferente según el tipo de objeto que las invoca.
+
+#### Definición de Anulación de Funciones
+
+La anulación de funciones ocurre cuando una clase derivada redefine una función miembro de su clase base. Para que una función pueda ser anulada, debe ser declarada como `virtual` en la clase base. La función en la clase derivada debe tener la misma firma (nombre, parámetros y tipo de retorno) que en la clase base.
+
+##### Sintaxis Básica
+
+```cpp
+class Base {
+public:
+    virtual void funcion() {
+        // Implementación de la clase base
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion() override {
+        // Implementación de la clase derivada
+    }
+};
+```
+
+- **`virtual`**: Indica que la función puede ser anulada en una clase derivada.
+- **`override`**: Es opcional pero recomendable, ya que proporciona una verificación en tiempo de compilación de que la función está realmente anulando una función virtual de la clase base.
+
+#### Ejemplo Básico de Anulación de Funciones
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal a;
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Animal` define una función virtual `hacerSonido`.
+- Las clases `Perro` y `Gato` anulan la función `hacerSonido` para proporcionar implementaciones específicas.
+
+#### Importancia del Polimorfismo
+
+La anulación de funciones permite el polimorfismo, donde la función que se invoca depende del tipo real del objeto, no del tipo de referencia o puntero. Esto es especialmente útil cuando se trabaja con colecciones de objetos de diferentes tipos derivados de una misma clase base.
+
+##### Ejemplo de Polimorfismo
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+int main() {
+    vector<Animal*> animales;
+    animales.push_back(new Animal());
+    animales.push_back(new Perro());
+    animales.push_back(new Gato());
+
+    for (const auto& animal : animales) {
+        animal->hacerSonido(); // Llama a la versión apropiada de hacerSonido()
+    }
+
+    // Liberar memoria
+    for (const auto& animal : animales) {
+        delete animal;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo, un vector de punteros a `Animal` contiene objetos de diferentes tipos derivados. Cuando se llama a `hacerSonido`, se invoca la versión correcta de la función según el tipo real del objeto.
+
+#### Uso de `final` para Prevenir Anulación
+
+C++11 introdujo la palabra clave `final`, que se puede usar para prevenir la anulación de una función virtual en clases derivadas.
+
+##### Ejemplo de `final`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void mostrar() const final {
+        cout << "Mostrar en la clase Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    // void mostrar() const override { // Error: no se puede anular una función final
+    //     cout << "Mostrar en la clase Derivada" << endl;
+    // }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar(); // Llama a Base::mostrar()
+
+    return 0;
+}
+```
+
+En este ejemplo, `Base::mostrar` se declara como `final`, lo que impide que cualquier clase derivada anule esta función.
+
+#### Sobrecarga vs. Anulación
+
+Es importante no confundir la sobrecarga de funciones con la anulación de funciones. La sobrecarga de funciones se refiere a definir múltiples funciones con el mismo nombre pero con diferentes listas de parámetros en la misma clase, mientras que la anulación de funciones se refiere a redefinir una función virtual de la clase base en una clase derivada.
+
+##### Ejemplo de Sobrecarga y Anulación
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void funcion(int x) {
+        cout << "Base::funcion(int): " << x << endl;
+    }
+
+    void funcion(double y) {
+        cout << "Base::funcion(double): " << y << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion(int x) override {
+        cout << "Derivada::funcion(int): " << x << endl;
+    }
+
+    // Sobrecarga, no anulación
+    void funcion(string s) {
+        cout << "Derivada::funcion(string): " << s << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.funcion(10);        // Llama a Derivada::funcion(int)
+    d.funcion(3.14);      // Llama a Base::funcion(double)
+    d.funcion("Hola");    // Llama a Derivada::funcion(string)
+
+    return 0;
+}
+```
+
+En este ejemplo, `Derivada` anula `funcion(int)` de `Base` y también sobrecarga `funcion` con un nuevo parámetro de tipo `string`.
+
+### Conclusión
+
+La anulación de funciones es una característica esencial en C++ que permite a las clases derivadas proporcionar implementaciones específicas de funciones definidas en la clase base. Esto es crucial para el polimorfismo, permitiendo que el comportamiento de las funciones dependa del tipo real del objeto. La palabra clave `virtual` se utiliza para indicar que una función puede ser anulada, y `override` proporciona una verificación en tiempo de compilación para asegurar que la anulación es correcta. Entender la diferencia entre sobrecarga y anulación es fundamental para diseñar jerarquías de clases efectivas y utilizar el polimorfismo de manera eficiente.
+<---FILES--->
+Sintaxis Básica
+Sintaxis Básica Result
+Ejemplo de Polimorfismo
+Ejemplo de Polimorfismo Result
+Ejemplo de `final`
+Ejemplo de `final` Result
+Ejemplo de Sobrecarga y Anulación
+Ejemplo de Sobrecarga y Anulación Result
+<---Sintaxis Básica--->
+```cpp
+class Base {
+public:
+    virtual void funcion() {
+        // Implementación de la clase base
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion() override {
+        // Implementación de la clase derivada
+    }
+};
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal a;
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+<---Sintaxis Básica Result--->
+<---Ejemplo de Polimorfismo--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+int main() {
+    vector<Animal*> animales;
+    animales.push_back(new Animal());
+    animales.push_back(new Perro());
+    animales.push_back(new Gato());
+
+    for (const auto& animal : animales) {
+        animal->hacerSonido(); // Llama a la versión apropiada de hacerSonido()
+    }
+
+    // Liberar memoria
+    for (const auto& animal : animales) {
+        delete animal;
+    }
+
+    return 0;
+}
+<---Ejemplo de Polimorfismo Result--->
+<---Ejemplo de `final`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void mostrar() const final {
+        cout << "Mostrar en la clase Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    // void mostrar() const override { // Error: no se puede anular una función final
+    //     cout << "Mostrar en la clase Derivada" << endl;
+    // }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar(); // Llama a Base::mostrar()
+
+    return 0;
+}
+<---Ejemplo de `final` Result--->
+<---Ejemplo de Sobrecarga y Anulación--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void funcion(int x) {
+        cout << "Base::funcion(int): " << x << endl;
+    }
+
+    void funcion(double y) {
+        cout << "Base::funcion(double): " << y << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion(int x) override {
+        cout << "Derivada::funcion(int): " << x << endl;
+    }
+
+    // Sobrecarga, no anulación
+    void funcion(string s) {
+        cout << "Derivada::funcion(string): " << s << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.funcion(10);        // Llama a Derivada::funcion(int)
+    d.funcion(3.14);      // Llama a Base::funcion(double)
+    d.funcion("Hola");    // Llama a Derivada::funcion(string)
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga y Anulación Result--->

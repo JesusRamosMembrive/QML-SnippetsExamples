@@ -1,0 +1,228 @@
+<---EXPLANATION--->
+### Obtener Iteradores de un Contenedor en C++
+
+En C++, los contenedores de la biblioteca estándar (STL) proporcionan métodos para obtener iteradores que permiten recorrer y manipular los elementos dentro del contenedor. Los métodos más comunes para obtener iteradores son `begin()`, `end()`, `cbegin()`, y `cend()`. Aquí se describen estos métodos y se presentan ejemplos prácticos de su uso.
+
+#### Métodos para Obtener Iteradores
+
+1. **`begin()` y `end()`:** Devuelven un iterador al primer elemento y un iterador al elemento siguiente al último, respectivamente. Estos métodos permiten la modificación de los elementos del contenedor.
+2. **`cbegin()` y `cend()`:** Devuelven un iterador constante al primer elemento y un iterador constante al elemento siguiente al último, respectivamente. Estos métodos no permiten la modificación de los elementos del contenedor.
+
+### Ejemplos Prácticos
+
+#### Uso de `begin()` y `end()`
+
+Estos métodos se utilizan para obtener iteradores que permiten recorrer y modificar los elementos de un contenedor.
+
+##### Ejemplo con `std::vector`
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Obtener iteradores a los elementos del vector
+    std::vector<int>::iterator itBegin = vec.begin();
+    std::vector<int>::iterator itEnd = vec.end();
+
+    // Recorrer y modificar los elementos del vector
+    for (auto it = itBegin; it != itEnd; ++it) {
+        *it *= 2;  // Duplicar cada elemento
+    }
+
+    // Mostrar los elementos modificados
+    for (const auto& val : vec) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `vec.begin()` devuelve un iterador al primer elemento del vector.
+- `vec.end()` devuelve un iterador al elemento siguiente al último del vector.
+- Los elementos del vector se duplican utilizando el iterador.
+
+#### Uso de `cbegin()` y `cend()`
+
+Estos métodos se utilizan para obtener iteradores constantes que permiten recorrer los elementos de un contenedor sin modificarlos.
+
+##### Ejemplo con `std::vector`
+
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Obtener iteradores constantes a los elementos del vector
+    std::vector<int>::const_iterator itBegin = vec.cbegin();
+    std::vector<int>::const_iterator itEnd = vec.cend();
+
+    // Recorrer y mostrar los elementos del vector sin modificarlos
+    for (auto it = itBegin; it != itEnd; ++it) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `vec.cbegin()` devuelve un iterador constante al primer elemento del vector.
+- `vec.cend()` devuelve un iterador constante al elemento siguiente al último del vector.
+- Los elementos del vector se muestran sin modificarse utilizando el iterador constante.
+
+#### Uso con Otros Contenedores de la STL
+
+Los métodos `begin()`, `end()`, `cbegin()`, y `cend()` también se pueden utilizar con otros contenedores de la STL como `std::list`, `std::set`, `std::map`, etc.
+
+##### Ejemplo con `std::list`
+
+```cpp
+#include <iostream>
+#include <list>
+
+int main() {
+    std::list<int> lst = {1, 2, 3, 4, 5};
+
+    // Obtener iteradores a los elementos de la lista
+    std::list<int>::iterator itBegin = lst.begin();
+    std::list<int>::iterator itEnd = lst.end();
+
+    // Recorrer y modificar los elementos de la lista
+    for (auto it = itBegin; it != itEnd; ++it) {
+        *it *= 2;  // Duplicar cada elemento
+    }
+
+    // Mostrar los elementos modificados
+    for (const auto& val : lst) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `lst.begin()` devuelve un iterador al primer elemento de la lista.
+- `lst.end()` devuelve un iterador al elemento siguiente al último de la lista.
+- Los elementos de la lista se duplican utilizando el iterador.
+
+#### Uso con `std::map`
+
+```cpp
+#include <iostream>
+#include <map>
+
+int main() {
+    std::map<int, std::string> mapa = {{1, "uno"}, {2, "dos"}, {3, "tres"}};
+
+    // Obtener iteradores a los elementos del mapa
+    std::map<int, std::string>::iterator itBegin = mapa.begin();
+    std::map<int, std::string>::iterator itEnd = mapa.end();
+
+    // Recorrer y modificar los valores del mapa
+    for (auto it = itBegin; it != itEnd; ++it) {
+        it->second = "modificado";  // Modificar cada valor
+    }
+
+    // Mostrar los elementos modificados
+    for (const auto& par : mapa) {
+        std::cout << par.first << ": " << par.second << std::endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `mapa.begin()` devuelve un iterador al primer elemento del mapa.
+- `mapa.end()` devuelve un iterador al elemento siguiente al último del mapa.
+- Los valores del mapa se modifican utilizando el iterador.
+
+### Conclusión
+
+Los métodos `begin()`, `end()`, `cbegin()`, y `cend()` proporcionan una manera uniforme de obtener iteradores para recorrer y manipular elementos en los contenedores de la STL. Estos iteradores permiten una navegación eficiente y segura a través de los elementos del contenedor, ya sea para lectura o modificación. Comprender cómo obtener y utilizar estos iteradores es fundamental para aprovechar al máximo las capacidades de la biblioteca estándar de C++ y escribir código robusto y eficiente.
+<---FILES--->
+Ejemplo con `std::vector`
+Ejemplo con `std::vector` Result
+Ejemplo con `std::list`
+Ejemplo con `std::list` Result
+<---Ejemplo con `std::vector`--->
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Obtener iteradores constantes a los elementos del vector
+    std::vector<int>::const_iterator itBegin = vec.cbegin();
+    std::vector<int>::const_iterator itEnd = vec.cend();
+
+    // Recorrer y mostrar los elementos del vector sin modificarlos
+    for (auto it = itBegin; it != itEnd; ++it) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo con `std::vector` Result--->
+<---Ejemplo con `std::list`--->
+```cpp
+#include <iostream>
+#include <list>
+
+int main() {
+    std::list<int> lst = {1, 2, 3, 4, 5};
+
+    // Obtener iteradores a los elementos de la lista
+    std::list<int>::iterator itBegin = lst.begin();
+    std::list<int>::iterator itEnd = lst.end();
+
+    // Recorrer y modificar los elementos de la lista
+    for (auto it = itBegin; it != itEnd; ++it) {
+        *it *= 2;  // Duplicar cada elemento
+    }
+
+    // Mostrar los elementos modificados
+    for (const auto& val : lst) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <map>
+
+int main() {
+    std::map<int, std::string> mapa = {{1, "uno"}, {2, "dos"}, {3, "tres"}};
+
+    // Obtener iteradores a los elementos del mapa
+    std::map<int, std::string>::iterator itBegin = mapa.begin();
+    std::map<int, std::string>::iterator itEnd = mapa.end();
+
+    // Recorrer y modificar los valores del mapa
+    for (auto it = itBegin; it != itEnd; ++it) {
+        it->second = "modificado";  // Modificar cada valor
+    }
+
+    // Mostrar los elementos modificados
+    for (const auto& par : mapa) {
+        std::cout << par.first << ": " << par.second << std::endl;
+    }
+
+    return 0;
+}
+<---Ejemplo con `std::list` Result--->

@@ -1,0 +1,385 @@
+<---EXPLANATION--->
+### Diferencias entre Semántica de Copia y de Movimiento en C++
+
+Las semánticas de copia y de movimiento son dos mecanismos fundamentales para la gestión de recursos en C++. Aunque ambos se utilizan para transferir datos de un objeto a otro, funcionan de manera diferente y tienen implicaciones distintas en términos de eficiencia y uso de recursos. Aquí se describen las diferencias clave entre la semántica de copia y la de movimiento.
+
+#### Semántica de Copia
+
+La semántica de copia implica la creación de una copia completa de los recursos gestionados por un objeto. Esto se realiza mediante el copy constructor y el copy assignment operator.
+
+##### Copy Constructor
+
+El copy constructor se llama cuando se crea un nuevo objeto a partir de otro objeto existente.
+
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Copy Constructor
+    MiClase(const MiClase& other) : data(new int(*other.data)) {
+        std::cout << "Copy Constructor llamado" << std::endl;
+    }
+};
+```
+
+##### Copy Assignment Operator
+
+El copy assignment operator se llama cuando un objeto existente se asigna a partir de otro objeto existente.
+
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Copy Assignment Operator
+    MiClase& operator=(const MiClase& other) {
+        if (this != &other) {
+            delete data;
+            data = new int(*other.data);
+            std::cout << "Copy Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+};
+```
+
+##### Ejemplo de Semántica de Copia
+
+```cpp
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = obj1;  // Llama al copy constructor
+    MiClase obj3(20);
+    obj3 = obj1;          // Llama al copy assignment operator
+    return 0;
+}
+```
+
+En este ejemplo:
+- `obj2` se crea a partir de `obj1` utilizando el copy constructor.
+- `obj3` se asigna a partir de `obj1` utilizando el copy assignment operator.
+
+#### Semántica de Movimiento
+
+La semántica de movimiento, introducida en C++11, permite transferir recursos de un objeto a otro en lugar de copiarlos. Esto se realiza mediante el move constructor y el move assignment operator.
+
+##### Move Constructor
+
+El move constructor se llama cuando se crea un nuevo objeto transfiriendo recursos desde un objeto existente.
+
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Move Constructor
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+};
+```
+
+##### Move Assignment Operator
+
+El move assignment operator se llama cuando un objeto existente se asigna transfiriendo recursos desde otro objeto existente.
+
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Move Assignment Operator
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+};
+```
+
+##### Ejemplo de Semántica de Movimiento
+
+```cpp
+#include <utility>
+
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = std::move(obj1);  // Llama al move constructor
+    MiClase obj3(20);
+    obj3 = std::move(obj2);          // Llama al move assignment operator
+    return 0;
+}
+```
+
+En este ejemplo:
+- `obj2` se crea a partir de `obj1` utilizando el move constructor.
+- `obj3` se asigna a partir de `obj2` utilizando el move assignment operator.
+
+### Diferencias Clave
+
+#### 1. **Eficiencia**
+
+- **Copia:** Implica duplicar recursos, lo cual puede ser costoso en términos de tiempo y memoria, especialmente para objetos grandes o que gestionan recursos externos.
+- **Movimiento:** Transfiere recursos en lugar de duplicarlos, lo que es más eficiente y evita la sobrecarga de copia.
+
+#### 2. **Estado del Objeto Original**
+
+- **Copia:** El objeto original permanece inalterado y sigue siendo completamente funcional después de la copia.
+- **Movimiento:** El objeto original queda en un estado válido pero indeterminado después del movimiento y no debe ser utilizado hasta que se le reasigne un nuevo valor.
+
+#### 3. **Uso de Recursos**
+
+- **Copia:** Requiere asignar memoria adicional y otros recursos necesarios para mantener la copia.
+- **Movimiento:** No requiere memoria adicional significativa ya que los recursos simplemente se transfieren.
+
+#### 4. **Implementación**
+
+- **Copia:** Requiere la implementación de un copy constructor y un copy assignment operator.
+- **Movimiento:** Requiere la implementación de un move constructor y un move assignment operator.
+
+#### 5. **Ejemplo Comparativo**
+
+##### Semántica de Copia
+
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    MiClase(int value) : data(new int(value)) {}
+
+    MiClase(const MiClase& other) : data(new int(*other.data)) {
+        std::cout << "Copy Constructor llamado" << std::endl;
+    }
+
+    MiClase& operator=(const MiClase& other) {
+        if (this != &other) {
+            delete data;
+            data = new int(*other.data);
+            std::cout << "Copy Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    ~MiClase() {
+        delete data;
+    }
+};
+```
+
+##### Semántica de Movimiento
+
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    MiClase(int value) : data(new int(value)) {}
+
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    ~MiClase() {
+        delete data;
+    }
+};
+```
+
+### Conclusión
+
+La semántica de copia y la de movimiento en C++ ofrecen diferentes mecanismos para transferir datos entre objetos. La semántica de copia implica duplicar recursos, lo cual puede ser costoso en términos de rendimiento. En contraste, la semántica de movimiento permite transferir recursos de manera eficiente, evitando la sobrecarga de copia y mejorando el rendimiento general del programa. Comprender y utilizar adecuadamente estas semánticas es crucial para escribir código C++ moderno y eficiente.
+<---FILES--->
+Copy Constructor
+Copy Constructor Result
+Copy Assignment Operator
+Copy Assignment Operator Result
+Ejemplo de Semántica de Copia
+Ejemplo de Semántica de Copia Result
+Move Constructor
+Move Constructor Result
+Move Assignment Operator
+Move Assignment Operator Result
+Ejemplo de Semántica de Movimiento
+Ejemplo de Semántica de Movimiento Result
+Semántica de Copia
+Semántica de Copia Result
+Semántica de Movimiento
+Semántica de Movimiento Result
+<---Copy Constructor--->
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Copy Constructor
+    MiClase(const MiClase& other) : data(new int(*other.data)) {
+        std::cout << "Copy Constructor llamado" << std::endl;
+    }
+};
+<---Copy Constructor Result--->
+<---Copy Assignment Operator--->
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Copy Assignment Operator
+    MiClase& operator=(const MiClase& other) {
+        if (this != &other) {
+            delete data;
+            data = new int(*other.data);
+            std::cout << "Copy Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+};
+<---Copy Assignment Operator Result--->
+<---Ejemplo de Semántica de Copia--->
+```cpp
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = obj1;  // Llama al copy constructor
+    MiClase obj3(20);
+    obj3 = obj1;          // Llama al copy assignment operator
+    return 0;
+}
+<---Ejemplo de Semántica de Copia Result--->
+<---Move Constructor--->
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Move Constructor
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+};
+<---Move Constructor Result--->
+<---Move Assignment Operator--->
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    // Constructor
+    MiClase(int value) : data(new int(value)) {}
+
+    // Move Assignment Operator
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+};
+<---Move Assignment Operator Result--->
+<---Ejemplo de Semántica de Movimiento--->
+```cpp
+#include <utility>
+
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = std::move(obj1);  // Llama al move constructor
+    MiClase obj3(20);
+    obj3 = std::move(obj2);          // Llama al move assignment operator
+    return 0;
+}
+<---Ejemplo de Semántica de Movimiento Result--->
+<---Semántica de Copia--->
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    MiClase(int value) : data(new int(value)) {}
+
+    MiClase(const MiClase& other) : data(new int(*other.data)) {
+        std::cout << "Copy Constructor llamado" << std::endl;
+    }
+
+    MiClase& operator=(const MiClase& other) {
+        if (this != &other) {
+            delete data;
+            data = new int(*other.data);
+            std::cout << "Copy Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    ~MiClase() {
+        delete data;
+    }
+};
+<---Semántica de Copia Result--->
+<---Semántica de Movimiento--->
+```cpp
+class MiClase {
+public:
+    int* data;
+
+    MiClase(int value) : data(new int(value)) {}
+
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    ~MiClase() {
+        delete data;
+    }
+};
+<---Semántica de Movimiento Result--->

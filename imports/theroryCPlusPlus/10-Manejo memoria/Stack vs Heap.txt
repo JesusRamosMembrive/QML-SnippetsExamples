@@ -1,0 +1,135 @@
+<---EXPLANATION--->
+### Stack vs Heap en C++
+
+En C++, la memoria se puede gestionar de dos maneras principales: en el stack (pila) y en el heap (montón). Cada una tiene sus propias características, ventajas y desventajas. Es fundamental comprender estas diferencias para escribir código eficiente y evitar problemas de gestión de memoria.
+
+#### Memoria en el Stack
+
+El stack es una región de memoria que gestiona automáticamente la vida útil de las variables locales y de las llamadas a funciones. Se comporta como una estructura de datos LIFO (Last In, First Out).
+
+##### Características del Stack
+
+1. **Almacenamiento Automático**: Las variables locales y los parámetros de las funciones se almacenan automáticamente en el stack.
+2. **Vida Útil Limitada**: Las variables en el stack existen solo durante la ejecución del bloque de código o la función en la que están definidas.
+3. **Rápido Acceso**: El acceso a las variables en el stack es muy rápido debido a su administración basada en registros.
+4. **Tamaño Limitado**: El stack tiene un tamaño limitado que puede variar según el sistema operativo y la configuración del compilador.
+5. **Gestión Automática**: La memoria del stack se gestiona automáticamente. No es necesario liberar la memoria manualmente.
+
+##### Ejemplo de Uso del Stack
+
+```cpp
+#include <iostream>
+
+void funcion() {
+    int localVar = 10; // Variable local en el stack
+    std::cout << "Valor de localVar: " << localVar << std::endl;
+}
+
+int main() {
+    funcion(); // Llamada a la función
+    return 0;
+}
+```
+
+En este ejemplo, `localVar` se almacena en el stack y se destruye automáticamente cuando la función `funcion` termina.
+
+#### Memoria en el Heap
+
+El heap es una región de memoria utilizada para la asignación dinámica de memoria. A diferencia del stack, la memoria en el heap debe gestionarse manualmente.
+
+##### Características del Heap
+
+1. **Almacenamiento Dinámico**: La memoria en el heap se asigna dinámicamente en tiempo de ejecución usando operadores como `new` y `delete`.
+2. **Vida Útil Controlada**: La memoria en el heap permanece hasta que se libera explícitamente, lo que permite la gestión flexible de la memoria.
+3. **Acceso más Lento**: El acceso a la memoria en el heap es más lento comparado con el stack debido a la necesidad de buscar espacio libre y la posibilidad de fragmentación.
+4. **Tamaño Grande**: El heap tiene un tamaño significativamente mayor que el stack, lo que permite asignar grandes bloques de memoria.
+5. **Gestión Manual**: Es necesario liberar manualmente la memoria asignada en el heap para evitar fugas de memoria.
+
+##### Ejemplo de Uso del Heap
+
+```cpp
+#include <iostream>
+
+void funcion() {
+    int* heapVar = new int(20); // Variable asignada en el heap
+    std::cout << "Valor de heapVar: " << *heapVar << std::endl;
+    delete heapVar; // Liberar la memoria asignada en el heap
+}
+
+int main() {
+    funcion(); // Llamada a la función
+    return 0;
+}
+```
+
+En este ejemplo, `heapVar` se asigna en el heap y debe liberarse manualmente usando `delete`.
+
+### Comparación entre Stack y Heap
+
+| Característica           | Stack                              | Heap                             |
+|--------------------------|-------------------------------------|----------------------------------|
+| **Gestión de Memoria**   | Automática                          | Manual                           |
+| **Vida Útil**            | Limitada al bloque de código        | Controlada por el programador    |
+| **Tamaño**               | Limitado                            | Relativamente grande             |
+| **Velocidad de Acceso**  | Rápida                              | Lenta                            |
+| **Uso Común**            | Variables locales, llamadas a funciones | Asignación dinámica, estructuras de datos grandes |
+| **Fragmentación**        | No                                  | Sí                               |
+
+### Buenas Prácticas
+
+#### Uso del Stack
+
+1. **Variables Locales y Parámetros**: Utilice el stack para variables locales y parámetros de funciones, siempre que sea posible, para aprovechar el acceso rápido y la gestión automática.
+2. **Tamaño de Variables**: Evite declarar variables de gran tamaño en el stack para no agotar el espacio disponible.
+
+#### Uso del Heap
+
+1. **Memoria Dinámica**: Use el heap para estructuras de datos que necesiten cambiar de tamaño en tiempo de ejecución, como arreglos dinámicos, listas enlazadas y árboles.
+2. **Liberación de Memoria**: Siempre libere la memoria asignada en el heap utilizando `delete` o `delete[]` para evitar fugas de memoria.
+3. **Smart Pointers**: Utilice punteros inteligentes (`std::unique_ptr`, `std::shared_ptr`) para gestionar automáticamente la vida útil de los objetos en el heap y evitar fugas de memoria.
+
+### Conclusión
+
+Comprender las diferencias entre el stack y el heap es crucial para la gestión eficiente de la memoria en C++. Utilizar el stack para variables locales y el heap para memoria dinámica permite aprovechar las ventajas de cada uno, como la velocidad y la flexibilidad. Siguiendo buenas prácticas y utilizando herramientas modernas como los punteros inteligentes, se puede escribir código más seguro y eficiente.
+<---FILES--->
+Características del Stack
+Características del Stack Result
+Ejemplo de Uso del Stack
+Ejemplo de Uso del Stack Result
+Características del Heap
+Características del Heap Result
+Ejemplo de Uso del Heap
+Ejemplo de Uso del Heap Result
+<---Características del Stack--->
+<---Características del Stack Result--->
+<---Ejemplo de Uso del Stack--->
+```cpp
+#include <iostream>
+
+void funcion() {
+    int localVar = 10; // Variable local en el stack
+    std::cout << "Valor de localVar: " << localVar << std::endl;
+}
+
+int main() {
+    funcion(); // Llamada a la función
+    return 0;
+}
+<---Ejemplo de Uso del Stack Result--->
+<---Características del Heap--->
+<---Características del Heap Result--->
+<---Ejemplo de Uso del Heap--->
+```cpp
+#include <iostream>
+
+void funcion() {
+    int* heapVar = new int(20); // Variable asignada en el heap
+    std::cout << "Valor de heapVar: " << *heapVar << std::endl;
+    delete heapVar; // Liberar la memoria asignada en el heap
+}
+
+int main() {
+    funcion(); // Llamada a la función
+    return 0;
+}
+<---Ejemplo de Uso del Heap Result--->

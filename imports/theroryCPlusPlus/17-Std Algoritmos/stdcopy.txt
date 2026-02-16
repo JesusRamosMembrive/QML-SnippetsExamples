@@ -1,0 +1,249 @@
+<---EXPLANATION--->
+### Algoritmo de la Biblioteca Estándar: `std::copy`
+
+La función `std::copy` es un algoritmo de la biblioteca estándar de C++ que se utiliza para copiar elementos de un rango a otro. Es parte del encabezado `<algorithm>` y es muy útil para duplicar o trasladar datos entre contenedores.
+
+#### Sintaxis de `std::copy`
+
+```cpp
+#include <algorithm>
+
+template <class InputIt, class OutputIt>
+OutputIt copy(InputIt first, InputIt last, OutputIt d_first);
+```
+
+- **`InputIt first`**: Iterador al primer elemento del rango de entrada.
+- **`InputIt last`**: Iterador al elemento después del último en el rango de entrada.
+- **`OutputIt d_first`**: Iterador al primer elemento del rango de destino.
+
+#### Descripción
+
+`std::copy` copia los elementos del rango `[first, last)` al rango que comienza en `d_first`. El rango de destino debe ser lo suficientemente grande para contener todos los elementos copiados.
+
+#### Ejemplo de Uso de `std::copy`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::vector<int> destino(origen.size());
+
+    // Usar std::copy para copiar los elementos
+    std::copy(origen.begin(), origen.end(), destino.begin());
+
+    // Mostrar los elementos copiados
+    std::cout << "Elementos copiados al vector destino: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::copy(origen.begin(), origen.end(), destino.begin())` copia todos los elementos del vector `origen` al vector `destino`.
+
+### Uso con Diferentes Tipos de Contenedores
+
+`std::copy` se puede usar con cualquier contenedor que soporte iteradores, como `std::vector`, `std::list`, `std::array`, etc.
+
+##### Copiar Elementos entre Diferentes Contenedores
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::list<int> destino(origen.size());
+
+    // Usar std::copy para copiar los elementos
+    std::copy(origen.begin(), origen.end(), destino.begin());
+
+    // Mostrar los elementos copiados
+    std::cout << "Elementos copiados a la lista destino: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::copy` se usa para copiar elementos de un `std::vector` a un `std::list`.
+
+### Ejemplos Adicionales
+
+#### Copiar un Rango Parcial de Elementos
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::vector<int> destino(3);
+
+    // Usar std::copy para copiar los primeros 3 elementos
+    std::copy(origen.begin(), origen.begin() + 3, destino.begin());
+
+    // Mostrar los elementos copiados
+    std::cout << "Primeros 3 elementos copiados al vector destino: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::copy(origen.begin(), origen.begin() + 3, destino.begin())` copia los primeros tres elementos del vector `origen` al vector `destino`.
+
+#### Copiar con `std::back_inserter`
+
+Si el contenedor de destino no tiene suficiente espacio reservado, se puede utilizar un `std::back_inserter` para que el contenedor crezca automáticamente.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <iterator>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::vector<int> destino;
+
+    // Usar std::copy con std::back_inserter
+    std::copy(origen.begin(), origen.end(), std::back_inserter(destino));
+
+    // Mostrar los elementos copiados
+    std::cout << "Elementos copiados al vector destino con back_inserter: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::back_inserter(destino)` se utiliza para insertar elementos al final del vector `destino`, expandiendo automáticamente su tamaño según sea necesario.
+
+### Consideraciones
+
+- **Rendimiento:** `std::copy` es muy eficiente y generalmente se compila a un bucle simple que copia elementos.
+- **Seguridad:** Asegúrese de que el rango de destino sea lo suficientemente grande para contener todos los elementos del rango de origen para evitar accesos fuera de los límites.
+
+### Conclusión
+
+`std::copy` es un algoritmo fundamental de la biblioteca estándar de C++ que proporciona una forma eficiente y flexible de copiar elementos entre contenedores. Su uso con iteradores y adaptadores de inserción como `std::back_inserter` permite una gran variedad de operaciones de copia, adecuándose a las necesidades de diferentes tipos de contenedores. Comprender y utilizar `std::copy` es esencial para escribir código C++ robusto y eficiente.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Copiar Elementos entre Diferentes Contenedores
+Copiar Elementos entre Diferentes Contenedores Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::vector<int> destino(origen.size());
+
+    // Usar std::copy para copiar los elementos
+    std::copy(origen.begin(), origen.end(), destino.begin());
+
+    // Mostrar los elementos copiados
+    std::cout << "Elementos copiados al vector destino: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Copiar Elementos entre Diferentes Contenedores--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::list<int> destino(origen.size());
+
+    // Usar std::copy para copiar los elementos
+    std::copy(origen.begin(), origen.end(), destino.begin());
+
+    // Mostrar los elementos copiados
+    std::cout << "Elementos copiados a la lista destino: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::vector<int> destino(3);
+
+    // Usar std::copy para copiar los primeros 3 elementos
+    std::copy(origen.begin(), origen.begin() + 3, destino.begin());
+
+    // Mostrar los elementos copiados
+    std::cout << "Primeros 3 elementos copiados al vector destino: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <iterator>
+
+int main() {
+    std::vector<int> origen = {1, 2, 3, 4, 5};
+    std::vector<int> destino;
+
+    // Usar std::copy con std::back_inserter
+    std::copy(origen.begin(), origen.end(), std::back_inserter(destino));
+
+    // Mostrar los elementos copiados
+    std::cout << "Elementos copiados al vector destino con back_inserter: ";
+    for (int elem : destino) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Copiar Elementos entre Diferentes Contenedores Result--->

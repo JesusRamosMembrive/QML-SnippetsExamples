@@ -1,0 +1,301 @@
+<---EXPLANATION--->
+### Sobrecarga de Funciones en Herencia
+
+La sobrecarga de funciones es un concepto importante en la programación orientada a objetos en C++. Permite definir múltiples funciones con el mismo nombre pero con diferentes parámetros en la misma clase o en clases derivadas. En el contexto de herencia, la sobrecarga de funciones se vuelve aún más poderosa, permitiendo a las clases derivadas extender y modificar el comportamiento de las funciones miembro de las clases base.
+
+#### Sobrecarga de Funciones
+
+La sobrecarga de funciones se refiere a la capacidad de definir múltiples funciones con el mismo nombre pero con diferentes listas de parámetros. Esto permite que una función se comporte de manera diferente según los argumentos que se le pasen.
+
+##### Ejemplo Básico de Sobrecarga de Funciones
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void mostrar() {
+        cout << "Mostrar sin parámetros en la clase Base" << endl;
+    }
+
+    void mostrar(int x) {
+        cout << "Mostrar con un parámetro en la clase Base: " << x << endl;
+    }
+};
+
+int main() {
+    Base b;
+    b.mostrar();
+    b.mostrar(10);
+
+    return 0;
+}
+```
+
+En este ejemplo, la clase `Base` tiene dos funciones `mostrar` sobrecargadas: una sin parámetros y otra con un parámetro entero.
+
+#### Sobrecarga de Funciones en Herencia
+
+En herencia, una clase derivada puede sobrecargar funciones miembro de la clase base, proporcionando diferentes versiones de la función en la clase derivada. Esto permite que la clase derivada extienda el comportamiento de la clase base.
+
+##### Ejemplo de Sobrecarga de Funciones en Herencia
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void mostrar() {
+        cout << "Mostrar sin parámetros en la clase Base" << endl;
+    }
+
+    void mostrar(int x) {
+        cout << "Mostrar con un parámetro en la clase Base: " << x << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void mostrar(double y) {
+        cout << "Mostrar con un parámetro double en la clase Derivada: " << y << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar();       // Llama a Base::mostrar()
+    d.mostrar(10);     // Llama a Base::mostrar(int)
+    d.mostrar(3.14);   // Llama a Derivada::mostrar(double)
+
+    return 0;
+}
+```
+
+En este ejemplo, la clase `Derivada` hereda de `Base` y sobrecarga la función `mostrar` añadiendo una versión que toma un parámetro de tipo `double`. Las funciones `mostrar` de la clase base también están disponibles en la clase derivada.
+
+#### Uso de `using` para Sobrecargar Funciones
+
+En algunos casos, es posible que desee sobrecargar una función de la clase base en la clase derivada y también exponer las versiones de la función de la clase base. Puede utilizar la declaración `using` para hacer esto explícitamente.
+
+##### Ejemplo de Uso de `using`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void mostrar() {
+        cout << "Mostrar sin parámetros en la clase Base" << endl;
+    }
+
+    void mostrar(int x) {
+        cout << "Mostrar con un parámetro en la clase Base: " << x << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    using Base::mostrar; // Hacer visibles las funciones sobrecargadas de la clase base
+
+    void mostrar(double y) {
+        cout << "Mostrar con un parámetro double en la clase Derivada: " << y << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar();       // Llama a Base::mostrar()
+    d.mostrar(10);     // Llama a Base::mostrar(int)
+    d.mostrar(3.14);   // Llama a Derivada::mostrar(double)
+
+    return 0;
+}
+```
+
+En este ejemplo, `using Base::mostrar;` en la clase `Derivada` hace visibles las funciones `mostrar` sobrecargadas de la clase base, permitiendo que las versiones de la clase base y la nueva versión en la clase derivada se utilicen en la instancia de la clase derivada.
+
+#### Sobrecarga de Operadores en Herencia
+
+Al igual que las funciones miembro, los operadores pueden ser sobrecargados en las clases derivadas. Esto permite que las clases derivadas extiendan el comportamiento de los operadores definidos en las clases base.
+
+##### Ejemplo de Sobrecarga de Operadores en Herencia
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void mostrar() const {
+        cout << "Mostrar en la clase Base" << endl;
+    }
+
+    virtual void operador() const {
+        cout << "Operador en la clase Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void mostrar() const override {
+        cout << "Mostrar en la clase Derivada" << endl;
+    }
+
+    void operador() const override {
+        cout << "Operador en la clase Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* ptrBase = new Derivada();
+    ptrBase->mostrar();    // Llama a Derivada::mostrar()
+    ptrBase->operador();   // Llama a Derivada::operador()
+
+    delete ptrBase;
+    return 0;
+}
+```
+
+En este ejemplo, `Derivada` sobrecarga los operadores definidos en la clase `Base`, extendiendo su comportamiento.
+
+### Conclusión
+
+La sobrecarga de funciones en herencia es una herramienta poderosa en C++ que permite a las clases derivadas extender y modificar el comportamiento de las funciones miembro de las clases base. Utilizando la declaración `using`, puede exponer las versiones de la función de la clase base en la clase derivada. Además, la sobrecarga de operadores puede ser utilizada de manera similar para extender el comportamiento de los operadores en las clases derivadas. Comprender y utilizar adecuadamente la sobrecarga de funciones en herencia es crucial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
+<---FILES--->
+Ejemplo Básico de Sobrecarga de Funciones
+Ejemplo Básico de Sobrecarga de Funciones Result
+Ejemplo de Sobrecarga de Funciones en Herencia
+Ejemplo de Sobrecarga de Funciones en Herencia Result
+Ejemplo de Uso de `using`
+Ejemplo de Uso de `using` Result
+Ejemplo de Sobrecarga de Operadores en Herencia
+Ejemplo de Sobrecarga de Operadores en Herencia Result
+<---Ejemplo Básico de Sobrecarga de Funciones--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void mostrar() {
+        cout << "Mostrar sin parámetros en la clase Base" << endl;
+    }
+
+    void mostrar(int x) {
+        cout << "Mostrar con un parámetro en la clase Base: " << x << endl;
+    }
+};
+
+int main() {
+    Base b;
+    b.mostrar();
+    b.mostrar(10);
+
+    return 0;
+}
+<---Ejemplo Básico de Sobrecarga de Funciones Result--->
+<---Ejemplo de Sobrecarga de Funciones en Herencia--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void mostrar() {
+        cout << "Mostrar sin parámetros en la clase Base" << endl;
+    }
+
+    void mostrar(int x) {
+        cout << "Mostrar con un parámetro en la clase Base: " << x << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void mostrar(double y) {
+        cout << "Mostrar con un parámetro double en la clase Derivada: " << y << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar();       // Llama a Base::mostrar()
+    d.mostrar(10);     // Llama a Base::mostrar(int)
+    d.mostrar(3.14);   // Llama a Derivada::mostrar(double)
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga de Funciones en Herencia Result--->
+<---Ejemplo de Uso de `using`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void mostrar() {
+        cout << "Mostrar sin parámetros en la clase Base" << endl;
+    }
+
+    void mostrar(int x) {
+        cout << "Mostrar con un parámetro en la clase Base: " << x << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    using Base::mostrar; // Hacer visibles las funciones sobrecargadas de la clase base
+
+    void mostrar(double y) {
+        cout << "Mostrar con un parámetro double en la clase Derivada: " << y << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar();       // Llama a Base::mostrar()
+    d.mostrar(10);     // Llama a Base::mostrar(int)
+    d.mostrar(3.14);   // Llama a Derivada::mostrar(double)
+
+    return 0;
+}
+<---Ejemplo de Uso de `using` Result--->
+<---Ejemplo de Sobrecarga de Operadores en Herencia--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void mostrar() const {
+        cout << "Mostrar en la clase Base" << endl;
+    }
+
+    virtual void operador() const {
+        cout << "Operador en la clase Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void mostrar() const override {
+        cout << "Mostrar en la clase Derivada" << endl;
+    }
+
+    void operador() const override {
+        cout << "Operador en la clase Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* ptrBase = new Derivada();
+    ptrBase->mostrar();    // Llama a Derivada::mostrar()
+    ptrBase->operador();   // Llama a Derivada::operador()
+
+    delete ptrBase;
+    return 0;
+}
+<---Ejemplo de Sobrecarga de Operadores en Herencia Result--->

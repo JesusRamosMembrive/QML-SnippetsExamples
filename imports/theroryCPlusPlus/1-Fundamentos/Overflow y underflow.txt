@@ -1,0 +1,195 @@
+<---EXPLANATION--->
+### Overflow y Underflow en C++
+
+En programación, los conceptos de overflow y underflow se refieren a situaciones en las que el resultado de una operación aritmética está fuera del rango que puede ser representado por un tipo de dato específico. Estas situaciones pueden llevar a comportamientos inesperados y errores en los programas.
+
+#### 1. **Overflow**
+
+El overflow ocurre cuando el resultado de una operación aritmética excede el rango máximo que puede ser almacenado por un tipo de dato.
+
+##### Ejemplo de Overflow con Enteros
+
+Para un entero de 8 bits con signo (`int8_t`), el rango es de -128 a 127. Si se suma 1 a 127, se produce un overflow:
+
+```cpp
+#include <iostream>
+#include <climits> // Para límites de tipos
+
+int main() {
+    int8_t numero = 127; // El valor máximo para un entero de 8 bits con signo
+    numero = numero + 1; // Esto causa overflow
+    std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    return 0;
+}
+```
+
+En este caso, el resultado será -128 debido a cómo se manejan los enteros en binario (envolvimiento o "wrap-around").
+
+##### Ejemplo de Overflow con Enteros sin Signo
+
+Para un entero sin signo de 8 bits (`uint8_t`), el rango es de 0 a 255. Si se suma 1 a 255, se produce un overflow:
+
+```cpp
+#include <iostream>
+#include <cstdint> // Para uint8_t
+
+int main() {
+    uint8_t numero = 255; // El valor máximo para un entero de 8 bits sin signo
+    numero = numero + 1; // Esto causa overflow
+    std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    return 0;
+}
+```
+
+En este caso, el resultado será 0 debido al envolvimiento del valor.
+
+#### 2. **Underflow**
+
+El underflow ocurre cuando el resultado de una operación aritmética es menor que el valor mínimo que puede ser almacenado por un tipo de dato.
+
+##### Ejemplo de Underflow con Enteros
+
+Para un entero de 8 bits con signo, el rango es de -128 a 127. Si se resta 1 a -128, se produce un underflow:
+
+```cpp
+#include <iostream>
+#include <climits> // Para límites de tipos
+
+int main() {
+    int8_t numero = -128; // El valor mínimo para un entero de 8 bits con signo
+    numero = numero - 1; // Esto causa underflow
+    std::cout << "Valor después del underflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    return 0;
+}
+```
+
+En este caso, el resultado será 127 debido al envolvimiento del valor.
+
+##### Ejemplo de Underflow con Flotantes
+
+El underflow también puede ocurrir con números en punto flotante cuando el resultado de una operación es más pequeño que el valor mínimo representable.
+
+```cpp
+#include <iostream>
+#include <cfloat> // Para límites de tipos
+
+int main() {
+    float numero = 1.0e-38f; // Un valor cercano al mínimo para float
+    float divisor = 1.0e38f;
+    float resultado = numero / divisor; // Esto causa underflow
+    std::cout << "Valor después del underflow: " << resultado << std::endl;
+    return 0;
+}
+```
+
+En este caso, el resultado será 0 porque el valor resultante es demasiado pequeño para ser representado por un float.
+
+### Consecuencias y Manejo
+
+El manejo adecuado de overflow y underflow es crucial para evitar comportamientos inesperados y errores en los programas. Algunas estrategias incluyen:
+
+- **Chequeo de Rango:** Antes de realizar operaciones aritméticas, verifica que el resultado estará dentro del rango permitido para el tipo de dato.
+- **Uso de Tipos Más Grandes:** Si se espera que los valores puedan exceder el rango de un tipo de dato, considera usar un tipo de dato más grande (por ejemplo, `int` en lugar de `short`).
+- **Librerías y Funciones de Chequeo:** Utiliza funciones y librerías que proporcionen chequeo de overflow y underflow. Por ejemplo, en C++20, puedes usar la librería `std::numeric_limits` para verificar límites de tipos.
+
+##### Ejemplo de Chequeo de Rango
+
+```cpp
+#include <iostream>
+#include <limits>
+
+int main() {
+    int a = std::numeric_limits<int>::max();
+    int b = 1;
+
+    if (a > std::numeric_limits<int>::max() - b) {
+        std::cerr << "Error: Overflow detectado" << std::endl;
+    } else {
+        int resultado = a + b;
+        std::cout << "Resultado: " << resultado << std::endl;
+    }
+    return 0;
+}
+```
+
+### Conclusión
+
+El overflow y underflow son condiciones importantes a considerar en la programación, ya que pueden llevar a resultados inesperados y errores difíciles de detectar. Comprender cómo ocurren y cómo manejarlos es crucial para escribir programas robustos y confiables en C++.
+<---FILES--->
+Ejemplo de Overflow con Enteros
+Ejemplo de Overflow con Enteros Result
+Ejemplo de Overflow con Enteros sin Signo
+Ejemplo de Overflow con Enteros sin Signo Result
+Ejemplo de Underflow con Enteros
+Ejemplo de Underflow con Enteros Result
+Ejemplo de Underflow con Flotantes
+Ejemplo de Underflow con Flotantes Result
+Ejemplo de Chequeo de Rango
+Ejemplo de Chequeo de Rango Result
+<---Ejemplo de Overflow con Enteros--->
+```cpp
+#include <iostream>
+#include <climits> // Para límites de tipos
+
+int main() {
+    int8_t numero = 127; // El valor máximo para un entero de 8 bits con signo
+    numero = numero + 1; // Esto causa overflow
+    std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    return 0;
+}
+<---Ejemplo de Overflow con Enteros Result--->
+<---Ejemplo de Overflow con Enteros sin Signo--->
+```cpp
+#include <iostream>
+#include <cstdint> // Para uint8_t
+
+int main() {
+    uint8_t numero = 255; // El valor máximo para un entero de 8 bits sin signo
+    numero = numero + 1; // Esto causa overflow
+    std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    return 0;
+}
+<---Ejemplo de Overflow con Enteros sin Signo Result--->
+<---Ejemplo de Underflow con Enteros--->
+```cpp
+#include <iostream>
+#include <climits> // Para límites de tipos
+
+int main() {
+    int8_t numero = -128; // El valor mínimo para un entero de 8 bits con signo
+    numero = numero - 1; // Esto causa underflow
+    std::cout << "Valor después del underflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    return 0;
+}
+<---Ejemplo de Underflow con Enteros Result--->
+<---Ejemplo de Underflow con Flotantes--->
+```cpp
+#include <iostream>
+#include <cfloat> // Para límites de tipos
+
+int main() {
+    float numero = 1.0e-38f; // Un valor cercano al mínimo para float
+    float divisor = 1.0e38f;
+    float resultado = numero / divisor; // Esto causa underflow
+    std::cout << "Valor después del underflow: " << resultado << std::endl;
+    return 0;
+}
+<---Ejemplo de Underflow con Flotantes Result--->
+<---Ejemplo de Chequeo de Rango--->
+```cpp
+#include <iostream>
+#include <limits>
+
+int main() {
+    int a = std::numeric_limits<int>::max();
+    int b = 1;
+
+    if (a > std::numeric_limits<int>::max() - b) {
+        std::cerr << "Error: Overflow detectado" << std::endl;
+    } else {
+        int resultado = a + b;
+        std::cout << "Resultado: " << resultado << std::endl;
+    }
+    return 0;
+}
+<---Ejemplo de Chequeo de Rango Result--->

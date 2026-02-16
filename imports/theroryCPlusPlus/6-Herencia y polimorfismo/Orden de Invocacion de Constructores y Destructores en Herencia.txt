@@ -1,0 +1,352 @@
+<---EXPLANATION--->
+### Orden de Invocación de Constructores y Destructores en Herencia en C++
+
+En C++, el orden de invocación de constructores y destructores en una jerarquía de herencia sigue reglas específicas. Estas reglas aseguran que los objetos se construyan y destruyan de manera consistente y que todos los recursos se manejen correctamente.
+
+#### Orden de Invocación de Constructores
+
+Cuando se crea un objeto de una clase derivada, los constructores se invocan en un orden específico:
+
+1. **Constructor de la Clase Base:** Primero se llama al constructor de la clase base. Si hay una cadena de herencia, se llama primero al constructor del ancestro más alto y luego se procede hacia abajo hasta llegar a la clase derivada.
+2. **Constructores de las Clases Derivadas:** Después de que todos los constructores de las clases base hayan sido invocados, se llama al constructor de la clase derivada más específica.
+
+##### Ejemplo de Invocación de Constructores
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+};
+
+class Intermedia : public Base {
+public:
+    Intermedia() {
+        cout << "Constructor de Intermedia" << endl;
+    }
+};
+
+class Derivada : public Intermedia {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Derivada obj;
+    return 0;
+}
+```
+
+En este ejemplo, el orden de invocación de los constructores es:
+
+1. **Base**
+2. **Intermedia**
+3. **Derivada**
+
+La salida será:
+```
+Constructor de Base
+Constructor de Intermedia
+Constructor de Derivada
+```
+
+#### Orden de Invocación de Destructores
+
+El orden de invocación de los destructores es el inverso al de los constructores:
+
+1. **Destructor de la Clase Derivada:** Primero se llama al destructor de la clase derivada más específica.
+2. **Destructores de las Clases Base:** Después de que el destructor de la clase derivada ha sido invocado, se llama a los destructores de las clases base en el orden inverso al de la construcción.
+
+##### Ejemplo de Invocación de Destructores
+
+Continuando con el ejemplo anterior, si añadimos destructores a cada clase:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Intermedia : public Base {
+public:
+    Intermedia() {
+        cout << "Constructor de Intermedia" << endl;
+    }
+    ~Intermedia() {
+        cout << "Destructor de Intermedia" << endl;
+    }
+};
+
+class Derivada : public Intermedia {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Derivada obj;
+    return 0;
+}
+```
+
+La salida será:
+```
+Constructor de Base
+Constructor de Intermedia
+Constructor de Derivada
+Destructor de Derivada
+Destructor de Intermedia
+Destructor de Base
+```
+
+Esto demuestra que los destructores se invocan en el orden inverso al de los constructores, garantizando que los recursos asignados por las clases derivadas se liberen antes de que se liberen los recursos asignados por las clases base.
+
+### Consideraciones Adicionales
+
+1. **Constructores y Destructores Virtuales:**
+   - Si se espera que una clase base se utilice de manera polimórfica, sus destructores deben ser declarados como `virtual`. Esto asegura que el destructor adecuado se llame cuando se elimine un objeto a través de un puntero a la clase base.
+
+##### Ejemplo de Destructor Virtual
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    virtual ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj;
+    return 0;
+}
+```
+
+La salida será:
+```
+Constructor de Base
+Constructor de Derivada
+Destructor de Derivada
+Destructor de Base
+```
+
+Sin el destructor virtual en la clase base, el destructor de la clase derivada no se llamaría, lo que podría llevar a fugas de memoria y otros problemas.
+
+2. **Lista de Inicialización del Constructor:**
+   - La lista de inicialización del constructor se utiliza para inicializar los miembros de la clase base y los miembros de la clase derivada antes de que el cuerpo del constructor se ejecute.
+
+##### Ejemplo de Lista de Inicialización del Constructor
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+private:
+    int valorBase;
+public:
+    Base(int v) : valorBase(v) {
+        cout << "Constructor de Base con valor " << valorBase << endl;
+    }
+};
+
+class Derivada : public Base {
+private:
+    int valorDerivada;
+public:
+    Derivada(int vb, int vd) : Base(vb), valorDerivada(vd) {
+        cout << "Constructor de Derivada con valor " << valorDerivada << endl;
+    }
+};
+
+int main() {
+    Derivada obj(10, 20);
+    return 0;
+}
+```
+
+La salida será:
+```
+Constructor de Base con valor 10
+Constructor de Derivada con valor 20
+```
+
+En este ejemplo, `Base` se inicializa con el valor `10` antes de que `Derivada` se inicialice con el valor `20`.
+
+### Conclusión
+
+El orden de invocación de constructores y destructores en C++ es crucial para garantizar que los recursos se gestionen adecuadamente. Los constructores se invocan desde la clase base hasta la clase derivada, mientras que los destructores se invocan en el orden inverso. Entender este orden ayuda a diseñar jerarquías de herencia robustas y evitar problemas relacionados con la gestión de recursos y la integridad de los objetos.
+<---FILES--->
+Ejemplo de Invocación de Constructores
+Ejemplo de Invocación de Constructores Result
+Ejemplo de Invocación de Destructores
+Ejemplo de Invocación de Destructores Result
+Ejemplo de Destructor Virtual
+Ejemplo de Destructor Virtual Result
+Ejemplo de Lista de Inicialización del Constructor
+Ejemplo de Lista de Inicialización del Constructor Result
+<---Ejemplo de Invocación de Constructores--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+};
+
+class Intermedia : public Base {
+public:
+    Intermedia() {
+        cout << "Constructor de Intermedia" << endl;
+    }
+};
+
+class Derivada : public Intermedia {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Derivada obj;
+    return 0;
+}
+<---Ejemplo de Invocación de Constructores Result--->
+<---Ejemplo de Invocación de Destructores--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Intermedia : public Base {
+public:
+    Intermedia() {
+        cout << "Constructor de Intermedia" << endl;
+    }
+    ~Intermedia() {
+        cout << "Destructor de Intermedia" << endl;
+    }
+};
+
+class Derivada : public Intermedia {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Derivada obj;
+    return 0;
+}
+<---Ejemplo de Invocación de Destructores Result--->
+<---Ejemplo de Destructor Virtual--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    virtual ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj;
+    return 0;
+}
+<---Ejemplo de Destructor Virtual Result--->
+<---Ejemplo de Lista de Inicialización del Constructor--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+private:
+    int valorBase;
+public:
+    Base(int v) : valorBase(v) {
+        cout << "Constructor de Base con valor " << valorBase << endl;
+    }
+};
+
+class Derivada : public Base {
+private:
+    int valorDerivada;
+public:
+    Derivada(int vb, int vd) : Base(vb), valorDerivada(vd) {
+        cout << "Constructor de Derivada con valor " << valorDerivada << endl;
+    }
+};
+
+int main() {
+    Derivada obj(10, 20);
+    return 0;
+}
+<---Ejemplo de Lista de Inicialización del Constructor Result--->

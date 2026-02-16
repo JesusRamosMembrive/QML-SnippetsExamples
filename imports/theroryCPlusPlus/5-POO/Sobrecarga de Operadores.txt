@@ -1,0 +1,513 @@
+<---EXPLANATION--->
+### Sobrecarga de Operadores en C++
+
+La sobrecarga de operadores es una característica de C++ que permite a los programadores definir o modificar el comportamiento de los operadores para tipos de datos definidos por el usuario (clases). Esto hace que los objetos de estas clases puedan ser utilizados de manera similar a los tipos de datos integrados, mejorando la legibilidad y usabilidad del código.
+
+#### Fundamentos de la Sobrecarga de Operadores
+
+1. **Definición:** La sobrecarga de operadores permite redefinir la funcionalidad de los operadores (como +, -, *, /, etc.) para que funcionen con objetos de clases definidas por el usuario.
+2. **Sintaxis:** Se utiliza la palabra clave `operator` seguida del operador que se desea sobrecargar.
+3. **Limitaciones:** No todos los operadores pueden ser sobrecargados, y no se pueden cambiar la precedencia, la asociatividad, o el número de operandos de un operador.
+
+##### Ejemplo de Sobrecarga de Operadores
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Complejo {
+private:
+    double real;
+    double imaginario;
+
+public:
+    // Constructor
+    Complejo(double r = 0.0, double i = 0.0) : real(r), imaginario(i) {}
+
+    // Sobrecarga del operador +
+    Complejo operator+(const Complejo& c) const {
+        return Complejo(real + c.real, imaginario + c.imaginario);
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Complejo& c) {
+        os << "(" << c.real << " + " << c.imaginario << "i)";
+        return os;
+    }
+};
+
+int main() {
+    Complejo c1(3.0, 4.0);
+    Complejo c2(1.0, 2.0);
+
+    Complejo c3 = c1 + c2;  // Usando la sobrecarga del operador +
+
+    cout << "c1: " << c1 << endl;
+    cout << "c2: " << c2 << endl;
+    cout << "c3: " << c3 << endl;  // Usando la sobrecarga del operador <<
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- Se sobrecarga el operador `+` para la clase `Complejo`, permitiendo sumar dos objetos `Complejo`.
+- Se sobrecarga el operador `<<` para permitir la salida de objetos `Complejo` usando `cout`.
+
+#### Sobrecarga de Operadores Aritméticos
+
+Los operadores aritméticos como `+`, `-`, `*`, `/`, `%`, etc., se pueden sobrecargar para realizar operaciones específicas con objetos de clases.
+
+##### Ejemplo de Sobrecarga del Operador `*`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector {
+private:
+    double x, y, z;
+
+public:
+    // Constructor
+    Vector(double x, double y, double z) : x(x), y(y), z(z) {}
+
+    // Sobrecarga del operador *
+    Vector operator*(double escalar) const {
+        return Vector(x * escalar, y * escalar, z * escalar);
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Vector& v) {
+        os << "{" << v.x << ", " << v.y << ", " << v.z << "}";
+        return os;
+    }
+};
+
+int main() {
+    Vector v1(1.0, 2.0, 3.0);
+    Vector v2 = v1 * 2.0;
+
+    cout << "v1: " << v1 << endl;
+    cout << "v2: " << v2 << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, se sobrecarga el operador `*` para multiplicar un objeto `Vector` por un escalar.
+
+#### Sobrecarga de Operadores de Comparación
+
+Los operadores de comparación como `==`, `!=`, `<`, `>`, `<=`, `>=` se pueden sobrecargar para comparar objetos de clases.
+
+##### Ejemplo de Sobrecarga del Operador `==`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+private:
+    int x, y;
+
+public:
+    // Constructor
+    Punto(int x = 0, int y = 0) : x(x), y(y) {}
+
+    // Sobrecarga del operador ==
+    bool operator==(const Punto& p) const {
+        return (x == p.x && y == p.y);
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Punto& p) {
+        os << "(" << p.x << ", " << p.y << ")";
+        return os;
+    }
+};
+
+int main() {
+    Punto p1(1, 2);
+    Punto p2(1, 2);
+    Punto p3(3, 4);
+
+    cout << "p1: " << p1 << endl;
+    cout << "p2: " << p2 << endl;
+    cout << "p3: " << p3 << endl;
+
+    cout << "p1 == p2: " << (p1 == p2) << endl;
+    cout << "p1 == p3: " << (p1 == p3) << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, se sobrecarga el operador `==` para comparar dos objetos `Punto`.
+
+#### Sobrecarga de Operadores de Incremento y Decremento
+
+Los operadores de incremento (`++`) y decremento (`--`) se pueden sobrecargar tanto en su forma prefija como postfija.
+
+##### Ejemplo de Sobrecarga del Operador `++`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    int valor;
+
+public:
+    // Constructor
+    Contador(int v = 0) : valor(v) {}
+
+    // Sobrecarga del operador prefijo ++
+    Contador& operator++() {
+        ++valor;
+        return *this;
+    }
+
+    // Sobrecarga del operador postfijo ++
+    Contador operator++(int) {
+        Contador temp = *this;
+        ++valor;
+        return temp;
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Contador& c) {
+        os << c.valor;
+        return os;
+    }
+};
+
+int main() {
+    Contador c(5);
+
+    cout << "Valor inicial: " << c << endl;
+
+    ++c;
+    cout << "Después del prefijo ++: " << c << endl;
+
+    c++;
+    cout << "Después del postfijo ++: " << c << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, se sobrecargan tanto la forma prefija como postfija del operador `++` para la clase `Contador`.
+
+#### Sobrecarga de Operadores de Acceso
+
+Los operadores de acceso como `[]`, `->`, `*`, `()` se pueden sobrecargar para proporcionar comportamientos personalizados.
+
+##### Ejemplo de Sobrecarga del Operador `[]`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Array {
+private:
+    int* datos;
+    int tamano;
+
+public:
+    // Constructor
+    Array(int tamano) : tamano(tamano) {
+        datos = new int[tamano];
+        for (int i = 0; i < tamano; ++i) {
+            datos[i] = 0;
+        }
+    }
+
+    // Destructor
+    ~Array() {
+        delete[] datos;
+    }
+
+    // Sobrecarga del operador []
+    int& operator[](int indice) {
+        if (indice >= 0 && indice < tamano) {
+            return datos[indice];
+        }
+        throw out_of_range("Índice fuera de rango");
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Array& arr) {
+        os << "[";
+        for (int i = 0; i < arr.tamano; ++i) {
+            os << arr.datos[i];
+            if (i < arr.tamano - 1) {
+                os << ", ";
+            }
+        }
+        os << "]";
+        return os;
+    }
+};
+
+int main() {
+    Array arr(5);
+
+    arr[0] = 10;
+    arr[1] = 20;
+    arr[2] = 30;
+
+    cout << "Array: " << arr << endl;
+
+    try {
+        arr[5] = 50;  // Esto lanzará una excepción
+    } catch (const out_of_range& e) {
+        cout << e.what() << endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo, se sobrecarga el operador `[]` para permitir el acceso a los elementos de un objeto `Array`.
+
+### Conclusión
+
+La sobrecarga de operadores en C++ permite definir cómo los operadores deben comportarse con los objetos de tipos definidos por el usuario. Esto facilita el uso intuitivo de estos objetos y mejora la legibilidad del código. Sin embargo, es importante usar la sobrecarga de operadores de manera adecuada y clara, evitando abusos que puedan llevar a un código confuso o difícil de mantener. Con una comprensión sólida de la sobrecarga de operadores, los desarrolladores pueden crear clases más poderosas y flexibles en C++.
+<---FILES--->
+Ejemplo de Sobrecarga de Operadores
+Ejemplo de Sobrecarga de Operadores Result
+Ejemplo de Sobrecarga del Operador `*`
+Ejemplo de Sobrecarga del Operador `*` Result
+Ejemplo de Sobrecarga del Operador `==`
+Ejemplo de Sobrecarga del Operador `==` Result
+Ejemplo de Sobrecarga del Operador `++`
+Ejemplo de Sobrecarga del Operador `++` Result
+Ejemplo de Sobrecarga del Operador `[]`
+Ejemplo de Sobrecarga del Operador `[]` Result
+<---Ejemplo de Sobrecarga de Operadores--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Complejo {
+private:
+    double real;
+    double imaginario;
+
+public:
+    // Constructor
+    Complejo(double r = 0.0, double i = 0.0) : real(r), imaginario(i) {}
+
+    // Sobrecarga del operador +
+    Complejo operator+(const Complejo& c) const {
+        return Complejo(real + c.real, imaginario + c.imaginario);
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Complejo& c) {
+        os << "(" << c.real << " + " << c.imaginario << "i)";
+        return os;
+    }
+};
+
+int main() {
+    Complejo c1(3.0, 4.0);
+    Complejo c2(1.0, 2.0);
+
+    Complejo c3 = c1 + c2;  // Usando la sobrecarga del operador +
+
+    cout << "c1: " << c1 << endl;
+    cout << "c2: " << c2 << endl;
+    cout << "c3: " << c3 << endl;  // Usando la sobrecarga del operador <<
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga de Operadores Result--->
+<---Ejemplo de Sobrecarga del Operador `*`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector {
+private:
+    double x, y, z;
+
+public:
+    // Constructor
+    Vector(double x, double y, double z) : x(x), y(y), z(z) {}
+
+    // Sobrecarga del operador *
+    Vector operator*(double escalar) const {
+        return Vector(x * escalar, y * escalar, z * escalar);
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Vector& v) {
+        os << "{" << v.x << ", " << v.y << ", " << v.z << "}";
+        return os;
+    }
+};
+
+int main() {
+    Vector v1(1.0, 2.0, 3.0);
+    Vector v2 = v1 * 2.0;
+
+    cout << "v1: " << v1 << endl;
+    cout << "v2: " << v2 << endl;
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga del Operador `*` Result--->
+<---Ejemplo de Sobrecarga del Operador `==`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+private:
+    int x, y;
+
+public:
+    // Constructor
+    Punto(int x = 0, int y = 0) : x(x), y(y) {}
+
+    // Sobrecarga del operador ==
+    bool operator==(const Punto& p) const {
+        return (x == p.x && y == p.y);
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Punto& p) {
+        os << "(" << p.x << ", " << p.y << ")";
+        return os;
+    }
+};
+
+int main() {
+    Punto p1(1, 2);
+    Punto p2(1, 2);
+    Punto p3(3, 4);
+
+    cout << "p1: " << p1 << endl;
+    cout << "p2: " << p2 << endl;
+    cout << "p3: " << p3 << endl;
+
+    cout << "p1 == p2: " << (p1 == p2) << endl;
+    cout << "p1 == p3: " << (p1 == p3) << endl;
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga del Operador `==` Result--->
+<---Ejemplo de Sobrecarga del Operador `++`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    int valor;
+
+public:
+    // Constructor
+    Contador(int v = 0) : valor(v) {}
+
+    // Sobrecarga del operador prefijo ++
+    Contador& operator++() {
+        ++valor;
+        return *this;
+    }
+
+    // Sobrecarga del operador postfijo ++
+    Contador operator++(int) {
+        Contador temp = *this;
+        ++valor;
+        return temp;
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Contador& c) {
+        os << c.valor;
+        return os;
+    }
+};
+
+int main() {
+    Contador c(5);
+
+    cout << "Valor inicial: " << c << endl;
+
+    ++c;
+    cout << "Después del prefijo ++: " << c << endl;
+
+    c++;
+    cout << "Después del postfijo ++: " << c << endl;
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga del Operador `++` Result--->
+<---Ejemplo de Sobrecarga del Operador `[]`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Array {
+private:
+    int* datos;
+    int tamano;
+
+public:
+    // Constructor
+    Array(int tamano) : tamano(tamano) {
+        datos = new int[tamano];
+        for (int i = 0; i < tamano; ++i) {
+            datos[i] = 0;
+        }
+    }
+
+    // Destructor
+    ~Array() {
+        delete[] datos;
+    }
+
+    // Sobrecarga del operador []
+    int& operator[](int indice) {
+        if (indice >= 0 && indice < tamano) {
+            return datos[indice];
+        }
+        throw out_of_range("Índice fuera de rango");
+    }
+
+    // Sobrecarga del operador <<
+    friend ostream& operator<<(ostream& os, const Array& arr) {
+        os << "[";
+        for (int i = 0; i < arr.tamano; ++i) {
+            os << arr.datos[i];
+            if (i < arr.tamano - 1) {
+                os << ", ";
+            }
+        }
+        os << "]";
+        return os;
+    }
+};
+
+int main() {
+    Array arr(5);
+
+    arr[0] = 10;
+    arr[1] = 20;
+    arr[2] = 30;
+
+    cout << "Array: " << arr << endl;
+
+    try {
+        arr[5] = 50;  // Esto lanzará una excepción
+    } catch (const out_of_range& e) {
+        cout << e.what() << endl;
+    }
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga del Operador `[]` Result--->

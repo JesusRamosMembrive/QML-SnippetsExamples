@@ -1,0 +1,210 @@
+<---EXPLANATION--->
+### Plantillas en Funciones con Múltiples Tipos de Datos
+
+Las plantillas en funciones que aceptan múltiples tipos de datos permiten crear funciones más versátiles y flexibles. Esto se logra definiendo plantillas con varios parámetros de tipo, lo que permite que las funciones trabajen con diferentes combinaciones de tipos de datos.
+
+#### Definición de Plantillas de Función con Múltiples Parámetros de Tipo
+
+Para definir una plantilla de función con múltiples parámetros de tipo, se utiliza la palabra clave `template` seguida de una lista de parámetros de tipo separados por comas.
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función con dos parámetros de tipo
+template <typename T1, typename T2>
+void imprimirAmbos(T1 a, T2 b) {
+    std::cout << "Valor 1: " << a << ", Valor 2: " << b << std::endl;
+}
+
+int main() {
+    imprimirAmbos(3, 4.5); // Uso con int y double
+    imprimirAmbos('a', "Hola"); // Uso con char y const char*
+    imprimirAmbos(5, std::string("Mundo")); // Uso con int y std::string
+    return 0;
+}
+```
+
+En este ejemplo:
+- La función `imprimirAmbos` se define como una plantilla con dos parámetros de tipo (`T1` y `T2`).
+- La función imprime dos valores de tipos diferentes en una sola llamada.
+
+#### Plantillas de Función con Parámetros de Tipo y No Tipo
+
+Las plantillas de función también pueden incluir parámetros que no son tipos (por ejemplo, enteros constantes). Esto permite una mayor flexibilidad en la definición de funciones genéricas.
+
+##### Ejemplo
+
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función con un parámetro de tipo y un parámetro no tipo
+template <typename T, int N>
+void imprimirArray(const T (&arr)[N]) {
+    for (int i = 0; i < N; ++i) {
+        std::cout << arr[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+int main() {
+    int arr1[] = {1, 2, 3, 4, 5};
+    imprimirArray(arr1); // Uso con array de int
+
+    double arr2[] = {1.1, 2.2, 3.3};
+    imprimirArray(arr2); // Uso con array de double
+
+    char arr3[] = {'a', 'b', 'c'};
+    imprimirArray(arr3); // Uso con array de char
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La función `imprimirArray` se define como una plantilla con un parámetro de tipo (`T`) y un parámetro no tipo (`int N`).
+- El parámetro `N` representa el tamaño del array, lo que permite que la función trabaje con arrays de cualquier tamaño y tipo.
+
+#### Especialización de Plantillas de Función con Múltiples Parámetros de Tipo
+
+Al igual que con plantillas de función simples, es posible especializar plantillas de función con múltiples parámetros de tipo para tipos de datos específicos.
+
+##### Ejemplo de Especialización
+
+```cpp
+#include <iostream>
+#include <cstring>
+
+// Definición de la plantilla de función genérica
+template <typename T1, typename T2>
+void comparar(T1 a, T2 b) {
+    std::cout << "Comparación genérica: " << (a == b) << std::endl;
+}
+
+// Especialización para const char* y const char*
+template <>
+void comparar<const char*, const char*>(const char* a, const char* b) {
+    std::cout << "Comparación de cadenas: " << (std::strcmp(a, b) == 0) << std::endl;
+}
+
+int main() {
+    comparar(5, 5); // Uso con int
+    comparar(3.14, 2.71); // Uso con double
+    comparar("Hola", "Hola"); // Uso con const char*
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La función `comparar` se especializa para comparar cadenas de caracteres (`const char*`).
+- La especialización utiliza `std::strcmp` para comparar las cadenas.
+
+### Buenas Prácticas para el Uso de Plantillas con Múltiples Parámetros de Tipo
+
+#### 1. Utilizar Nombres Claros y Significativos para los Parámetros de Tipo
+
+Usar nombres de parámetros de tipo claros y significativos mejora la legibilidad del código.
+
+##### Ejemplo
+
+```cpp
+template <typename Tipo1, typename Tipo2>
+void imprimirValores(Tipo1 a, Tipo2 b) {
+    std::cout << "Valor 1: " << a << ", Valor 2: " << b << std::endl;
+}
+```
+
+#### 2. Documentar las Plantillas de Función
+
+Documentar adecuadamente las plantillas de función para explicar el propósito de cada parámetro de tipo y cómo se deben utilizar.
+
+##### Ejemplo
+
+```cpp
+// Función plantilla que imprime dos valores de cualquier tipo
+// Tipo1: tipo del primer valor
+// Tipo2: tipo del segundo valor
+template <typename Tipo1, typename Tipo2>
+void imprimirValores(Tipo1 a, Tipo2 b) {
+    std::cout << "Valor 1: " << a << ", Valor 2: " << b << std::endl;
+}
+```
+
+#### 3. Probar las Plantillas con Diferentes Combinaciones de Tipos
+
+Asegurarse de probar las plantillas de función con diferentes combinaciones de tipos de datos para verificar su funcionamiento y detectar posibles problemas.
+
+##### Ejemplo
+
+```cpp
+int main() {
+    imprimirValores(3, 4.5); // Uso con int y double
+    imprimirValores('a', "Hola"); // Uso con char y const char*
+    imprimirValores(5, std::string("Mundo")); // Uso con int y std::string
+    return 0;
+}
+```
+
+### Conclusión
+
+Las plantillas en funciones con múltiples tipos de datos en C++ permiten crear funciones más versátiles y flexibles, capaces de trabajar con diferentes combinaciones de tipos. Seguir buenas prácticas como utilizar nombres claros para los parámetros de tipo, documentar adecuadamente y probar con diferentes combinaciones de tipos, ayuda a crear código más robusto y mantenible. Las plantillas son una herramienta esencial para cualquier desarrollador de C++ que busca escribir código eficiente y reutilizable.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo
+Ejemplo Result
+Ejemplo de Especialización
+Ejemplo de Especialización Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de función con dos parámetros de tipo
+template <typename T1, typename T2>
+void imprimirAmbos(T1 a, T2 b) {
+    std::cout << "Valor 1: " << a << ", Valor 2: " << b << std::endl;
+}
+
+int main() {
+    imprimirAmbos(3, 4.5); // Uso con int y double
+    imprimirAmbos('a', "Hola"); // Uso con char y const char*
+    imprimirAmbos(5, std::string("Mundo")); // Uso con int y std::string
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo--->
+```cpp
+int main() {
+    imprimirValores(3, 4.5); // Uso con int y double
+    imprimirValores('a', "Hola"); // Uso con char y const char*
+    imprimirValores(5, std::string("Mundo")); // Uso con int y std::string
+    return 0;
+}
+<---Ejemplo Result--->
+<---Ejemplo de Especialización--->
+```cpp
+#include <iostream>
+#include <cstring>
+
+// Definición de la plantilla de función genérica
+template <typename T1, typename T2>
+void comparar(T1 a, T2 b) {
+    std::cout << "Comparación genérica: " << (a == b) << std::endl;
+}
+
+// Especialización para const char* y const char*
+template <>
+void comparar<const char*, const char*>(const char* a, const char* b) {
+    std::cout << "Comparación de cadenas: " << (std::strcmp(a, b) == 0) << std::endl;
+}
+
+int main() {
+    comparar(5, 5); // Uso con int
+    comparar(3.14, 2.71); // Uso con double
+    comparar("Hola", "Hola"); // Uso con const char*
+
+    return 0;
+}
+<---Ejemplo de Especialización Result--->

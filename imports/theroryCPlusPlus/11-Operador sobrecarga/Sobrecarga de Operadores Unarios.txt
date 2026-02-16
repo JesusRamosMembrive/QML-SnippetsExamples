@@ -1,0 +1,197 @@
+<---EXPLANATION--->
+### Sobrecarga de Operadores Unarios en C++
+
+La sobrecarga de operadores unarios permite definir cómo se deben comportar los operadores unarios estándar (como `-`, `++`, `--`, `!`, `~`, etc.) cuando se utilizan con tipos de datos definidos por el usuario. Estos operadores actúan sobre un solo operando y son útiles para clases que representan datos que pueden beneficiarse de operaciones como la negación, la inversión de bits, la pre-incrementación, y la post-incrementación.
+
+A continuación, veremos cómo sobrecargar algunos operadores unarios en C++.
+
+#### Ejemplo: Clase `Number` para Operaciones Unarias
+
+Vamos a definir una clase `Number` que representa un número entero y sobrecargaremos los operadores `-`, `++`, `--`, `!`, y `~`.
+
+```cpp
+// Number.h
+#ifndef NUMBER_H
+#define NUMBER_H
+
+#include <iostream>
+
+class Number {
+private:
+    int value;
+public:
+    Number(int v = 0) : value(v) {}
+
+    // Sobrecarga del operador unario -
+    Number operator-() const {
+        return Number(-value);
+    }
+
+    // Sobrecarga del operador unario ++ (pre-incremento)
+    Number& operator++() {
+        ++value;
+        return *this;
+    }
+
+    // Sobrecarga del operador unario ++ (post-incremento)
+    Number operator++(int) {
+        Number temp = *this;
+        ++value;
+        return temp;
+    }
+
+    // Sobrecarga del operador unario -- (pre-decremento)
+    Number& operator--() {
+        --value;
+        return *this;
+    }
+
+    // Sobrecarga del operador unario -- (post-decremento)
+    Number operator--(int) {
+        Number temp = *this;
+        --value;
+        return temp;
+    }
+
+    // Sobrecarga del operador unario !
+    bool operator!() const {
+        return value == 0;
+    }
+
+    // Sobrecarga del operador unario ~
+    Number operator~() const {
+        return Number(~value);
+    }
+
+    // Sobrecarga del operador << para la salida
+    friend std::ostream& operator<<(std::ostream& os, const Number& n) {
+        os << n.value;
+        return os;
+    }
+};
+
+#endif // NUMBER_H
+```
+
+```cpp
+// main.cpp
+#include "Number.h"
+#include <iostream>
+
+int main() {
+    Number n1(5);
+
+    std::cout << "n1: " << n1 << std::endl;
+
+    Number n2 = -n1;
+    std::cout << "-n1: " << n2 << std::endl;
+
+    ++n1;
+    std::cout << "++n1: " << n1 << std::endl;
+
+    n1++;
+    std::cout << "n1++: " << n1 << std::endl;
+
+    --n1;
+    std::cout << "--n1: " << n1 << std::endl;
+
+    n1--;
+    std::cout << "n1--: " << n1 << std::endl;
+
+    std::cout << "!n1: " << !n1 << std::endl;
+
+    Number n3 = ~n1;
+    std::cout << "~n1: " << n3 << std::endl;
+
+    return 0;
+}
+```
+
+### Explicación de los Operadores Sobrecargados
+
+#### Sobrecarga del Operador Unario `-`
+
+```cpp
+Number operator-() const {
+    return Number(-value);
+}
+```
+Este operador devuelve un nuevo objeto `Number` cuyo valor es la negación del valor del operando.
+
+#### Sobrecarga del Operador Unario `++` (Pre-incremento)
+
+```cpp
+Number& operator++() {
+    ++value;
+    return *this;
+}
+```
+Este operador incrementa el valor del objeto y devuelve una referencia a él mismo. Se llama antes de evaluar la expresión.
+
+#### Sobrecarga del Operador Unario `++` (Post-incremento)
+
+```cpp
+Number operator++(int) {
+    Number temp = *this;
+    ++value;
+    return temp;
+}
+```
+Este operador incrementa el valor del objeto pero devuelve una copia del valor original antes de la operación. El parámetro `int` distingue esta versión de la versión de pre-incremento.
+
+#### Sobrecarga del Operador Unario `--` (Pre-decremento)
+
+```cpp
+Number& operator--() {
+    --value;
+    return *this;
+}
+```
+Este operador decrementa el valor del objeto y devuelve una referencia a él mismo. Se llama antes de evaluar la expresión.
+
+#### Sobrecarga del Operador Unario `--` (Post-decremento)
+
+```cpp
+Number operator--(int) {
+    Number temp = *this;
+    --value;
+    return temp;
+}
+```
+Este operador decrementa el valor del objeto pero devuelve una copia del valor original antes de la operación. El parámetro `int` distingue esta versión de la versión de pre-decremento.
+
+#### Sobrecarga del Operador Unario `!`
+
+```cpp
+bool operator!() const {
+    return value == 0;
+}
+```
+Este operador devuelve `true` si el valor del objeto es `0`, y `false` en caso contrario.
+
+#### Sobrecarga del Operador Unario `~`
+
+```cpp
+Number operator~() const {
+    return Number(~value);
+}
+```
+Este operador devuelve un nuevo objeto `Number` cuyo valor es el complemento a uno del valor del operando.
+
+### Ventajas de la Sobrecarga de Operadores Unarios
+
+1. **Legibilidad y Naturalidad**: Permite utilizar una sintaxis clara y familiar para operaciones unarias.
+2. **Facilidad de Uso**: Hace que las clases sean más intuitivas y fáciles de usar, especialmente cuando se trabaja con operaciones unarias comunes.
+3. **Encapsulación**: Permite encapsular la lógica de las operaciones unarias dentro de la clase.
+
+### Desventajas de la Sobrecarga de Operadores Unarios
+
+1. **Complejidad Adicional**: Puede agregar complejidad al código, lo que puede dificultar la comprensión y el mantenimiento, especialmente para desarrolladores no familiarizados con la sobrecarga de operadores.
+2. **Riesgo de Abuso**: Los operadores sobrecargados pueden ser utilizados de manera inapropiada o inesperada, lo que puede llevar a confusión.
+3. **Ambigüedad y Errores Sutiles**: La sobrecarga incorrecta de operadores puede introducir ambigüedades y errores sutiles que pueden ser difíciles de depurar.
+
+### Conclusión
+
+La sobrecarga de operadores unarios en C++ permite realizar operaciones unarias de manera intuitiva y natural en clases definidas por el usuario. Esto mejora la legibilidad y usabilidad del código, haciendo que las clases sean más fáciles de utilizar y entender. Sin embargo, debe utilizarse con cuidado para evitar agregar complejidad innecesaria y para mantener el código claro y mantenible. Es crucial documentar adecuadamente cualquier operador sobrecargado para asegurarse de que su comportamiento sea claro para otros desarrolladores.
+<---FILES--->
+NA.

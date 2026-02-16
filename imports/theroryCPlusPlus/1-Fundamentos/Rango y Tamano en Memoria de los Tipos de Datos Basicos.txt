@@ -1,0 +1,126 @@
+<---EXPLANATION--->
+### Rango y Tamaño en Memoria de los Tipos de Datos Básicos en C++
+
+Cada tipo de dato básico en C++ tiene un rango específico de valores que puede almacenar y un tamaño en memoria. A continuación, se presenta un resumen de los tipos de datos básicos, sus rangos y tamaños típicos en memoria. Estos tamaños pueden variar dependiendo de la arquitectura y el compilador, pero los valores proporcionados son comunes en sistemas de 32 y 64 bits.
+
+#### 1. **Enteros (`int`)**
+
+- **Tamaño:** 4 bytes
+- **Rango:** -2,147,483,648 a 2,147,483,647
+
+```cpp
+int miEntero = 42;
+```
+
+#### 2. **Caracteres (`char`)**
+
+- **Tamaño:** 1 byte
+- **Rango:**
+  - Con signo: -128 a 127
+  - Sin signo (`unsigned char`): 0 a 255
+
+```cpp
+char miCaracter = 'A';
+unsigned char miCaracterSinSigno = 200;
+```
+
+#### 3. **Booleanos (`bool`)**
+
+- **Tamaño:** 1 byte
+- **Rango:** `true` o `false` (representados internamente como 1 o 0)
+
+```cpp
+bool esVerdadero = true;
+```
+
+#### 4. **Flotantes (`float`)**
+
+- **Tamaño:** 4 bytes
+- **Rango:** Aproximadamente 1.2E-38 a 3.4E+38 con 6-7 dígitos de precisión decimal
+
+```cpp
+float miFlotante = 3.14f;
+```
+
+#### 5. **Doble precisión (`double`)**
+
+- **Tamaño:** 8 bytes
+- **Rango:** Aproximadamente 2.3E-308 a 1.7E+308 con 15-16 dígitos de precisión decimal
+
+```cpp
+double miDoble = 2.718281828459;
+```
+
+#### 6. **Enteros Cortos (`short`)**
+
+- **Tamaño:** 2 bytes
+- **Rango:** -32,768 a 32,767
+
+```cpp
+short miCorto = 100;
+```
+
+#### 7. **Enteros Largos (`long`)**
+
+- **Tamaño:** 4 bytes (en sistemas de 32 bits) o 8 bytes (en sistemas de 64 bits)
+- **Rango (4 bytes):** -2,147,483,648 a 2,147,483,647
+- **Rango (8 bytes):** -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807
+
+```cpp
+long miLargo = 100000L;
+```
+
+#### 8. **Enteros Muy Largos (`long long`)**
+
+- **Tamaño:** 8 bytes
+- **Rango:** -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807
+
+```cpp
+long long miMuyLargo = 9223372036854775807LL;
+```
+
+#### 9. **Tipos Sin Signo (`unsigned`)**
+
+- **`unsigned int`:**
+  - **Tamaño:** 4 bytes
+  - **Rango:** 0 a 4,294,967,295
+
+- **`unsigned short`:**
+  - **Tamaño:** 2 bytes
+  - **Rango:** 0 a 65,535
+
+- **`unsigned long`:**
+  - **Tamaño:** 4 bytes (32 bits) o 8 bytes (64 bits)
+  - **Rango (4 bytes):** 0 a 4,294,967,295
+  - **Rango (8 bytes):** 0 a 18,446,744,073,709,551,615
+
+- **`unsigned long long`:**
+  - **Tamaño:** 8 bytes
+  - **Rango:** 0 a 18,446,744,073,709,551,615
+
+```cpp
+unsigned int miEnteroSinSigno = 3000000000U;
+unsigned long long miMuyLargoSinSigno = 18446744073709551615ULL;
+```
+
+### Resumen en Tabla
+
+| Tipo de Dato           | Tamaño   | Rango (Con Signo)                             | Rango (Sin Signo)                          |
+|------------------------|----------|-----------------------------------------------|--------------------------------------------|
+| `char`                 | 1 byte   | -128 a 127                                    | 0 a 255                                    |
+| `bool`                 | 1 byte   | `true` (1) o `false` (0)                      | `true` (1) o `false` (0)                   |
+| `short`                | 2 bytes  | -32,768 a 32,767                              | 0 a 65,535                                 |
+| `int`                  | 4 bytes  | -2,147,483,648 a 2,147,483,647                | 0 a 4,294,967,295                          |
+| `long`                 | 4 bytes* | -2,147,483,648 a 2,147,483,647                | 0 a 4,294,967,295                          |
+| `long`                 | 8 bytes* | -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807 | 0 a 18,446,744,073,709,551,615 |
+| `long long`            | 8 bytes  | -9,223,372,036,854,775,808 a 9,223,372,036,854,775,807 | 0 a 18,446,744,073,709,551,615 |
+| `float`                | 4 bytes  | Aproximadamente 1.2E-38 a 3.4E+38              | N/A                                        |
+| `double`               | 8 bytes  | Aproximadamente 2.3E-308 a 1.7E+308            | N/A                                        |
+
+\*El tamaño de `long` puede variar entre 4 bytes y 8 bytes dependiendo de la arquitectura (32 bits vs 64 bits).
+
+### Conclusión
+
+El conocimiento del rango y tamaño en memoria de los distintos tipos de datos básicos es crucial para la programación eficiente y segura en C++. Elegir el tipo de dato adecuado puede ayudar a optimizar el uso de memoria y asegurar que los valores se manejen correctamente dentro del rango permitido por cada tipo.
+<---FILES--->
+NA.

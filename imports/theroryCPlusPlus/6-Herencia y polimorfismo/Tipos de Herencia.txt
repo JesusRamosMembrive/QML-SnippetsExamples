@@ -1,0 +1,415 @@
+<---EXPLANATION--->
+### Tipos de Herencia en C++
+
+La herencia en C++ permite a las clases derivadas heredar atributos y métodos de una o más clases base. Existen varios tipos de herencia que pueden utilizarse dependiendo de la relación entre las clases. Estos tipos incluyen herencia simple, múltiple, multinivel, jerárquica y híbrida.
+
+#### Herencia Simple
+
+La herencia simple es el tipo más básico de herencia en el que una clase derivada hereda de una única clase base.
+
+##### Ejemplo de Herencia Simple
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de la clase base
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+```
+
+En este ejemplo, `Perro` hereda de `Animal` utilizando herencia simple.
+
+#### Herencia Múltiple
+
+La herencia múltiple permite que una clase derivada herede de más de una clase base. C++ admite herencia múltiple, aunque se debe usar con cuidado para evitar ambigüedades y problemas de mantenimiento.
+
+##### Ejemplo de Herencia Múltiple
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Mascota {
+public:
+    void jugar() {
+        cout << "La mascota está jugando." << endl;
+    }
+};
+
+class Perro : public Animal, public Mascota {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal
+    miPerro.jugar(); // Método heredado de Mascota
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+```
+
+En este ejemplo, `Perro` hereda de ambas clases `Animal` y `Mascota` utilizando herencia múltiple.
+
+#### Herencia Multinivel
+
+La herencia multinivel es una cadena de herencias en la que una clase derivada se convierte en la clase base de otra clase derivada. Esto crea una cadena de clases.
+
+##### Ejemplo de Herencia Multinivel
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Mamifero : public Animal {
+public:
+    void amamantar() {
+        cout << "El mamífero está amamantando." << endl;
+    }
+};
+
+class Perro : public Mamifero {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal
+    miPerro.amamantar(); // Método heredado de Mamifero
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+```
+
+En este ejemplo, `Perro` hereda de `Mamifero`, que a su vez hereda de `Animal`, formando una herencia multinivel.
+
+#### Herencia Jerárquica
+
+La herencia jerárquica ocurre cuando una sola clase base tiene más de una clase derivada. Es decir, múltiples clases derivadas heredan de una misma clase base.
+
+##### Ejemplo de Herencia Jerárquica
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void maullar() {
+        cout << "El gato está maullando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal
+    miPerro.ladrar(); // Método de la clase derivada
+
+    Gato miGato;
+    miGato.comer(); // Método heredado de Animal
+    miGato.maullar(); // Método de la clase derivada
+
+    return 0;
+}
+```
+
+En este ejemplo, tanto `Perro` como `Gato` heredan de `Animal`, utilizando herencia jerárquica.
+
+#### Herencia Híbrida
+
+La herencia híbrida es una combinación de dos o más tipos de herencia. Puede incluir una combinación de herencia simple, múltiple, multinivel y jerárquica.
+
+##### Ejemplo de Herencia Híbrida
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Mascota {
+public:
+    void jugar() {
+        cout << "La mascota está jugando." << endl;
+    }
+};
+
+class Mamifero : public Animal {
+public:
+    void amamantar() {
+        cout << "El mamífero está amamantando." << endl;
+    }
+};
+
+class Perro : public Mamifero, public Mascota {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal a través de Mamifero
+    miPerro.amamantar(); // Método heredado de Mamifero
+    miPerro.jugar(); // Método heredado de Mascota
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+```
+
+En este ejemplo, `Perro` hereda de `Mamifero` (que a su vez hereda de `Animal`) y también de `Mascota`, combinando herencia múltiple y multinivel, formando una herencia híbrida.
+
+### Conclusión
+
+C++ ofrece varios tipos de herencia que permiten a los desarrolladores diseñar jerarquías de clases de acuerdo con las necesidades del problema. Herencia simple, múltiple, multinivel, jerárquica e híbrida son herramientas poderosas para crear relaciones entre clases y reutilizar código de manera eficiente. Sin embargo, es importante utilizar la herencia de manera adecuada para evitar problemas de complejidad y mantenimiento del código. Entender estos tipos de herencia y cómo aplicarlos correctamente es esencial para el desarrollo de software orientado a objetos en C++.
+<---FILES--->
+Ejemplo de Herencia Simple
+Ejemplo de Herencia Simple Result
+Ejemplo de Herencia Múltiple
+Ejemplo de Herencia Múltiple Result
+Ejemplo de Herencia Multinivel
+Ejemplo de Herencia Multinivel Result
+Ejemplo de Herencia Jerárquica
+Ejemplo de Herencia Jerárquica Result
+Ejemplo de Herencia Híbrida
+Ejemplo de Herencia Híbrida Result
+<---Ejemplo de Herencia Simple--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de la clase base
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+<---Ejemplo de Herencia Simple Result--->
+<---Ejemplo de Herencia Múltiple--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Mascota {
+public:
+    void jugar() {
+        cout << "La mascota está jugando." << endl;
+    }
+};
+
+class Perro : public Animal, public Mascota {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal
+    miPerro.jugar(); // Método heredado de Mascota
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+<---Ejemplo de Herencia Múltiple Result--->
+<---Ejemplo de Herencia Multinivel--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Mamifero : public Animal {
+public:
+    void amamantar() {
+        cout << "El mamífero está amamantando." << endl;
+    }
+};
+
+class Perro : public Mamifero {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal
+    miPerro.amamantar(); // Método heredado de Mamifero
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+<---Ejemplo de Herencia Multinivel Result--->
+<---Ejemplo de Herencia Jerárquica--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void maullar() {
+        cout << "El gato está maullando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal
+    miPerro.ladrar(); // Método de la clase derivada
+
+    Gato miGato;
+    miGato.comer(); // Método heredado de Animal
+    miGato.maullar(); // Método de la clase derivada
+
+    return 0;
+}
+<---Ejemplo de Herencia Jerárquica Result--->
+<---Ejemplo de Herencia Híbrida--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    void comer() {
+        cout << "El animal está comiendo." << endl;
+    }
+};
+
+class Mascota {
+public:
+    void jugar() {
+        cout << "La mascota está jugando." << endl;
+    }
+};
+
+class Mamifero : public Animal {
+public:
+    void amamantar() {
+        cout << "El mamífero está amamantando." << endl;
+    }
+};
+
+class Perro : public Mamifero, public Mascota {
+public:
+    void ladrar() {
+        cout << "El perro está ladrando." << endl;
+    }
+};
+
+int main() {
+    Perro miPerro;
+    miPerro.comer(); // Método heredado de Animal a través de Mamifero
+    miPerro.amamantar(); // Método heredado de Mamifero
+    miPerro.jugar(); // Método heredado de Mascota
+    miPerro.ladrar(); // Método de la clase derivada
+
+    return 0;
+}
+<---Ejemplo de Herencia Híbrida Result--->

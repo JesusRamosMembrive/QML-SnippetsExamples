@@ -1,0 +1,394 @@
+<---EXPLANATION--->
+### Pasar Arrays como Argumentos en C++
+
+Pasar arrays como argumentos a las funciones es una técnica común en C++ que permite a las funciones operar sobre colecciones de datos. A diferencia de otros lenguajes de programación, en C++ hay varias maneras de pasar arrays a las funciones, cada una con sus propias características y ventajas.
+
+#### Pasar Arrays por Puntero
+
+Cuando se pasa un array a una función, lo que realmente se pasa es un puntero al primer elemento del array. Esto significa que los cambios realizados en el array dentro de la función afectan al array original.
+
+##### Ejemplo de Pasar Arrays por Puntero
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirArray(int* arr, int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    int numeros[] = {1, 2, 3, 4, 5};
+    int tam = sizeof(numeros) / sizeof(numeros[0]);
+
+    imprimirArray(numeros, tam); // Pasar array a la función
+
+    return 0;
+}
+```
+
+En este ejemplo, el array `numeros` se pasa a la función `imprimirArray` como un puntero al primer elemento del array.
+
+#### Pasar Arrays por Referencia
+
+C++ permite pasar arrays por referencia, lo que asegura que la función recibe una referencia al array original. Esto evita la ambigüedad que puede surgir al pasar arrays por puntero y facilita la lectura del código.
+
+##### Ejemplo de Pasar Arrays por Referencia
+
+```cpp
+#include <iostream>
+using namespace std;
+
+template<size_t N>
+void imprimirArrayPorReferencia(int (&arr)[N]) {
+    for (int i = 0; i < N; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    int numeros[] = {1, 2, 3, 4, 5};
+
+    imprimirArrayPorReferencia(numeros); // Pasar array a la función por referencia
+
+    return 0;
+}
+```
+
+En este ejemplo, la función `imprimirArrayPorReferencia` recibe una referencia al array, asegurando que se trata del array completo y no solo de un puntero al primer elemento.
+
+#### Pasar Arrays de Cadenas
+
+Los arrays de cadenas (C-strings) se pueden pasar de la misma manera que los arrays de enteros. Dado que los C-strings son arrays de caracteres terminados en nulo, se puede usar la misma técnica para pasarlos como argumentos.
+
+##### Ejemplo de Pasar Arrays de Cadenas
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirCadenas(const char* cadenas[], int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << cadenas[i] << endl;
+    }
+}
+
+int main() {
+    const char* frutas[] = {"Manzana", "Banana", "Cereza", "Dátil"};
+
+    int tam = sizeof(frutas) / sizeof(frutas[0]);
+    imprimirCadenas(frutas, tam); // Pasar array de cadenas a la función
+
+    return 0;
+}
+```
+
+En este ejemplo, el array de C-strings `frutas` se pasa a la función `imprimirCadenas` como un puntero a un array de punteros a caracteres.
+
+### Pasar Arrays Multidimensionales
+
+Los arrays multidimensionales también pueden pasarse a las funciones. Es importante especificar todas las dimensiones excepto la primera al pasar el array a la función.
+
+##### Ejemplo de Pasar Arrays Bidimensionales
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirMatriz(int matriz[][3], int filas) {
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            cout << matriz[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+int main() {
+    int matriz[2][3] = {
+        {1, 2, 3},
+        {4, 5, 6}
+    };
+
+    imprimirMatriz(matriz, 2); // Pasar array bidimensional a la función
+
+    return 0;
+}
+```
+
+En este ejemplo, el array bidimensional `matriz` se pasa a la función `imprimirMatriz`, donde se especifica la segunda dimensión en la declaración de la función.
+
+### Consideraciones y Buenas Prácticas
+
+1. **Uso de `const`**: Siempre que sea posible, usa `const` para proteger los arrays de modificaciones no deseadas dentro de la función.
+
+   ```cpp
+   void imprimirArray(const int* arr, int tam) {
+       // Código para imprimir el array
+   }
+   ```
+
+2. **Tamaño del Array**: Asegúrate de pasar también el tamaño del array a la función para evitar accesos fuera de los límites.
+
+   ```cpp
+   void imprimirArray(const int* arr, int tam) {
+       for (int i = 0; i < tam; ++i) {
+           cout << arr[i] << " ";
+       }
+       cout << endl;
+   }
+   ```
+
+3. **Referencias y Plantillas**: Para arrays de tamaño fijo, las referencias y las plantillas pueden hacer el código más seguro y claro.
+
+   ```cpp
+   template<size_t N>
+   void imprimirArrayPorReferencia(int (&arr)[N]) {
+       for (int i = 0; i < N; ++i) {
+           cout << arr[i] << " ";
+       }
+       cout << endl;
+   }
+   ```
+
+4. **Arrays Multidimensionales**: Especifica todas las dimensiones excepto la primera al pasar arrays multidimensionales.
+
+   ```cpp
+   void imprimirMatriz(int matriz[][3], int filas) {
+       // Código para imprimir la matriz
+   }
+   ```
+
+### Ejemplo Completo
+
+A continuación, un ejemplo completo que ilustra diversas formas de pasar arrays a las funciones:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Pasar array por puntero
+void imprimirArray(const int* arr, int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// Pasar array por referencia
+template<size_t N>
+void imprimirArrayPorReferencia(const int (&arr)[N]) {
+    for (int i = 0; i < N; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// Pasar array de cadenas
+void imprimirCadenas(const char* cadenas[], int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << cadenas[i] << endl;
+    }
+}
+
+// Pasar array bidimensional
+void imprimirMatriz(int matriz[][3], int filas) {
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            cout << matriz[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+int main() {
+    // Array unidimensional
+    int numeros[] = {1, 2, 3, 4, 5};
+    int tam = sizeof(numeros) / sizeof(numeros[0]);
+
+    imprimirArray(numeros, tam);
+    imprimirArrayPorReferencia(numeros);
+
+    // Array de cadenas
+    const char* frutas[] = {"Manzana", "Banana", "Cereza", "Dátil"};
+    int tamFrutas = sizeof(frutas) / sizeof(frutas[0]);
+
+    imprimirCadenas(frutas, tamFrutas);
+
+    // Array bidimensional
+    int matriz[2][3] = {
+        {1, 2, 3},
+        {4, 5, 6}
+    };
+
+    imprimirMatriz(matriz, 2);
+
+    return 0;
+}
+```
+
+### Conclusión
+
+Pasar arrays como argumentos a funciones en C++ es una técnica fundamental que permite manejar colecciones de datos de manera eficiente. Entender las diferentes formas de pasar arrays, ya sea por puntero, referencia, o utilizando plantillas, es esencial para escribir funciones versátiles y seguras. Con estas habilidades, los desarrolladores pueden crear programas más robustos y modulares.
+<---FILES--->
+Ejemplo de Pasar Arrays por Puntero
+Ejemplo de Pasar Arrays por Puntero Result
+Ejemplo de Pasar Arrays por Referencia
+Ejemplo de Pasar Arrays por Referencia Result
+Ejemplo de Pasar Arrays de Cadenas
+Ejemplo de Pasar Arrays de Cadenas Result
+Ejemplo de Pasar Arrays Bidimensionales
+Ejemplo de Pasar Arrays Bidimensionales Result
+<---Ejemplo de Pasar Arrays por Puntero--->
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirArray(int* arr, int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    int numeros[] = {1, 2, 3, 4, 5};
+    int tam = sizeof(numeros) / sizeof(numeros[0]);
+
+    imprimirArray(numeros, tam); // Pasar array a la función
+
+    return 0;
+}
+<---Ejemplo de Pasar Arrays por Puntero Result--->
+<---Ejemplo de Pasar Arrays por Referencia--->
+```cpp
+#include <iostream>
+using namespace std;
+
+template<size_t N>
+void imprimirArrayPorReferencia(int (&arr)[N]) {
+    for (int i = 0; i < N; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    int numeros[] = {1, 2, 3, 4, 5};
+
+    imprimirArrayPorReferencia(numeros); // Pasar array a la función por referencia
+
+    return 0;
+}
+<---Ejemplo de Pasar Arrays por Referencia Result--->
+<---Ejemplo de Pasar Arrays de Cadenas--->
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirCadenas(const char* cadenas[], int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << cadenas[i] << endl;
+    }
+}
+
+int main() {
+    const char* frutas[] = {"Manzana", "Banana", "Cereza", "Dátil"};
+
+    int tam = sizeof(frutas) / sizeof(frutas[0]);
+    imprimirCadenas(frutas, tam); // Pasar array de cadenas a la función
+
+    return 0;
+}
+<---Ejemplo de Pasar Arrays de Cadenas Result--->
+<---Ejemplo de Pasar Arrays Bidimensionales--->
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirMatriz(int matriz[][3], int filas) {
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            cout << matriz[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+int main() {
+    int matriz[2][3] = {
+        {1, 2, 3},
+        {4, 5, 6}
+    };
+
+    imprimirMatriz(matriz, 2); // Pasar array bidimensional a la función
+
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+// Pasar array por puntero
+void imprimirArray(const int* arr, int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// Pasar array por referencia
+template<size_t N>
+void imprimirArrayPorReferencia(const int (&arr)[N]) {
+    for (int i = 0; i < N; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// Pasar array de cadenas
+void imprimirCadenas(const char* cadenas[], int tam) {
+    for (int i = 0; i < tam; ++i) {
+        cout << cadenas[i] << endl;
+    }
+}
+
+// Pasar array bidimensional
+void imprimirMatriz(int matriz[][3], int filas) {
+    for (int i = 0; i < filas; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            cout << matriz[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+int main() {
+    // Array unidimensional
+    int numeros[] = {1, 2, 3, 4, 5};
+    int tam = sizeof(numeros) / sizeof(numeros[0]);
+
+    imprimirArray(numeros, tam);
+    imprimirArrayPorReferencia(numeros);
+
+    // Array de cadenas
+    const char* frutas[] = {"Manzana", "Banana", "Cereza", "Dátil"};
+    int tamFrutas = sizeof(frutas) / sizeof(frutas[0]);
+
+    imprimirCadenas(frutas, tamFrutas);
+
+    // Array bidimensional
+    int matriz[2][3] = {
+        {1, 2, 3},
+        {4, 5, 6}
+    };
+
+    imprimirMatriz(matriz, 2);
+
+    return 0;
+}
+<---Ejemplo de Pasar Arrays Bidimensionales Result--->

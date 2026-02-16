@@ -1,0 +1,311 @@
+<---EXPLANATION--->
+### Setters y Getters en una Clase
+
+Los setters y getters son métodos en una clase que se utilizan para controlar el acceso y la modificación de los atributos privados. Estos métodos ayudan a mantener el principio de encapsulación, permitiendo el acceso controlado a los datos de la clase y protegiendo la integridad de los atributos.
+
+#### Encapsulación
+
+La encapsulación es uno de los pilares de la programación orientada a objetos. Consiste en ocultar los detalles internos de una clase y proporcionar métodos públicos para acceder y modificar los datos. Esto mejora la seguridad y la integridad del estado del objeto.
+
+##### Definición de Atributos Privados
+
+En C++, los atributos de una clase se pueden declarar como privados utilizando el modificador de acceso `private`. Esto significa que estos atributos solo pueden ser accedidos y modificados desde dentro de la propia clase.
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Métodos públicos
+};
+```
+
+#### Métodos Getters
+
+Los métodos getters se utilizan para acceder a los valores de los atributos privados. Generalmente, los getters son funciones constantes (`const`) porque no modifican el estado del objeto.
+
+##### Ejemplo de Getters
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Getter para el nombre
+    string getNombre() const {
+        return nombre;
+    }
+
+    // Getter para la edad
+    int getEdad() const {
+        return edad;
+    }
+};
+```
+
+En este ejemplo, `getNombre` y `getEdad` son métodos getters que devuelven los valores de `nombre` y `edad`, respectivamente.
+
+#### Métodos Setters
+
+Los métodos setters se utilizan para modificar los valores de los atributos privados. Los setters permiten validar y controlar los datos antes de asignarlos a los atributos.
+
+##### Ejemplo de Setters
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setter para el nombre
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    // Setter para la edad
+    void setEdad(int e) {
+        if (e > 0) {  // Validación simple
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+};
+```
+
+En este ejemplo, `setNombre` y `setEdad` son métodos setters que permiten modificar los valores de `nombre` y `edad`, respectivamente. El setter `setEdad` incluye una validación para asegurarse de que la edad sea positiva.
+
+#### Uso de Setters y Getters
+
+Los setters y getters se utilizan en el programa principal para interactuar con los atributos privados de la clase.
+
+##### Ejemplo Completo
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setters
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    void setEdad(int e) {
+        if (e > 0) {
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan("Juan", 30);
+    juan.mostrarInformacion();
+
+    // Modificar los atributos usando setters
+    juan.setNombre("Juan Perez");
+    juan.setEdad(31);
+    juan.mostrarInformacion();
+
+    // Intentar establecer una edad no válida
+    juan.setEdad(-5);
+    juan.mostrarInformacion();
+
+    // Acceder a los atributos usando getters
+    cout << "Nombre: " << juan.getNombre() << endl;
+    cout << "Edad: " << juan.getEdad() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, se crea un objeto `juan` de la clase `Persona`, se utilizan los setters para modificar sus atributos y los getters para acceder a ellos. La validación en el setter `setEdad` asegura que la edad no pueda establecerse en un valor no válido.
+
+### Conclusión
+
+Los setters y getters son herramientas esenciales en la programación orientada a objetos para implementar la encapsulación. Permiten controlar el acceso y la modificación de los atributos privados de una clase, asegurando que los datos se manejen de manera segura y consistente. Con el uso adecuado de setters y getters, se puede mejorar la robustez y mantenibilidad del código.
+<---FILES--->
+Definición de Atributos Privados
+Definición de Atributos Privados Result
+Ejemplo de Getters
+Ejemplo de Getters Result
+Ejemplo de Setters
+Ejemplo de Setters Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Definición de Atributos Privados--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Métodos públicos
+};
+<---Definición de Atributos Privados Result--->
+<---Ejemplo de Getters--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Getter para el nombre
+    string getNombre() const {
+        return nombre;
+    }
+
+    // Getter para la edad
+    int getEdad() const {
+        return edad;
+    }
+};
+<---Ejemplo de Getters Result--->
+<---Ejemplo de Setters--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setter para el nombre
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    // Setter para la edad
+    void setEdad(int e) {
+        if (e > 0) {  // Validación simple
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+};
+<---Ejemplo de Setters Result--->
+<---Ejemplo Completo--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setters
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    void setEdad(int e) {
+        if (e > 0) {
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan("Juan", 30);
+    juan.mostrarInformacion();
+
+    // Modificar los atributos usando setters
+    juan.setNombre("Juan Perez");
+    juan.setEdad(31);
+    juan.mostrarInformacion();
+
+    // Intentar establecer una edad no válida
+    juan.setEdad(-5);
+    juan.mostrarInformacion();
+
+    // Acceder a los atributos usando getters
+    cout << "Nombre: " << juan.getNombre() << endl;
+    cout << "Edad: " << juan.getEdad() << endl;
+
+    return 0;
+}
+<---Ejemplo Completo Result--->

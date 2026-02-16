@@ -1,0 +1,239 @@
+<---EXPLANATION--->
+### Polimorfismo Estático y Dinámico en C++
+
+El polimorfismo en C++ se puede clasificar en dos tipos principales: polimorfismo estático y polimorfismo dinámico. Ambos tipos permiten que las funciones se comporten de diferentes maneras dependiendo de cómo se invocan, pero difieren en cuándo se resuelve la llamada a la función (en tiempo de compilación o en tiempo de ejecución) y en cómo se implementan.
+
+#### Polimorfismo Estático
+
+El polimorfismo estático, también conocido como polimorfismo en tiempo de compilación, se resuelve durante la compilación del programa. Se logra principalmente mediante sobrecarga de funciones y plantillas (templates).
+
+##### Sobrecarga de Funciones
+
+La sobrecarga de funciones permite definir múltiples funciones con el mismo nombre pero con diferentes listas de parámetros.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Sobrecarga {
+public:
+    void imprimir(int i) {
+        cout << "Entero: " << i << endl;
+    }
+
+    void imprimir(double d) {
+        cout << "Doble: " << d << endl;
+    }
+
+    void imprimir(const string& s) {
+        cout << "Cadena: " << s << endl;
+    }
+};
+
+int main() {
+    Sobrecarga obj;
+    obj.imprimir(10);
+    obj.imprimir(3.14);
+    obj.imprimir("Hola");
+    return 0;
+}
+```
+
+En este ejemplo, la clase `Sobrecarga` tiene tres versiones de la función `imprimir`, cada una con diferentes parámetros. La selección de la función correcta se realiza en tiempo de compilación.
+
+##### Plantillas (Templates)
+
+Las plantillas permiten crear funciones y clases genéricas que pueden trabajar con cualquier tipo de datos.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+template <typename T>
+void imprimir(T valor) {
+    cout << "Valor: " << valor << endl;
+}
+
+int main() {
+    imprimir(10);
+    imprimir(3.14);
+    imprimir("Hola");
+    return 0;
+}
+```
+
+En este ejemplo, la función plantilla `imprimir` puede tomar cualquier tipo de argumento. El compilador genera la versión adecuada de la función para cada llamada en tiempo de compilación.
+
+#### Polimorfismo Dinámico
+
+El polimorfismo dinámico, también conocido como polimorfismo en tiempo de ejecución, se resuelve durante la ejecución del programa. Se logra mediante herencia y funciones virtuales. Permite que una llamada a una función miembro se dirija a diferentes implementaciones según el tipo real del objeto que invoca la función.
+
+##### Ejemplo de Polimorfismo Dinámico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+    virtual ~Animal() {}
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal* a = new Animal();
+    Animal* p = new Perro();
+    Animal* g = new Gato();
+
+    hacerSonidoAnimal(*a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(*p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(*g); // Llama a Gato::hacerSonido()
+
+    delete a;
+    delete p;
+    delete g;
+    return 0;
+}
+```
+
+En este ejemplo, la función `hacerSonidoAnimal` acepta una referencia a `Animal` pero llama a la implementación correcta de `hacerSonido` en tiempo de ejecución según el tipo real del objeto (`Animal`, `Perro`, `Gato`).
+
+#### Diferencias entre Polimorfismo Estático y Dinámico
+
+1. **Resolución:**
+   - **Polimorfismo Estático:** Se resuelve en tiempo de compilación.
+   - **Polimorfismo Dinámico:** Se resuelve en tiempo de ejecución.
+
+2. **Mecanismo:**
+   - **Polimorfismo Estático:** Se implementa mediante sobrecarga de funciones y plantillas.
+   - **Polimorfismo Dinámico:** Se implementa mediante herencia y funciones virtuales.
+
+3. **Flexibilidad:**
+   - **Polimorfismo Estático:** Menos flexible ya que las decisiones se toman en tiempo de compilación.
+   - **Polimorfismo Dinámico:** Más flexible ya que las decisiones se toman en tiempo de ejecución.
+
+4. **Uso de Recursos:**
+   - **Polimorfismo Estático:** Generalmente más eficiente en términos de uso de recursos ya que no hay sobrecarga en tiempo de ejecución.
+   - **Polimorfismo Dinámico:** Puede tener una sobrecarga en tiempo de ejecución debido a la resolución dinámica de las funciones.
+
+### Conclusión
+
+El polimorfismo es una característica fundamental de la programación orientada a objetos que permite a las funciones comportarse de manera diferente según el contexto. En C++, el polimorfismo puede ser estático o dinámico. El polimorfismo estático se resuelve en tiempo de compilación mediante sobrecarga de funciones y plantillas, mientras que el polimorfismo dinámico se resuelve en tiempo de ejecución mediante herencia y funciones virtuales. Entender y utilizar ambos tipos de polimorfismo permite a los desarrolladores diseñar sistemas más flexibles, reutilizables y eficientes.
+<---FILES--->
+Sobrecarga de Funciones
+Sobrecarga de Funciones Result
+Plantillas (Templates)
+Plantillas (Templates) Result
+Ejemplo de Polimorfismo Dinámico
+Ejemplo de Polimorfismo Dinámico Result
+<---Sobrecarga de Funciones--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Sobrecarga {
+public:
+    void imprimir(int i) {
+        cout << "Entero: " << i << endl;
+    }
+
+    void imprimir(double d) {
+        cout << "Doble: " << d << endl;
+    }
+
+    void imprimir(const string& s) {
+        cout << "Cadena: " << s << endl;
+    }
+};
+
+int main() {
+    Sobrecarga obj;
+    obj.imprimir(10);
+    obj.imprimir(3.14);
+    obj.imprimir("Hola");
+    return 0;
+}
+<---Sobrecarga de Funciones Result--->
+<---Plantillas (Templates)--->
+```cpp
+#include <iostream>
+using namespace std;
+
+template <typename T>
+void imprimir(T valor) {
+    cout << "Valor: " << valor << endl;
+}
+
+int main() {
+    imprimir(10);
+    imprimir(3.14);
+    imprimir("Hola");
+    return 0;
+}
+<---Plantillas (Templates) Result--->
+<---Ejemplo de Polimorfismo Dinámico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+    virtual ~Animal() {}
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal* a = new Animal();
+    Animal* p = new Perro();
+    Animal* g = new Gato();
+
+    hacerSonidoAnimal(*a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(*p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(*g); // Llama a Gato::hacerSonido()
+
+    delete a;
+    delete p;
+    delete g;
+    return 0;
+}
+<---Ejemplo de Polimorfismo Dinámico Result--->

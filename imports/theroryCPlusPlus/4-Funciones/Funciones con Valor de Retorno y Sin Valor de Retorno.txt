@@ -1,0 +1,256 @@
+<---EXPLANATION--->
+### Funciones con Valor de Retorno y Sin Valor de Retorno en C++
+
+Las funciones en C++ pueden estar diseñadas para devolver un valor o no devolver ningún valor. La diferencia entre ambas reside en el tipo de retorno especificado en la declaración de la función.
+
+#### Funciones con Valor de Retorno
+
+Una función con valor de retorno es una función que devuelve un valor al llamador cuando la función termina. El tipo de valor de retorno puede ser cualquier tipo de dato, como `int`, `double`, `string`, objetos de clases definidas por el usuario, entre otros.
+
+##### Sintaxis
+
+```cpp
+tipo_de_retorno nombre_funcion(lista_de_parametros) {
+    // Cuerpo de la función
+    return valor; // Devolver un valor del tipo especificado
+}
+```
+
+##### Ejemplo de Función con Valor de Retorno
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que devuelve la suma de dos enteros
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int resultado = sumar(5, 3);
+    cout << "La suma es: " << resultado << endl;
+    return 0;
+}
+```
+
+En este ejemplo, la función `sumar` devuelve un valor entero que es el resultado de sumar dos enteros. El valor devuelto se captura en la variable `resultado` en la función `main`.
+
+##### Ejemplo con un Tipo de Dato Diferente
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que devuelve un saludo como string
+string obtenerSaludo(string nombre) {
+    return "Hola, " + nombre + "!";
+}
+
+int main() {
+    string saludo = obtenerSaludo("Juan");
+    cout << saludo << endl;
+    return 0;
+}
+```
+
+En este ejemplo, la función `obtenerSaludo` devuelve una cadena de texto que es un saludo personalizado.
+
+#### Funciones Sin Valor de Retorno
+
+Una función sin valor de retorno (también conocida como función void) no devuelve ningún valor. Estas funciones se utilizan cuando se desea realizar una acción pero no se necesita devolver información al llamador.
+
+##### Sintaxis
+
+```cpp
+void nombre_funcion(lista_de_parametros) {
+    // Cuerpo de la función
+    // No hay sentencia return
+}
+```
+
+##### Ejemplo de Función Sin Valor de Retorno
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que imprime un mensaje
+void imprimirMensaje(string mensaje) {
+    cout << mensaje << endl;
+}
+
+int main() {
+    imprimirMensaje("Hola, Mundo!");
+    return 0;
+}
+```
+
+En este ejemplo, la función `imprimirMensaje` no devuelve ningún valor. Simplemente realiza la acción de imprimir un mensaje en la consola.
+
+##### Ejemplo con Parámetros por Referencia
+
+A veces, se usan funciones `void` para modificar los valores de los parámetros pasados por referencia.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que incrementa el valor de una variable
+void incrementar(int& num) {
+    num++;
+}
+
+int main() {
+    int valor = 10;
+    incrementar(valor);
+    cout << "Valor después de incrementar: " << valor << endl;
+    return 0;
+}
+```
+
+En este ejemplo, la función `incrementar` modifica el valor del parámetro `num` directamente, y esta modificación se refleja en la variable `valor` en la función `main`.
+
+### Comparación entre Funciones con y Sin Valor de Retorno
+
+| Característica                      | Función con Valor de Retorno                    | Función sin Valor de Retorno (void)              |
+|-------------------------------------|-------------------------------------------------|-------------------------------------------------|
+| Tipo de Retorno                     | Cualquier tipo de dato                          | `void`                                          |
+| Uso                                 | Devuelve un valor al llamador                   | Realiza una acción sin devolver un valor         |
+| Sintaxis de Retorno                 | `return valor;`                                 | No necesita `return`, pero puede usar `return;`  |
+| Captura de Valor Devuelto           | El valor devuelto puede capturarse en una variable | No devuelve valor para capturar                  |
+| Modificación de Parámetros          | No modifica parámetros a menos que se pasen por referencia o puntero | Puede modificar parámetros pasados por referencia o puntero |
+
+### Ejemplo Completo
+
+A continuación, un ejemplo que ilustra tanto funciones con valor de retorno como funciones sin valor de retorno:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función con valor de retorno
+double calcularAreaCirculo(double radio) {
+    return 3.14159 * radio * radio;
+}
+
+// Función sin valor de retorno
+void imprimirArea(double area) {
+    cout << "El área del círculo es: " << area << endl;
+}
+
+int main() {
+    double radio = 5.0;
+    double area = calcularAreaCirculo(radio); // Llamada a función con valor de retorno
+    imprimirArea(area);                       // Llamada a función sin valor de retorno
+    return 0;
+}
+```
+
+En este ejemplo, `calcularAreaCirculo` es una función que devuelve el área de un círculo dado su radio, y `imprimirArea` es una función que imprime el área en la consola.
+
+### Conclusión
+
+Las funciones con valor de retorno y sin valor de retorno son componentes esenciales en C++ que permiten realizar tareas y devolver información útil al llamador. Las funciones con valor de retorno son adecuadas cuando se necesita calcular y devolver un resultado, mientras que las funciones `void` son útiles para realizar acciones que no requieren devolver un valor. Comprender cuándo y cómo usar cada tipo de función es crucial para escribir código claro, eficiente y modular en C++.
+<---FILES--->
+Sintaxis
+Sintaxis Result
+Ejemplo de Función con Valor de Retorno
+Ejemplo de Función con Valor de Retorno Result
+Ejemplo con un Tipo de Dato Diferente
+Ejemplo con un Tipo de Dato Diferente Result
+Ejemplo de Función Sin Valor de Retorno
+Ejemplo de Función Sin Valor de Retorno Result
+Ejemplo con Parámetros por Referencia
+Ejemplo con Parámetros por Referencia Result
+<---Sintaxis--->
+```cpp
+void nombre_funcion(lista_de_parametros) {
+    // Cuerpo de la función
+    // No hay sentencia return
+}
+<---Sintaxis Result--->
+<---Ejemplo de Función con Valor de Retorno--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que devuelve la suma de dos enteros
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int resultado = sumar(5, 3);
+    cout << "La suma es: " << resultado << endl;
+    return 0;
+}
+<---Ejemplo de Función con Valor de Retorno Result--->
+<---Ejemplo con un Tipo de Dato Diferente--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que devuelve un saludo como string
+string obtenerSaludo(string nombre) {
+    return "Hola, " + nombre + "!";
+}
+
+int main() {
+    string saludo = obtenerSaludo("Juan");
+    cout << saludo << endl;
+    return 0;
+}
+<---Ejemplo con un Tipo de Dato Diferente Result--->
+<---Ejemplo de Función Sin Valor de Retorno--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que imprime un mensaje
+void imprimirMensaje(string mensaje) {
+    cout << mensaje << endl;
+}
+
+int main() {
+    imprimirMensaje("Hola, Mundo!");
+    return 0;
+}
+<---Ejemplo de Función Sin Valor de Retorno Result--->
+<---Ejemplo con Parámetros por Referencia--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función que incrementa el valor de una variable
+void incrementar(int& num) {
+    num++;
+}
+
+int main() {
+    int valor = 10;
+    incrementar(valor);
+    cout << "Valor después de incrementar: " << valor << endl;
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función con valor de retorno
+double calcularAreaCirculo(double radio) {
+    return 3.14159 * radio * radio;
+}
+
+// Función sin valor de retorno
+void imprimirArea(double area) {
+    cout << "El área del círculo es: " << area << endl;
+}
+
+int main() {
+    double radio = 5.0;
+    double area = calcularAreaCirculo(radio); // Llamada a función con valor de retorno
+    imprimirArea(area);                       // Llamada a función sin valor de retorno
+    return 0;
+}
+<---Ejemplo con Parámetros por Referencia Result--->

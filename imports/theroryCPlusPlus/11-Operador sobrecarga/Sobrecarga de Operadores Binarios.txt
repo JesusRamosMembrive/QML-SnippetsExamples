@@ -1,0 +1,139 @@
+<---EXPLANATION--->
+### Sobrecarga de Operadores Binarios en C++
+
+La sobrecarga de operadores binarios permite definir cómo se deben comportar los operadores binarios estándar (como `&`, `|`, `^`, `<<`, `>>`, etc.) cuando se utilizan con tipos de datos definidos por el usuario. Esto es útil para clases que representan datos que pueden beneficiarse de operaciones bit a bit, como números grandes, máscaras de bits, etc.
+
+A continuación, veremos cómo sobrecargar algunos operadores binarios básicos en C++.
+
+#### Ejemplo: Clase `BitMask` para Manipulación de Bits
+
+Vamos a definir una clase `BitMask` que representa una máscara de bits y sobrecargaremos los operadores `&`, `|`, `^`, `<<` y `>>`.
+
+```cpp
+// BitMask.h
+#ifndef BITMASK_H
+#define BITMASK_H
+
+#include <iostream>
+#include <bitset>
+
+class BitMask {
+private:
+    std::bitset<32> bits; // Usamos std::bitset para simplicidad
+public:
+    BitMask(unsigned long val = 0) : bits(val) {}
+
+    // Sobrecarga del operador &
+    BitMask operator&(const BitMask& other) const {
+        return BitMask(bits.to_ulong() & other.bits.to_ulong());
+    }
+
+    // Sobrecarga del operador |
+    BitMask operator|(const BitMask& other) const {
+        return BitMask(bits.to_ulong() | other.bits.to_ulong());
+    }
+
+    // Sobrecarga del operador ^
+    BitMask operator^(const BitMask& other) const {
+        return BitMask(bits.to_ulong() ^ other.bits.to_ulong());
+    }
+
+    // Sobrecarga del operador <<
+    BitMask operator<<(int shift) const {
+        return BitMask(bits.to_ulong() << shift);
+    }
+
+    // Sobrecarga del operador >>
+    BitMask operator>>(int shift) const {
+        return BitMask(bits.to_ulong() >> shift);
+    }
+
+    // Sobrecarga del operador << para la salida
+    friend std::ostream& operator<<(std::ostream& os, const BitMask& bm) {
+        os << bm.bits;
+        return os;
+    }
+};
+
+#endif // BITMASK_H
+```
+
+```cpp
+// main.cpp
+#include "BitMask.h"
+#include <iostream>
+
+int main() {
+    BitMask bm1(0b1100);  // 12 en binario
+    BitMask bm2(0b1010);  // 10 en binario
+
+    BitMask andResult = bm1 & bm2;
+    BitMask orResult = bm1 | bm2;
+    BitMask xorResult = bm1 ^ bm2;
+    BitMask leftShiftResult = bm1 << 2;
+    BitMask rightShiftResult = bm1 >> 2;
+
+    std::cout << "bm1: " << bm1 << std::endl;
+    std::cout << "bm2: " << bm2 << std::endl;
+    std::cout << "AND: " << andResult << std::endl;
+    std::cout << "OR: " << orResult << std::endl;
+    std::cout << "XOR: " << xorResult << std::endl;
+    std::cout << "Left Shift: " << leftShiftResult << std::endl;
+    std::cout << "Right Shift: " << rightShiftResult << std::endl;
+
+    return 0;
+}
+```
+
+### Explicación de los Operadores Sobrecargados
+
+#### Sobrecarga del Operador `&` (AND)
+
+```cpp
+BitMask operator&(const BitMask& other) const {
+    return BitMask(bits.to_ulong() & other.bits.to_ulong());
+}
+```
+Este operador devuelve un nuevo objeto `BitMask` que representa el resultado de la operación AND bit a bit entre dos máscaras de bits.
+
+#### Sobrecarga del Operador `|` (OR)
+
+```cpp
+BitMask operator|(const BitMask& other) const {
+    return BitMask(bits.to_ulong() | other.bits.to_ulong());
+}
+```
+Este operador devuelve un nuevo objeto `BitMask` que representa el resultado de la operación OR bit a bit entre dos máscaras de bits.
+
+#### Sobrecarga del Operador `^` (XOR)
+
+```cpp
+BitMask operator^(const BitMask& other) const {
+    return BitMask(bits.to_ulong() ^ other.bits.to_ulong());
+}
+```
+Este operador devuelve un nuevo objeto `BitMask` que representa el resultado de la operación XOR bit a bit entre dos máscaras de bits.
+
+#### Sobrecarga del Operador `<<` (Shift a la Izquierda)
+
+```cpp
+BitMask operator<<(int shift) const {
+    return BitMask(bits.to_ulong() << shift);
+}
+```
+Este operador devuelve un nuevo objeto `BitMask` que representa el resultado de desplazar los bits hacia la izquierda por una cantidad especificada.
+
+#### Sobrecarga del Operador `>>` (Shift a la Derecha)
+
+```cpp
+BitMask operator>>(int shift) const {
+    return BitMask(bits.to_ulong() >> shift);
+}
+```
+Este operador devuelve un nuevo objeto `BitMask` que representa el resultado de desplazar los bits hacia la derecha por una cantidad especificada.
+
+### Ventajas de la Sobrecarga de Operadores Binarios
+
+1. **Legibilidad y Naturalidad**: Permite utilizar una sintaxis clara y familiar para operaciones bit a bit.
+<---FILES--->
+NA.

@@ -1,0 +1,343 @@
+<---EXPLANATION--->
+### Acceso a Miembros de la Clase Base y Creación de Objetos de la Clase Derivada en C++
+
+En la programación orientada a objetos en C++, la herencia permite que las clases derivadas accedan a los miembros de la clase base y extiendan su funcionalidad. Entender cómo se accede a estos miembros y cómo se crean objetos de clases derivadas es crucial para aprovechar al máximo la herencia.
+
+#### Acceso a Miembros de la Clase Base
+
+En C++, los miembros de una clase base pueden tener diferentes niveles de acceso: `public`, `protected`, y `private`. La accesibilidad de estos miembros en una clase derivada depende del especificador de acceso utilizado en la herencia y del nivel de acceso original de los miembros en la clase base.
+
+##### Especificadores de Acceso
+
+- **`public`:** Los miembros públicos de la clase base se mantienen públicos en la clase derivada. Los miembros protegidos de la clase base se mantienen protegidos en la clase derivada.
+- **`protected`:** Los miembros públicos y protegidos de la clase base se convierten en protegidos en la clase derivada.
+- **`private`:** Los miembros públicos y protegidos de la clase base se convierten en privados en la clase derivada.
+
+##### Ejemplo de Acceso a Miembros de la Clase Base
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+
+protected:
+    int protectedVar;
+
+private:
+    int privateVar;
+};
+
+class DerivadaPublic : public Base {
+public:
+    void mostrar() {
+        cout << "Acceso en DerivadaPublic:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+class DerivadaProtected : protected Base {
+public:
+    void mostrar() {
+        cout << "Acceso en DerivadaProtected:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+class DerivadaPrivate : private Base {
+public:
+    void mostrar() {
+        cout << "Acceso en DerivadaPrivate:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    DerivadaPublic objPublic;
+    objPublic.publicVar = 10;
+    objPublic.mostrar();
+
+    DerivadaProtected objProtected;
+    // objProtected.publicVar = 20; // No accesible desde fuera de la clase derivada
+    objProtected.mostrar();
+
+    DerivadaPrivate objPrivate;
+    // objPrivate.publicVar = 30; // No accesible desde fuera de la clase derivada
+    objPrivate.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, mostramos cómo los miembros de la clase base son accesibles en clases derivadas dependiendo del especificador de acceso utilizado en la herencia.
+
+#### Creación de Objetos de la Clase Derivada
+
+La creación de objetos de la clase derivada sigue las mismas reglas básicas que la creación de objetos de cualquier clase en C++. Sin embargo, es importante entender cómo se inicializan los miembros de la clase base durante la construcción de un objeto derivado.
+
+##### Constructores de Clases Derivadas
+
+Cuando se crea un objeto de una clase derivada, el constructor de la clase base se llama automáticamente antes de que se ejecute el constructor de la clase derivada. La lista de inicialización del constructor de la clase derivada se puede utilizar para inicializar los miembros de la clase base.
+
+##### Ejemplo de Creación de Objetos de la Clase Derivada
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+protected:
+    int baseVar;
+
+public:
+    // Constructor de la clase base
+    Base(int v) : baseVar(v) {
+        cout << "Constructor de la clase Base llamado con valor " << baseVar << endl;
+    }
+
+    void mostrarBase() const {
+        cout << "Valor de baseVar: " << baseVar << endl;
+    }
+};
+
+class Derivada : public Base {
+private:
+    int derivadaVar;
+
+public:
+    // Constructor de la clase derivada
+    Derivada(int baseVal, int derivadaVal) : Base(baseVal), derivadaVar(derivadaVal) {
+        cout << "Constructor de la clase Derivada llamado con valor " << derivadaVar << endl;
+    }
+
+    void mostrarDerivada() const {
+        mostrarBase();
+        cout << "Valor de derivadaVar: " << derivadaVar << endl;
+    }
+};
+
+int main() {
+    Derivada obj(10, 20);
+    obj.mostrarDerivada();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Base` tiene un constructor que inicializa `baseVar`.
+- La clase `Derivada` hereda de `Base` y su constructor inicializa tanto `baseVar` (a través de la lista de inicialización) como `derivadaVar`.
+
+#### Invocación de Constructores de la Clase Base
+
+El constructor de la clase base se llama automáticamente antes de que se ejecute el constructor de la clase derivada. Esto asegura que todos los miembros de la clase base se inicialicen correctamente antes de inicializar los miembros de la clase derivada.
+
+##### Ejemplo de Invocación de Constructores
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base llamado" << endl;
+    }
+
+    Base(int x) {
+        cout << "Constructor de Base llamado con valor " << x << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada llamado" << endl;
+    }
+
+    Derivada(int y) : Base(y) {
+        cout << "Constructor de Derivada llamado con valor " << y << endl;
+    }
+};
+
+int main() {
+    cout << "Creando obj1:" << endl;
+    Derivada obj1;
+
+    cout << "\nCreando obj2:" << endl;
+    Derivada obj2(100);
+
+    return 0;
+}
+```
+
+En este ejemplo, vemos cómo el constructor de la clase base se llama automáticamente antes del constructor de la clase derivada. Cuando se crea `obj2` con un valor, el constructor parametrizado de `Base` se invoca con el valor proporcionado.
+
+### Conclusión
+
+La herencia en C++ permite que las clases derivadas accedan a los miembros de la clase base y extiendan su funcionalidad. Los especificadores de acceso (`public`, `protected`, `private`) juegan un papel crucial en determinar cómo los miembros de la clase base son accesibles en la clase derivada. La creación de objetos de la clase derivada implica la llamada automática al constructor de la clase base, asegurando que todos los miembros se inicialicen correctamente. Entender estos conceptos es esencial para diseñar jerarquías de clases efectivas y aprovechar al máximo la programación orientada a objetos en C++.
+<---FILES--->
+Especificadores de Acceso
+Especificadores de Acceso Result
+Ejemplo de Acceso a Miembros de la Clase Base
+Ejemplo de Acceso a Miembros de la Clase Base Result
+Constructores de Clases Derivadas
+Constructores de Clases Derivadas Result
+Ejemplo de Creación de Objetos de la Clase Derivada
+Ejemplo de Creación de Objetos de la Clase Derivada Result
+Ejemplo de Invocación de Constructores
+Ejemplo de Invocación de Constructores Result
+<---Especificadores de Acceso--->
+<---Especificadores de Acceso Result--->
+<---Ejemplo de Acceso a Miembros de la Clase Base--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+
+protected:
+    int protectedVar;
+
+private:
+    int privateVar;
+};
+
+class DerivadaPublic : public Base {
+public:
+    void mostrar() {
+        cout << "Acceso en DerivadaPublic:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+class DerivadaProtected : protected Base {
+public:
+    void mostrar() {
+        cout << "Acceso en DerivadaProtected:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+class DerivadaPrivate : private Base {
+public:
+    void mostrar() {
+        cout << "Acceso en DerivadaPrivate:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    DerivadaPublic objPublic;
+    objPublic.publicVar = 10;
+    objPublic.mostrar();
+
+    DerivadaProtected objProtected;
+    // objProtected.publicVar = 20; // No accesible desde fuera de la clase derivada
+    objProtected.mostrar();
+
+    DerivadaPrivate objPrivate;
+    // objPrivate.publicVar = 30; // No accesible desde fuera de la clase derivada
+    objPrivate.mostrar();
+
+    return 0;
+}
+<---Ejemplo de Acceso a Miembros de la Clase Base Result--->
+<---Constructores de Clases Derivadas--->
+<---Constructores de Clases Derivadas Result--->
+<---Ejemplo de Creación de Objetos de la Clase Derivada--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+protected:
+    int baseVar;
+
+public:
+    // Constructor de la clase base
+    Base(int v) : baseVar(v) {
+        cout << "Constructor de la clase Base llamado con valor " << baseVar << endl;
+    }
+
+    void mostrarBase() const {
+        cout << "Valor de baseVar: " << baseVar << endl;
+    }
+};
+
+class Derivada : public Base {
+private:
+    int derivadaVar;
+
+public:
+    // Constructor de la clase derivada
+    Derivada(int baseVal, int derivadaVal) : Base(baseVal), derivadaVar(derivadaVal) {
+        cout << "Constructor de la clase Derivada llamado con valor " << derivadaVar << endl;
+    }
+
+    void mostrarDerivada() const {
+        mostrarBase();
+        cout << "Valor de derivadaVar: " << derivadaVar << endl;
+    }
+};
+
+int main() {
+    Derivada obj(10, 20);
+    obj.mostrarDerivada();
+
+    return 0;
+}
+<---Ejemplo de Creación de Objetos de la Clase Derivada Result--->
+<---Ejemplo de Invocación de Constructores--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base llamado" << endl;
+    }
+
+    Base(int x) {
+        cout << "Constructor de Base llamado con valor " << x << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada llamado" << endl;
+    }
+
+    Derivada(int y) : Base(y) {
+        cout << "Constructor de Derivada llamado con valor " << y << endl;
+    }
+};
+
+int main() {
+    cout << "Creando obj1:" << endl;
+    Derivada obj1;
+
+    cout << "\nCreando obj2:" << endl;
+    Derivada obj2(100);
+
+    return 0;
+}
+<---Ejemplo de Invocación de Constructores Result--->

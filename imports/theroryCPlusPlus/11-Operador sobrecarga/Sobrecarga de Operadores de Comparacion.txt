@@ -1,0 +1,165 @@
+<---EXPLANATION--->
+### Sobrecarga de Operadores de Comparación en C++
+
+La sobrecarga de operadores de comparación permite definir cómo se deben comportar los operadores de comparación estándar (`==`, `!=`, `<`, `<=`, `>`, `>=`) cuando se utilizan con tipos de datos definidos por el usuario. Estos operadores son esenciales para comparar objetos y son especialmente útiles para clases que representan entidades con propiedades comparables, como vectores, fechas, etc.
+
+#### Ejemplo: Clase `Date` para Sobrecargar Operadores de Comparación
+
+Vamos a definir una clase `Date` que representa una fecha y sobrecargaremos los operadores de comparación `==`, `!=`, `<`, `<=`, `>`, y `>=`.
+
+```cpp
+// Date.h
+#ifndef DATE_H
+#define DATE_H
+
+#include <iostream>
+
+class Date {
+private:
+    int day;
+    int month;
+    int year;
+public:
+    // Constructor
+    Date(int d, int m, int y) : day(d), month(m), year(y) {}
+
+    // Sobrecarga del operador ==
+    bool operator==(const Date& other) const {
+        return (day == other.day && month == other.month && year == other.year);
+    }
+
+    // Sobrecarga del operador !=
+    bool operator!=(const Date& other) const {
+        return !(*this == other);
+    }
+
+    // Sobrecarga del operador <
+    bool operator<(const Date& other) const {
+        if (year != other.year) return year < other.year;
+        if (month != other.month) return month < other.month;
+        return day < other.day;
+    }
+
+    // Sobrecarga del operador <=
+    bool operator<=(const Date& other) const {
+        return (*this < other) || (*this == other);
+    }
+
+    // Sobrecarga del operador >
+    bool operator>(const Date& other) const {
+        return !(*this <= other);
+    }
+
+    // Sobrecarga del operador >=
+    bool operator>=(const Date& other) const {
+        return !(*this < other);
+    }
+
+    // Sobrecarga del operador << para la salida
+    friend std::ostream& operator<<(std::ostream& os, const Date& date) {
+        os << date.day << "/" << date.month << "/" << date.year;
+        return os;
+    }
+};
+
+#endif // DATE_H
+```
+
+```cpp
+// main.cpp
+#include "Date.h"
+#include <iostream>
+
+int main() {
+    Date date1(25, 12, 2020);
+    Date date2(1, 1, 2021);
+
+    std::cout << "date1: " << date1 << std::endl;
+    std::cout << "date2: " << date2 << std::endl;
+
+    std::cout << "date1 == date2: " << (date1 == date2) << std::endl;
+    std::cout << "date1 != date2: " << (date1 != date2) << std::endl;
+    std::cout << "date1 < date2: " << (date1 < date2) << std::endl;
+    std::cout << "date1 <= date2: " << (date1 <= date2) << std::endl;
+    std::cout << "date1 > date2: " << (date1 > date2) << std::endl;
+    std::cout << "date1 >= date2: " << (date1 >= date2) << std::endl;
+
+    return 0;
+}
+```
+
+### Explicación de los Operadores Sobrecargados
+
+#### Sobrecarga del Operador `==`
+
+```cpp
+bool operator==(const Date& other) const {
+    return (day == other.day && month == other.month && year == other.year);
+}
+```
+Este operador compara si los atributos `day`, `month`, y `year` de dos objetos `Date` son iguales.
+
+#### Sobrecarga del Operador `!=`
+
+```cpp
+bool operator!=(const Date& other) const {
+    return !(*this == other);
+}
+```
+Este operador utiliza la sobrecarga del operador `==` para determinar si dos objetos `Date` son diferentes.
+
+#### Sobrecarga del Operador `<`
+
+```cpp
+bool operator<(const Date& other) const {
+    if (year != other.year) return year < other.year;
+    if (month != other.month) return month < other.month;
+    return day < other.day;
+}
+```
+Este operador compara dos objetos `Date` de manera lexicográfica: primero por año, luego por mes y finalmente por día.
+
+#### Sobrecarga del Operador `<=`
+
+```cpp
+bool operator<=(const Date& other) const {
+    return (*this < other) || (*this == other);
+}
+```
+Este operador utiliza las sobrecargas de los operadores `<` y `==` para determinar si un objeto `Date` es menor o igual que otro.
+
+#### Sobrecarga del Operador `>`
+
+```cpp
+bool operator>(const Date& other) const {
+    return !(*this <= other);
+}
+```
+Este operador utiliza la sobrecarga del operador `<=` para determinar si un objeto `Date` es mayor que otro.
+
+#### Sobrecarga del Operador `>=`
+
+```cpp
+bool operator>=(const Date& other) const {
+    return !(*this < other);
+}
+```
+Este operador utiliza la sobrecarga del operador `<` para determinar si un objeto `Date` es mayor o igual que otro.
+
+### Ventajas de la Sobrecarga de Operadores de Comparación
+
+1. **Legibilidad y Claridad**: Permite comparar objetos utilizando una sintaxis clara y familiar, haciendo que el código sea más fácil de leer y entender.
+2. **Consistencia**: Proporciona una interfaz consistente para la comparación de objetos, facilitando el uso de las clases en algoritmos y estructuras de datos estándar.
+3. **Flexibilidad**: Permite definir comportamientos personalizados para la comparación, adaptándolos a las necesidades específicas de la clase.
+
+### Desventajas de la Sobrecarga de Operadores de Comparación
+
+1. **Complejidad Adicional**: Puede agregar complejidad al código de la clase, lo que puede dificultar su comprensión y mantenimiento.
+2. **Riesgo de Errores**: Si no se implementan correctamente, los operadores sobrecargados pueden introducir errores sutiles que pueden ser difíciles de detectar y depurar.
+3. **Sobrecarga Cognitiva**: Los desarrolladores deben recordar y entender el comportamiento personalizado de los operadores sobrecargados, lo que puede aumentar la sobrecarga cognitiva.
+
+### Conclusión
+
+La sobrecarga de operadores de comparación en C++ permite realizar comparaciones de manera intuitiva y natural en clases definidas por el usuario. Esto mejora la legibilidad y usabilidad del código, haciendo que las clases sean más fáciles de utilizar y entender. Sin embargo, debe utilizarse con cuidado para evitar agregar complejidad innecesaria y para mantener el código claro y mantenible. Es crucial implementar estos operadores con cuidado y documentar claramente su comportamiento para evitar malentendidos y problemas de mantenimiento.
+<---FILES--->
+NA.

@@ -1,0 +1,267 @@
+<---EXPLANATION--->
+### Funciones y Procedimientos en C++: Definición y Declaración de Funciones
+
+Las funciones en C++ son bloques de código que realizan una tarea específica y pueden ser llamadas desde diferentes partes de un programa. Definir y declarar funciones es fundamental para estructurar y modularizar el código, facilitando la reutilización y el mantenimiento.
+
+#### Declaración de Funciones
+
+La declaración de una función (también conocida como prototipo de función) informa al compilador sobre la existencia de una función antes de su definición real. La declaración incluye el tipo de retorno, el nombre de la función y los tipos de parámetros.
+
+##### Sintaxis de la Declaración de Funciones
+
+```cpp
+tipo_retorno nombre_funcion(lista_de_parametros);
+```
+
+- **tipo_retorno**: El tipo de dato que devuelve la función.
+- **nombre_funcion**: El identificador de la función.
+- **lista_de_parametros**: Los tipos y nombres de los parámetros que acepta la función.
+
+##### Ejemplo de Declaración de Función
+
+```cpp
+int sumar(int a, int b);
+void mostrarMensaje(string mensaje);
+```
+
+En este ejemplo:
+- `int sumar(int a, int b);` declara una función que toma dos enteros y devuelve un entero.
+- `void mostrarMensaje(string mensaje);` declara una función que toma una cadena y no devuelve nada.
+
+#### Definición de Funciones
+
+La definición de una función proporciona el cuerpo de la función, es decir, el bloque de código que se ejecuta cuando se llama a la función. La definición incluye la declaración de la función y el bloque de código asociado.
+
+##### Sintaxis de la Definición de Funciones
+
+```cpp
+tipo_retorno nombre_funcion(lista_de_parametros) {
+    // Cuerpo de la función
+}
+```
+
+##### Ejemplo de Definición de Función
+
+```cpp
+int sumar(int a, int b) {
+    return a + b;
+}
+
+void mostrarMensaje(string mensaje) {
+    cout << mensaje << endl;
+}
+```
+
+En este ejemplo:
+- `int sumar(int a, int b) { return a + b; }` define una función que suma dos enteros y devuelve el resultado.
+- `void mostrarMensaje(string mensaje) { cout << mensaje << endl; }` define una función que muestra un mensaje en la consola.
+
+#### Ejemplo Completo: Declaración y Definición de Funciones
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Declaraciones de funciones
+int sumar(int a, int b);
+void mostrarMensaje(string mensaje);
+
+int main() {
+    int resultado = sumar(5, 3);
+    cout << "La suma es: " << resultado << endl;
+
+    mostrarMensaje("Hola, mundo!");
+
+    return 0;
+}
+
+// Definiciones de funciones
+int sumar(int a, int b) {
+    return a + b;
+}
+
+void mostrarMensaje(string mensaje) {
+    cout << mensaje << endl;
+}
+```
+
+En este ejemplo completo:
+- Las funciones `sumar` y `mostrarMensaje` se declaran antes del `main`.
+- Las definiciones de las funciones `sumar` y `mostrarMensaje` proporcionan los cuerpos de las funciones después del `main`.
+
+#### Funciones con Parámetros por Valor y por Referencia
+
+En C++, los parámetros de las funciones pueden pasarse por valor o por referencia.
+
+##### Parámetros por Valor
+
+Los parámetros por valor se copian en los parámetros de la función. Los cambios en los parámetros dentro de la función no afectan a los argumentos originales.
+
+```cpp
+void incrementarPorValor(int x) {
+    x++;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorValor(numero);
+    cout << "Número después de incrementar por valor: " << numero << endl; // Salida: 5
+    return 0;
+}
+```
+
+##### Parámetros por Referencia
+
+Los parámetros por referencia permiten que la función modifique los argumentos originales. Se utilizan referencias (`&`) en la lista de parámetros.
+
+```cpp
+void incrementarPorReferencia(int& x) {
+    x++;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorReferencia(numero);
+    cout << "Número después de incrementar por referencia: " << numero << endl; // Salida: 6
+    return 0;
+}
+```
+
+#### Sobrecarga de Funciones
+
+C++ permite la sobrecarga de funciones, es decir, varias funciones pueden tener el mismo nombre pero diferentes listas de parámetros.
+
+##### Ejemplo de Sobrecarga de Funciones
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+double sumar(double a, double b) {
+    return a + b;
+}
+
+int main() {
+    cout << "Suma de enteros: " << sumar(3, 4) << endl;       // Llama a sumar(int, int)
+    cout << "Suma de dobles: " << sumar(3.5, 2.5) << endl;    // Llama a sumar(double, double)
+    return 0;
+}
+```
+
+### Conclusión
+
+Las funciones son una parte esencial de la programación en C++. Comprender cómo declarar y definir funciones, así como las diferencias entre pasar parámetros por valor y por referencia, permite escribir código modular, reutilizable y fácil de mantener. La sobrecarga de funciones añade flexibilidad, permitiendo definir múltiples versiones de una función para manejar diferentes tipos de datos o cantidades de parámetros. Con estas habilidades, los desarrolladores pueden estructurar mejor sus programas y resolver problemas de manera eficiente.
+<---FILES--->
+Sintaxis de la Declaración de Funciones
+Sintaxis de la Declaración de Funciones Result
+Ejemplo de Declaración de Función
+Ejemplo de Declaración de Función Result
+Sintaxis de la Definición de Funciones
+Sintaxis de la Definición de Funciones Result
+Ejemplo de Definición de Función
+Ejemplo de Definición de Función Result
+Parámetros por Valor
+Parámetros por Valor Result
+Parámetros por Referencia
+Parámetros por Referencia Result
+Ejemplo de Sobrecarga de Funciones
+Ejemplo de Sobrecarga de Funciones Result
+<---Sintaxis de la Declaración de Funciones--->
+```cpp
+tipo_retorno nombre_funcion(lista_de_parametros);
+<---Sintaxis de la Declaración de Funciones Result--->
+<---Ejemplo de Declaración de Función--->
+```cpp
+int sumar(int a, int b);
+void mostrarMensaje(string mensaje);
+<---Ejemplo de Declaración de Función Result--->
+<---Sintaxis de la Definición de Funciones--->
+```cpp
+tipo_retorno nombre_funcion(lista_de_parametros) {
+    // Cuerpo de la función
+}
+<---Sintaxis de la Definición de Funciones Result--->
+<---Ejemplo de Definición de Función--->
+```cpp
+int sumar(int a, int b) {
+    return a + b;
+}
+
+void mostrarMensaje(string mensaje) {
+    cout << mensaje << endl;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+// Declaraciones de funciones
+int sumar(int a, int b);
+void mostrarMensaje(string mensaje);
+
+int main() {
+    int resultado = sumar(5, 3);
+    cout << "La suma es: " << resultado << endl;
+
+    mostrarMensaje("Hola, mundo!");
+
+    return 0;
+}
+
+// Definiciones de funciones
+int sumar(int a, int b) {
+    return a + b;
+}
+
+void mostrarMensaje(string mensaje) {
+    cout << mensaje << endl;
+}
+<---Ejemplo de Definición de Función Result--->
+<---Parámetros por Valor--->
+```cpp
+void incrementarPorValor(int x) {
+    x++;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorValor(numero);
+    cout << "Número después de incrementar por valor: " << numero << endl; // Salida: 5
+    return 0;
+}
+<---Parámetros por Valor Result--->
+<---Parámetros por Referencia--->
+```cpp
+void incrementarPorReferencia(int& x) {
+    x++;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorReferencia(numero);
+    cout << "Número después de incrementar por referencia: " << numero << endl; // Salida: 6
+    return 0;
+}
+<---Parámetros por Referencia Result--->
+<---Ejemplo de Sobrecarga de Funciones--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+double sumar(double a, double b) {
+    return a + b;
+}
+
+int main() {
+    cout << "Suma de enteros: " << sumar(3, 4) << endl;       // Llama a sumar(int, int)
+    cout << "Suma de dobles: " << sumar(3.5, 2.5) << endl;    // Llama a sumar(double, double)
+    return 0;
+}
+<---Ejemplo de Sobrecarga de Funciones Result--->

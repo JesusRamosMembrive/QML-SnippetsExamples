@@ -1,0 +1,244 @@
+<---EXPLANATION--->
+### Clases Sanitizadas en C++
+
+En el contexto de la programación en C++, la sanitización de clases (a menudo referida como “Class Sanity Checks”) no es un concepto formal del lenguaje, pero se refiere a las prácticas y técnicas empleadas para asegurar que las clases se comporten correctamente y sus estados internos se mantengan válidos en todo momento. Este concepto abarca validaciones de invariantes, chequeo de precondiciones y postcondiciones, y el uso de herramientas de depuración y pruebas para detectar y corregir errores.
+
+#### Importancia de la Sanitización de Clases
+
+1. **Robustez:** Ayuda a prevenir errores y comportamientos inesperados al asegurar que las clases se mantengan en un estado válido.
+2. **Mantenibilidad:** Facilita la detección y corrección de errores, haciendo el código más fácil de mantener.
+3. **Confiabilidad:** Aumenta la confiabilidad del software al reducir la probabilidad de fallos en tiempo de ejecución.
+
+#### Técnicas para Sanitizar Clases
+
+1. **Invariantes de Clase:** Son condiciones que deben ser verdaderas en todo momento para los objetos de la clase, excepto durante la ejecución de sus métodos.
+2. **Precondiciones y Postcondiciones:** Las precondiciones son condiciones que deben ser verdaderas antes de la ejecución de un método, mientras que las postcondiciones son condiciones que deben ser verdaderas después de su ejecución.
+3. **Aserciones:** Son expresiones que se evalúan en tiempo de ejecución para verificar que ciertas condiciones se cumplan. Si la condición es falsa, el programa se detiene.
+4. **Pruebas Unitarias:** Se escriben pruebas automatizadas para verificar que los métodos de la clase funcionen correctamente.
+5. **Depuración y Herramientas de Análisis:** Uso de herramientas como sanitizadores de memoria, análisis estático y dinámico para detectar errores y posibles vulnerabilidades.
+
+#### Ejemplo de Sanitización de una Clase
+
+Consideremos una clase `CuentaBancaria` que representa una cuenta bancaria simple. Implementaremos algunas técnicas de sanitización para asegurar que la cuenta nunca tenga un saldo negativo.
+
+##### Definición de la Clase
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <cassert>
+using namespace std;
+
+class CuentaBancaria {
+private:
+    double saldo;
+
+    // Verifica el invariante de la clase
+    void verificarInvariante() const {
+        assert(saldo >= 0 && "El saldo no puede ser negativo");
+    }
+
+public:
+    // Constructor
+    CuentaBancaria(double saldoInicial) : saldo(saldoInicial) {
+        if (saldoInicial < 0) {
+            throw invalid_argument("El saldo inicial no puede ser negativo");
+        }
+        verificarInvariante();
+    }
+
+    // Depositar dinero
+    void depositar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a depositar no puede ser negativa");
+        }
+        saldo += cantidad;
+        verificarInvariante();
+    }
+
+    // Retirar dinero
+    void retirar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a retirar no puede ser negativa");
+        }
+        if (cantidad > saldo) {
+            throw runtime_error("Fondos insuficientes");
+        }
+        saldo -= cantidad;
+        verificarInvariante();
+    }
+
+    // Obtener el saldo actual
+    double obtenerSaldo() const {
+        verificarInvariante();
+        return saldo;
+    }
+};
+
+int main() {
+    try {
+        CuentaBancaria cuenta(100.0);
+        cuenta.depositar(50.0);
+        cout << "Saldo después de depositar 50: " << cuenta.obtenerSaldo() << endl;
+
+        cuenta.retirar(30.0);
+        cout << "Saldo después de retirar 30: " << cuenta.obtenerSaldo() << endl;
+
+        // Esta línea generará una excepción debido a fondos insuficientes
+        // cuenta.retirar(150.0);
+
+        // Esta línea generará una excepción debido a cantidad negativa
+        // cuenta.depositar(-20.0);
+
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- **Invariante de Clase:** Se asegura de que `saldo` nunca sea negativo usando la función `verificarInvariante()`.
+- **Precondiciones:** Los métodos `depositar` y `retirar` verifican que la cantidad no sea negativa y que haya suficientes fondos para retirar.
+- **Postcondiciones:** Las aserciones en `verificarInvariante` se usan para asegurarse de que el saldo sea válido después de cada operación.
+- **Manejo de Excepciones:** Se utilizan excepciones para manejar condiciones de error como saldos negativos y retiros excesivos.
+
+#### Herramientas y Prácticas Adicionales
+
+1. **Sanitizers:** Herramientas como AddressSanitizer, MemorySanitizer y UndefinedBehaviorSanitizer pueden detectar errores de memoria y comportamientos indefinidos en tiempo de ejecución.
+2. **Análisis Estático:** Herramientas de análisis estático pueden detectar errores potenciales y violaciones de estilo de código antes de que el código se ejecute.
+3. **Pruebas Unitarias Automatizadas:** Frameworks de pruebas como Google Test pueden automatizar la validación de las funciones y asegurar que los invariantes se mantengan.
+
+##### Ejemplo de Pruebas Unitarias con Google Test
+
+```cpp
+#include <gtest/gtest.h>
+#include "CuentaBancaria.h"
+
+TEST(CuentaBancariaTest, DepositarRetirar) {
+    CuentaBancaria cuenta(100.0);
+    cuenta.depositar(50.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 150.0);
+
+    cuenta.retirar(30.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 120.0);
+
+    EXPECT_THROW(cuenta.retirar(200.0), runtime_error);
+    EXPECT_THROW(cuenta.depositar(-10.0), invalid_argument);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+En este ejemplo:
+- Se utilizan pruebas unitarias con Google Test para validar el comportamiento de la clase `CuentaBancaria`.
+
+### Conclusión
+
+La sanitización de clases en C++ es una práctica esencial para asegurar la robustez y confiabilidad del software. Mediante la implementación de invariantes, precondiciones, postcondiciones, y el uso de herramientas de depuración y pruebas, los desarrolladores pueden detectar y corregir errores de manera más efectiva. Estas técnicas no solo mejoran la calidad del código sino que también facilitan su mantenimiento a largo plazo.
+<---FILES--->
+Definición de la Clase
+Definición de la Clase Result
+Ejemplo de Pruebas Unitarias con Google Test
+Ejemplo de Pruebas Unitarias con Google Test Result
+<---Definición de la Clase--->
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <cassert>
+using namespace std;
+
+class CuentaBancaria {
+private:
+    double saldo;
+
+    // Verifica el invariante de la clase
+    void verificarInvariante() const {
+        assert(saldo >= 0 && "El saldo no puede ser negativo");
+    }
+
+public:
+    // Constructor
+    CuentaBancaria(double saldoInicial) : saldo(saldoInicial) {
+        if (saldoInicial < 0) {
+            throw invalid_argument("El saldo inicial no puede ser negativo");
+        }
+        verificarInvariante();
+    }
+
+    // Depositar dinero
+    void depositar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a depositar no puede ser negativa");
+        }
+        saldo += cantidad;
+        verificarInvariante();
+    }
+
+    // Retirar dinero
+    void retirar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a retirar no puede ser negativa");
+        }
+        if (cantidad > saldo) {
+            throw runtime_error("Fondos insuficientes");
+        }
+        saldo -= cantidad;
+        verificarInvariante();
+    }
+
+    // Obtener el saldo actual
+    double obtenerSaldo() const {
+        verificarInvariante();
+        return saldo;
+    }
+};
+
+int main() {
+    try {
+        CuentaBancaria cuenta(100.0);
+        cuenta.depositar(50.0);
+        cout << "Saldo después de depositar 50: " << cuenta.obtenerSaldo() << endl;
+
+        cuenta.retirar(30.0);
+        cout << "Saldo después de retirar 30: " << cuenta.obtenerSaldo() << endl;
+
+        // Esta línea generará una excepción debido a fondos insuficientes
+        // cuenta.retirar(150.0);
+
+        // Esta línea generará una excepción debido a cantidad negativa
+        // cuenta.depositar(-20.0);
+
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+<---Definición de la Clase Result--->
+<---Ejemplo de Pruebas Unitarias con Google Test--->
+```cpp
+#include <gtest/gtest.h>
+#include "CuentaBancaria.h"
+
+TEST(CuentaBancariaTest, DepositarRetirar) {
+    CuentaBancaria cuenta(100.0);
+    cuenta.depositar(50.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 150.0);
+
+    cuenta.retirar(30.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 120.0);
+
+    EXPECT_THROW(cuenta.retirar(200.0), runtime_error);
+    EXPECT_THROW(cuenta.depositar(-10.0), invalid_argument);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+<---Ejemplo de Pruebas Unitarias con Google Test Result--->

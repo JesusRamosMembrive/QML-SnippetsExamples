@@ -1,0 +1,259 @@
+<---EXPLANATION--->
+### Uso de la Palabra Clave `virtual` en Destructores
+
+En C++, el uso de la palabra clave `virtual` en destructores es fundamental para asegurar que los destructores de las clases derivadas se llamen correctamente cuando se destruye un objeto a través de un puntero a la clase base. Esto es crucial para evitar fugas de memoria y asegurar una correcta liberación de recursos en jerarquías de herencia.
+
+#### ¿Por Qué Usar `virtual` en Destructores?
+
+Cuando se utilizan punteros a la clase base para manipular objetos de clases derivadas, no tener un destructor virtual en la clase base puede resultar en que el destructor de la clase derivada nunca sea llamado. Esto puede llevar a recursos no liberados y otros comportamientos inesperados.
+
+##### Ejemplo Sin Destructor Virtual
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Solo llama a ~Base(), no a ~Derivada()
+    return 0;
+}
+```
+
+Salida:
+```
+Constructor de Base
+Constructor de Derivada
+Destructor de Base
+```
+
+En este ejemplo, el destructor de `Derivada` no se llama porque el destructor de `Base` no es virtual. Esto puede llevar a que los recursos de `Derivada` no se liberen adecuadamente.
+
+#### Ejemplo Con Destructor Virtual
+
+Para asegurar que el destructor de la clase derivada sea llamado, se debe declarar el destructor de la clase base como `virtual`.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    virtual ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Llama a ~Derivada() y luego a ~Base()
+    return 0;
+}
+```
+
+Salida:
+```
+Constructor de Base
+Constructor de Derivada
+Destructor de Derivada
+Destructor de Base
+```
+
+En este ejemplo, el destructor de `Derivada` se llama correctamente antes de que el destructor de `Base` sea llamado, asegurando una limpieza adecuada de los recursos.
+
+#### Cuando Usar `virtual` en Destructores
+
+- **Siempre que haya Polimorfismo:** Si una clase está destinada a ser una clase base de una jerarquía polimórfica (es decir, se espera que las funciones miembro se llamen de manera polimórfica), su destructor debe ser virtual.
+- **Clases Abstractas:** Las clases abstractas que contienen funciones virtuales puras generalmente deben tener destructores virtuales para asegurar que cualquier clase derivada se destruya correctamente.
+
+#### Ejemplo con Clase Abstracta
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función virtual pura
+    virtual ~Animal() {
+        cout << "Destructor de Animal" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+    ~Perro() {
+        cout << "Destructor de Perro" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+    ~Gato() {
+        cout << "Destructor de Gato" << endl;
+    }
+};
+
+int main() {
+    Animal* p = new Perro();
+    Animal* g = new Gato();
+    delete p; // Llama a ~Perro() y luego a ~Animal()
+    delete g; // Llama a ~Gato() y luego a ~Animal()
+    return 0;
+}
+```
+
+Salida:
+```
+Destructor de Perro
+Destructor de Animal
+Destructor de Gato
+Destructor de Animal
+```
+
+En este ejemplo, ambos destructores de las clases derivadas (`Perro` y `Gato`) se llaman correctamente antes del destructor de la clase base `Animal`.
+
+### Conclusión
+
+El uso de destructores virtuales en C++ es crucial para la correcta gestión de la memoria y otros recursos en jerarquías de herencia. Declarar el destructor de la clase base como `virtual` asegura que los destructores de las clases derivadas se llamen correctamente, previniendo fugas de memoria y garantizando una limpieza adecuada de los recursos. Esta práctica es especialmente importante en aplicaciones que utilizan polimorfismo, donde los objetos son manipulados a través de punteros o referencias a la clase base.
+<---FILES--->
+Ejemplo Sin Destructor Virtual
+Ejemplo Sin Destructor Virtual Result
+<---Ejemplo Sin Destructor Virtual--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Solo llama a ~Base(), no a ~Derivada()
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    virtual ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Llama a ~Derivada() y luego a ~Base()
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función virtual pura
+    virtual ~Animal() {
+        cout << "Destructor de Animal" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+    ~Perro() {
+        cout << "Destructor de Perro" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+    ~Gato() {
+        cout << "Destructor de Gato" << endl;
+    }
+};
+
+int main() {
+    Animal* p = new Perro();
+    Animal* g = new Gato();
+    delete p; // Llama a ~Perro() y luego a ~Animal()
+    delete g; // Llama a ~Gato() y luego a ~Animal()
+    return 0;
+}
+<---Ejemplo Sin Destructor Virtual Result--->

@@ -1,0 +1,253 @@
+<---EXPLANATION--->
+### Modificadores de Acceso dentro de la Herencia en C++
+
+En C++, los modificadores de acceso (`public`, `protected`, y `private`) juegan un papel crucial en la herencia, ya que determinan cómo los miembros de la clase base son accesibles en la clase derivada y en otras partes del programa. Entender estos modificadores es esencial para controlar la visibilidad y accesibilidad de los atributos y métodos heredados.
+
+#### Modificadores de Acceso
+
+1. **`public`:** Los miembros públicos son accesibles desde cualquier parte del programa.
+2. **`protected`:** Los miembros protegidos son accesibles dentro de la propia clase, en las clases derivadas y en las clases amigas, pero no desde fuera de estas clases.
+3. **`private`:** Los miembros privados son accesibles solo dentro de la propia clase y en las clases amigas, pero no en las clases derivadas ni desde fuera de estas clases.
+
+#### Herencia Pública (`public`)
+
+Cuando una clase derivada hereda de una clase base utilizando el modificador de acceso `public`, los miembros públicos y protegidos de la clase base mantienen su nivel de acceso en la clase derivada.
+
+##### Ejemplo de Herencia Pública
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+protected:
+    int protectedVar;
+private:
+    int privateVar;
+};
+
+class Derivada : public Base {
+public:
+    void mostrar() {
+        cout << "Acceso en Derivada:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    Derivada obj;
+    obj.publicVar = 10;
+    // obj.protectedVar = 20; // No accesible desde fuera de la clase derivada
+    obj.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `publicVar` y `protectedVar` son accesibles dentro de la clase derivada `Derivada`, pero `protectedVar` no es accesible fuera de la clase derivada.
+
+#### Herencia Protegida (`protected`)
+
+Cuando una clase derivada hereda de una clase base utilizando el modificador de acceso `protected`, los miembros públicos y protegidos de la clase base se convierten en protegidos en la clase derivada.
+
+##### Ejemplo de Herencia Protegida
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+protected:
+    int protectedVar;
+private:
+    int privateVar;
+};
+
+class Derivada : protected Base {
+public:
+    void mostrar() {
+        cout << "Acceso en Derivada:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    Derivada obj;
+    // obj.publicVar = 10; // No accesible desde fuera de la clase derivada
+    // obj.protectedVar = 20; // No accesible desde fuera de la clase derivada
+    obj.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `publicVar` y `protectedVar` son accesibles dentro de la clase derivada `Derivada`, pero no son accesibles desde fuera de la clase derivada.
+
+#### Herencia Privada (`private`)
+
+Cuando una clase derivada hereda de una clase base utilizando el modificador de acceso `private`, los miembros públicos y protegidos de la clase base se convierten en privados en la clase derivada.
+
+##### Ejemplo de Herencia Privada
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+protected:
+    int protectedVar;
+private:
+    int privateVar;
+};
+
+class Derivada : private Base {
+public:
+    void mostrar() {
+        cout << "Acceso en Derivada:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    Derivada obj;
+    // obj.publicVar = 10; // No accesible desde fuera de la clase derivada
+    // obj.protectedVar = 20; // No accesible desde fuera de la clase derivada
+    obj.mostrar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `publicVar` y `protectedVar` son accesibles dentro de la clase derivada `Derivada`, pero no son accesibles desde fuera de la clase derivada, ya que se convierten en privados en `Derivada`.
+
+### Comparación de Modificadores de Acceso en Herencia
+
+La siguiente tabla resume cómo se heredan los miembros de la clase base según el modificador de acceso utilizado:
+
+| Tipo de Miembro    | Herencia Pública | Herencia Protegida | Herencia Privada |
+|--------------------|------------------|--------------------|------------------|
+| `public`           | `public`         | `protected`        | `private`        |
+| `protected`        | `protected`      | `protected`        | `private`        |
+| `private`          | No accesible     | No accesible       | No accesible     |
+
+### Conclusión
+
+Los modificadores de acceso en la herencia (`public`, `protected`, y `private`) son esenciales para controlar la visibilidad y accesibilidad de los miembros de la clase base en las clases derivadas. La herencia pública mantiene los miembros públicos y protegidos, la herencia protegida convierte los miembros públicos y protegidos en protegidos, y la herencia privada convierte los miembros públicos y protegidos en privados. Comprender cómo funcionan estos modificadores de acceso es crucial para diseñar jerarquías de clases que sean seguras y fáciles de mantener en C++.
+<---FILES--->
+Ejemplo de Herencia Pública
+Ejemplo de Herencia Pública Result
+Ejemplo de Herencia Protegida
+Ejemplo de Herencia Protegida Result
+Ejemplo de Herencia Privada
+Ejemplo de Herencia Privada Result
+<---Ejemplo de Herencia Pública--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+protected:
+    int protectedVar;
+private:
+    int privateVar;
+};
+
+class Derivada : public Base {
+public:
+    void mostrar() {
+        cout << "Acceso en Derivada:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    Derivada obj;
+    obj.publicVar = 10;
+    // obj.protectedVar = 20; // No accesible desde fuera de la clase derivada
+    obj.mostrar();
+
+    return 0;
+}
+<---Ejemplo de Herencia Pública Result--->
+<---Ejemplo de Herencia Protegida--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+protected:
+    int protectedVar;
+private:
+    int privateVar;
+};
+
+class Derivada : protected Base {
+public:
+    void mostrar() {
+        cout << "Acceso en Derivada:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    Derivada obj;
+    // obj.publicVar = 10; // No accesible desde fuera de la clase derivada
+    // obj.protectedVar = 20; // No accesible desde fuera de la clase derivada
+    obj.mostrar();
+
+    return 0;
+}
+<---Ejemplo de Herencia Protegida Result--->
+<---Ejemplo de Herencia Privada--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int publicVar;
+protected:
+    int protectedVar;
+private:
+    int privateVar;
+};
+
+class Derivada : private Base {
+public:
+    void mostrar() {
+        cout << "Acceso en Derivada:" << endl;
+        cout << "publicVar: " << publicVar << endl; // Accesible
+        cout << "protectedVar: " << protectedVar << endl; // Accesible
+        // cout << "privateVar: " << privateVar << endl; // No accesible
+    }
+};
+
+int main() {
+    Derivada obj;
+    // obj.publicVar = 10; // No accesible desde fuera de la clase derivada
+    // obj.protectedVar = 20; // No accesible desde fuera de la clase derivada
+    obj.mostrar();
+
+    return 0;
+}
+<---Ejemplo de Herencia Privada Result--->

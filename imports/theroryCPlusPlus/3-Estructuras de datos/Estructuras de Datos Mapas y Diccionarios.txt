@@ -1,0 +1,285 @@
+<---EXPLANATION--->
+### Estructuras de Datos: Mapas y Diccionarios en C++
+
+En C++, los mapas y diccionarios son estructuras de datos que permiten almacenar pares de clave-valor, facilitando la búsqueda, inserción y eliminación de elementos basados en claves únicas. La biblioteca estándar de C++ (STL) proporciona dos tipos principales de mapas: `std::map` y `std::unordered_map`.
+
+#### Mapas (`std::map`)
+
+Un `std::map` es una estructura de datos asociativa ordenada que almacena elementos en pares de clave-valor, donde las claves son únicas y los elementos se almacenan en orden ascendente según las claves.
+
+##### Características de `std::map`
+
+- **Ordenado:** Los elementos se almacenan en orden ascendente de las claves.
+- **Claves Únicas:** Cada clave en el mapa es única.
+- **Acceso Logarítmico:** Las operaciones de búsqueda, inserción y eliminación tienen una complejidad O(log n) debido a su implementación basada en árboles binarios balanceados.
+
+##### Ejemplo de Uso de `std::map`
+
+```cpp
+#include <iostream>
+#include <map>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de un mapa
+    map<string, int> edades;
+    edades["Juan"] = 30;
+    edades["Maria"] = 25;
+    edades["Pedro"] = 35;
+
+    // Iteración y acceso a los elementos
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    // Acceso a un valor específico
+    cout << "La edad de Maria es: " << edades["Maria"] << endl;
+
+    // Modificación de un valor
+    edades["Maria"] = 26;
+    cout << "La nueva edad de Maria es: " << edades["Maria"] << endl;
+
+    // Eliminación de un elemento
+    edades.erase("Pedro");
+
+    // Iteración después de la eliminación
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    return 0;
+}
+```
+
+### Operaciones Comunes en `std::map`
+
+- **`operator[]`**: Accede o inserta un valor asociado a una clave.
+- **`insert(par)`**: Inserta un nuevo par clave-valor.
+- **`erase(clave)`**: Elimina el par asociado a la clave.
+- **`find(clave)`**: Devuelve un iterador al par si se encuentra, o `end()` si no.
+- **`size()`**: Devuelve el número de elementos en el mapa.
+- **`empty()`**: Devuelve `true` si el mapa está vacío.
+
+#### Mapas No Ordenados (`std::unordered_map`)
+
+Un `std::unordered_map` es una estructura de datos asociativa que almacena elementos en pares de clave-valor utilizando una tabla hash, lo que permite operaciones de búsqueda, inserción y eliminación en promedio constante O(1).
+
+##### Características de `std::unordered_map`
+
+- **No Ordenado:** Los elementos no se almacenan en un orden específico.
+- **Claves Únicas:** Cada clave en el mapa es única.
+- **Acceso Constante Promedio:** Las operaciones tienen una complejidad promedio O(1) debido a su implementación basada en tablas hash.
+
+##### Ejemplo de Uso de `std::unordered_map`
+
+```cpp
+#include <iostream>
+#include <unordered_map>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de un unordered_map
+    unordered_map<string, int> edades;
+    edades["Juan"] = 30;
+    edades["Maria"] = 25;
+    edades["Pedro"] = 35;
+
+    // Iteración y acceso a los elementos
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    // Acceso a un valor específico
+    cout << "La edad de Maria es: " << edades["Maria"] << endl;
+
+    // Modificación de un valor
+    edades["Maria"] = 26;
+    cout << "La nueva edad de Maria es: " << edades["Maria"] << endl;
+
+    // Eliminación de un elemento
+    edades.erase("Pedro");
+
+    // Iteración después de la eliminación
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    return 0;
+}
+```
+
+### Operaciones Comunes en `std::unordered_map`
+
+- **`operator[]`**: Accede o inserta un valor asociado a una clave.
+- **`insert(par)`**: Inserta un nuevo par clave-valor.
+- **`erase(clave)`**: Elimina el par asociado a la clave.
+- **`find(clave)`**: Devuelve un iterador al par si se encuentra, o `end()` si no.
+- **`size()`**: Devuelve el número de elementos en el mapa.
+- **`empty()`**: Devuelve `true` si el mapa está vacío.
+
+### Comparación entre `std::map` y `std::unordered_map`
+
+| Característica            | `std::map`                           | `std::unordered_map`                 |
+|---------------------------|--------------------------------------|--------------------------------------|
+| Orden                     | Ordenado por claves                  | No ordenado                          |
+| Complejidad de Acceso     | O(log n)                             | Promedio O(1)                        |
+| Estructura Subyacente     | Árbol binario balanceado (RB-tree)   | Tabla hash                           |
+| Uso de Memoria            | Mayor eficiencia de memoria          | Puede utilizar más memoria           |
+| Iteración                 | Ordenada por clave                   | No garantiza un orden específico     |
+
+### Ejemplo Completo
+
+A continuación, un ejemplo que utiliza tanto `std::map` como `std::unordered_map` para ilustrar sus diferencias y usos comunes:
+
+```cpp
+#include <iostream>
+#include <map>
+#include <unordered_map>
+using namespace std;
+
+int main() {
+    // Uso de std::map
+    map<string, int> mapaOrdenado;
+    mapaOrdenado["Juan"] = 30;
+    mapaOrdenado["Maria"] = 25;
+    mapaOrdenado["Pedro"] = 35;
+
+    cout << "Mapa ordenado:" << endl;
+    for (const auto& par : mapaOrdenado) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    // Uso de std::unordered_map
+    unordered_map<string, int> mapaNoOrdenado;
+    mapaNoOrdenado["Juan"] = 30;
+    mapaNoOrdenado["Maria"] = 25;
+    mapaNoOrdenado["Pedro"] = 35;
+
+    cout << "\nMapa no ordenado:" << endl;
+    for (const auto& par : mapaNoOrdenado) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    return 0;
+}
+```
+
+### Conclusión
+
+Los mapas y diccionarios son estructuras de datos clave en C++ que permiten el almacenamiento y la manipulación eficiente de pares de clave-valor. `std::map` proporciona una estructura ordenada con complejidad logarítmica, mientras que `std::unordered_map` ofrece una estructura no ordenada con acceso promedio constante. Conocer las diferencias entre estas estructuras y cuándo usar cada una es esencial para escribir programas eficientes y bien organizados en C++.
+<---FILES--->
+Características de `std::map`
+Características de `std::map` Result
+Ejemplo de Uso de `std::map`
+Ejemplo de Uso de `std::map` Result
+Características de `std::unordered_map`
+Características de `std::unordered_map` Result
+Ejemplo de Uso de `std::unordered_map`
+Ejemplo de Uso de `std::unordered_map` Result
+<---Características de `std::map`--->
+<---Características de `std::map` Result--->
+<---Ejemplo de Uso de `std::map`--->
+```cpp
+#include <iostream>
+#include <map>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de un mapa
+    map<string, int> edades;
+    edades["Juan"] = 30;
+    edades["Maria"] = 25;
+    edades["Pedro"] = 35;
+
+    // Iteración y acceso a los elementos
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    // Acceso a un valor específico
+    cout << "La edad de Maria es: " << edades["Maria"] << endl;
+
+    // Modificación de un valor
+    edades["Maria"] = 26;
+    cout << "La nueva edad de Maria es: " << edades["Maria"] << endl;
+
+    // Eliminación de un elemento
+    edades.erase("Pedro");
+
+    // Iteración después de la eliminación
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    return 0;
+}
+<---Ejemplo de Uso de `std::map` Result--->
+<---Características de `std::unordered_map`--->
+<---Características de `std::unordered_map` Result--->
+<---Ejemplo de Uso de `std::unordered_map`--->
+```cpp
+#include <iostream>
+#include <unordered_map>
+using namespace std;
+
+int main() {
+    // Declaración e inicialización de un unordered_map
+    unordered_map<string, int> edades;
+    edades["Juan"] = 30;
+    edades["Maria"] = 25;
+    edades["Pedro"] = 35;
+
+    // Iteración y acceso a los elementos
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    // Acceso a un valor específico
+    cout << "La edad de Maria es: " << edades["Maria"] << endl;
+
+    // Modificación de un valor
+    edades["Maria"] = 26;
+    cout << "La nueva edad de Maria es: " << edades["Maria"] << endl;
+
+    // Eliminación de un elemento
+    edades.erase("Pedro");
+
+    // Iteración después de la eliminación
+    for (const auto& par : edades) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <map>
+#include <unordered_map>
+using namespace std;
+
+int main() {
+    // Uso de std::map
+    map<string, int> mapaOrdenado;
+    mapaOrdenado["Juan"] = 30;
+    mapaOrdenado["Maria"] = 25;
+    mapaOrdenado["Pedro"] = 35;
+
+    cout << "Mapa ordenado:" << endl;
+    for (const auto& par : mapaOrdenado) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    // Uso de std::unordered_map
+    unordered_map<string, int> mapaNoOrdenado;
+    mapaNoOrdenado["Juan"] = 30;
+    mapaNoOrdenado["Maria"] = 25;
+    mapaNoOrdenado["Pedro"] = 35;
+
+    cout << "\nMapa no ordenado:" << endl;
+    for (const auto& par : mapaNoOrdenado) {
+        cout << par.first << " tiene " << par.second << " años." << endl;
+    }
+
+    return 0;
+}
+<---Ejemplo de Uso de `std::unordered_map` Result--->

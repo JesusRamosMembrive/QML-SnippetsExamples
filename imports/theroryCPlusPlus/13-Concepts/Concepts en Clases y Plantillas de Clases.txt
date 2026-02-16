@@ -1,0 +1,195 @@
+<---EXPLANATION--->
+### Concepts en Clases y Plantillas de Clases en C++
+
+Los Concepts en C++20 permiten imponer restricciones no solo en funciones, sino también en clases y plantillas de clases. Esto permite definir clases plantilla que solo aceptan tipos que cumplen ciertos requisitos, mejorando la seguridad y claridad del código.
+
+### Definición de Concepts en Clases y Plantillas de Clases
+
+#### Ejemplo 1: Concept en una Clase
+
+Supongamos que queremos definir una clase `Contenedor` que solo acepte tipos integrales. Podemos utilizar el Concept predefinido `std::integral`.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Clase plantilla que solo acepta tipos integrales
+template<std::integral T>
+class Contenedor {
+    T valor;
+public:
+    Contenedor(T v) : valor(v) {}
+
+    T obtenerValor() const {
+        return valor;
+    }
+
+    void mostrarValor() const {
+        std::cout << "Valor: " << valor << std::endl;
+    }
+};
+
+int main() {
+    Contenedor<int> c(42);  // Funciona: int es un tipo integral
+    c.mostrarValor();
+
+    // Contenedor<double> c2(3.14);  // Error de compilación: double no es un tipo integral
+}
+```
+
+En este ejemplo:
+- La clase `Contenedor` está restringida a tipos que cumplen con el Concept `std::integral`, asegurando que solo acepte tipos integrales.
+
+#### Ejemplo 2: Concept Personalizado en una Clase Plantilla
+
+Definamos un Concept personalizado `HasSizeMethod` que verifica si un tipo tiene un método `size()` y usemos este Concept en una clase plantilla.
+
+```cpp
+#include <concepts>
+#include <iostream>
+#include <vector>
+
+// Concept personalizado que requiere que T tenga un método `size()`
+template<typename T>
+concept HasSizeMethod = requires(T a) {
+    { a.size() } -> std::convertible_to<std::size_t>;
+};
+
+// Clase plantilla que solo acepta tipos que cumplen con HasSizeMethod
+template<HasSizeMethod T>
+class Coleccion {
+    T coleccion;
+public:
+    Coleccion(T c) : coleccion(c) {}
+
+    void mostrarTamano() const {
+        std::cout << "Tamaño: " << coleccion.size() << std::endl;
+    }
+};
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    Coleccion<std::vector<int>> col(vec);  // Funciona: std::vector tiene método size()
+    col.mostrarTamano();
+
+    // int num = 42;
+    // Coleccion<int> col2(num);  // Error de compilación: int no tiene método size()
+}
+```
+
+En este ejemplo:
+- La clase `Coleccion` está restringida a tipos que cumplen con el Concept `HasSizeMethod`, asegurando que solo acepte tipos que tienen un método `size()`.
+
+### Sobrecarga de Plantillas de Clases usando Concepts
+
+#### Ejemplo 3: Sobrecarga Basada en Concepts
+
+Vamos a definir dos versiones de una clase `Calculadora`, una que acepte tipos integrales y otra que acepte tipos de punto flotante.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Clase plantilla que solo acepta tipos integrales
+template<std::integral T>
+class Calculadora {
+public:
+    T sumar(T a, T b) {
+        return a + b;
+    }
+
+    T multiplicar(T a, T b) {
+        return a * b;
+    }
+};
+
+// Clase plantilla que solo acepta tipos de punto flotante
+template<std::floating_point T>
+class Calculadora {
+public:
+    T sumar(T a, T b) {
+        return a + b;
+    }
+
+    T multiplicar(T a, T b) {
+        return a * b;
+    }
+};
+
+int main() {
+    Calculadora<int> calcInt;
+    std::cout << "Suma (int): " << calcInt.sumar(3, 4) << std::endl;
+    std::cout << "Multiplicación (int): " << calcInt.multiplicar(3, 4) << std::endl;
+
+    Calculadora<double> calcFloat;
+    std::cout << "Suma (double): " << calcFloat.sumar(3.0, 4.0) << std::endl;
+    std::cout << "Multiplicación (double): " << calcFloat.multiplicar(3.0, 4.0) << std::endl;
+
+    // Calculadora<std::string> calcStr;  // Error de compilación: std::string no cumple con std::integral ni std::floating_point
+}
+```
+
+En este ejemplo:
+- Se definen dos versiones de la clase `Calculadora` usando Concepts para restringir los tipos que pueden aceptar.
+
+### Concepts en Plantillas de Clases Mixtas
+
+#### Ejemplo 4: Plantilla de Clase con Múltiples Concepts
+
+Vamos a definir una clase `Par` que solo acepta pares de tipos donde ambos tipos cumplen ciertos requisitos.
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept personalizado que verifica si T es default constructible
+template<typename T>
+concept DefaultConstructible = std::is_default_constructible_v<T>;
+
+// Concept personalizado que verifica si T es comparable por igualdad
+template<typename T>
+concept EqualityComparable = requires(T a, T b) {
+    { a == b } -> std::convertible_to<bool>;
+};
+
+// Clase plantilla que solo acepta pares de tipos que son DefaultConstructible y EqualityComparable
+template<DefaultConstructible T1, EqualityComparable T2>
+class Par {
+    T1 primero;
+    T2 segundo;
+public:
+    Par(T1 p, T2 s) : primero(p), segundo(s) {}
+
+    bool sonIguales() const {
+        return primero == segundo;
+    }
+
+    void mostrarPar() const {
+        std::cout << "Par: (" << primero << ", " << segundo << ")" << std::endl;
+    }
+};
+
+int main() {
+    Par<int, int> p1(1, 1);  // Funciona: int cumple con DefaultConstructible y EqualityComparable
+    p1.mostrarPar();
+    std::cout << "Son iguales: " << std::boolalpha << p1.sonIguales() << std::endl;
+
+    // Par<int, std::string> p2(1, "1");  // Error de compilación: std::string no cumple con DefaultConstructible
+}
+```
+
+En este ejemplo:
+- La clase `Par` está restringida a pares de tipos donde ambos tipos deben ser `DefaultConstructible` y el segundo tipo debe ser `EqualityComparable`.
+
+### Buenas Prácticas al Usar Concepts en Clases y Plantillas de Clases
+
+1. **Definir Concepts Claros y Específicos**: Asegúrese de que los Concepts sean claros y específicos para evitar confusiones.
+2. **Reutilizar Concepts**: Defina Concepts reutilizables que puedan ser aplicados en múltiples clases y contextos.
+3. **Documentar los Concepts**: Documente los Concepts y las clases que los utilizan para facilitar la comprensión del código.
+4. **Evitar Complejidad**: Mantenga los Concepts lo más simples posible para no complicar innecesariamente el código.
+
+### Conclusión
+
+Los Concepts en C++ permiten imponer restricciones claras y precisas en las plantillas de clases, mejorando la seguridad y la robustez del código. Al definir y utilizar Concepts personalizados, puede asegurar que sus clases solo acepten los tipos adecuados, evitando errores en tiempo de compilación y mejorando la mantenibilidad del código.
+<---FILES--->
+NA.

@@ -1,0 +1,244 @@
+<---EXPLANATION--->
+### Funciones Miembro Estáticas en C++
+
+En C++, las funciones miembro estáticas son funciones que pertenecen a la clase en sí misma, más que a cualquier instancia de la clase. Esto significa que pueden ser llamadas sin crear una instancia de la clase. Las funciones miembro estáticas no tienen acceso al puntero `this` y solo pueden acceder a otros miembros estáticos de la clase.
+
+#### Definición y Uso de Funciones Miembro Estáticas
+
+Una función miembro estática se declara usando la palabra clave `static` dentro de la definición de la clase. Estas funciones pueden ser llamadas usando el nombre de la clase en lugar de una instancia de la clase.
+
+##### Características de las Funciones Miembro Estáticas
+
+1. **Sin `this`:** No pueden acceder al puntero `this` ya que no están asociadas a ninguna instancia.
+2. **Acceso a Miembros Estáticos:** Solo pueden acceder a variables y otras funciones estáticas de la clase.
+3. **Llamada sin Instancia:** Pueden ser llamadas sin crear una instancia de la clase, usando el nombre de la clase.
+
+##### Sintaxis
+
+```cpp
+class Clase {
+public:
+    static tipo nombreFuncion(parametros);
+    // Otros miembros de la clase
+};
+```
+
+##### Ejemplo de Funciones Miembro Estáticas
+
+Consideremos una clase `Contador` que usa una función miembro estática para contar el número de instancias creadas de la clase.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    static int cuenta; // Variable miembro estática
+
+public:
+    Contador() {
+        cuenta++;
+    }
+
+    ~Contador() {
+        cuenta--;
+    }
+
+    static int obtenerCuenta() { // Función miembro estática
+        return cuenta;
+    }
+};
+
+// Definición de la variable miembro estática
+int Contador::cuenta = 0;
+
+int main() {
+    Contador c1;
+    Contador c2;
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    {
+        Contador c3;
+        cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 3
+    }
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `cuenta` es una variable miembro estática que rastrea el número de instancias de `Contador`.
+- `obtenerCuenta` es una función miembro estática que devuelve el valor de `cuenta`.
+
+#### Ventajas de Usar Funciones Miembro Estáticas
+
+1. **No Requieren Instancia:** Las funciones miembro estáticas pueden ser llamadas sin crear una instancia de la clase, lo que puede ser útil para funciones utilitarias que no dependen del estado de una instancia.
+2. **Acceso a Miembros Estáticos:** Pueden acceder y manipular variables estáticas de la clase, permitiendo el uso compartido de datos entre todas las instancias de la clase.
+3. **Facilidad de Uso:** Pueden ser utilizadas como funciones globales con el alcance de la clase, mejorando la organización del código.
+
+#### Comparación con Funciones Miembro No Estáticas
+
+- **Acceso a Miembros:** Las funciones miembro no estáticas pueden acceder a todos los miembros de la clase, incluyendo los no estáticos, mientras que las funciones estáticas solo pueden acceder a miembros estáticos.
+- **Uso de `this`:** Las funciones miembro no estáticas tienen acceso al puntero `this`, permitiendo operar sobre la instancia actual, mientras que las funciones estáticas no lo tienen.
+
+##### Ejemplo Comparativo
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Ejemplo {
+private:
+    int instanciaVariable; // Variable miembro no estática
+    static int estaticaVariable; // Variable miembro estática
+
+public:
+    Ejemplo(int valor) : instanciaVariable(valor) {
+        estaticaVariable += valor;
+    }
+
+    // Función miembro no estática
+    void mostrarInstancia() const {
+        cout << "Instancia Variable: " << instanciaVariable << endl;
+    }
+
+    // Función miembro estática
+    static void mostrarEstatica() {
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+};
+
+// Definición de la variable miembro estática
+int Ejemplo::estaticaVariable = 0;
+
+int main() {
+    Ejemplo e1(10);
+    Ejemplo e2(20);
+
+    e1.mostrarInstancia(); // Muestra: Instancia Variable: 10
+    e2.mostrarInstancia(); // Muestra: Instancia Variable: 20
+
+    Ejemplo::mostrarEstatica(); // Muestra: Estatica Variable: 30
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `mostrarInstancia` es una función miembro no estática que accede a `instanciaVariable`.
+- `mostrarEstatica` es una función miembro estática que accede a `estaticaVariable`.
+
+#### Aplicaciones Comunes de Funciones Miembro Estáticas
+
+1. **Funciones Utilitarias:** Para realizar operaciones que no dependen del estado de una instancia específica.
+2. **Contadores y Estadísticas:** Para rastrear y reportar estadísticas globales relacionadas con la clase.
+3. **Métodos de Fábrica:** Para crear instancias de la clase y realizar otras inicializaciones que no dependen del estado de una instancia.
+
+### Conclusión
+
+Las funciones miembro estáticas en C++ son una herramienta poderosa que permite definir funciones asociadas a la clase en lugar de a una instancia específica. Facilitan la implementación de métodos utilitarios, el manejo de datos compartidos entre todas las instancias de una clase y otras operaciones que no dependen del estado de una instancia. Entender cómo y cuándo usar funciones miembro estáticas es esencial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
+<---FILES--->
+Características de las Funciones Miembro Estáticas
+Características de las Funciones Miembro Estáticas Result
+Sintaxis
+Sintaxis Result
+Ejemplo de Funciones Miembro Estáticas
+Ejemplo de Funciones Miembro Estáticas Result
+Ejemplo Comparativo
+Ejemplo Comparativo Result
+<---Características de las Funciones Miembro Estáticas--->
+<---Características de las Funciones Miembro Estáticas Result--->
+<---Sintaxis--->
+```cpp
+class Clase {
+public:
+    static tipo nombreFuncion(parametros);
+    // Otros miembros de la clase
+};
+<---Sintaxis Result--->
+<---Ejemplo de Funciones Miembro Estáticas--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    static int cuenta; // Variable miembro estática
+
+public:
+    Contador() {
+        cuenta++;
+    }
+
+    ~Contador() {
+        cuenta--;
+    }
+
+    static int obtenerCuenta() { // Función miembro estática
+        return cuenta;
+    }
+};
+
+// Definición de la variable miembro estática
+int Contador::cuenta = 0;
+
+int main() {
+    Contador c1;
+    Contador c2;
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    {
+        Contador c3;
+        cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 3
+    }
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    return 0;
+}
+<---Ejemplo de Funciones Miembro Estáticas Result--->
+<---Ejemplo Comparativo--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Ejemplo {
+private:
+    int instanciaVariable; // Variable miembro no estática
+    static int estaticaVariable; // Variable miembro estática
+
+public:
+    Ejemplo(int valor) : instanciaVariable(valor) {
+        estaticaVariable += valor;
+    }
+
+    // Función miembro no estática
+    void mostrarInstancia() const {
+        cout << "Instancia Variable: " << instanciaVariable << endl;
+    }
+
+    // Función miembro estática
+    static void mostrarEstatica() {
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+};
+
+// Definición de la variable miembro estática
+int Ejemplo::estaticaVariable = 0;
+
+int main() {
+    Ejemplo e1(10);
+    Ejemplo e2(20);
+
+    e1.mostrarInstancia(); // Muestra: Instancia Variable: 10
+    e2.mostrarInstancia(); // Muestra: Instancia Variable: 20
+
+    Ejemplo::mostrarEstatica(); // Muestra: Estatica Variable: 30
+
+    return 0;
+}
+<---Ejemplo Comparativo Result--->

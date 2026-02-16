@@ -1,0 +1,214 @@
+<---EXPLANATION--->
+### Operadores en C++
+
+En C++, los operadores son símbolos especiales que se utilizan para realizar operaciones en operandos. Hay varios tipos de operadores, incluyendo aritméticos, lógicos y relacionales, que permiten realizar cálculos, comparaciones y evaluaciones lógicas.
+
+#### 1. **Operadores Aritméticos**
+
+Los operadores aritméticos se utilizan para realizar operaciones matemáticas básicas.
+
+| Operador | Nombre         | Ejemplo      | Descripción                          |
+|----------|----------------|--------------|--------------------------------------|
+| `+`      | Suma           | `a + b`      | Suma de `a` y `b`                    |
+| `-`      | Resta          | `a - b`      | Resta de `b` de `a`                  |
+| `*`      | Multiplicación | `a * b`      | Producto de `a` y `b`                |
+| `/`      | División       | `a / b`      | Cociente de `a` y `b`                |
+| `%`      | Módulo         | `a % b`      | Resto de la división de `a` entre `b`|
+
+##### Ejemplo de Operadores Aritméticos
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+    int b = 3;
+
+    cout << "Suma: " << a + b << endl;           // 13
+    cout << "Resta: " << a - b << endl;          // 7
+    cout << "Multiplicación: " << a * b << endl; // 30
+    cout << "División: " << a / b << endl;       // 3
+    cout << "Módulo: " << a % b << endl;         // 1
+
+    return 0;
+}
+```
+
+#### 2. **Operadores Lógicos**
+
+Los operadores lógicos se utilizan para realizar operaciones lógicas, generalmente en expresiones booleanas.
+
+| Operador | Nombre   | Ejemplo       | Descripción                            |
+|----------|----------|---------------|----------------------------------------|
+| `&&`     | AND      | `a && b`      | Verdadero si tanto `a` como `b` son verdaderos |
+| `||`     | OR       | `a || b`      | Verdadero si al menos uno de `a` o `b` es verdadero |
+| `!`      | NOT      | `!a`          | Verdadero si `a` es falso               |
+
+##### Ejemplo de Operadores Lógicos
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    bool a = true;
+    bool b = false;
+
+    cout << "AND: " << (a && b) << endl; // 0 (false)
+    cout << "OR: " << (a || b) << endl;  // 1 (true)
+    cout << "NOT: " << (!a) << endl;     // 0 (false)
+
+    return 0;
+}
+```
+
+#### 3. **Operadores Relacionales**
+
+Los operadores relacionales se utilizan para comparar dos valores. El resultado de una operación relacional es un valor booleano (`true` o `false`).
+
+| Operador | Nombre           | Ejemplo   | Descripción                          |
+|----------|------------------|-----------|--------------------------------------|
+| `==`     | Igual a          | `a == b`  | Verdadero si `a` es igual a `b`      |
+| `!=`     | No igual a       | `a != b`  | Verdadero si `a` no es igual a `b`   |
+| `>`      | Mayor que        | `a > b`   | Verdadero si `a` es mayor que `b`    |
+| `<`      | Menor que        | `a < b`   | Verdadero si `a` es menor que `b`    |
+| `>=`     | Mayor o igual que| `a >= b`  | Verdadero si `a` es mayor o igual que `b` |
+| `<=`     | Menor o igual que| `a <= b`  | Verdadero si `a` es menor o igual que `b` |
+
+##### Ejemplo de Operadores Relacionales
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+    int b = 20;
+
+    cout << "Igual a: " << (a == b) << endl;         // 0 (false)
+    cout << "No igual a: " << (a != b) << endl;      // 1 (true)
+    cout << "Mayor que: " << (a > b) << endl;        // 0 (false)
+    cout << "Menor que: " << (a < b) << endl;        // 1 (true)
+    cout << "Mayor o igual que: " << (a >= b) << endl; // 0 (false)
+    cout << "Menor o igual que: " << (a <= b) << endl; // 1 (true)
+
+    return 0;
+}
+```
+
+### Uso Combinado de Operadores
+
+En muchos casos, los operadores aritméticos, lógicos y relacionales se combinan para construir expresiones más complejas.
+
+##### Ejemplo de Uso Combinado
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 5;
+    int y = 10;
+    int z = 15;
+
+    // Combinación de operadores aritméticos y relacionales
+    bool resultado1 = (x + y) > z; // true
+
+    // Combinación de operadores lógicos y relacionales
+    bool resultado2 = (x < y) && (y < z); // true
+
+    cout << "Resultado 1: " << resultado1 << endl; // 1 (true)
+    cout << "Resultado 2: " << resultado2 << endl; // 1 (true)
+
+    return 0;
+}
+```
+
+### Conclusión
+
+Conocer y entender cómo utilizar los operadores aritméticos, lógicos y relacionales en C++ es fundamental para realizar operaciones básicas y tomar decisiones en el código. Estos operadores permiten construir expresiones y condiciones que son esenciales para controlar el flujo de ejecución de los programas y manipular datos de manera efectiva.
+<---FILES--->
+Ejemplo de Operadores Aritméticos
+Ejemplo de Operadores Aritméticos Result
+Ejemplo de Operadores Lógicos
+Ejemplo de Operadores Lógicos Result
+Ejemplo de Operadores Relacionales
+Ejemplo de Operadores Relacionales Result
+Ejemplo de Uso Combinado
+Ejemplo de Uso Combinado Result
+<---Ejemplo de Operadores Aritméticos--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+    int b = 3;
+
+    cout << "Suma: " << a + b << endl;           // 13
+    cout << "Resta: " << a - b << endl;          // 7
+    cout << "Multiplicación: " << a * b << endl; // 30
+    cout << "División: " << a / b << endl;       // 3
+    cout << "Módulo: " << a % b << endl;         // 1
+
+    return 0;
+}
+<---Ejemplo de Operadores Aritméticos Result--->
+<---Ejemplo de Operadores Lógicos--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    bool a = true;
+    bool b = false;
+
+    cout << "AND: " << (a && b) << endl; // 0 (false)
+    cout << "OR: " << (a || b) << endl;  // 1 (true)
+    cout << "NOT: " << (!a) << endl;     // 0 (false)
+
+    return 0;
+}
+<---Ejemplo de Operadores Lógicos Result--->
+<---Ejemplo de Operadores Relacionales--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+    int b = 20;
+
+    cout << "Igual a: " << (a == b) << endl;         // 0 (false)
+    cout << "No igual a: " << (a != b) << endl;      // 1 (true)
+    cout << "Mayor que: " << (a > b) << endl;        // 0 (false)
+    cout << "Menor que: " << (a < b) << endl;        // 1 (true)
+    cout << "Mayor o igual que: " << (a >= b) << endl; // 0 (false)
+    cout << "Menor o igual que: " << (a <= b) << endl; // 1 (true)
+
+    return 0;
+}
+<---Ejemplo de Operadores Relacionales Result--->
+<---Ejemplo de Uso Combinado--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 5;
+    int y = 10;
+    int z = 15;
+
+    // Combinación de operadores aritméticos y relacionales
+    bool resultado1 = (x + y) > z; // true
+
+    // Combinación de operadores lógicos y relacionales
+    bool resultado2 = (x < y) && (y < z); // true
+
+    cout << "Resultado 1: " << resultado1 << endl; // 1 (true)
+    cout << "Resultado 2: " << resultado2 << endl; // 1 (true)
+
+    return 0;
+}
+<---Ejemplo de Uso Combinado Result--->

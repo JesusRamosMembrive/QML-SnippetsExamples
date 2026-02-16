@@ -1,0 +1,205 @@
+<---EXPLANATION--->
+### Punteros Inteligentes en C++
+
+Los punteros inteligentes en C++ son una característica introducida en C++11 que ayuda a gestionar la memoria automáticamente y prevenir fugas de memoria y errores comunes como los punteros colgantes. Los punteros inteligentes son clases de la biblioteca estándar que administran la vida útil de los objetos a los que apuntan. Los tres tipos principales de punteros inteligentes son `std::unique_ptr`, `std::shared_ptr` y `std::weak_ptr`.
+
+#### `std::unique_ptr`
+
+Un `std::unique_ptr` es un puntero inteligente que posee de manera exclusiva la memoria a la que apunta. No puede haber dos `std::unique_ptr` que posean el mismo recurso simultáneamente.
+
+##### Características:
+- Exclusividad: No puede haber copias de un `std::unique_ptr`.
+- Liberación automática: La memoria se libera automáticamente cuando el `std::unique_ptr` sale de su ámbito.
+
+##### Ejemplo de Uso de `std::unique_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::unique_ptr<int> ptr = std::make_unique<int>(10); // Asignación de memoria
+    std::cout << *ptr << std::endl; // Salida: 10
+
+    // ptr2 = ptr; // Error: no se permite la copia de std::unique_ptr
+
+    std::unique_ptr<int> ptr2 = std::move(ptr); // Transferencia de propiedad
+    std::cout << *ptr2 << std::endl; // Salida: 10
+
+    // La memoria se libera automáticamente al salir de ámbito
+    return 0;
+}
+```
+
+#### `std::shared_ptr`
+
+Un `std::shared_ptr` permite compartir la propiedad de la memoria con múltiples punteros. La memoria se libera cuando el último `std::shared_ptr` que posee la memoria se destruye.
+
+##### Características:
+- Compartición: Múltiples `std::shared_ptr` pueden apuntar al mismo recurso.
+- Contador de referencias: Lleva un conteo de cuántos `std::shared_ptr` están apuntando al recurso.
+
+##### Ejemplo de Uso de `std::shared_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(20); // Asignación de memoria
+    std::shared_ptr<int> ptr2 = ptr1; // Compartir la propiedad
+
+    std::cout << *ptr1 << std::endl; // Salida: 20
+    std::cout << *ptr2 << std::endl; // Salida: 20
+    std::cout << "Use count: " << ptr1.use_count() << std::endl; // Salida: 2
+
+    // La memoria se libera automáticamente cuando el último shared_ptr se destruye
+    return 0;
+}
+```
+
+#### `std::weak_ptr`
+
+Un `std::weak_ptr` es un puntero inteligente no propietario que se utiliza junto con `std::shared_ptr` para evitar ciclos de referencia. No afecta el conteo de referencias del `std::shared_ptr`.
+
+##### Características:
+- No propietario: No incrementa el contador de referencias.
+- Utilizado para evitar ciclos de referencia: Permite la comprobación segura de si el recurso aún existe.
+
+##### Ejemplo de Uso de `std::weak_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> sptr = std::make_shared<int>(30);
+    std::weak_ptr<int> wptr = sptr; // No incrementa el contador de referencias
+
+    std::cout << "Use count: " << sptr.use_count() << std::endl; // Salida: 1
+
+    if (auto spt = wptr.lock()) { // Comprobar si el recurso aún existe
+        std::cout << *spt << std::endl; // Salida: 30
+    } else {
+        std::cout << "wptr is expired" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Buenas Prácticas con Punteros Inteligentes
+
+#### 1. Preferir `std::unique_ptr` por Defecto
+
+Utilice `std::unique_ptr` cuando no necesite compartir la propiedad del recurso. Esto asegura que la propiedad sea clara y evita problemas de gestión de memoria.
+
+```cpp
+std::unique_ptr<int> ptr = std::make_unique<int>(10);
+```
+
+#### 2. Usar `std::shared_ptr` para Propiedad Compartida
+
+Utilice `std::shared_ptr` cuando necesite compartir la propiedad del recurso entre múltiples partes del código.
+
+```cpp
+std::shared_ptr<int> ptr1 = std::make_shared<int>(20);
+std::shared_ptr<int> ptr2 = ptr1;
+```
+
+#### 3. Evitar Ciclos de Referencia con `std::weak_ptr`
+
+Utilice `std::weak_ptr` junto con `std::shared_ptr` para evitar ciclos de referencia que pueden causar fugas de memoria.
+
+```cpp
+class Nodo {
+public:
+    std::shared_ptr<Nodo> siguiente;
+    std::weak_ptr<Nodo> anterior; // Evitar ciclo de referencia
+};
+```
+
+#### 4. Evitar el Uso de Punteros Crudos
+
+Prefiera los punteros inteligentes sobre los punteros crudos para gestionar automáticamente la vida útil de los recursos y evitar errores comunes.
+
+### Conclusión
+
+Los punteros inteligentes en C++ proporcionan una forma segura y eficiente de gestionar la memoria dinámica. Al utilizar `std::unique_ptr`, `std::shared_ptr` y `std::weak_ptr`, los desarrolladores pueden prevenir fugas de memoria y errores de acceso a memoria, mejorando la robustez y mantenibilidad del código. Siguiendo buenas prácticas y eligiendo el tipo de puntero inteligente adecuado para cada situación, se puede aprovechar al máximo esta poderosa característica del lenguaje.
+<---FILES--->
+Características:
+Características: Result
+Ejemplo de Uso de `std::unique_ptr`
+Ejemplo de Uso de `std::unique_ptr` Result
+Ejemplo de Uso de `std::shared_ptr`
+Ejemplo de Uso de `std::shared_ptr` Result
+Ejemplo de Uso de `std::weak_ptr`
+Ejemplo de Uso de `std::weak_ptr` Result
+<---Características:--->
+<---Características: Result--->
+<---Ejemplo de Uso de `std::unique_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::unique_ptr<int> ptr = std::make_unique<int>(10); // Asignación de memoria
+    std::cout << *ptr << std::endl; // Salida: 10
+
+    // ptr2 = ptr; // Error: no se permite la copia de std::unique_ptr
+
+    std::unique_ptr<int> ptr2 = std::move(ptr); // Transferencia de propiedad
+    std::cout << *ptr2 << std::endl; // Salida: 10
+
+    // La memoria se libera automáticamente al salir de ámbito
+    return 0;
+}
+<---Ejemplo de Uso de `std::unique_ptr` Result--->
+<---Ejemplo de Uso de `std::shared_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(20); // Asignación de memoria
+    std::shared_ptr<int> ptr2 = ptr1; // Compartir la propiedad
+
+    std::cout << *ptr1 << std::endl; // Salida: 20
+    std::cout << *ptr2 << std::endl; // Salida: 20
+    std::cout << "Use count: " << ptr1.use_count() << std::endl; // Salida: 2
+
+    // La memoria se libera automáticamente cuando el último shared_ptr se destruye
+    return 0;
+}
+<---Ejemplo de Uso de `std::shared_ptr` Result--->
+<---Ejemplo de Uso de `std::weak_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> sptr = std::make_shared<int>(30);
+    std::weak_ptr<int> wptr = sptr; // No incrementa el contador de referencias
+
+    std::cout << "Use count: " << sptr.use_count() << std::endl; // Salida: 1
+
+    if (auto spt = wptr.lock()) { // Comprobar si el recurso aún existe
+        std::cout << *spt << std::endl; // Salida: 30
+    } else {
+        std::cout << "wptr is expired" << std::endl;
+    }
+
+    return 0;
+}
+```cpp
+std::unique_ptr<int> ptr = std::make_unique<int>(10);
+```cpp
+std::shared_ptr<int> ptr1 = std::make_shared<int>(20);
+std::shared_ptr<int> ptr2 = ptr1;
+```cpp
+class Nodo {
+public:
+    std::shared_ptr<Nodo> siguiente;
+    std::weak_ptr<Nodo> anterior; // Evitar ciclo de referencia
+};
+<---Ejemplo de Uso de `std::weak_ptr` Result--->

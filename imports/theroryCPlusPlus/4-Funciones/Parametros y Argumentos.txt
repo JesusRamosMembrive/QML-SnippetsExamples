@@ -1,0 +1,266 @@
+<---EXPLANATION--->
+### Parámetros y Argumentos en C++
+
+Los parámetros y argumentos son conceptos fundamentales en la programación de funciones. Los parámetros son variables en la definición de la función que actúan como marcadores de posición para los valores que se pasarán a la función cuando se llame. Los argumentos son los valores reales que se pasan a la función cuando se invoca.
+
+#### Parámetros
+
+Los parámetros se declaran en la definición de la función. Actúan como variables locales dentro del cuerpo de la función, permitiendo que la función opere con los valores proporcionados en la llamada.
+
+##### Tipos de Parámetros
+
+1. **Parámetros por Valor**
+2. **Parámetros por Referencia**
+3. **Parámetros por Puntero**
+4. **Parámetros Predeterminados**
+
+##### Parámetros por Valor
+
+Cuando se pasan parámetros por valor, se copia el valor del argumento en el parámetro de la función. Los cambios hechos a los parámetros dentro de la función no afectan a los argumentos originales.
+
+```cpp
+void incrementarPorValor(int x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorValor(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 5
+    return 0;
+}
+```
+
+##### Parámetros por Referencia
+
+Cuando se pasan parámetros por referencia, se pasa la referencia del argumento a la función, permitiendo que la función modifique el valor original.
+
+```cpp
+void incrementarPorReferencia(int& x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorReferencia(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+```
+
+##### Parámetros por Puntero
+
+Los punteros pueden utilizarse para pasar la dirección de una variable a una función, permitiendo que la función modifique la variable original.
+
+```cpp
+void incrementarPorPuntero(int* x) {
+    (*x)++;
+    cout << "Dentro de la función: " << *x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorPuntero(&numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+```
+
+##### Parámetros Predeterminados
+
+C++ permite especificar valores predeterminados para los parámetros. Si no se proporcionan argumentos para estos parámetros en la llamada a la función, se utilizan los valores predeterminados.
+
+```cpp
+void saludar(string nombre = "Mundo") {
+    cout << "Hola, " << nombre << "!" << endl;
+}
+
+int main() {
+    saludar(); // Usa el valor predeterminado: Mundo
+    saludar("Juan"); // Usa el argumento proporcionado: Juan
+    return 0;
+}
+```
+
+#### Argumentos
+
+Los argumentos son los valores que se pasan a la función cuando se invoca. Pueden ser constantes, variables, expresiones, o incluso llamadas a otras funciones.
+
+##### Ejemplo de Argumentos
+
+```cpp
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int x = 5;
+    int y = 3;
+    int resultado = sumar(x, y); // x y y son los argumentos
+    cout << "Resultado: " << resultado << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `x` y `y` son argumentos cuando se llama a la función `sumar`.
+
+### Funciones con Múltiples Parámetros
+
+Las funciones pueden aceptar múltiples parámetros, lo que permite realizar operaciones más complejas.
+
+##### Ejemplo con Múltiples Parámetros
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirDatos(string nombre, int edad, double altura) {
+    cout << "Nombre: " << nombre << endl;
+    cout << "Edad: " << edad << endl;
+    cout << "Altura: " << altura << " metros" << endl;
+}
+
+int main() {
+    imprimirDatos("Juan", 30, 1.75);
+    return 0;
+}
+```
+
+### Paso de Parámetros por Constante
+
+Es una buena práctica pasar parámetros por referencia constante cuando no se requiere modificar el argumento, especialmente para objetos grandes, para evitar copias innecesarias.
+
+##### Ejemplo con Referencia Constante
+
+```cpp
+void mostrarMensaje(const string& mensaje) {
+    cout << mensaje << endl;
+}
+
+int main() {
+    string saludo = "Hola, Mundo!";
+    mostrarMensaje(saludo);
+    return 0;
+}
+```
+
+### Conclusión
+
+Entender la diferencia entre parámetros y argumentos, y cómo se pueden pasar a las funciones, es esencial para escribir funciones flexibles y eficientes en C++. El uso adecuado de parámetros por valor, referencia, puntero, y valores predeterminados permite a los desarrolladores manipular datos de diversas maneras, mejorar el rendimiento y mantener el código limpio y fácil de entender. Con estas habilidades, se puede maximizar la reutilización y modularidad del código en C++.
+<---FILES--->
+Tipos de Parámetros
+Tipos de Parámetros Result
+Parámetros por Valor
+Parámetros por Valor Result
+Parámetros por Referencia
+Parámetros por Referencia Result
+Parámetros por Puntero
+Parámetros por Puntero Result
+Parámetros Predeterminados
+Parámetros Predeterminados Result
+Ejemplo de Argumentos
+Ejemplo de Argumentos Result
+Ejemplo con Múltiples Parámetros
+Ejemplo con Múltiples Parámetros Result
+Ejemplo con Referencia Constante
+Ejemplo con Referencia Constante Result
+<---Tipos de Parámetros--->
+<---Tipos de Parámetros Result--->
+<---Parámetros por Valor--->
+```cpp
+void incrementarPorValor(int x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorValor(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 5
+    return 0;
+}
+<---Parámetros por Valor Result--->
+<---Parámetros por Referencia--->
+```cpp
+void incrementarPorReferencia(int& x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorReferencia(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+<---Parámetros por Referencia Result--->
+<---Parámetros por Puntero--->
+```cpp
+void incrementarPorPuntero(int* x) {
+    (*x)++;
+    cout << "Dentro de la función: " << *x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorPuntero(&numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+<---Parámetros por Puntero Result--->
+<---Parámetros Predeterminados--->
+```cpp
+void saludar(string nombre = "Mundo") {
+    cout << "Hola, " << nombre << "!" << endl;
+}
+
+int main() {
+    saludar(); // Usa el valor predeterminado: Mundo
+    saludar("Juan"); // Usa el argumento proporcionado: Juan
+    return 0;
+}
+<---Parámetros Predeterminados Result--->
+<---Ejemplo de Argumentos--->
+```cpp
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int x = 5;
+    int y = 3;
+    int resultado = sumar(x, y); // x y y son los argumentos
+    cout << "Resultado: " << resultado << endl;
+    return 0;
+}
+<---Ejemplo de Argumentos Result--->
+<---Ejemplo con Múltiples Parámetros--->
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirDatos(string nombre, int edad, double altura) {
+    cout << "Nombre: " << nombre << endl;
+    cout << "Edad: " << edad << endl;
+    cout << "Altura: " << altura << " metros" << endl;
+}
+
+int main() {
+    imprimirDatos("Juan", 30, 1.75);
+    return 0;
+}
+<---Ejemplo con Múltiples Parámetros Result--->
+<---Ejemplo con Referencia Constante--->
+```cpp
+void mostrarMensaje(const string& mensaje) {
+    cout << mensaje << endl;
+}
+
+int main() {
+    string saludo = "Hola, Mundo!";
+    mostrarMensaje(saludo);
+    return 0;
+}
+<---Ejemplo con Referencia Constante Result--->

@@ -1,0 +1,319 @@
+<---EXPLANATION--->
+### Funciones Inline en C++
+
+Las funciones `inline` en C++ son una característica que sugiere al compilador que expanda el código de la función en lugar de realizar una llamada a la función. Esto puede reducir la sobrecarga de la llamada a la función, mejorar el rendimiento en algunos casos y ayudar a optimizar el código. Sin embargo, el uso excesivo de funciones `inline` puede aumentar el tamaño del código y reducir la eficiencia de la caché.
+
+#### Definición de Funciones Inline
+
+Para declarar una función como `inline`, se utiliza la palabra clave `inline` antes de la declaración o definición de la función.
+
+##### Sintaxis
+
+```cpp
+inline tipo_retorno nombre_funcion(parametros) {
+    // cuerpo de la función
+}
+```
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+inline int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int resultado = sumar(3, 4);
+    cout << "La suma es: " << resultado << endl;
+    return 0;
+}
+```
+
+En este ejemplo, la función `sumar` se define como `inline`, lo que sugiere al compilador que expanda la función en línea en lugar de hacer una llamada a la función.
+
+#### Ventajas de las Funciones Inline
+
+1. **Reducción de la Sobrecarga de Llamada a Función:** Al expandir el código de la función en línea, se elimina la sobrecarga asociada con la llamada a la función.
+2. **Optimización del Rendimiento:** Para funciones pequeñas y frecuentemente llamadas, el uso de `inline` puede mejorar el rendimiento.
+3. **Facilitación de la Optimización del Compilador:** El compilador puede aplicar más optimizaciones cuando el cuerpo de la función está disponible en línea.
+
+#### Limitaciones y Consideraciones
+
+1. **Tamaño del Código:** El uso excesivo de funciones `inline` puede aumentar el tamaño del código, lo que puede afectar negativamente a la eficiencia de la caché.
+2. **Compilador Puede Ignorar `inline`:** La palabra clave `inline` es una sugerencia para el compilador, no una orden. El compilador puede decidir no hacer una función en línea si considera que no es beneficioso.
+3. **Adecuación para Funciones Pequeñas:** Las funciones `inline` son más adecuadas para funciones pequeñas y de propósito general. Funciones grandes y complejas no deberían ser inlined debido a la inflación del código.
+
+#### Funciones Inline en Clases
+
+En las clases, las funciones miembro pueden ser declaradas y definidas como `inline` dentro de la definición de la clase.
+
+##### Ejemplo en Clases
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+private:
+    int x, y;
+public:
+    // Constructor inline
+    inline Punto(int a, int b) : x(a), y(b) {}
+
+    // Funciones miembro inline
+    inline int getX() const { return x; }
+    inline int getY() const { return y; }
+
+    inline void mover(int a, int b) {
+        x = a;
+        y = b;
+    }
+};
+
+int main() {
+    Punto p(10, 20);
+    cout << "Punto inicial: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    p.mover(30, 40);
+    cout << "Punto movido: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, el constructor y las funciones miembro de la clase `Punto` se declaran como `inline`.
+
+#### Uso de `inline` con Funciones Definidas en el Archivo de Cabecera
+
+Es común definir funciones `inline` en archivos de cabecera para que puedan ser usadas en múltiples archivos fuente sin causar errores de múltiples definiciones.
+
+##### Ejemplo en un Archivo de Cabecera
+
+```cpp
+// punto.h
+#ifndef PUNTO_H
+#define PUNTO_H
+
+class Punto {
+private:
+    int x, y;
+public:
+    inline Punto(int a, int b) : x(a), y(b) {}
+    inline int getX() const { return x; }
+    inline int getY() const { return y; }
+    inline void mover(int a, int b) {
+        x = a;
+        y = b;
+    }
+};
+
+#endif // PUNTO_H
+```
+
+##### Uso del Archivo de Cabecera en un Archivo Fuente
+
+```cpp
+// main.cpp
+#include <iostream>
+#include "punto.h"
+using namespace std;
+
+int main() {
+    Punto p(10, 20);
+    cout << "Punto inicial: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    p.mover(30, 40);
+    cout << "Punto movido: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    return 0;
+}
+```
+
+#### Ejemplo Completo con Funciones Inline
+
+A continuación, se presenta un ejemplo completo que muestra el uso de funciones `inline` tanto dentro como fuera de una clase.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función inline fuera de la clase
+inline int sumar(int a, int b) {
+    return a + b;
+}
+
+class Rectangulo {
+private:
+    int ancho, alto;
+public:
+    // Constructor inline
+    inline Rectangulo(int a, int b) : ancho(a), alto(b) {}
+
+    // Funciones miembro inline
+    inline int getAncho() const { return ancho; }
+    inline int getAlto() const { return alto; }
+    inline int area() const {
+        return ancho * alto;
+    }
+};
+
+int main() {
+    // Uso de función inline fuera de la clase
+    int resultado = sumar(5, 7);
+    cout << "La suma es: " << resultado << endl;
+
+    // Uso de funciones inline dentro de la clase
+    Rectangulo rect(10, 20);
+    cout << "Ancho del rectángulo: " << rect.getAncho() << endl;
+    cout << "Alto del rectángulo: " << rect.getAlto() << endl;
+    cout << "Área del rectángulo: " << rect.area() << endl;
+
+    return 0;
+}
+```
+
+### Conclusión
+
+Las funciones `inline` en C++ son una herramienta útil para optimizar el rendimiento del programa al reducir la sobrecarga de llamadas a funciones, especialmente para funciones pequeñas y frecuentemente llamadas. Aunque el uso de `inline` puede mejorar el rendimiento, debe emplearse con moderación para evitar inflar el tamaño del código y comprometer la eficiencia de la caché. Con una comprensión sólida de cuándo y cómo usar funciones `inline`, los desarrolladores pueden escribir código más eficiente y optimizado.
+<---FILES--->
+Sintaxis
+Sintaxis Result
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo en Clases
+Ejemplo en Clases Result
+Ejemplo en un Archivo de Cabecera
+Ejemplo en un Archivo de Cabecera Result
+Uso del Archivo de Cabecera en un Archivo Fuente
+Uso del Archivo de Cabecera en un Archivo Fuente Result
+<---Sintaxis--->
+```cpp
+inline tipo_retorno nombre_funcion(parametros) {
+    // cuerpo de la función
+}
+<---Sintaxis Result--->
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+inline int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int resultado = sumar(3, 4);
+    cout << "La suma es: " << resultado << endl;
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo en Clases--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+private:
+    int x, y;
+public:
+    // Constructor inline
+    inline Punto(int a, int b) : x(a), y(b) {}
+
+    // Funciones miembro inline
+    inline int getX() const { return x; }
+    inline int getY() const { return y; }
+
+    inline void mover(int a, int b) {
+        x = a;
+        y = b;
+    }
+};
+
+int main() {
+    Punto p(10, 20);
+    cout << "Punto inicial: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    p.mover(30, 40);
+    cout << "Punto movido: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    return 0;
+}
+<---Ejemplo en Clases Result--->
+<---Ejemplo en un Archivo de Cabecera--->
+```cpp
+// punto.h
+#ifndef PUNTO_H
+#define PUNTO_H
+
+class Punto {
+private:
+    int x, y;
+public:
+    inline Punto(int a, int b) : x(a), y(b) {}
+    inline int getX() const { return x; }
+    inline int getY() const { return y; }
+    inline void mover(int a, int b) {
+        x = a;
+        y = b;
+    }
+};
+
+#endif // PUNTO_H
+<---Ejemplo en un Archivo de Cabecera Result--->
+<---Uso del Archivo de Cabecera en un Archivo Fuente--->
+```cpp
+// main.cpp
+#include <iostream>
+#include "punto.h"
+using namespace std;
+
+int main() {
+    Punto p(10, 20);
+    cout << "Punto inicial: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    p.mover(30, 40);
+    cout << "Punto movido: (" << p.getX() << ", " << p.getY() << ")" << endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+// Función inline fuera de la clase
+inline int sumar(int a, int b) {
+    return a + b;
+}
+
+class Rectangulo {
+private:
+    int ancho, alto;
+public:
+    // Constructor inline
+    inline Rectangulo(int a, int b) : ancho(a), alto(b) {}
+
+    // Funciones miembro inline
+    inline int getAncho() const { return ancho; }
+    inline int getAlto() const { return alto; }
+    inline int area() const {
+        return ancho * alto;
+    }
+};
+
+int main() {
+    // Uso de función inline fuera de la clase
+    int resultado = sumar(5, 7);
+    cout << "La suma es: " << resultado << endl;
+
+    // Uso de funciones inline dentro de la clase
+    Rectangulo rect(10, 20);
+    cout << "Ancho del rectángulo: " << rect.getAncho() << endl;
+    cout << "Alto del rectángulo: " << rect.getAlto() << endl;
+    cout << "Área del rectángulo: " << rect.area() << endl;
+
+    return 0;
+}
+<---Uso del Archivo de Cabecera en un Archivo Fuente Result--->

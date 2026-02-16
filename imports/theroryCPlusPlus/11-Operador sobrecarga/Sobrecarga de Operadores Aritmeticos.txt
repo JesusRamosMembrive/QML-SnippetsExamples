@@ -1,0 +1,139 @@
+<---EXPLANATION--->
+### Sobrecarga de Operadores Aritméticos en C++
+
+La sobrecarga de operadores aritméticos permite definir cómo se deben comportar los operadores matemáticos estándar (como `+`, `-`, `*`, `/`, `%`, etc.) cuando se utilizan con tipos de datos definidos por el usuario. Esta capacidad es especialmente útil para clases que representan conceptos matemáticos o numéricos, como vectores, matrices, complejos, etc.
+
+A continuación, veremos cómo sobrecargar algunos operadores aritméticos básicos en C++.
+
+#### Ejemplo: Clase `Complex` para Números Complejos
+
+Vamos a definir una clase `Complex` que representa números complejos y sobrecargaremos los operadores `+`, `-`, `*` y `/`.
+
+```cpp
+// Complex.h
+#ifndef COMPLEX_H
+#define COMPLEX_H
+
+#include <iostream>
+
+class Complex {
+private:
+    double real;
+    double imag;
+public:
+    Complex(double r = 0, double i = 0) : real(r), imag(i) {}
+
+    // Sobrecarga del operador +
+    Complex operator+(const Complex& other) const {
+        return Complex(real + other.real, imag + other.imag);
+    }
+
+    // Sobrecarga del operador -
+    Complex operator-(const Complex& other) const {
+        return Complex(real - other.real, imag - other.imag);
+    }
+
+    // Sobrecarga del operador *
+    Complex operator*(const Complex& other) const {
+        return Complex(real * other.real - imag * other.imag, real * other.imag + imag * other.real);
+    }
+
+    // Sobrecarga del operador /
+    Complex operator/(const Complex& other) const {
+        double denom = other.real * other.real + other.imag * other.imag;
+        return Complex((real * other.real + imag * other.imag) / denom, (imag * other.real - real * other.imag) / denom);
+    }
+
+    // Sobrecarga del operador << para la salida
+    friend std::ostream& operator<<(std::ostream& os, const Complex& c) {
+        os << c.real << " + " << c.imag << "i";
+        return os;
+    }
+};
+
+#endif // COMPLEX_H
+```
+
+```cpp
+// main.cpp
+#include "Complex.h"
+#include <iostream>
+
+int main() {
+    Complex c1(3.0, 2.0);
+    Complex c2(1.0, 7.0);
+
+    Complex sum = c1 + c2;
+    Complex diff = c1 - c2;
+    Complex prod = c1 * c2;
+    Complex quot = c1 / c2;
+
+    std::cout << "c1: " << c1 << std::endl;
+    std::cout << "c2: " << c2 << std::endl;
+    std::cout << "Suma: " << sum << std::endl;
+    std::cout << "Diferencia: " << diff << std::endl;
+    std::cout << "Producto: " << prod << std::endl;
+    std::cout << "Cociente: " << quot << std::endl;
+
+    return 0;
+}
+```
+
+### Explicación de los Operadores Sobrecargados
+
+#### Sobrecarga del Operador `+`
+
+```cpp
+Complex operator+(const Complex& other) const {
+    return Complex(real + other.real, imag + other.imag);
+}
+```
+Este operador devuelve un nuevo objeto `Complex` cuya parte real es la suma de las partes reales de los operandos y cuya parte imaginaria es la suma de las partes imaginarias de los operandos.
+
+#### Sobrecarga del Operador `-`
+
+```cpp
+Complex operator-(const Complex& other) const {
+    return Complex(real - other.real, imag - other.imag);
+}
+```
+Este operador devuelve un nuevo objeto `Complex` cuya parte real es la diferencia de las partes reales de los operandos y cuya parte imaginaria es la diferencia de las partes imaginarias de los operandos.
+
+#### Sobrecarga del Operador `*`
+
+```cpp
+Complex operator*(const Complex& other) const {
+    return Complex(real * other.real - imag * other.imag, real * other.imag + imag * other.real);
+}
+```
+Este operador devuelve un nuevo objeto `Complex` que resulta de la multiplicación de dos números complejos según la fórmula:
+\[ (a + bi) * (c + di) = (ac - bd) + (ad + bc)i \]
+
+#### Sobrecarga del Operador `/`
+
+```cpp
+Complex operator/(const Complex& other) const {
+    double denom = other.real * other.real + other.imag * other.imag;
+    return Complex((real * other.real + imag * other.imag) / denom, (imag * other.real - real * other.imag) / denom);
+}
+```
+Este operador devuelve un nuevo objeto `Complex` que resulta de la división de dos números complejos según la fórmula:
+\[ \frac{a + bi}{c + di} = \frac{(ac + bd) + (bc - ad)i}{c^2 + d^2} \]
+
+### Ventajas de la Sobrecarga de Operadores Aritméticos
+
+1. **Naturalidad y Legibilidad**: Permite escribir código que es más natural y fácil de leer, como `c1 + c2` en lugar de `c1.add(c2)`.
+2. **Consistencia**: Hace que las clases definidas por el usuario sean consistentes con los tipos de datos incorporados.
+3. **Facilita el Uso de Librerías**: Las librerías matemáticas y de álgebra lineal pueden integrarse más fácilmente.
+
+### Desventajas de la Sobrecarga de Operadores Aritméticos
+
+1. **Complejidad Adicional**: Añade complejidad al código, lo que puede hacer que sea más difícil de entender y mantener.
+2. **Riesgo de Abuso**: Los operadores sobrecargados pueden ser utilizados de manera inapropiada, lo que puede llevar a código confuso o difícil de entender.
+3. **Ambigüedades**: La sobrecarga de operadores puede introducir ambigüedades, especialmente si no se usa de manera clara y consistente.
+
+### Conclusión
+
+La sobrecarga de operadores aritméticos en C++ es una técnica poderosa que puede hacer que el código sea más legible y fácil de usar. Sin embargo, debe ser utilizada con cuidado para evitar complejidades innecesarias y ambigüedades. Al sobrecargar operadores, es importante seguir las convenciones estándar y documentar claramente las operaciones realizadas.
+<---FILES--->
+NA.

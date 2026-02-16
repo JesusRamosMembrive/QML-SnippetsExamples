@@ -1,0 +1,269 @@
+<---EXPLANATION--->
+### Uso de Concepts con Funciones y Clases en C++
+
+Los Concepts en C++ pueden aplicarse tanto a funciones como a clases, permitiendo definir restricciones claras y específicas para los tipos utilizados en plantillas. A continuación, veremos cómo usar Concepts con funciones y clases, y cómo esta práctica mejora la claridad y robustez del código.
+
+#### Uso de Concepts con Funciones
+
+Los Concepts se utilizan frecuentemente con funciones para restringir los tipos que pueden ser pasados como argumentos de plantilla. Esto se logra mediante la palabra clave `template` y la sintaxis `Concept Nombre`.
+
+##### Ejemplo de Concept con Función
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept que requiere que T sea un tipo integral
+template<typename T>
+concept Integral = std::is_integral_v<T>;
+
+// Función plantilla que utiliza el Concept Integral
+template<Integral T>
+T sumar(T a, T b) {
+    return a + b;
+}
+
+int main() {
+    int a = 5, b = 3;
+    std::cout << sumar(a, b) << std::endl; // Funciona: int es un tipo integral
+
+    // double x = 5.0, y = 3.0;
+    // std::cout << sumar(x, y) << std::endl; // Error de compilación: double no es un tipo integral
+}
+```
+
+En este ejemplo:
+- El Concept `Integral` se define para verificar si un tipo es integral.
+- La función plantilla `sumar` utiliza el Concept `Integral`, asegurando que solo acepte tipos integrales.
+
+#### Uso de Concepts con Clases
+
+Además de funciones, los Concepts pueden aplicarse a clases para restringir los tipos que se pueden utilizar con plantillas de clase.
+
+##### Ejemplo de Concept con Clase
+
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept que requiere que T sea un tipo flotante
+template<typename T>
+concept FloatingPoint = std::is_floating_point_v<T>;
+
+// Clase plantilla que utiliza el Concept FloatingPoint
+template<FloatingPoint T>
+class Calculadora {
+public:
+    T sumar(T a, T b) {
+        return a + b;
+    }
+
+    T multiplicar(T a, T b) {
+        return a * b;
+    }
+};
+
+int main() {
+    Calculadora<float> calc;
+    std::cout << calc.sumar(2.5f, 3.0f) << std::endl; // Funciona: float es un tipo flotante
+    std::cout << calc.multiplicar(2.5f, 3.0f) << std::endl; // Funciona: float es un tipo flotante
+
+    // Calculadora<int> calcInt;
+    // std::cout << calcInt.sumar(2, 3) << std::endl; // Error de compilación: int no es un tipo flotante
+}
+```
+
+En este ejemplo:
+- El Concept `FloatingPoint` se define para verificar si un tipo es flotante.
+- La clase plantilla `Calculadora` utiliza el Concept `FloatingPoint`, asegurando que solo acepte tipos flotantes.
+
+### Buenas Prácticas al Usar Concepts con Funciones y Clases
+
+#### 1. Definir Concepts Específicos y Claros
+
+Defina Concepts que sean claros y específicos para el contexto de su aplicación. Esto ayuda a evitar confusiones y errores.
+
+#### 2. Utilizar Concepts para Mejorar la Legibilidad
+
+Aplique Concepts para mejorar la legibilidad y la mantenibilidad del código, proporcionando contexto claro sobre los tipos esperados en plantillas.
+
+#### 3. Documentar los Concepts y sus Requisitos
+
+Documente adecuadamente los Concepts y los requisitos que imponen para facilitar su comprensión y correcto uso.
+
+#### 4. Aprovechar los Concepts para Mejorar la Seguridad del Código
+
+Utilice Concepts para verificar los requisitos de los tipos en tiempo de compilación, mejorando la seguridad y la robustez del código.
+
+### Ejemplo Avanzado: Uso Combinado de Concepts en Funciones y Clases
+
+Para ilustrar el uso combinado de Concepts en funciones y clases, considere el siguiente ejemplo:
+
+```cpp
+#include <concepts>
+#include <iostream>
+#include <vector>
+#include <list>
+
+// Concept que requiere que T sea iterable
+template<typename T>
+concept Iterable = requires(T t) {
+    t.begin();
+    t.end();
+};
+
+// Clase plantilla que usa el Concept Iterable
+template<Iterable T>
+class Procesador {
+public:
+    void mostrarElementos(const T& contenedor) {
+        for (const auto& elem : contenedor) {
+            std::cout << elem << ' ';
+        }
+        std::cout << std::endl;
+    }
+};
+
+// Función plantilla que usa el Concept Iterable
+template<Iterable T>
+void procesarContenedor(const T& contenedor) {
+    for (const auto& elem : contenedor) {
+        std::cout << elem << ' ';
+    }
+    std::cout << std::endl;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    std::list<std::string> lst = {"uno", "dos", "tres"};
+
+    Procesador<std::vector<int>> procVec;
+    procVec.mostrarElementos(vec); // Funciona: vector es iterable
+
+    Procesador<std::list<std::string>> procLst;
+    procLst.mostrarElementos(lst); // Funciona: list es iterable
+
+    procesarContenedor(vec); // Funciona: vector es iterable
+    procesarContenedor(lst); // Funciona: list es iterable
+
+    // int num = 42;
+    // procesarContenedor(num); // Error de compilación: int no es iterable
+}
+```
+
+En este ejemplo:
+- El Concept `Iterable` se define para verificar si un tipo es iterable mediante `begin()` y `end()`.
+- La clase `Procesador` y la función `procesarContenedor` utilizan el Concept `Iterable`, asegurando que solo acepten tipos iterables.
+
+### Conclusión
+
+Los Concepts en C++ proporcionan una forma poderosa de definir y verificar restricciones de tipos en plantillas, mejorando la claridad, seguridad y mantenibilidad del código. Al utilizar Concepts con funciones y clases, puede asegurar que solo se utilicen tipos adecuados, evitar errores de compilación y proporcionar un contexto claro sobre las expectativas de su código.
+<---FILES--->
+Ejemplo de Concept con Función
+Ejemplo de Concept con Función Result
+Ejemplo de Concept con Clase
+Ejemplo de Concept con Clase Result
+<---Ejemplo de Concept con Función--->
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept que requiere que T sea un tipo integral
+template<typename T>
+concept Integral = std::is_integral_v<T>;
+
+// Función plantilla que utiliza el Concept Integral
+template<Integral T>
+T sumar(T a, T b) {
+    return a + b;
+}
+
+int main() {
+    int a = 5, b = 3;
+    std::cout << sumar(a, b) << std::endl; // Funciona: int es un tipo integral
+
+    // double x = 5.0, y = 3.0;
+    // std::cout << sumar(x, y) << std::endl; // Error de compilación: double no es un tipo integral
+}
+<---Ejemplo de Concept con Función Result--->
+<---Ejemplo de Concept con Clase--->
+```cpp
+#include <concepts>
+#include <iostream>
+
+// Concept que requiere que T sea un tipo flotante
+template<typename T>
+concept FloatingPoint = std::is_floating_point_v<T>;
+
+// Clase plantilla que utiliza el Concept FloatingPoint
+template<FloatingPoint T>
+class Calculadora {
+public:
+    T sumar(T a, T b) {
+        return a + b;
+    }
+
+    T multiplicar(T a, T b) {
+        return a * b;
+    }
+};
+
+int main() {
+    Calculadora<float> calc;
+    std::cout << calc.sumar(2.5f, 3.0f) << std::endl; // Funciona: float es un tipo flotante
+    std::cout << calc.multiplicar(2.5f, 3.0f) << std::endl; // Funciona: float es un tipo flotante
+
+    // Calculadora<int> calcInt;
+    // std::cout << calcInt.sumar(2, 3) << std::endl; // Error de compilación: int no es un tipo flotante
+}
+```cpp
+#include <concepts>
+#include <iostream>
+#include <vector>
+#include <list>
+
+// Concept que requiere que T sea iterable
+template<typename T>
+concept Iterable = requires(T t) {
+    t.begin();
+    t.end();
+};
+
+// Clase plantilla que usa el Concept Iterable
+template<Iterable T>
+class Procesador {
+public:
+    void mostrarElementos(const T& contenedor) {
+        for (const auto& elem : contenedor) {
+            std::cout << elem << ' ';
+        }
+        std::cout << std::endl;
+    }
+};
+
+// Función plantilla que usa el Concept Iterable
+template<Iterable T>
+void procesarContenedor(const T& contenedor) {
+    for (const auto& elem : contenedor) {
+        std::cout << elem << ' ';
+    }
+    std::cout << std::endl;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    std::list<std::string> lst = {"uno", "dos", "tres"};
+
+    Procesador<std::vector<int>> procVec;
+    procVec.mostrarElementos(vec); // Funciona: vector es iterable
+
+    Procesador<std::list<std::string>> procLst;
+    procLst.mostrarElementos(lst); // Funciona: list es iterable
+
+    procesarContenedor(vec); // Funciona: vector es iterable
+    procesarContenedor(lst); // Funciona: list es iterable
+
+    // int num = 42;
+    // procesarContenedor(num); // Error de compilación: int no es iterable
+}
+<---Ejemplo de Concept con Clase Result--->

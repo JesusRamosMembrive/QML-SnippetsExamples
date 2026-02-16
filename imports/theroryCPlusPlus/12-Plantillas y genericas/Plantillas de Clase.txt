@@ -1,0 +1,384 @@
+<---EXPLANATION--->
+### Plantillas de Clase en C++
+
+Las plantillas de clase permiten crear clases genéricas que pueden trabajar con cualquier tipo de dato. Esta funcionalidad es especialmente útil para estructuras de datos y clases utilitarias que deben ser reutilizables y eficientes con diferentes tipos de datos.
+
+#### Definición de Plantillas de Clase
+
+Para definir una plantilla de clase, se utiliza la palabra clave `template` seguida de una lista de parámetros de tipo entre corchetes angulares (`< >`).
+
+##### Ejemplo Básico
+
+```cpp
+// PlantillaClase.h
+#ifndef PLANTILLACLASE_H
+#define PLANTILLACLASE_H
+
+template <typename T>
+class MiClase {
+public:
+    MiClase(T valor);
+    void mostrarValor();
+private:
+    T valor;
+};
+
+#include "PlantillaClase.cpp"
+#endif // PLANTILLACLASE_H
+```
+
+```cpp
+// PlantillaClase.cpp
+#include <iostream>
+#include "PlantillaClase.h"
+
+template <typename T>
+MiClase<T>::MiClase(T v) : valor(v) {}
+
+template <typename T>
+void MiClase<T>::mostrarValor() {
+    std::cout << "El valor es: " << valor << std::endl;
+}
+```
+
+```cpp
+// main.cpp
+#include "PlantillaClase.h"
+
+int main() {
+    MiClase<int> obj1(5);
+    obj1.mostrarValor();
+
+    MiClase<double> obj2(3.14);
+    obj2.mostrarValor();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `MiClase` es una plantilla que puede manejar diferentes tipos de datos (`int`, `double`, etc.).
+- La palabra clave `template` seguida de `<typename T>` define una plantilla de clase.
+- La implementación de los métodos de la plantilla de clase se encuentra en un archivo separado (`PlantillaClase.cpp`), y se incluye al final del archivo de cabecera.
+
+#### Especialización de Plantillas de Clase
+
+En algunos casos, puede ser necesario definir una implementación específica de una plantilla de clase para un tipo de dato particular. Esto se conoce como especialización de plantilla.
+
+##### Ejemplo de Especialización
+
+```cpp
+#include <iostream>
+
+// Plantilla de clase genérica
+template <typename T>
+class MiClase {
+public:
+    MiClase(T valor) : valor(valor) {}
+    void mostrarValor() {
+        std::cout << "El valor es: " << valor << std::endl;
+    }
+private:
+    T valor;
+};
+
+// Especialización de la plantilla de clase para el tipo const char*
+template <>
+class MiClase<const char*> {
+public:
+    MiClase(const char* valor) : valor(valor) {}
+    void mostrarValor() {
+        std::cout << "El valor es: " << valor << std::endl;
+    }
+private:
+    const char* valor;
+};
+
+int main() {
+    MiClase<int> obj1(5);
+    obj1.mostrarValor();
+
+    MiClase<double> obj2(3.14);
+    obj2.mostrarValor();
+
+    MiClase<const char*> obj3("Hola");
+    obj3.mostrarValor();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `MiClase` se especializa para el tipo `const char*`.
+- La especialización proporciona una implementación específica para el tipo `const char*`.
+
+#### Plantillas de Clase con Múltiples Parámetros de Tipo
+
+Las plantillas de clase también pueden tener múltiples parámetros de tipo, lo que permite crear clases más versátiles.
+
+##### Ejemplo con Múltiples Parámetros de Tipo
+
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de clase con dos parámetros de tipo
+template <typename T1, typename T2>
+class Par {
+public:
+    Par(T1 primero, T2 segundo) : primero(primero), segundo(segundo) {}
+    void mostrarValores() {
+        std::cout << "Primero: " << primero << ", Segundo: " << segundo << std::endl;
+    }
+private:
+    T1 primero;
+    T2 segundo;
+};
+
+int main() {
+    Par<int, double> obj1(5, 3.14);
+    obj1.mostrarValores();
+
+    Par<std::string, char> obj2("Hola", 'A');
+    obj2.mostrarValores();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Par` se define como una plantilla con dos parámetros de tipo (`T1` y `T2`).
+- La clase puede manejar dos tipos de datos diferentes y almacenar un par de valores.
+
+### Buenas Prácticas para el Uso de Plantillas de Clase
+
+#### 1. Mantener la Implementación de Plantillas en el Archivo de Cabecera
+
+Aunque se puede separar la declaración y la implementación de plantillas en archivos `.h` y `.cpp` respectivamente, a menudo se recomienda mantener ambas en el archivo de cabecera para evitar problemas de enlace.
+
+##### Ejemplo
+
+```cpp
+// MiClase.h
+#ifndef MICLASE_H
+#define MICLASE_H
+
+#include <iostream>
+
+template <typename T>
+class MiClase {
+public:
+    MiClase(T valor) : valor(valor) {}
+    void mostrarValor();
+private:
+    T valor;
+};
+
+template <typename T>
+void MiClase<T>::mostrarValor() {
+    std::cout << "El valor es: " << valor << std::endl;
+}
+
+#endif // MICLASE_H
+```
+
+#### 2. Utilizar Nombres Significativos para Parámetros de Tipo
+
+Utilice nombres de parámetros de tipo que sean significativos para mejorar la legibilidad del código.
+
+##### Ejemplo
+
+```cpp
+template <typename TipoElemento>
+class Contenedor {
+    TipoElemento elemento;
+public:
+    Contenedor(TipoElemento e) : elemento(e) {}
+    TipoElemento obtenerElemento() { return elemento; }
+};
+```
+
+#### 3. Documentar las Plantillas Adecuadamente
+
+Asegúrese de documentar las plantillas para explicar el propósito de cada parámetro de tipo y cómo se deben utilizar.
+
+##### Ejemplo
+
+```cpp
+// Clase plantilla que almacena y muestra un valor de cualquier tipo
+// T: tipo del valor (puede ser int, double, etc.)
+template <typename T>
+class MiClase {
+public:
+    // Constructor que inicializa el valor
+    MiClase(T valor) : valor(valor) {}
+    // Muestra el valor almacenado en la salida estándar
+    void mostrarValor();
+private:
+    T valor; // El valor almacenado, de tipo T
+};
+
+template <typename T>
+void MiClase<T>::mostrarValor() {
+    std::cout << "El valor es: " << valor << std::endl;
+}
+```
+
+#### 4. Probar las Plantillas con Diferentes Tipos
+
+Asegúrese de probar las plantillas de clase con diferentes tipos de datos para verificar su funcionamiento y detectar posibles problemas.
+
+##### Ejemplo
+
+```cpp
+int main() {
+    MiClase<int> obj1(5);
+    obj1.mostrarValor();
+
+    MiClase<double> obj2(3.14);
+    obj2.mostrarValor();
+
+    MiClase<std::string> obj3("Hola");
+    obj3.mostrarValor();
+
+    return 0;
+}
+```
+
+### Conclusión
+
+Las plantillas de clase en C++ permiten crear clases genéricas que pueden trabajar con diferentes tipos de datos, mejorando la reutilización y flexibilidad del código. Al seguir buenas prácticas como mantener la implementación en el archivo de cabecera, utilizar nombres significativos para los parámetros de tipo, documentar adecuadamente y probar con diferentes tipos de datos, se puede crear código más robusto y mantenible. Las plantillas son una herramienta esencial para cualquier desarrollador de C++ que busca escribir código eficiente y reutilizable.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo de Especialización
+Ejemplo de Especialización Result
+Ejemplo con Múltiples Parámetros de Tipo
+Ejemplo con Múltiples Parámetros de Tipo Result
+Ejemplo
+Ejemplo Result
+<---Ejemplo Básico--->
+```cpp
+// PlantillaClase.h
+#ifndef PLANTILLACLASE_H
+#define PLANTILLACLASE_H
+
+template <typename T>
+class MiClase {
+public:
+    MiClase(T valor);
+    void mostrarValor();
+private:
+    T valor;
+};
+
+#include "PlantillaClase.cpp"
+#endif // PLANTILLACLASE_H
+```cpp
+// PlantillaClase.cpp
+#include <iostream>
+#include "PlantillaClase.h"
+
+template <typename T>
+MiClase<T>::MiClase(T v) : valor(v) {}
+
+template <typename T>
+void MiClase<T>::mostrarValor() {
+    std::cout << "El valor es: " << valor << std::endl;
+}
+```cpp
+// main.cpp
+#include "PlantillaClase.h"
+
+int main() {
+    MiClase<int> obj1(5);
+    obj1.mostrarValor();
+
+    MiClase<double> obj2(3.14);
+    obj2.mostrarValor();
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo de Especialización--->
+```cpp
+#include <iostream>
+
+// Plantilla de clase genérica
+template <typename T>
+class MiClase {
+public:
+    MiClase(T valor) : valor(valor) {}
+    void mostrarValor() {
+        std::cout << "El valor es: " << valor << std::endl;
+    }
+private:
+    T valor;
+};
+
+// Especialización de la plantilla de clase para el tipo const char*
+template <>
+class MiClase<const char*> {
+public:
+    MiClase(const char* valor) : valor(valor) {}
+    void mostrarValor() {
+        std::cout << "El valor es: " << valor << std::endl;
+    }
+private:
+    const char* valor;
+};
+
+int main() {
+    MiClase<int> obj1(5);
+    obj1.mostrarValor();
+
+    MiClase<double> obj2(3.14);
+    obj2.mostrarValor();
+
+    MiClase<const char*> obj3("Hola");
+    obj3.mostrarValor();
+
+    return 0;
+}
+<---Ejemplo de Especialización Result--->
+<---Ejemplo con Múltiples Parámetros de Tipo--->
+```cpp
+#include <iostream>
+
+// Definición de la plantilla de clase con dos parámetros de tipo
+template <typename T1, typename T2>
+class Par {
+public:
+    Par(T1 primero, T2 segundo) : primero(primero), segundo(segundo) {}
+    void mostrarValores() {
+        std::cout << "Primero: " << primero << ", Segundo: " << segundo << std::endl;
+    }
+private:
+    T1 primero;
+    T2 segundo;
+};
+
+int main() {
+    Par<int, double> obj1(5, 3.14);
+    obj1.mostrarValores();
+
+    Par<std::string, char> obj2("Hola", 'A');
+    obj2.mostrarValores();
+
+    return 0;
+}
+<---Ejemplo con Múltiples Parámetros de Tipo Result--->
+<---Ejemplo--->
+```cpp
+int main() {
+    MiClase<int> obj1(5);
+    obj1.mostrarValor();
+
+    MiClase<double> obj2(3.14);
+    obj2.mostrarValor();
+
+    MiClase<std::string> obj3("Hola");
+    obj3.mostrarValor();
+
+    return 0;
+}
+<---Ejemplo Result--->
