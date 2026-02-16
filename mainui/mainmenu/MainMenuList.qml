@@ -18,6 +18,8 @@ Item {
         ListElement { text: "Dashboard" }
         ListElement { text: "Buttons" }
         ListElement { text: "Sliders" }
+        ListElement { text: "Switches" }
+        ListElement { text: "TextInputs" }
     }
 
     ListView {

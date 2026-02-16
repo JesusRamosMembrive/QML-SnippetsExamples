@@ -5,12 +5,17 @@ qt_add_qml_module(qmlsnippetsstyle
     QML_FILES
         BusyIndicator.qml
         Button.qml
+        CheckBox.qml
+        ComboBox.qml
         Dial.qml
         Label.qml
         Popup.qml
         RadioButton.qml
         Slider.qml
+        SpinBox.qml
         Switch.qml
+        TextArea.qml
+        TextField.qml
         ToolButton.qml
         # Componentes especializados - Buttons
         buttons/GlowButton.qml

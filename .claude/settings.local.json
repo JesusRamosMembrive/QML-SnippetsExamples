@@ -11,7 +11,11 @@
       "Bash(ls:*)",
       "Bash(./build/QDashboardApp)",
       "Bash(ldd:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(if exist build rmdir /s /q build)"
     ]
   }
 }

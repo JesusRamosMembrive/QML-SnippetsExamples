@@ -1,12 +1,17 @@
 module qmlsnippetsstyle
 BusyIndicator 1.0 BusyIndicator.qml
 Button 1.0 Button.qml
+CheckBox 1.0 CheckBox.qml
+ComboBox 1.0 ComboBox.qml
 Dial 1.0 Dial.qml
 Label 1.0 Label.qml
 Popup 1.0 Popup.qml
 RadioButton 1.0 RadioButton.qml
 Slider 1.0 Slider.qml
+SpinBox 1.0 SpinBox.qml
 Switch 1.0 Switch.qml
+TextArea 1.0 TextArea.qml
+TextField 1.0 TextField.qml
 ToolButton 1.0 ToolButton.qml
 
 # Componentes especializados - Buttons
