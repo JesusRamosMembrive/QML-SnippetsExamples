@@ -33,4 +33,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     websocketpluginplugin
     websocketexpluginplugin
     ecampluginplugin
+    navdisplaypluginplugin
 )

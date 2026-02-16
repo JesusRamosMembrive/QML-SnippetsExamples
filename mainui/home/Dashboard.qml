@@ -22,6 +22,7 @@ import pfd as PfdPage
 import hud as HudPage
 import websocketex as WebSocketPage
 import ecam as EcamPage
+import navdisplay as NavDisplayPage
 
 Item {
     id: root
@@ -305,5 +306,10 @@ Item {
     EcamPage.Main {
         visible: fullSize
         fullSize: (root.state === "ECAM")
+    }
+
+    NavDisplayPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "NavDisplay")
     }
 }

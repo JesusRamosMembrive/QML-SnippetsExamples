@@ -33,6 +33,7 @@ Item {
         ListElement { text: "HUD" }
         ListElement { text: "WebSocket" }
         ListElement { text: "ECAM" }
+        ListElement { text: "NavDisplay" }
     }
 
     ListView {
