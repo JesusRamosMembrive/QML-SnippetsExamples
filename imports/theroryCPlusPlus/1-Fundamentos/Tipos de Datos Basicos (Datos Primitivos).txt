@@ -97,5 +97,72 @@ int main() {
 9. **Sin Signo (`unsigned`):** Se declara y se inicializa con un valor entero sin signo.
 
 Este ejemplo muestra cómo declarar, inicializar y utilizar diferentes tipos de datos básicos en C++. Cada tipo de dato se adapta a necesidades específicas dependiendo del rango y precisión que se requiera para las operaciones en un programa.
+
+### Tipos de Datos en Qt
+
+Qt define sus propios alias de tipos en `<QtTypes>` (o `<QtGlobal>`) para garantizar portabilidad entre plataformas. En C++ estándar, el tamaño de `int` o `long` puede variar según la arquitectura; los tipos Qt eliminan esa ambigüedad.
+
+#### Tipos enteros de ancho fijo
+
+| Tipo Qt | Equivalente C++ | Tamaño | Rango |
+|---------|-----------------|--------|-------|
+| `qint8` | `signed char` | 1 byte | -128 a 127 |
+| `quint8` | `unsigned char` | 1 byte | 0 a 255 |
+| `qint16` | `short` | 2 bytes | -32,768 a 32,767 |
+| `quint16` | `unsigned short` | 2 bytes | 0 a 65,535 |
+| `qint32` | `int` | 4 bytes | -2^31 a 2^31-1 |
+| `quint32` | `unsigned int` | 4 bytes | 0 a 2^32-1 |
+| `qint64` | `long long` | 8 bytes | -2^63 a 2^63-1 |
+| `quint64` | `unsigned long long` | 8 bytes | 0 a 2^64-1 |
+
+```cpp
+#include <QtTypes>
+
+qint32  contador = 0;          // Siempre 32 bits, cualquier plataforma
+quint64 idUsuario = 123456789; // Siempre 64 bits sin signo
+```
+
+#### Tipos flotantes y de tamaño
+
+| Tipo Qt | Descripción |
+|---------|-------------|
+| `qreal` | `double` en la mayoría de plataformas; `float` en ARM con `-DQT_COORD_TYPE=float` |
+| `qsizetype` | Tipo con signo para tamaños de contenedores (equivale a `ptrdiff_t`). Introducido en Qt 6. |
+| `qintptr` | Entero con signo del tamaño de un puntero (para conversiones puntero ↔ entero) |
+| `quintptr` | Entero sin signo del tamaño de un puntero |
+
+```cpp
+qreal factor = 1.5;                    // Portable entre desktop y ARM
+qsizetype n = miLista.size();          // Tipo correcto para tamaños en Qt 6
+```
+
+#### QString y QChar
+
+Qt no usa `char*` ni `std::string` como tipos principales de cadena. En su lugar:
+
+- **`QChar`** — Un carácter Unicode (UTF-16), equivale a un `char16_t`. Más potente que `char`.
+- **`QString`** — Cadena Unicode. Reemplaza a `std::string` en todo el ecosistema Qt.
+- **`QByteArray`** — Secuencia de bytes crudos. Equivale más a `std::string`/`std::vector<char>`.
+
+```cpp
+#include <QString>
+#include <QChar>
+#include <QDebug>
+
+QChar letra = QChar('A');
+QString nombre = QStringLiteral("Carlos");
+QByteArray datos = "raw bytes";
+
+qDebug() << "Letra:" << letra;         // Letra: 'A'
+qDebug() << "Nombre:" << nombre;       // Nombre: "Carlos"
+qDebug() << "Bytes:" << datos.size();  // Bytes: 9
+```
+
+#### Cuándo usar tipos Qt vs. C++ estándar
+
+- **Interfaces Qt** (señales, slots, propiedades QML): usar tipos Qt (`QString`, `qint32`, `qreal`).
+- **Lógica interna pura** sin dependencia de Qt: usar tipos estándar (`int`, `double`, `std::string`).
+- **APIs multiplataforma** donde el tamaño exacto importa: usar tipos Qt de ancho fijo (`qint64`, `quint32`).
+
 <---FILES--->
 NA.

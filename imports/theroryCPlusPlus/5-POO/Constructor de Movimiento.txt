@@ -251,6 +251,137 @@ int main() {
 
 En este ejemplo, `Recurso` implementa la regla de cinco, asegurando una correcta gestión de la memoria dinámica mediante constructores y operadores de movimiento y copia.
 
+### Importancia de `noexcept` en Constructores de Movimiento
+
+Los contenedores de la STL (como `std::vector`) solo utilizan constructores de movimiento si estos están marcados como `noexcept`. Esto se debe a que, durante operaciones como la reasignación de memoria, el contenedor necesita garantizar la excepción de seguridad fuerte (strong exception safety). Si el constructor de movimiento puede lanzar excepciones, el contenedor preferirá usar el constructor de copia (más lento pero seguro) en su lugar.
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Widget {
+    int* datos;
+    int size;
+public:
+    Widget(int s) : size(s), datos(new int[s]{}) {
+        cout << "Construido (size=" << s << ")" << endl;
+    }
+    ~Widget() { delete[] datos; }
+
+    // SIN noexcept: std::vector usará COPIA en lugar de movimiento
+    // Widget(Widget&& other) : datos(other.datos), size(other.size) {
+
+    // CON noexcept: std::vector usará movimiento (mucho más eficiente)
+    Widget(Widget&& other) noexcept : datos(other.datos), size(other.size) {
+        other.datos = nullptr;
+        other.size = 0;
+        cout << "Movido" << endl;
+    }
+
+    Widget(const Widget& other) : size(other.size), datos(new int[other.size]) {
+        copy(other.datos, other.datos + size, datos);
+        cout << "Copiado" << endl;
+    }
+
+    Widget& operator=(Widget&&) = default;
+    Widget& operator=(const Widget&) = delete;
+};
+
+int main() {
+    vector<Widget> widgets;
+    widgets.reserve(1);     // Espacio para 1
+    widgets.emplace_back(100);
+    widgets.emplace_back(200); // Reasigna: mueve el primero si noexcept, sino copia
+    return 0;
+}
+```
+
+**Regla práctica:** Siempre marca los constructores de movimiento y operadores de asignación de movimiento como `noexcept` a menos que realmente puedan lanzar excepciones. Esto permite que los contenedores de la STL optimicen sus operaciones internas.
+
+### `std::exchange` para Constructores de Movimiento (C++14)
+
+A partir de C++14, `std::exchange` proporciona una forma más limpia y expresiva de implementar constructores de movimiento. `std::exchange(obj, nuevo_valor)` asigna `nuevo_valor` a `obj` y retorna el valor anterior de `obj`, todo en una sola expresión.
+
+```cpp
+#include <iostream>
+#include <utility>  // std::exchange
+using namespace std;
+
+class Buffer {
+    int* datos;
+    size_t tamano;
+public:
+    Buffer(size_t t) : datos(new int[t]{}), tamano(t) {}
+    ~Buffer() { delete[] datos; }
+
+    // Constructor de movimiento usando std::exchange (más limpio)
+    Buffer(Buffer&& other) noexcept
+        : datos(std::exchange(other.datos, nullptr))
+        , tamano(std::exchange(other.tamano, 0))
+    {}
+
+    // Operador de asignación de movimiento usando exchange
+    Buffer& operator=(Buffer&& other) noexcept {
+        if (this != &other) {
+            delete[] datos;
+            datos = std::exchange(other.datos, nullptr);
+            tamano = std::exchange(other.tamano, 0);
+        }
+        return *this;
+    }
+
+    size_t size() const { return tamano; }
+};
+
+int main() {
+    Buffer b1(100);
+    cout << "b1 size: " << b1.size() << endl;
+
+    Buffer b2 = std::move(b1);
+    cout << "b2 size: " << b2.size() << endl;
+    cout << "b1 size: " << b1.size() << endl; // 0
+    return 0;
+}
+```
+
+**Ventajas de `std::exchange`:**
+- Reduce la posibilidad de olvidar resetear el objeto fuente.
+- Hace el código más conciso y legible.
+- Permite inicializar miembros directamente en la lista de inicialización del constructor.
+
+### Movimiento en Qt: `Q_DISABLE_COPY_MOVE`
+
+En el ecosistema Qt, los objetos que heredan de `QObject` no son copiables ni movibles por diseño. Esto se debe a que `QObject` mantiene una identidad única, conexiones de señales/slots, y un árbol padre-hijo que no tiene sentido duplicar o transferir.
+
+```cpp
+#include <QObject>
+#include <QDebug>
+
+// QObject no es copiable NI movible
+class Controlador : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY_MOVE(Controlador) // C++11: = delete para copia Y movimiento
+
+public:
+    explicit Controlador(QObject *parent = nullptr) : QObject(parent) {}
+};
+
+// Para tipos Qt sin QObject, el movimiento SÍ funciona:
+// QString, QList, QByteArray, etc. son movibles
+
+// Ejemplo:
+// QString s1 = "texto largo";
+// QString s2 = std::move(s1); // Move: eficiente, s1 queda vacío
+// QList<int> v1 = {1, 2, 3};
+// QList<int> v2 = std::move(v1); // Move: v1 queda vacío
+```
+
+**Puntos clave sobre movimiento en Qt:**
+- `Q_DISABLE_COPY_MOVE(Clase)` elimina tanto el constructor de copia como el de movimiento usando `= delete`.
+- Los tipos valor de Qt (`QString`, `QList`, `QByteArray`, `QMap`, etc.) soportan movimiento eficiente.
+- En Qt 6, muchos contenedores Qt usan COW (Copy-On-Write), por lo que el movimiento es especialmente beneficioso para evitar copias innecesarias de datos compartidos.
+
 ### Conclusión
 
 El constructor de movimiento es una herramienta poderosa en C++ que permite la transferencia eficiente de recursos entre objetos, mejorando el rendimiento y la eficiencia del programa. Junto con el operador de asignación de movimiento, forma parte de la regla de cinco, que es esencial para la correcta gestión de recursos en clases que manejan memoria dinámica u otros recursos no triviales. Implementar correctamente estos métodos asegura que los objetos se manejen de manera segura y eficiente, evitando problemas comunes como la doble liberación de memoria y las copias innecesarias.
@@ -261,6 +392,12 @@ Ejemplo con Clase de Recursos
 Ejemplo con Clase de Recursos Result
 Ejemplo Completo con la Regla de Cinco
 Ejemplo Completo con la Regla de Cinco Result
+Importancia de noexcept en Constructores de Movimiento
+Importancia de noexcept en Constructores de Movimiento Result
+std::exchange para Constructores de Movimiento
+std::exchange para Constructores de Movimiento Result
+Movimiento en Qt: Q_DISABLE_COPY_MOVE
+Movimiento en Qt: Q_DISABLE_COPY_MOVE Result
 <---Sintaxis--->
 ```cpp
 class Clase {
@@ -471,3 +608,110 @@ int main() {
     return 0;
 }
 <---Ejemplo Completo con la Regla de Cinco Result--->
+<---Importancia de noexcept en Constructores de Movimiento--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Widget {
+    int* datos;
+    int size;
+public:
+    Widget(int s) : size(s), datos(new int[s]{}) {
+        cout << "Construido (size=" << s << ")" << endl;
+    }
+    ~Widget() { delete[] datos; }
+
+    // SIN noexcept: std::vector usará COPIA en lugar de movimiento
+    // Widget(Widget&& other) : datos(other.datos), size(other.size) {
+
+    // CON noexcept: std::vector usará movimiento (mucho más eficiente)
+    Widget(Widget&& other) noexcept : datos(other.datos), size(other.size) {
+        other.datos = nullptr;
+        other.size = 0;
+        cout << "Movido" << endl;
+    }
+
+    Widget(const Widget& other) : size(other.size), datos(new int[other.size]) {
+        copy(other.datos, other.datos + size, datos);
+        cout << "Copiado" << endl;
+    }
+
+    Widget& operator=(Widget&&) = default;
+    Widget& operator=(const Widget&) = delete;
+};
+
+int main() {
+    vector<Widget> widgets;
+    widgets.reserve(1);     // Espacio para 1
+    widgets.emplace_back(100);
+    widgets.emplace_back(200); // Reasigna: mueve el primero si noexcept, sino copia
+    return 0;
+}
+<---Importancia de noexcept en Constructores de Movimiento Result--->
+<---std::exchange para Constructores de Movimiento--->
+```cpp
+#include <iostream>
+#include <utility>  // std::exchange
+using namespace std;
+
+class Buffer {
+    int* datos;
+    size_t tamano;
+public:
+    Buffer(size_t t) : datos(new int[t]{}), tamano(t) {}
+    ~Buffer() { delete[] datos; }
+
+    // Constructor de movimiento usando std::exchange (más limpio)
+    Buffer(Buffer&& other) noexcept
+        : datos(std::exchange(other.datos, nullptr))
+        , tamano(std::exchange(other.tamano, 0))
+    {}
+
+    // Operador de asignación de movimiento usando exchange
+    Buffer& operator=(Buffer&& other) noexcept {
+        if (this != &other) {
+            delete[] datos;
+            datos = std::exchange(other.datos, nullptr);
+            tamano = std::exchange(other.tamano, 0);
+        }
+        return *this;
+    }
+
+    size_t size() const { return tamano; }
+};
+
+int main() {
+    Buffer b1(100);
+    cout << "b1 size: " << b1.size() << endl;
+
+    Buffer b2 = std::move(b1);
+    cout << "b2 size: " << b2.size() << endl;
+    cout << "b1 size: " << b1.size() << endl; // 0
+    return 0;
+}
+<---std::exchange para Constructores de Movimiento Result--->
+<---Movimiento en Qt: Q_DISABLE_COPY_MOVE--->
+```cpp
+#include <QObject>
+#include <QDebug>
+
+// QObject no es copiable NI movible
+class Controlador : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY_MOVE(Controlador) // C++11: = delete para copia Y movimiento
+
+public:
+    explicit Controlador(QObject *parent = nullptr) : QObject(parent) {}
+};
+
+// Para tipos Qt sin QObject, el movimiento SÍ funciona:
+// QString, QList, QByteArray, etc. son movibles
+
+// Ejemplo:
+// QString s1 = "texto largo";
+// QString s2 = std::move(s1); // Move: eficiente, s1 queda vacío
+// QList<int> v1 = {1, 2, 3};
+// QList<int> v2 = std::move(v1); // Move: v1 queda vacío
+<---Movimiento en Qt: Q_DISABLE_COPY_MOVE Result--->

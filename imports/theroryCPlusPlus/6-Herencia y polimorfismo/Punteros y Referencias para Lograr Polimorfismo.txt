@@ -143,6 +143,277 @@ int main() {
 }
 ```
 
+#### Smart Pointers para Polimorfismo Seguro (C++11)
+
+En C++ moderno, los **punteros inteligentes** (`std::unique_ptr` y `std::shared_ptr`) son la forma recomendada de manejar objetos polimórficos. Eliminan la necesidad de llamar manualmente a `delete` y previenen fugas de memoria, haciendo el código polimórfico mucho más seguro.
+
+**`std::unique_ptr<Base>`** representa propiedad exclusiva de un objeto polimórfico. Es la opción preferida cuando un solo propietario gestiona el objeto. Es tan eficiente como un puntero crudo (sin overhead adicional).
+
+**`std::shared_ptr<Base>`** permite propiedad compartida. Tiene una característica especial importante: utiliza un **deleter con borrado de tipo (type-erased deleter)**, lo que significa que siempre llama al destructor correcto de la clase derivada, **incluso si la clase base no tiene destructor virtual**. Sin embargo, con `unique_ptr`, el destructor virtual sigue siendo obligatorio.
+
+Un patrón muy común es el **patrón Factory** que retorna `unique_ptr<Base>`, dejando que el llamador decida qué tipo concreto se crea.
+
+##### Ejemplo de Smart Pointers Polimórficos
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0;
+    virtual string tipo() const = 0;
+    virtual ~Animal() = default; // Necesario para unique_ptr polimórfico
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Guau!" << endl; }
+    string tipo() const override { return "Perro"; }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Miau!" << endl; }
+    string tipo() const override { return "Gato"; }
+};
+
+class Pajaro : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Pío!" << endl; }
+    string tipo() const override { return "Pájaro"; }
+};
+
+// Patrón Factory: retorna unique_ptr para polimorfismo seguro
+unique_ptr<Animal> crearAnimal(const string& tipo) {
+    if (tipo == "perro") return make_unique<Perro>();
+    if (tipo == "gato") return make_unique<Gato>();
+    if (tipo == "pajaro") return make_unique<Pajaro>();
+    return nullptr;
+}
+
+int main() {
+    // Colección polimórfica con unique_ptr: sin fugas de memoria
+    vector<unique_ptr<Animal>> animales;
+    animales.push_back(make_unique<Perro>());
+    animales.push_back(make_unique<Gato>());
+    animales.push_back(make_unique<Pajaro>());
+
+    // Usando la factory
+    animales.push_back(crearAnimal("perro"));
+    animales.push_back(crearAnimal("gato"));
+
+    cout << "=== Colección con unique_ptr ===" << endl;
+    for (const auto& animal : animales) {
+        cout << animal->tipo() << ": ";
+        animal->hacerSonido();
+    }
+
+    // shared_ptr para propiedad compartida
+    cout << "\n=== Propiedad compartida con shared_ptr ===" << endl;
+    shared_ptr<Animal> compartido = make_shared<Perro>();
+    shared_ptr<Animal> copia = compartido; // Ambos apuntan al mismo Perro
+
+    cout << "Referencias: " << compartido.use_count() << endl; // 2
+    compartido->hacerSonido();
+    copia->hacerSonido();
+
+    // Al salir del scope, unique_ptr y shared_ptr liberan memoria automáticamente
+    // No se necesita delete manual
+    return 0;
+}
+```
+
+**Nota importante sobre `shared_ptr` y destructores virtuales:** `shared_ptr` almacena internamente el deleter correcto en el momento de la creación, por lo que `shared_ptr<Base> p = make_shared<Derivada>()` siempre destruirá correctamente el objeto `Derivada`, incluso sin destructor virtual en `Base`. Sin embargo, `unique_ptr<Base>` llama a `delete` a través del tipo del puntero, por lo que **requiere** destructor virtual en la clase base para una destrucción correcta.
+
+#### `dynamic_cast` para Downcasting Seguro
+
+Cuando se trabaja con jerarquías polimórficas, a veces es necesario convertir un puntero o referencia de la clase base al tipo derivado específico para acceder a funcionalidad exclusiva de la clase derivada. Esta operación se llama **downcasting** y `dynamic_cast` es la forma segura de realizarla en C++.
+
+`dynamic_cast` verifica en **tiempo de ejecución** si la conversión es válida:
+- **Con punteros:** Retorna `nullptr` si la conversión falla.
+- **Con referencias:** Lanza una excepción `std::bad_cast` si la conversión falla.
+
+Para que `dynamic_cast` funcione, la clase base debe tener al menos una función virtual (es decir, debe ser un tipo polimórfico).
+
+##### Ejemplo de dynamic_cast
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0;
+    virtual ~Animal() = default;
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Guau!" << endl; }
+
+    // Funcionalidad exclusiva de Perro
+    void buscarPelota() const {
+        cout << "El perro busca la pelota" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Miau!" << endl; }
+
+    // Funcionalidad exclusiva de Gato
+    void ronronear() const {
+        cout << "El gato ronronea" << endl;
+    }
+};
+
+// Función que necesita acceder a funcionalidad específica de la derivada
+void interactuarConAnimal(Animal& animal) {
+    // Primero, comportamiento polimórfico común
+    animal.hacerSonido();
+
+    // Downcasting seguro con punteros
+    if (Perro* perro = dynamic_cast<Perro*>(&animal)) {
+        perro->buscarPelota(); // Solo se ejecuta si es un Perro
+    } else if (Gato* gato = dynamic_cast<Gato*>(&animal)) {
+        gato->ronronear(); // Solo se ejecuta si es un Gato
+    }
+}
+
+// Versión con referencias y manejo de excepciones
+void procesarComoPerro(Animal& animal) {
+    try {
+        // dynamic_cast con referencia: lanza std::bad_cast si falla
+        Perro& perro = dynamic_cast<Perro&>(animal);
+        perro.buscarPelota();
+    } catch (const bad_cast& e) {
+        cout << "No es un Perro: " << e.what() << endl;
+    }
+}
+
+int main() {
+    Perro miPerro;
+    Gato miGato;
+
+    cout << "=== Interactuar con Perro ===" << endl;
+    interactuarConAnimal(miPerro);
+
+    cout << "\n=== Interactuar con Gato ===" << endl;
+    interactuarConAnimal(miGato);
+
+    cout << "\n=== Downcasting con referencia ===" << endl;
+    procesarComoPerro(miPerro); // Éxito
+    procesarComoPerro(miGato);  // Excepción: No es un Perro
+
+    // dynamic_cast con smart pointers
+    cout << "\n=== dynamic_cast con shared_ptr ===" << endl;
+    shared_ptr<Animal> ptr = make_shared<Perro>();
+    shared_ptr<Perro> ptrPerro = dynamic_pointer_cast<Perro>(ptr);
+    if (ptrPerro) {
+        ptrPerro->buscarPelota();
+    }
+
+    return 0;
+}
+```
+
+**Nota:** El uso excesivo de `dynamic_cast` puede indicar un diseño deficiente. Generalmente es mejor agregar métodos virtuales a la clase base que hacer downcasting. Sin embargo, hay casos legítimos donde es necesario, como al interactuar con código de terceros o en patrones como el Visitor.
+
+#### `std::reference_wrapper` para Colecciones de Referencias
+
+En C++ estándar, no es posible almacenar referencias directamente en contenedores como `std::vector` porque las referencias no son reasignables. `std::reference_wrapper` (de `<functional>`) resuelve este problema envolviendo una referencia en un objeto copiable y asignable, permitiendo crear **colecciones polimórficas de referencias** sin asignar memoria en el heap.
+
+Esto es útil cuando los objetos ya existen en algún otro lugar (por ejemplo, en el stack o como miembros de otra estructura) y solo se necesita una vista polimórfica de ellos.
+
+##### Ejemplo de reference_wrapper Polimórfico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <functional> // Para std::reference_wrapper y std::ref
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0;
+    virtual string nombre() const = 0;
+    virtual ~Animal() = default;
+};
+
+class Perro : public Animal {
+    string nombre_;
+public:
+    Perro(const string& n) : nombre_(n) {}
+    void hacerSonido() const override { cout << nombre_ << " dice: ¡Guau!" << endl; }
+    string nombre() const override { return nombre_; }
+};
+
+class Gato : public Animal {
+    string nombre_;
+public:
+    Gato(const string& n) : nombre_(n) {}
+    void hacerSonido() const override { cout << nombre_ << " dice: ¡Miau!" << endl; }
+    string nombre() const override { return nombre_; }
+};
+
+class Pajaro : public Animal {
+    string nombre_;
+public:
+    Pajaro(const string& n) : nombre_(n) {}
+    void hacerSonido() const override { cout << nombre_ << " dice: ¡Pío!" << endl; }
+    string nombre() const override { return nombre_; }
+};
+
+int main() {
+    // Objetos en el stack (sin asignación en el heap)
+    Perro rex("Rex");
+    Gato misi("Misi");
+    Pajaro piolin("Piolín");
+    Perro max("Max");
+
+    // Vector de referencias polimórficas usando reference_wrapper
+    vector<reference_wrapper<Animal>> animales;
+    animales.push_back(ref(rex));    // ref() crea un reference_wrapper
+    animales.push_back(ref(misi));
+    animales.push_back(ref(piolin));
+    animales.push_back(ref(max));
+
+    // Iteración polimórfica: llama al método virtual correcto
+    cout << "=== Todos los animales ===" << endl;
+    for (const Animal& animal : animales) {
+        animal.hacerSonido();
+    }
+
+    // También se puede usar con const
+    vector<reference_wrapper<const Animal>> animalesConst;
+    animalesConst.push_back(cref(rex));   // cref() para referencia const
+    animalesConst.push_back(cref(misi));
+
+    cout << "\n=== Animales const ===" << endl;
+    for (const Animal& animal : animalesConst) {
+        cout << "Nombre: " << animal.nombre() << endl;
+    }
+
+    // Ventaja: no hay new/delete, no hay overhead de smart pointers.
+    // Los objetos viven en el stack y las referencias simplemente apuntan a ellos.
+    // Cuidado: los objetos referenciados deben sobrevivir al vector.
+
+    return 0;
+}
+```
+
+**Ventajas de `reference_wrapper`:**
+- Sin asignación en el heap (los objetos viven en el stack u otro almacenamiento).
+- Sin overhead de conteo de referencias (a diferencia de `shared_ptr`).
+- Polimorfismo completo a través de funciones virtuales.
+
+**Precaución:** El programador es responsable de asegurar que los objetos referenciados vivan más que el contenedor de `reference_wrapper`. Si un objeto referenciado es destruido, la referencia queda colgante (dangling reference).
+
 ### Conclusión
 
 El uso de punteros y referencias a clases base es esencial para lograr polimorfismo dinámico en C++. Permiten que las funciones miembro virtuales se comporten de manera polimórfica, resolviendo en tiempo de ejecución la versión correcta de la función según el tipo real del objeto. Este mecanismo es fundamental para diseñar sistemas orientados a objetos flexibles y mantenibles, permitiendo extender y modificar el comportamiento sin cambiar el código existente que trabaja con clases base. La correcta gestión de recursos, incluyendo destructores virtuales, es crucial para evitar problemas en aplicaciones polimórficas.
@@ -153,6 +424,12 @@ Ejemplo de Polimorfismo con Referencias
 Ejemplo de Polimorfismo con Referencias Result
 Destructores Virtuales
 Destructores Virtuales Result
+Ejemplo de Smart Pointers Polimórficos
+Ejemplo de Smart Pointers Polimórficos Result
+Ejemplo de dynamic_cast
+Ejemplo de dynamic_cast Result
+Ejemplo de reference_wrapper Polimórfico
+Ejemplo de reference_wrapper Polimórfico Result
 <---Ejemplo de Polimorfismo con Punteros--->
 ```cpp
 #include <iostream>
@@ -260,3 +537,231 @@ int main() {
     return 0;
 }
 <---Destructores Virtuales Result--->
+<---Ejemplo de Smart Pointers Polimórficos--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0;
+    virtual string tipo() const = 0;
+    virtual ~Animal() = default; // Necesario para unique_ptr polimórfico
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Guau!" << endl; }
+    string tipo() const override { return "Perro"; }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Miau!" << endl; }
+    string tipo() const override { return "Gato"; }
+};
+
+class Pajaro : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Pío!" << endl; }
+    string tipo() const override { return "Pájaro"; }
+};
+
+// Patrón Factory: retorna unique_ptr para polimorfismo seguro
+unique_ptr<Animal> crearAnimal(const string& tipo) {
+    if (tipo == "perro") return make_unique<Perro>();
+    if (tipo == "gato") return make_unique<Gato>();
+    if (tipo == "pajaro") return make_unique<Pajaro>();
+    return nullptr;
+}
+
+int main() {
+    // Colección polimórfica con unique_ptr: sin fugas de memoria
+    vector<unique_ptr<Animal>> animales;
+    animales.push_back(make_unique<Perro>());
+    animales.push_back(make_unique<Gato>());
+    animales.push_back(make_unique<Pajaro>());
+
+    // Usando la factory
+    animales.push_back(crearAnimal("perro"));
+    animales.push_back(crearAnimal("gato"));
+
+    cout << "=== Colección con unique_ptr ===" << endl;
+    for (const auto& animal : animales) {
+        cout << animal->tipo() << ": ";
+        animal->hacerSonido();
+    }
+
+    // shared_ptr para propiedad compartida
+    cout << "\n=== Propiedad compartida con shared_ptr ===" << endl;
+    shared_ptr<Animal> compartido = make_shared<Perro>();
+    shared_ptr<Animal> copia = compartido; // Ambos apuntan al mismo Perro
+
+    cout << "Referencias: " << compartido.use_count() << endl; // 2
+    compartido->hacerSonido();
+    copia->hacerSonido();
+
+    // Al salir del scope, unique_ptr y shared_ptr liberan memoria automáticamente
+    // No se necesita delete manual
+    return 0;
+}
+<---Ejemplo de Smart Pointers Polimórficos Result--->
+<---Ejemplo de dynamic_cast--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0;
+    virtual ~Animal() = default;
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Guau!" << endl; }
+
+    // Funcionalidad exclusiva de Perro
+    void buscarPelota() const {
+        cout << "El perro busca la pelota" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override { cout << "¡Miau!" << endl; }
+
+    // Funcionalidad exclusiva de Gato
+    void ronronear() const {
+        cout << "El gato ronronea" << endl;
+    }
+};
+
+// Función que necesita acceder a funcionalidad específica de la derivada
+void interactuarConAnimal(Animal& animal) {
+    // Primero, comportamiento polimórfico común
+    animal.hacerSonido();
+
+    // Downcasting seguro con punteros
+    if (Perro* perro = dynamic_cast<Perro*>(&animal)) {
+        perro->buscarPelota(); // Solo se ejecuta si es un Perro
+    } else if (Gato* gato = dynamic_cast<Gato*>(&animal)) {
+        gato->ronronear(); // Solo se ejecuta si es un Gato
+    }
+}
+
+// Versión con referencias y manejo de excepciones
+void procesarComoPerro(Animal& animal) {
+    try {
+        // dynamic_cast con referencia: lanza std::bad_cast si falla
+        Perro& perro = dynamic_cast<Perro&>(animal);
+        perro.buscarPelota();
+    } catch (const bad_cast& e) {
+        cout << "No es un Perro: " << e.what() << endl;
+    }
+}
+
+int main() {
+    Perro miPerro;
+    Gato miGato;
+
+    cout << "=== Interactuar con Perro ===" << endl;
+    interactuarConAnimal(miPerro);
+
+    cout << "\n=== Interactuar con Gato ===" << endl;
+    interactuarConAnimal(miGato);
+
+    cout << "\n=== Downcasting con referencia ===" << endl;
+    procesarComoPerro(miPerro); // Éxito
+    procesarComoPerro(miGato);  // Excepción: No es un Perro
+
+    // dynamic_cast con smart pointers
+    cout << "\n=== dynamic_cast con shared_ptr ===" << endl;
+    shared_ptr<Animal> ptr = make_shared<Perro>();
+    shared_ptr<Perro> ptrPerro = dynamic_pointer_cast<Perro>(ptr);
+    if (ptrPerro) {
+        ptrPerro->buscarPelota();
+    }
+
+    return 0;
+}
+<---Ejemplo de dynamic_cast Result--->
+<---Ejemplo de reference_wrapper Polimórfico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <functional> // Para std::reference_wrapper y std::ref
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0;
+    virtual string nombre() const = 0;
+    virtual ~Animal() = default;
+};
+
+class Perro : public Animal {
+    string nombre_;
+public:
+    Perro(const string& n) : nombre_(n) {}
+    void hacerSonido() const override { cout << nombre_ << " dice: ¡Guau!" << endl; }
+    string nombre() const override { return nombre_; }
+};
+
+class Gato : public Animal {
+    string nombre_;
+public:
+    Gato(const string& n) : nombre_(n) {}
+    void hacerSonido() const override { cout << nombre_ << " dice: ¡Miau!" << endl; }
+    string nombre() const override { return nombre_; }
+};
+
+class Pajaro : public Animal {
+    string nombre_;
+public:
+    Pajaro(const string& n) : nombre_(n) {}
+    void hacerSonido() const override { cout << nombre_ << " dice: ¡Pío!" << endl; }
+    string nombre() const override { return nombre_; }
+};
+
+int main() {
+    // Objetos en el stack (sin asignación en el heap)
+    Perro rex("Rex");
+    Gato misi("Misi");
+    Pajaro piolin("Piolín");
+    Perro max("Max");
+
+    // Vector de referencias polimórficas usando reference_wrapper
+    vector<reference_wrapper<Animal>> animales;
+    animales.push_back(ref(rex));    // ref() crea un reference_wrapper
+    animales.push_back(ref(misi));
+    animales.push_back(ref(piolin));
+    animales.push_back(ref(max));
+
+    // Iteración polimórfica: llama al método virtual correcto
+    cout << "=== Todos los animales ===" << endl;
+    for (const Animal& animal : animales) {
+        animal.hacerSonido();
+    }
+
+    // También se puede usar con const
+    vector<reference_wrapper<const Animal>> animalesConst;
+    animalesConst.push_back(cref(rex));   // cref() para referencia const
+    animalesConst.push_back(cref(misi));
+
+    cout << "\n=== Animales const ===" << endl;
+    for (const Animal& animal : animalesConst) {
+        cout << "Nombre: " << animal.nombre() << endl;
+    }
+
+    // Ventaja: no hay new/delete, no hay overhead de smart pointers.
+    // Los objetos viven en el stack y las referencias simplemente apuntan a ellos.
+    // Cuidado: los objetos referenciados deben sobrevivir al vector.
+
+    return 0;
+}
+<---Ejemplo de reference_wrapper Polimórfico Result--->

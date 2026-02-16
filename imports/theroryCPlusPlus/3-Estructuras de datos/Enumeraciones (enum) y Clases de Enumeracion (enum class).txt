@@ -217,156 +217,152 @@ int main() {
 }
 ```
 
+### Enumeraciones en Qt
+
+#### `Q_ENUM` — Registrar enums para el meta-object system
+
+`Q_ENUM` permite que Qt conozca los valores del enum, habilitando conversión a/desde string y uso en QML:
+
+```cpp
+class Semaforo : public QObject {
+    Q_OBJECT
+public:
+    enum Color {
+        Rojo,
+        Amarillo,
+        Verde
+    };
+    Q_ENUM(Color)  // Registra el enum en el meta-object system
+
+    Color colorActual() const { return m_color; }
+
+private:
+    Color m_color = Rojo;
+};
+
+// Con Q_ENUM puedes:
+// 1. Convertir a string
+QMetaEnum meta = QMetaEnum::fromType<Semaforo::Color>();
+const char* nombre = meta.valueToKey(Semaforo::Verde);  // "Verde"
+
+// 2. Convertir desde string
+Semaforo::Color c = static_cast<Semaforo::Color>(meta.keyToValue("Rojo"));
+
+// 3. Usar en QML directamente
+// qml: if (semaforo.colorActual === Semaforo.Verde) { ... }
+```
+
+#### `Q_FLAG` y `Q_DECLARE_FLAGS` — Enums combinables con OR
+
+Para enums que se combinan con `|` (flags), Qt usa `Q_FLAG`:
+
+```cpp
+class Editor : public QObject {
+    Q_OBJECT
+public:
+    enum Permiso {
+        Lectura  = 0x01,
+        Escritura = 0x02,
+        Ejecucion = 0x04
+    };
+    Q_DECLARE_FLAGS(Permisos, Permiso)
+    Q_FLAG(Permisos)
+};
+Q_DECLARE_OPERATORS_FOR_FLAGS(Editor::Permisos)
+
+// Uso:
+Editor::Permisos p = Editor::Lectura | Editor::Escritura;
+```
+
+#### Enums en QML
+
+Los enums registrados con `Q_ENUM` se pueden usar directamente en QML:
+
+```qml
+// C++: Q_ENUM(Color) en clase Semaforo
+// QML:
+import MiApp 1.0
+
+Item {
+    Semaforo {
+        id: semaforo
+    }
+    Text {
+        text: semaforo.colorActual === Semaforo.Verde ? "Adelante" : "Espera"
+    }
+}
+```
+
 ### Conclusión
 
 Las enumeraciones (`enum`) y las clases de enumeración (`enum class`) en C++ son herramientas útiles para representar conjuntos de valores constantes. Las enumeraciones tradicionales son simples y fáciles de usar, mientras que las clases de enumeración proporcionan un control más estricto sobre el ámbito y la seguridad de tipos. Comprender las diferencias y las mejores prácticas para usar cada una es crucial para escribir código C++ claro, seguro y eficiente.
 <---FILES--->
-Sintaxis
-Sintaxis Result
-Ejemplo Básico
-Ejemplo Básico Result
-Asignación de Valores Específicos
-Asignación de Valores Específicos Result
-Ventajas de `enum class`
-Ventajas de `enum class` Result
-Ejemplo con Asignación de Valores Específicos
-Ejemplo con Asignación de Valores Específicos Result
-Ejemplo de Conversión
-Ejemplo de Conversión Result
-<---Sintaxis--->
-```cpp
-enum class NombreEnumClass {
-    valor1,
-    valor2,
-    // Otros valores
-};
-<---Sintaxis Result--->
-<---Ejemplo Básico--->
+enum class Básico
+enum class Básico Result
+enum con Valores
+enum con Valores Result
+Conversión enum-int
+Conversión enum-int Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---enum class Básico--->
 ```cpp
 #include <iostream>
 using namespace std;
 
-enum class Color {
-    Rojo,
-    Verde,
-    Azul
-};
+enum class Color { Rojo, Verde, Azul };
 
 int main() {
-    Color miColor = Color::Verde;
-
-    if (miColor == Color::Verde) {
-        cout << "El color es verde." << endl;
-    }
-
+    Color c = Color::Verde;
+    if (c == Color::Verde) cout << "El color es verde." << endl;
     return 0;
 }
-<---Ejemplo Básico Result--->
-<---Asignación de Valores Específicos--->
+```
+<---enum class Básico Result--->
+<---enum con Valores--->
 ```cpp
 enum Mes {
-    Enero = 1,
-    Febrero,
-    Marzo,
-    Abril,
-    Mayo,
-    Junio,
-    Julio,
-    Agosto,
-    Septiembre,
-    Octubre,
-    Noviembre,
-    Diciembre
+    Enero = 1, Febrero, Marzo, Abril, Mayo, Junio,
+    Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre
 };
-<---Asignación de Valores Específicos Result--->
-<---Ventajas de `enum class`--->
-<---Ventajas de `enum class` Result--->
-<---Ejemplo con Asignación de Valores Específicos--->
-```cpp
-#include <iostream>
-using namespace std;
-
-enum class Estado {
-    Inactivo = 0,
-    Activo = 1,
-    Suspendido = 2,
-    Eliminado = 3
-};
-
-int main() {
-    Estado usuario = Estado::Activo;
-
-    if (usuario == Estado::Activo) {
-        cout << "El usuario está activo." << endl;
-    }
-
-    return 0;
-}
-<---Ejemplo con Asignación de Valores Específicos Result--->
-<---Ejemplo de Conversión--->
+```
+<---enum con Valores Result--->
+<---Conversión enum-int--->
 ```cpp
 #include <iostream>
 using namespace std;
 
 enum class Dia : int {
-    Lunes = 1,
-    Martes,
-    Miercoles,
-    Jueves,
-    Viernes,
-    Sabado,
-    Domingo
+    Lunes = 1, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo
 };
 
 int main() {
     Dia hoy = Dia::Jueves;
-
-    // Conversión explícita de enum class a int
-    int diaNumero = static_cast<int>(hoy);
-    cout << "Hoy es el día número: " << diaNumero << endl;
-
+    int num = static_cast<int>(hoy);
+    cout << "Día número: " << num << endl;
     return 0;
 }
+```
+<---Conversión enum-int Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 using namespace std;
 
-// Enumeración tradicional
-enum DiaSemana {
-    Lunes,
-    Martes,
-    Miercoles,
-    Jueves,
-    Viernes,
-    Sabado,
-    Domingo
-};
+enum DiaSemana { Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo };
 
-// Clase de enumeración
-enum class Estado {
-    Inactivo = 0,
-    Activo = 1,
-    Suspendido = 2,
-    Eliminado = 3
-};
+enum class Estado { Inactivo = 0, Activo = 1, Suspendido = 2 };
 
 int main() {
-    // Uso de enumeración tradicional
     DiaSemana hoy = Miercoles;
-    if (hoy == Miercoles) {
-        cout << "Hoy es miércoles." << endl;
-    }
+    if (hoy == Miercoles) cout << "Hoy es miércoles." << endl;
 
-    // Uso de clase de enumeración
     Estado usuario = Estado::Activo;
-    if (usuario == Estado::Activo) {
-        cout << "El usuario está activo." << endl;
-    }
+    if (usuario == Estado::Activo) cout << "Usuario activo." << endl;
 
-    // Conversión explícita de enum class a int
-    int estadoNumero = static_cast<int>(usuario);
-    cout << "El estado del usuario es: " << estadoNumero << endl;
-
+    int estadoNum = static_cast<int>(usuario);
+    cout << "Estado: " << estadoNum << endl;
     return 0;
 }
-<---Ejemplo de Conversión Result--->
+```
+<---Ejemplo Completo Result--->

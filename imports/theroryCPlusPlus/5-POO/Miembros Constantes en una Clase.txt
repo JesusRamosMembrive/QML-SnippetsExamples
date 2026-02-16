@@ -204,6 +204,123 @@ int main() {
 
 En este ejemplo, `getBase`, `getAltura`, `area` y `mostrar` son métodos constantes que utilizan el puntero `this` para acceder a los miembros de la clase `Triangulo`.
 
+#### `static constexpr` Miembros (C++17)
+
+A partir de C++17, los miembros `static constexpr` pueden ser definidos directamente dentro de la clase sin necesidad de una definición fuera de línea. Esto permite declarar constantes de clase que son evaluadas completamente en tiempo de compilación. Combinado con constructores y métodos `constexpr`, se pueden crear clases cuyos cálculos se resuelven durante la compilación.
+
+##### Ejemplo de `static constexpr` Miembros
+
+```cpp
+#include <iostream>
+#include <numbers>
+using namespace std;
+
+class Circulo {
+    double radio;
+public:
+    // static constexpr: constante de clase evaluada en compilación
+    static constexpr double PI = 3.14159265358979;
+    static constexpr int MAX_RADIO = 1000;
+
+    // C++20: usar std::numbers
+    // static constexpr double PI = std::numbers::pi;
+
+    constexpr Circulo(double r) : radio(r) {}
+
+    constexpr double area() const { return PI * radio * radio; }
+    constexpr double perimetro() const { return 2 * PI * radio; }
+};
+
+int main() {
+    constexpr Circulo c(5.0);
+    constexpr double a = c.area();   // Evaluado en compilación
+    static_assert(Circulo::MAX_RADIO == 1000);
+
+    cout << "Área: " << a << endl;
+    cout << "PI: " << Circulo::PI << endl;
+    return 0;
+}
+```
+
+Con `static constexpr`, las constantes son accesibles a nivel de clase (no de instancia) y se pueden usar en contextos que requieren expresiones constantes, como `static_assert`, parámetros de template y tamaños de arrays.
+
+#### La Palabra Clave `mutable` en Miembros
+
+La palabra clave `mutable` permite que un miembro de la clase sea modificado incluso dentro de métodos `const`. Esto es útil para implementar cachés, contadores de acceso o sincronización con `mutex`, donde la modificación no afecta el estado lógico observable del objeto.
+
+##### Ejemplo de `mutable`
+
+```cpp
+#include <iostream>
+#include <mutex>
+using namespace std;
+
+class DatoSeguro {
+    mutable mutex mtx;  // mutable: modificable en métodos const
+    mutable int lecturas = 0;
+    int valor;
+public:
+    DatoSeguro(int v) : valor(v) {}
+
+    int getValor() const {
+        lock_guard<mutex> lock(mtx); // OK: mtx es mutable
+        lecturas++;                   // OK: lecturas es mutable
+        return valor;
+    }
+
+    int getLecturas() const { return lecturas; }
+};
+
+int main() {
+    const DatoSeguro d(42);
+    cout << d.getValor() << endl;
+    cout << d.getValor() << endl;
+    cout << "Lecturas: " << d.getLecturas() << endl; // 2
+    return 0;
+}
+```
+
+`mutable` es la excepción a la regla de `const`: un miembro `mutable` puede cambiar incluso cuando el objeto es `const`, lo cual es necesario para operaciones que no afectan el estado lógico del objeto (como logging, caching o sincronización).
+
+#### Miembros Constantes en Qt: `Q_PROPERTY CONSTANT`
+
+En Qt, el macro `Q_PROPERTY` con el atributo `CONSTANT` permite exponer propiedades de solo lectura a QML y al sistema de meta-objetos. Una propiedad `CONSTANT` no requiere señal `NOTIFY` porque su valor nunca cambia después de la construcción del objeto. Esto es ideal para datos inmutables que se establecen una vez en el constructor.
+
+##### Ejemplo de `Q_PROPERTY CONSTANT`
+
+```cpp
+#include <QObject>
+#include <QString>
+
+class Avion : public QObject {
+    Q_OBJECT
+    // CONSTANT: el valor no cambia tras la construcción (no necesita NOTIFY)
+    Q_PROPERTY(QString modelo READ modelo CONSTANT)
+    Q_PROPERTY(int capacidad READ capacidad CONSTANT)
+    Q_PROPERTY(double velocidadMax READ velocidadMax CONSTANT)
+
+public:
+    explicit Avion(const QString& modelo, int cap, double vel,
+                   QObject *parent = nullptr)
+        : QObject(parent)
+        , m_modelo(modelo), m_capacidad(cap), m_velocidadMax(vel) {}
+
+    QString modelo() const { return m_modelo; }
+    int capacidad() const { return m_capacidad; }
+    double velocidadMax() const { return m_velocidadMax; }
+
+private:
+    const QString m_modelo;       // const: no cambia tras construcción
+    const int m_capacidad;
+    const double m_velocidadMax;
+};
+
+// En QML:
+// Text { text: avion.modelo }   // Se lee pero no se puede asignar
+```
+
+Usar `CONSTANT` en `Q_PROPERTY` combina la inmutabilidad de C++ (`const` en miembros) con el sistema de propiedades de Qt, proporcionando una interfaz clara tanto para C++ como para QML donde los datos son de solo lectura.
+
 ### Conclusión
 
 El uso de miembros constantes en una clase en C++ es una práctica fundamental para proteger la integridad del estado del objeto y asegurar la constancia donde sea necesario. Los atributos constantes no pueden ser modificados después de su inicialización, y los métodos constantes garantizan que no se modifiquen los atributos del objeto. Implementar const correctness ayuda a escribir código más seguro, legible y mantenible, y proporciona una clara documentación de la intención del código.
@@ -216,6 +333,12 @@ Ejemplo de Const Correctness
 Ejemplo de Const Correctness Result
 Ejemplo con Puntero `this` en Métodos Constantes
 Ejemplo con Puntero `this` en Métodos Constantes Result
+Ejemplo de static constexpr Miembros
+Ejemplo de static constexpr Miembros Result
+Ejemplo de mutable
+Ejemplo de mutable Result
+Ejemplo de Q_PROPERTY CONSTANT
+Ejemplo de Q_PROPERTY CONSTANT Result
 <---Ejemplo de Atributos Constantes--->
 ```cpp
 #include <iostream>
@@ -385,3 +508,96 @@ int main() {
     return 0;
 }
 <---Ejemplo con Puntero `this` en Métodos Constantes Result--->
+<---Ejemplo de static constexpr Miembros--->
+```cpp
+#include <iostream>
+#include <numbers>
+using namespace std;
+
+class Circulo {
+    double radio;
+public:
+    // static constexpr: constante de clase evaluada en compilación
+    static constexpr double PI = 3.14159265358979;
+    static constexpr int MAX_RADIO = 1000;
+
+    // C++20: usar std::numbers
+    // static constexpr double PI = std::numbers::pi;
+
+    constexpr Circulo(double r) : radio(r) {}
+
+    constexpr double area() const { return PI * radio * radio; }
+    constexpr double perimetro() const { return 2 * PI * radio; }
+};
+
+int main() {
+    constexpr Circulo c(5.0);
+    constexpr double a = c.area();   // Evaluado en compilación
+    static_assert(Circulo::MAX_RADIO == 1000);
+
+    cout << "Área: " << a << endl;
+    cout << "PI: " << Circulo::PI << endl;
+    return 0;
+}
+<---Ejemplo de static constexpr Miembros Result--->
+<---Ejemplo de mutable--->
+```cpp
+#include <iostream>
+#include <mutex>
+using namespace std;
+
+class DatoSeguro {
+    mutable mutex mtx;  // mutable: modificable en métodos const
+    mutable int lecturas = 0;
+    int valor;
+public:
+    DatoSeguro(int v) : valor(v) {}
+
+    int getValor() const {
+        lock_guard<mutex> lock(mtx); // OK: mtx es mutable
+        lecturas++;                   // OK: lecturas es mutable
+        return valor;
+    }
+
+    int getLecturas() const { return lecturas; }
+};
+
+int main() {
+    const DatoSeguro d(42);
+    cout << d.getValor() << endl;
+    cout << d.getValor() << endl;
+    cout << "Lecturas: " << d.getLecturas() << endl; // 2
+    return 0;
+}
+<---Ejemplo de mutable Result--->
+<---Ejemplo de Q_PROPERTY CONSTANT--->
+```cpp
+#include <QObject>
+#include <QString>
+
+class Avion : public QObject {
+    Q_OBJECT
+    // CONSTANT: el valor no cambia tras la construcción (no necesita NOTIFY)
+    Q_PROPERTY(QString modelo READ modelo CONSTANT)
+    Q_PROPERTY(int capacidad READ capacidad CONSTANT)
+    Q_PROPERTY(double velocidadMax READ velocidadMax CONSTANT)
+
+public:
+    explicit Avion(const QString& modelo, int cap, double vel,
+                   QObject *parent = nullptr)
+        : QObject(parent)
+        , m_modelo(modelo), m_capacidad(cap), m_velocidadMax(vel) {}
+
+    QString modelo() const { return m_modelo; }
+    int capacidad() const { return m_capacidad; }
+    double velocidadMax() const { return m_velocidadMax; }
+
+private:
+    const QString m_modelo;       // const: no cambia tras construcción
+    const int m_capacidad;
+    const double m_velocidadMax;
+};
+
+// En QML:
+// Text { text: avion.modelo }   // Se lee pero no se puede asignar
+<---Ejemplo de Q_PROPERTY CONSTANT Result--->

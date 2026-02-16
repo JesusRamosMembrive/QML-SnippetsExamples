@@ -191,6 +191,71 @@ int main() {
 ### Conclusión
 
 Comprender los literales en C++ y cómo usarlos correctamente es esencial para escribir código claro y eficiente. Los sufijos para los literales proporcionan una forma de especificar el tipo exacto de datos, lo que puede ser crucial para asegurar que el programa se comporte como se espera, especialmente cuando se trabaja con diferentes tipos de datos y precisiones.
+
+### Literales de Cadena en Qt
+
+Qt define sus propios tipos de literales de cadena optimizados para evitar conversiones innecesarias en tiempo de ejecución.
+
+#### `QStringLiteral`
+
+Crea un `QString` en memoria de solo lectura en tiempo de compilación. Es la forma más eficiente de crear strings constantes en Qt:
+
+```cpp
+// Sin QStringLiteral: convierte de const char* a QString en runtime
+QString nombre = "Carlos";
+
+// Con QStringLiteral: QString ya construido en compilación
+QString nombre = QStringLiteral("Carlos");
+```
+
+> **Regla:** Usa `QStringLiteral` para strings que se conocen en compilación y se usan más de una vez.
+
+#### `QLatin1String` y `QLatin1Char`
+
+Para comparaciones y operaciones con cadenas ASCII, `QLatin1String` evita la conversión a UTF-16:
+
+```cpp
+QString nombre = QStringLiteral("Carlos");
+
+// Comparación eficiente (no convierte "Carlos" a QString)
+if (nombre == QLatin1String("Carlos")) { ... }
+
+// Para un solo carácter ASCII
+if (nombre.startsWith(QLatin1Char('C'))) { ... }
+```
+
+#### Operador `_s` (Qt 6.4+)
+
+Qt 6.4 introduce el literal `_s` como abreviatura de `QStringLiteral`:
+
+```cpp
+using namespace Qt::Literals::StringLiterals;
+
+QString nombre = u"Carlos"_s;  // Equivale a QStringLiteral("Carlos")
+QByteArray datos = "raw"_ba;   // Equivale a QByteArrayLiteral("raw")
+
+// Muy cómodo en comparaciones:
+if (nombre == u"Carlos"_s) { ... }
+```
+
+#### `QByteArrayLiteral`
+
+Igual que `QStringLiteral` pero para `QByteArray`:
+
+```cpp
+QByteArray header = QByteArrayLiteral("Content-Type");
+```
+
+#### Resumen de literales de cadena en Qt
+
+| Literal | Tipo resultado | Cuándo usar |
+|---------|---------------|-------------|
+| `"texto"` | `const char*` | Nunca en Qt (conversión implícita) |
+| `QStringLiteral("texto")` | `QString` | Strings constantes reutilizados |
+| `QLatin1String("texto")` | `QLatin1String` | Comparaciones con ASCII |
+| `u"texto"_s` | `QString` | Qt 6.4+, forma moderna |
+| `QByteArrayLiteral("raw")` | `QByteArray` | Datos binarios constantes |
+
 <---FILES--->
 Sintaxis y Ejemplos
 Sintaxis y Ejemplos Result
@@ -235,13 +300,10 @@ int main() {
     cout << "Enteros: " << decimal << ", " << sinSigno << ", " << largo << ", " << muyLargo << endl;
     cout << "Flotantes: " << flotante << ", " << doble << ", " << largoDoble << endl;
     cout << "Caracteres: " << letra << ", " << nuevaLinea << ", " << unicode16 << ", " << unicode32 << endl;
-    cout << "Cadenas: " << cadena << ", " << raw << ", " << cadenaUnicode16 << ", " << cadenaUnicode32 << endl;
+    cout << "Cadenas: " << cadena << ", " << raw << endl;
     cout << "Booleanos: " << esVerdadero << ", " << esFalso << endl;
 
     return 0;
 }
+```
 <---Sintaxis y Ejemplos Result--->
-<---Sufijos para Literales Enteros--->
-<---Sufijos para Literales Enteros Result--->
-<---Sufijos para Literales Flotantes--->
-<---Sufijos para Literales Flotantes Result--->

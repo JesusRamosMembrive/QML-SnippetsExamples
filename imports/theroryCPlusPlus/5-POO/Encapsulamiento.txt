@@ -188,6 +188,97 @@ int main() {
 
 En este ejemplo, la clase `Derivada` hereda de la clase `Base`. Puede acceder al miembro `datoProtegido` a través de un método protegido en la clase base, pero no puede acceder directamente al miembro `datoPrivado`.
 
+### La Palabra Clave `mutable`
+
+La palabra clave `mutable` permite que un miembro de una clase sea modificado incluso cuando el objeto es `const` o dentro de un método `const`. Esto es útil para datos que no forman parte del estado lógico del objeto, como contadores de acceso, cachés o valores de depuración.
+
+Sin `mutable`, cualquier intento de modificar un miembro dentro de un método `const` generaría un error de compilación. Con `mutable`, se hace una excepción explícita para ese miembro específico.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Cache {
+    mutable int accesos = 0;  // mutable: modificable en métodos const
+    int dato;
+public:
+    Cache(int d) : dato(d) {}
+
+    int getDato() const {
+        accesos++;  // OK porque accesos es mutable
+        return dato;
+    }
+
+    int getAccesos() const { return accesos; }
+};
+
+int main() {
+    const Cache c(42);        // Objeto constante
+    cout << c.getDato() << endl;  // Incrementa accesos
+    cout << c.getDato() << endl;
+    cout << "Accesos: " << c.getAccesos() << endl; // 2
+    return 0;
+}
+```
+
+### `Q_PROPERTY` en Qt: Encapsulamiento para QML
+
+En Qt, el macro `Q_PROPERTY` es la forma estándar de exponer propiedades de C++ al sistema de metaobjetos y a QML. Este mecanismo implementa el encapsulamiento de forma declarativa, definiendo en una sola línea el getter (READ), setter (WRITE) y la señal de notificación de cambio (NOTIFY).
+
+Cuando una propiedad tiene `NOTIFY`, QML puede crear **bindings automáticos**: si el valor cambia, todos los elementos de la interfaz que dependen de esa propiedad se actualizan automáticamente. Las propiedades marcadas como `CONSTANT` indican que el valor nunca cambia después de la construcción del objeto, y por lo tanto no necesitan señal de notificación.
+
+El patrón de setter con guardia (`if (m_valor != valor)`) es fundamental: evita emitir señales innecesarias y previene bucles infinitos en los bindings de QML.
+
+```cpp
+#include <QObject>
+#include <QString>
+
+class Empleado : public QObject {
+    Q_OBJECT
+    // Q_PROPERTY: nombre accesible desde QML
+    Q_PROPERTY(QString nombre READ nombre WRITE setNombre NOTIFY nombreChanged)
+    Q_PROPERTY(int edad READ edad WRITE setEdad NOTIFY edadChanged)
+    Q_PROPERTY(QString cargo READ cargo CONSTANT)  // Solo lectura
+
+public:
+    explicit Empleado(QObject *parent = nullptr)
+        : QObject(parent), m_nombre(""), m_edad(0), m_cargo("Ingeniero") {}
+
+    // Getters
+    QString nombre() const { return m_nombre; }
+    int edad() const { return m_edad; }
+    QString cargo() const { return m_cargo; }
+
+    // Setters con notificación de cambio
+    void setNombre(const QString& nombre) {
+        if (m_nombre != nombre) {
+            m_nombre = nombre;
+            emit nombreChanged();
+        }
+    }
+
+    void setEdad(int edad) {
+        if (m_edad != edad && edad > 0) {
+            m_edad = edad;
+            emit edadChanged();
+        }
+    }
+
+signals:
+    void nombreChanged();
+    void edadChanged();
+
+private:
+    QString m_nombre;
+    int m_edad;
+    QString m_cargo;
+};
+
+// En QML se usa directamente:
+// Text { text: empleado.nombre }
+// empleado.edad = 30
+```
+
 ### Conclusión
 
 El encapsulamiento es una técnica fundamental en la programación orientada a objetos que mejora la seguridad, la modularidad y la mantenibilidad del código. Al utilizar modificadores de acceso como `private`, `protected` y `public`, se puede controlar cómo se accede y modifica el estado interno de los objetos. Los setters y getters son herramientas esenciales para implementar el encapsulamiento, proporcionando un acceso controlado a los atributos privados. Con una comprensión sólida del encapsulamiento, los desarrolladores pueden crear clases robustas y seguras que faciliten el desarrollo de software de alta calidad.
@@ -198,6 +289,10 @@ Ejemplo con Setters y Getters
 Ejemplo con Setters y Getters Result
 Ejemplo con Herencia
 Ejemplo con Herencia Result
+La Palabra Clave mutable
+La Palabra Clave mutable Result
+Q_PROPERTY en Qt
+Q_PROPERTY en Qt Result
 <---Ejemplo Básico--->
 ```cpp
 #include <iostream>
@@ -342,3 +437,80 @@ int main() {
     return 0;
 }
 <---Ejemplo con Herencia Result--->
+<---La Palabra Clave mutable--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Cache {
+    mutable int accesos = 0;  // mutable: modificable en métodos const
+    int dato;
+public:
+    Cache(int d) : dato(d) {}
+
+    int getDato() const {
+        accesos++;  // OK porque accesos es mutable
+        return dato;
+    }
+
+    int getAccesos() const { return accesos; }
+};
+
+int main() {
+    const Cache c(42);        // Objeto constante
+    cout << c.getDato() << endl;  // Incrementa accesos
+    cout << c.getDato() << endl;
+    cout << "Accesos: " << c.getAccesos() << endl; // 2
+    return 0;
+}
+<---La Palabra Clave mutable Result--->
+<---Q_PROPERTY en Qt--->
+```cpp
+#include <QObject>
+#include <QString>
+
+class Empleado : public QObject {
+    Q_OBJECT
+    // Q_PROPERTY: nombre accesible desde QML
+    Q_PROPERTY(QString nombre READ nombre WRITE setNombre NOTIFY nombreChanged)
+    Q_PROPERTY(int edad READ edad WRITE setEdad NOTIFY edadChanged)
+    Q_PROPERTY(QString cargo READ cargo CONSTANT)  // Solo lectura
+
+public:
+    explicit Empleado(QObject *parent = nullptr)
+        : QObject(parent), m_nombre(""), m_edad(0), m_cargo("Ingeniero") {}
+
+    // Getters
+    QString nombre() const { return m_nombre; }
+    int edad() const { return m_edad; }
+    QString cargo() const { return m_cargo; }
+
+    // Setters con notificación de cambio
+    void setNombre(const QString& nombre) {
+        if (m_nombre != nombre) {
+            m_nombre = nombre;
+            emit nombreChanged();
+        }
+    }
+
+    void setEdad(int edad) {
+        if (m_edad != edad && edad > 0) {
+            m_edad = edad;
+            emit edadChanged();
+        }
+    }
+
+signals:
+    void nombreChanged();
+    void edadChanged();
+
+private:
+    QString m_nombre;
+    int m_edad;
+    QString m_cargo;
+};
+
+// En QML se usa directamente:
+// Text { text: empleado.nombre }
+// empleado.edad = 30
+<---Q_PROPERTY en Qt Result--->

@@ -138,6 +138,80 @@ int main() {
 }
 ```
 
+### Recursividad en Tiempo de Compilación con `constexpr`
+
+C++ moderno permite que las funciones recursivas se evalúen en tiempo de compilación utilizando `constexpr`. Esto significa que el compilador calcula el resultado durante la compilación en lugar de en tiempo de ejecución, lo que elimina completamente el costo de la recursión. Los resultados de funciones `constexpr` pueden usarse donde se requiere un valor constante, como tamaños de arrays o parámetros de plantillas.
+
+##### Ejemplo de Recursividad `constexpr`
+
+```cpp
+#include <iostream>
+#include <array>
+using namespace std;
+
+constexpr int factorial(int n) {
+    return (n <= 1) ? 1 : n * factorial(n - 1);
+}
+
+constexpr int fibonacci(int n) {
+    return (n <= 1) ? n : fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+int main() {
+    // Evaluados en tiempo de compilación
+    constexpr int fact5 = factorial(5);    // 120
+    constexpr int fib10 = fibonacci(10);   // 55
+
+    // Usar como tamaño de array (requiere constexpr)
+    array<int, factorial(4)> arr; // array de 24 elementos
+
+    cout << "Factorial de 5: " << fact5 << endl;
+    cout << "Fibonacci de 10: " << fib10 << endl;
+    return 0;
+}
+```
+
+### Fold Expressions como Alternativa (C++17)
+
+Las **fold expressions** (expresiones de plegado), introducidas en C++17, permiten aplicar un operador a todos los elementos de un paquete de parámetros de plantilla sin necesidad de recursión explícita. Son una alternativa moderna y más concisa a los patrones recursivos clásicos con plantillas variádicas que se usaban antes de C++17.
+
+Con fold expressions, lo que antes requería una función base y una función recursiva se puede expresar en una sola línea usando la sintaxis `(args op ...)` o `(... op args)`.
+
+##### Ejemplo de Fold Expressions
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Recursión clásica con templates (pre-C++17)
+template<typename T>
+T sumarTodo(T valor) { return valor; }
+
+template<typename T, typename... Args>
+T sumarTodo(T primero, Args... resto) {
+    return primero + sumarTodo(resto...);
+}
+
+// Fold expression (C++17) - reemplaza la recursión
+template<typename... Args>
+auto sumarFold(Args... args) {
+    return (args + ...); // Fold expression
+}
+
+template<typename... Args>
+void imprimirTodo(Args... args) {
+    ((cout << args << " "), ...); // Fold expression con comma
+    cout << endl;
+}
+
+int main() {
+    cout << "Suma recursiva: " << sumarTodo(1, 2, 3, 4, 5) << endl;
+    cout << "Suma fold: " << sumarFold(1, 2, 3, 4, 5) << endl;
+    imprimirTodo("Hola", 42, 3.14, "mundo");
+    return 0;
+}
+```
+
 ### Conclusión
 
 La recursividad es una herramienta poderosa en C++ que permite resolver problemas complejos dividiéndolos en subproblemas más simples. Entender y aplicar correctamente los casos base y recursivos es crucial para evitar errores y optimizar el rendimiento. La recursividad de cola y la memoización son técnicas avanzadas que pueden mejorar la eficiencia y evitar problemas comunes como el desbordamiento de pila. Con una comprensión sólida de la recursividad, los desarrolladores pueden abordar una amplia gama de problemas algorítmicos de manera efectiva.
@@ -150,6 +224,10 @@ Ejemplo de Recursividad de Cola
 Ejemplo de Recursividad de Cola Result
 Implementación de Fibonacci con Memoización
 Implementación de Fibonacci con Memoización Result
+Ejemplo de Recursividad `constexpr`
+Ejemplo de Recursividad `constexpr` Result
+Ejemplo de Fold Expressions
+Ejemplo de Fold Expressions Result
 <---Implementación Recursiva del Factorial--->
 ```cpp
 #include <iostream>
@@ -233,3 +311,63 @@ int main() {
     return 0;
 }
 <---Implementación de Fibonacci con Memoización Result--->
+<---Ejemplo de Recursividad `constexpr`--->
+```cpp
+#include <iostream>
+#include <array>
+using namespace std;
+
+constexpr int factorial(int n) {
+    return (n <= 1) ? 1 : n * factorial(n - 1);
+}
+
+constexpr int fibonacci(int n) {
+    return (n <= 1) ? n : fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+int main() {
+    // Evaluados en tiempo de compilación
+    constexpr int fact5 = factorial(5);    // 120
+    constexpr int fib10 = fibonacci(10);   // 55
+
+    // Usar como tamaño de array (requiere constexpr)
+    array<int, factorial(4)> arr; // array de 24 elementos
+
+    cout << "Factorial de 5: " << fact5 << endl;
+    cout << "Fibonacci de 10: " << fib10 << endl;
+    return 0;
+}
+<---Ejemplo de Recursividad `constexpr` Result--->
+<---Ejemplo de Fold Expressions--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Recursión clásica con templates (pre-C++17)
+template<typename T>
+T sumarTodo(T valor) { return valor; }
+
+template<typename T, typename... Args>
+T sumarTodo(T primero, Args... resto) {
+    return primero + sumarTodo(resto...);
+}
+
+// Fold expression (C++17) - reemplaza la recursión
+template<typename... Args>
+auto sumarFold(Args... args) {
+    return (args + ...); // Fold expression
+}
+
+template<typename... Args>
+void imprimirTodo(Args... args) {
+    ((cout << args << " "), ...); // Fold expression con comma
+    cout << endl;
+}
+
+int main() {
+    cout << "Suma recursiva: " << sumarTodo(1, 2, 3, 4, 5) << endl;
+    cout << "Suma fold: " << sumarFold(1, 2, 3, 4, 5) << endl;
+    imprimirTodo("Hola", 42, 3.14, "mundo");
+    return 0;
+}
+<---Ejemplo de Fold Expressions Result--->

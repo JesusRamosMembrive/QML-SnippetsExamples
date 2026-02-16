@@ -146,6 +146,59 @@ int main() {
 ### Conclusión
 
 Tanto `constexpr` como `constinit` son herramientas poderosas en C++ que mejoran la seguridad y la eficiencia del código al garantizar la evaluación y la inicialización en tiempo de compilación. Utilizar estas palabras clave adecuadamente puede ayudar a prevenir errores y optimizar el rendimiento de los programas.
+
+### `constexpr` y `consteval` en el Contexto de Qt
+
+#### Limitaciones con tipos Qt
+
+La mayoría de tipos Qt (`QString`, `QList`, `QVariant`) **no son `constexpr`** porque requieren asignación dinámica de memoria. Solo los tipos triviales y algunos wrappers funcionan:
+
+```cpp
+// OK: tipos primitivos y structs triviales
+constexpr int MAX_REINTENTOS = 3;
+constexpr qreal FACTOR_ESCALA = 1.5;
+constexpr QPoint ORIGEN{0, 0};       // QPoint es constexpr desde Qt 6
+constexpr QSize TAMANO{800, 600};    // QSize también
+
+// ERROR: QString no es constexpr
+// constexpr QString nombre = "test";  // No compila
+// Alternativa:
+static const QString NOMBRE = QStringLiteral("test");
+```
+
+#### `consteval` (C++20)
+
+`consteval` es más estricto que `constexpr`: la función **siempre** se evalúa en compilación. Si no puede, es un error:
+
+```cpp
+consteval int cubo(int x) {
+    return x * x * x;
+}
+
+constexpr int a = cubo(3);   // OK: 27 en compilación
+// int b = cubo(variable);   // ERROR: no se puede evaluar en compilación
+```
+
+#### `static_assert` para validación en compilación
+
+Complementa a `constexpr` verificando condiciones en compilación:
+
+```cpp
+constexpr int BUFFER_SIZE = 1024;
+static_assert(BUFFER_SIZE >= 256, "Buffer demasiado pequeño");
+static_assert(sizeof(qint32) == 4, "qint32 debe ser 4 bytes");
+```
+
+#### Patrón constexpr en enums de Qt
+
+Qt define enums con valores constantes que se pueden usar en contextos `constexpr`:
+
+```cpp
+// Los valores de enum de Qt son constexpr por naturaleza
+constexpr Qt::Alignment alineacion = Qt::AlignCenter | Qt::AlignVCenter;
+constexpr Qt::WindowFlags flags = Qt::Window | Qt::FramelessWindowHint;
+```
+
 <---FILES--->
 Variables `constexpr`
 Variables `constexpr` Result
@@ -161,6 +214,7 @@ Ejemplo de `constinit` en Multithreading Result
 ```cpp
 constexpr int tamañoArray = 10;
 constexpr double pi = 3.14159;
+```
 <---Variables `constexpr` Result--->
 <---Funciones `constexpr`--->
 ```cpp
@@ -173,45 +227,17 @@ int main() {
     int resultado = cuadrado(5);       // Evaluada en tiempo de ejecución
     return 0;
 }
+```
 <---Funciones `constexpr` Result--->
 <---Ejemplo de `constinit`--->
 ```cpp
-constinit int valorGlobal = 42; // Garantiza inicialización en tiempo de compilación
+constinit int valorGlobal = 42;
 
 int main() {
-    constinit static int valorEstatico = 100; // Garantiza inicialización en tiempo de compilación
+    constinit static int valorEstatico = 100;
     return 0;
 }
-```cpp
-#include <iostream>
-using namespace std;
-
-// Función constexpr
-constexpr int suma(int a, int b) {
-    return a + b;
-}
-
-// Variable constexpr
-constexpr int valorConstante = 10;
-
-// Variable constinit
-constinit int contadorGlobal = 0;
-
-int main() {
-    // Uso de constexpr para evaluar en tiempo de compilación
-    constexpr int resultado = suma(3, 4);
-    cout << "Resultado constexpr: " << resultado << endl;
-
-    // Uso de constinit para asegurar inicialización estática
-    constinit static int contadorLocal = 100;
-    contadorLocal++;
-    cout << "Contador local: " << contadorLocal << endl;
-
-    contadorGlobal++;
-    cout << "Contador global: " << contadorGlobal << endl;
-
-    return 0;
-}
+```
 <---Ejemplo de `constinit` Result--->
 <---Ejemplo de Función `constexpr` Compleja (C++14 y Posterior)--->
 ```cpp
@@ -224,10 +250,11 @@ constexpr int factorial(int n) {
 }
 
 int main() {
-    constexpr int valorFactorial = factorial(5); // Evaluado en tiempo de compilación
+    constexpr int valorFactorial = factorial(5);
     cout << "Factorial constexpr: " << valorFactorial << endl;
     return 0;
 }
+```
 <---Ejemplo de Función `constexpr` Compleja (C++14 y Posterior) Result--->
 <---Ejemplo de `constinit` en Multithreading--->
 ```cpp
@@ -252,4 +279,5 @@ int main() {
 
     return 0;
 }
+```
 <---Ejemplo de `constinit` en Multithreading Result--->

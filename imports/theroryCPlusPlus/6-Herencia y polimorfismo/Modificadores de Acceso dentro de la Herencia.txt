@@ -142,6 +142,187 @@ La siguiente tabla resume cómo se heredan los miembros de la clase base según 
 | `protected`        | `protected`      | `protected`        | `private`        |
 | `private`          | No accesible     | No accesible       | No accesible     |
 
+#### Declaración `using` para Cambiar Nivel de Acceso
+
+En C++, la declaración `using` dentro de una clase derivada permite cambiar el nivel de accesibilidad de un miembro heredado. Esto es especialmente útil cuando se utiliza herencia `protected` o `private`, ya que los miembros públicos de la clase base se vuelven menos accesibles en la clase derivada. Con `using`, se puede restaurar o ajustar la visibilidad de miembros específicos sin tener que crear métodos intermedios.
+
+Las reglas son:
+- Se puede hacer un miembro **más accesible** que lo que establece el tipo de herencia (por ejemplo, hacer público un miembro que quedó como protegido).
+- No se puede hacer un miembro **más accesible** de lo que era en la clase base original (un miembro `private` en la clase base nunca puede hacerse `public` en la derivada).
+- La declaración `using` se coloca en la sección del nivel de acceso deseado (`public:`, `protected:` o `private:`).
+
+##### Ejemplo de using para Cambiar Acceso
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int valorPublico = 10;
+
+    void metodoPublico() {
+        cout << "Método público de Base" << endl;
+    }
+
+protected:
+    int valorProtegido = 20;
+
+    void metodoProtegido() {
+        cout << "Método protegido de Base" << endl;
+    }
+
+private:
+    int valorPrivado = 30; // Nunca accesible en derivadas
+};
+
+// Herencia protegida: todo lo público de Base se vuelve protegido
+class Derivada : protected Base {
+public:
+    // Restaurar acceso público a miembros específicos con using
+    using Base::valorPublico;       // De protegido → público
+    using Base::metodoPublico;      // De protegido → público
+
+    // Hacer público un miembro que era protegido en Base
+    using Base::metodoProtegido;    // De protegido → público
+
+    void mostrar() {
+        cout << "valorPublico: " << valorPublico << endl;
+        cout << "valorProtegido: " << valorProtegido << endl;
+        // cout << "valorPrivado: " << valorPrivado; // Error: no accesible
+    }
+};
+
+// Segunda derivada para demostrar el efecto en cadena
+class SubDerivada : public Derivada {
+public:
+    void probar() {
+        // valorPublico es accesible (fue restaurado a público en Derivada)
+        cout << "Desde SubDerivada - valorPublico: " << valorPublico << endl;
+        // metodoProtegido también es público ahora
+        metodoProtegido();
+    }
+};
+
+int main() {
+    Derivada obj;
+
+    // Estos son accesibles gracias a la declaración using
+    obj.valorPublico = 100;
+    obj.metodoPublico();
+    obj.metodoProtegido(); // Ahora es público
+    obj.mostrar();
+
+    cout << endl;
+
+    SubDerivada sub;
+    sub.probar();
+
+    return 0;
+}
+```
+
+En este ejemplo, `Derivada` hereda de `Base` con herencia `protected`, lo que convierte todos los miembros públicos en protegidos. Sin embargo, usando `using Base::valorPublico;` y `using Base::metodoPublico;` en la sección `public:` de `Derivada`, se restaura su accesibilidad pública. Incluso `metodoProtegido`, que era protegido en `Base`, se hace público en `Derivada`.
+
+#### Modificadores de Acceso en Qt: `protected` en la Práctica
+
+En Qt, el modificador `protected` se usa extensivamente para permitir que las clases derivadas personalicen el comportamiento de los widgets. Los métodos de eventos virtuales protegidos de `QWidget` son el ejemplo más importante:
+
+- **`paintEvent(QPaintEvent*)`** — Se invoca cuando el widget necesita ser repintado. Sobrescribir este método permite dibujo personalizado.
+- **`resizeEvent(QResizeEvent*)`** — Se invoca cuando el widget cambia de tamaño.
+- **`mousePressEvent(QMouseEvent*)`** — Se invoca cuando se presiona un botón del ratón sobre el widget.
+- **`keyPressEvent(QKeyEvent*)`** — Se invoca cuando se presiona una tecla mientras el widget tiene el foco.
+
+Estos métodos son `protected` porque:
+1. Solo deben ser llamados por el sistema de eventos de Qt, no directamente desde código externo.
+2. Las clases derivadas deben poder sobrescribirlos para personalizar el comportamiento.
+
+##### Ejemplo de protected en Qt con paintEvent
+
+```cpp
+#include <QApplication>
+#include <QWidget>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QMouseEvent>
+#include <QDebug>
+
+// Widget personalizado que sobrescribe métodos protegidos de QWidget
+class WidgetPersonalizado : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit WidgetPersonalizado(QWidget* parent = nullptr)
+        : QWidget(parent), m_radio(50), m_posicionCirculo(150, 100)
+    {
+        setWindowTitle("Ejemplo de métodos protegidos en Qt");
+        setFixedSize(400, 300);
+        setMouseTracking(true); // Recibir eventos de movimiento sin clic
+    }
+
+protected:
+    // Método protegido de QWidget: dibujo personalizado
+    void paintEvent(QPaintEvent* evento) override {
+        Q_UNUSED(evento);
+        QPainter pintor(this);
+        pintor.setRenderHint(QPainter::Antialiasing);
+
+        // Fondo
+        pintor.fillRect(rect(), QColor("#1a1a2e"));
+
+        // Dibujar un círculo en la posición actual
+        pintor.setBrush(QColor("#00d1a9"));
+        pintor.setPen(Qt::NoPen);
+        pintor.drawEllipse(m_posicionCirculo, m_radio, m_radio);
+
+        // Texto informativo
+        pintor.setPen(Qt::white);
+        pintor.drawText(10, 20, QString("Radio: %1").arg(m_radio));
+        pintor.drawText(10, 40, QString("Posición: (%1, %2)")
+                        .arg(m_posicionCirculo.x())
+                        .arg(m_posicionCirculo.y()));
+    }
+
+    // Método protegido de QWidget: clic del ratón
+    void mousePressEvent(QMouseEvent* evento) override {
+        // Mover el círculo a donde se hizo clic
+        m_posicionCirculo = evento->pos();
+        update(); // Solicitar repintado (llama internamente a paintEvent)
+        qDebug() << "Clic en:" << evento->pos();
+    }
+
+    // Método protegido de QWidget: cambio de tamaño
+    void resizeEvent(QResizeEvent* evento) override {
+        qDebug() << "Tamaño anterior:" << evento->oldSize();
+        qDebug() << "Nuevo tamaño:" << evento->size();
+        QWidget::resizeEvent(evento); // Llamar a la implementación base
+    }
+
+    // Método protegido de QWidget: rueda del ratón
+    void wheelEvent(QWheelEvent* evento) override {
+        // Cambiar el radio del círculo con la rueda
+        int delta = evento->angleDelta().y() / 120; // +1 o -1
+        m_radio = qBound(10, m_radio + delta * 5, 150);
+        update();
+    }
+
+private:
+    int m_radio;
+    QPoint m_posicionCirculo;
+};
+
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+
+    WidgetPersonalizado widget;
+    widget.show();
+
+    return app.exec();
+}
+```
+
+En este ejemplo, `WidgetPersonalizado` hereda de `QWidget` y sobrescribe varios métodos protegidos: `paintEvent` para dibujo personalizado, `mousePressEvent` para manejar clics, `resizeEvent` para responder a cambios de tamaño, y `wheelEvent` para la rueda del ratón. Estos métodos son `protected` en `QWidget` porque son parte de la interfaz de personalización interna, no de la API pública del widget.
+
 ### Conclusión
 
 Los modificadores de acceso en la herencia (`public`, `protected`, y `private`) son esenciales para controlar la visibilidad y accesibilidad de los miembros de la clase base en las clases derivadas. La herencia pública mantiene los miembros públicos y protegidos, la herencia protegida convierte los miembros públicos y protegidos en protegidos, y la herencia privada convierte los miembros públicos y protegidos en privados. Comprender cómo funcionan estos modificadores de acceso es crucial para diseñar jerarquías de clases que sean seguras y fáciles de mantener en C++.
@@ -152,6 +333,10 @@ Ejemplo de Herencia Protegida
 Ejemplo de Herencia Protegida Result
 Ejemplo de Herencia Privada
 Ejemplo de Herencia Privada Result
+Ejemplo de using para Cambiar Acceso
+Ejemplo de using para Cambiar Acceso Result
+Ejemplo de protected en Qt con paintEvent
+Ejemplo de protected en Qt con paintEvent Result
 <---Ejemplo de Herencia Pública--->
 ```cpp
 #include <iostream>
@@ -251,3 +436,154 @@ int main() {
     return 0;
 }
 <---Ejemplo de Herencia Privada Result--->
+<---Ejemplo de using para Cambiar Acceso--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int valorPublico = 10;
+
+    void metodoPublico() {
+        cout << "Método público de Base" << endl;
+    }
+
+protected:
+    int valorProtegido = 20;
+
+    void metodoProtegido() {
+        cout << "Método protegido de Base" << endl;
+    }
+
+private:
+    int valorPrivado = 30; // Nunca accesible en derivadas
+};
+
+// Herencia protegida: todo lo público de Base se vuelve protegido
+class Derivada : protected Base {
+public:
+    // Restaurar acceso público a miembros específicos con using
+    using Base::valorPublico;       // De protegido → público
+    using Base::metodoPublico;      // De protegido → público
+
+    // Hacer público un miembro que era protegido en Base
+    using Base::metodoProtegido;    // De protegido → público
+
+    void mostrar() {
+        cout << "valorPublico: " << valorPublico << endl;
+        cout << "valorProtegido: " << valorProtegido << endl;
+        // cout << "valorPrivado: " << valorPrivado; // Error: no accesible
+    }
+};
+
+// Segunda derivada para demostrar el efecto en cadena
+class SubDerivada : public Derivada {
+public:
+    void probar() {
+        // valorPublico es accesible (fue restaurado a público en Derivada)
+        cout << "Desde SubDerivada - valorPublico: " << valorPublico << endl;
+        // metodoProtegido también es público ahora
+        metodoProtegido();
+    }
+};
+
+int main() {
+    Derivada obj;
+
+    // Estos son accesibles gracias a la declaración using
+    obj.valorPublico = 100;
+    obj.metodoPublico();
+    obj.metodoProtegido(); // Ahora es público
+    obj.mostrar();
+
+    cout << endl;
+
+    SubDerivada sub;
+    sub.probar();
+
+    return 0;
+}
+<---Ejemplo de using para Cambiar Acceso Result--->
+<---Ejemplo de protected en Qt con paintEvent--->
+```cpp
+#include <QApplication>
+#include <QWidget>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QMouseEvent>
+#include <QDebug>
+
+// Widget personalizado que sobrescribe métodos protegidos de QWidget
+class WidgetPersonalizado : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit WidgetPersonalizado(QWidget* parent = nullptr)
+        : QWidget(parent), m_radio(50), m_posicionCirculo(150, 100)
+    {
+        setWindowTitle("Ejemplo de métodos protegidos en Qt");
+        setFixedSize(400, 300);
+        setMouseTracking(true); // Recibir eventos de movimiento sin clic
+    }
+
+protected:
+    // Método protegido de QWidget: dibujo personalizado
+    void paintEvent(QPaintEvent* evento) override {
+        Q_UNUSED(evento);
+        QPainter pintor(this);
+        pintor.setRenderHint(QPainter::Antialiasing);
+
+        // Fondo
+        pintor.fillRect(rect(), QColor("#1a1a2e"));
+
+        // Dibujar un círculo en la posición actual
+        pintor.setBrush(QColor("#00d1a9"));
+        pintor.setPen(Qt::NoPen);
+        pintor.drawEllipse(m_posicionCirculo, m_radio, m_radio);
+
+        // Texto informativo
+        pintor.setPen(Qt::white);
+        pintor.drawText(10, 20, QString("Radio: %1").arg(m_radio));
+        pintor.drawText(10, 40, QString("Posición: (%1, %2)")
+                        .arg(m_posicionCirculo.x())
+                        .arg(m_posicionCirculo.y()));
+    }
+
+    // Método protegido de QWidget: clic del ratón
+    void mousePressEvent(QMouseEvent* evento) override {
+        // Mover el círculo a donde se hizo clic
+        m_posicionCirculo = evento->pos();
+        update(); // Solicitar repintado (llama internamente a paintEvent)
+        qDebug() << "Clic en:" << evento->pos();
+    }
+
+    // Método protegido de QWidget: cambio de tamaño
+    void resizeEvent(QResizeEvent* evento) override {
+        qDebug() << "Tamaño anterior:" << evento->oldSize();
+        qDebug() << "Nuevo tamaño:" << evento->size();
+        QWidget::resizeEvent(evento); // Llamar a la implementación base
+    }
+
+    // Método protegido de QWidget: rueda del ratón
+    void wheelEvent(QWheelEvent* evento) override {
+        // Cambiar el radio del círculo con la rueda
+        int delta = evento->angleDelta().y() / 120; // +1 o -1
+        m_radio = qBound(10, m_radio + delta * 5, 150);
+        update();
+    }
+
+private:
+    int m_radio;
+    QPoint m_posicionCirculo;
+};
+
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+
+    WidgetPersonalizado widget;
+    widget.show();
+
+    return app.exec();
+}
+<---Ejemplo de protected en Qt con paintEvent Result--->

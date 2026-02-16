@@ -149,9 +149,99 @@ int main() {
 
 En este ejemplo, `calcularAreaCirculo` es una función que devuelve el área de un círculo dado su radio, y `imprimirArea` es una función que imprime el área en la consola.
 
+### Atributo `[[nodiscard]]` (C++17)
+
+El atributo `[[nodiscard]]` se aplica a funciones con valor de retorno para advertir al compilador si el valor devuelto es ignorado por el programador. Esto es útil para funciones donde descartar el resultado probablemente sea un error lógico, como cálculos, validaciones o funciones que devuelven códigos de error.
+
+##### Ejemplo de `[[nodiscard]]`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+[[nodiscard]] int calcularTotal(int precio, int cantidad) {
+    return precio * cantidad;
+}
+
+int main() {
+    // calcularTotal(10, 5); // Warning: valor de retorno descartado
+    int total = calcularTotal(10, 5); // Correcto
+    cout << "Total: " << total << endl;
+    return 0;
+}
+```
+
+Si se llama a `calcularTotal(10, 5)` sin capturar el resultado, el compilador generará una advertencia. Esto ayuda a prevenir errores donde se olvida usar el valor calculado.
+
+### Retorno Múltiple con `std::tuple` y Structured Bindings (C++17)
+
+En C++ estándar, una función solo puede retornar un valor. Sin embargo, usando `std::tuple` (C++11) combinado con **structured bindings** (C++17), se pueden devolver múltiples valores de forma limpia y legible.
+
+- **`std::tuple`**: Permite empaquetar múltiples valores de diferentes tipos en un solo objeto de retorno.
+- **Structured bindings (`auto [a, b, c]`)**: Permiten descomponer el tuple en variables individuales directamente en la declaración.
+
+##### Ejemplo de Retorno Múltiple
+
+```cpp
+#include <iostream>
+#include <tuple>
+#include <string>
+using namespace std;
+
+tuple<string, int, double> obtenerDatos() {
+    return {"Juan", 30, 1.75};
+}
+
+int main() {
+    // Structured bindings (C++17)
+    auto [nombre, edad, altura] = obtenerDatos();
+    cout << nombre << ", " << edad << " años, " << altura << "m" << endl;
+    return 0;
+}
+```
+
+Este enfoque es mucho más limpio que usar parámetros de salida por referencia o devolver estructuras personalizadas para casos simples.
+
+### `std::optional` como Retorno (C++17)
+
+`std::optional` es un contenedor que puede o no contener un valor. Es una alternativa más segura y expresiva que devolver punteros nulos o valores centinela (como `-1` o `""`) para indicar la ausencia de un resultado.
+
+- **`std::nullopt`**: Indica que no hay valor presente.
+- **`has_value()`**: Verifica si contiene un valor.
+- **`value()`**: Obtiene el valor (lanza excepción si está vacío).
+- **`value_or(default)`**: Obtiene el valor o un valor por defecto si está vacío.
+
+##### Ejemplo de `std::optional`
+
+```cpp
+#include <iostream>
+#include <optional>
+#include <string>
+using namespace std;
+
+optional<string> buscarUsuario(int id) {
+    if (id == 1) return "Admin";
+    if (id == 2) return "Usuario";
+    return nullopt; // No encontrado
+}
+
+int main() {
+    auto usuario = buscarUsuario(1);
+    if (usuario.has_value()) {
+        cout << "Encontrado: " << usuario.value() << endl;
+    }
+
+    // Forma moderna con value_or
+    cout << buscarUsuario(99).value_or("No encontrado") << endl;
+    return 0;
+}
+```
+
+`std::optional` hace que la intención del código sea más clara: el tipo de retorno explícitamente indica que la función puede no devolver un resultado, sin necesidad de documentación adicional.
+
 ### Conclusión
 
-Las funciones con valor de retorno y sin valor de retorno son componentes esenciales en C++ que permiten realizar tareas y devolver información útil al llamador. Las funciones con valor de retorno son adecuadas cuando se necesita calcular y devolver un resultado, mientras que las funciones `void` son útiles para realizar acciones que no requieren devolver un valor. Comprender cuándo y cómo usar cada tipo de función es crucial para escribir código claro, eficiente y modular en C++.
+Las funciones con valor de retorno y sin valor de retorno son componentes esenciales en C++ que permiten realizar tareas y devolver información útil al llamador. Las funciones con valor de retorno son adecuadas cuando se necesita calcular y devolver un resultado, mientras que las funciones `void` son útiles para realizar acciones que no requieren devolver un valor. Con C++17, `[[nodiscard]]` añade seguridad al advertir sobre valores descartados, `std::tuple` con structured bindings permite retornos múltiples elegantes, y `std::optional` ofrece una forma segura de representar la ausencia de un valor. Comprender cuándo y cómo usar cada tipo de función y retorno es crucial para escribir código claro, eficiente y modular en C++.
 <---FILES--->
 Sintaxis
 Sintaxis Result
@@ -163,6 +253,12 @@ Ejemplo de Función Sin Valor de Retorno
 Ejemplo de Función Sin Valor de Retorno Result
 Ejemplo con Parámetros por Referencia
 Ejemplo con Parámetros por Referencia Result
+Ejemplo de nodiscard Retorno
+Ejemplo de nodiscard Retorno Result
+Ejemplo de Retorno Múltiple
+Ejemplo de Retorno Múltiple Result
+Ejemplo de std optional
+Ejemplo de std optional Result
 <---Sintaxis--->
 ```cpp
 void nombre_funcion(lista_de_parametros) {
@@ -254,3 +350,61 @@ int main() {
     return 0;
 }
 <---Ejemplo con Parámetros por Referencia Result--->
+<---Ejemplo de nodiscard Retorno--->
+```cpp
+#include <iostream>
+using namespace std;
+
+[[nodiscard]] int calcularTotal(int precio, int cantidad) {
+    return precio * cantidad;
+}
+
+int main() {
+    // calcularTotal(10, 5); // Warning: valor de retorno descartado
+    int total = calcularTotal(10, 5); // Correcto
+    cout << "Total: " << total << endl;
+    return 0;
+}
+<---Ejemplo de nodiscard Retorno Result--->
+<---Ejemplo de Retorno Múltiple--->
+```cpp
+#include <iostream>
+#include <tuple>
+#include <string>
+using namespace std;
+
+tuple<string, int, double> obtenerDatos() {
+    return {"Juan", 30, 1.75};
+}
+
+int main() {
+    // Structured bindings (C++17)
+    auto [nombre, edad, altura] = obtenerDatos();
+    cout << nombre << ", " << edad << " años, " << altura << "m" << endl;
+    return 0;
+}
+<---Ejemplo de Retorno Múltiple Result--->
+<---Ejemplo de std optional--->
+```cpp
+#include <iostream>
+#include <optional>
+#include <string>
+using namespace std;
+
+optional<string> buscarUsuario(int id) {
+    if (id == 1) return "Admin";
+    if (id == 2) return "Usuario";
+    return nullopt; // No encontrado
+}
+
+int main() {
+    auto usuario = buscarUsuario(1);
+    if (usuario.has_value()) {
+        cout << "Encontrado: " << usuario.value() << endl;
+    }
+
+    // Forma moderna con value_or
+    cout << buscarUsuario(99).value_or("No encontrado") << endl;
+    return 0;
+}
+<---Ejemplo de std optional Result--->

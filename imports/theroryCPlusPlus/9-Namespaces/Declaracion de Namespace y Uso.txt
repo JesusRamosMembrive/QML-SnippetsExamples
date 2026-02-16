@@ -208,6 +208,111 @@ int main() {
 
 En este ejemplo, `funcionPrivada` solo es accesible dentro del archivo donde se define, ya que está en un namespace anónimo.
 
+#### `inline namespace` para Versionado de APIs (C++11)
+
+A partir de C++11, se puede declarar un namespace como `inline`. Los miembros de un `inline namespace` se comportan como si también fueran miembros del namespace que lo contiene, es decir, se pueden acceder sin cualificación adicional. Esto es especialmente útil para el **versionado de APIs**: la versión actual se marca como `inline` (convirtiéndola en la predeterminada), mientras que las versiones anteriores permanecen accesibles mediante cualificación explícita.
+
+##### Ejemplo de `inline namespace` para Versionado
+
+```cpp
+#include <iostream>
+#include <string>
+
+namespace Protocolo {
+    // Versión anterior (legacy), accesible solo con cualificación explícita
+    namespace v2 {
+        std::string formatearMensaje(const std::string& msg) {
+            return "[v2] " + msg;
+        }
+    }
+
+    // Versión actual (inline), accesible directamente desde Protocolo::
+    inline namespace v3 {
+        std::string formatearMensaje(const std::string& msg) {
+            return "[v3] " + msg;
+        }
+
+        std::string formatearConPrioridad(const std::string& msg, int prioridad) {
+            return "[v3|P" + std::to_string(prioridad) + "] " + msg;
+        }
+    }
+}
+
+int main() {
+    // Usa v3 automáticamente (es inline)
+    std::cout << Protocolo::formatearMensaje("Hola") << std::endl;
+
+    // Acceso explícito a v2 cuando se necesita compatibilidad
+    std::cout << Protocolo::v2::formatearMensaje("Hola legacy") << std::endl;
+
+    // Función exclusiva de v3, accesible directamente
+    std::cout << Protocolo::formatearConPrioridad("Alerta", 1) << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Protocolo::v3` es `inline`, por lo que `Protocolo::formatearMensaje` resuelve automáticamente a la versión v3.
+- `Protocolo::v2::formatearMensaje` sigue accesible para código que necesite compatibilidad con la versión anterior.
+- Cuando se lance una v4, bastará con mover `inline` a `namespace v4` y los usuarios obtendrán la nueva versión sin cambiar su código.
+
+#### Reapertura de Namespaces
+
+Los namespaces en C++ pueden **reabrirse** en múltiples lugares: diferentes partes del mismo archivo, en archivos distintos, o en diferentes unidades de traducción. Cada reapertura agrega nuevas declaraciones al mismo namespace existente. Así es como funciona la Biblioteca Estándar: `<vector>` agrega `std::vector`, `<string>` agrega `std::string`, `<algorithm>` agrega `std::sort`, etc., todos contribuyendo al mismo namespace `std`.
+
+##### Ejemplo de Reapertura de Namespaces
+
+```cpp
+#include <iostream>
+#include <cmath>
+
+// Primera apertura: funciones de texto
+namespace Utilidades {
+    std::string repetir(const std::string& texto, int veces) {
+        std::string resultado;
+        for (int i = 0; i < veces; ++i) {
+            resultado += texto;
+        }
+        return resultado;
+    }
+
+    std::string enMayusculas(const std::string& texto) {
+        std::string resultado = texto;
+        for (char& c : resultado) {
+            c = std::toupper(c);
+        }
+        return resultado;
+    }
+}
+
+// Segunda apertura: funciones matemáticas (mismo namespace)
+namespace Utilidades {
+    double hipotenusa(double a, double b) {
+        return std::sqrt(a * a + b * b);
+    }
+
+    int factorial(int n) {
+        return (n <= 1) ? 1 : n * factorial(n - 1);
+    }
+}
+
+int main() {
+    // Ambas aperturas contribuyen al mismo namespace
+    std::cout << Utilidades::repetir("Hola ", 3) << std::endl;
+    std::cout << Utilidades::enMayusculas("mundo") << std::endl;
+    std::cout << "Hipotenusa(3,4): " << Utilidades::hipotenusa(3, 4) << std::endl;
+    std::cout << "Factorial(5): " << Utilidades::factorial(5) << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- El namespace `Utilidades` se abre dos veces en el mismo archivo, cada vez agregando funciones distintas.
+- En un proyecto real, estas aperturas podrían estar en archivos diferentes (`utilidades_texto.cpp` y `utilidades_math.cpp`), y todas las funciones seguirían perteneciendo al mismo namespace `Utilidades`.
+- Esto permite organizar el código de forma modular sin que cada módulo necesite conocer las demás contribuciones al namespace.
+
 ### Conclusión
 
 Los namespaces en C++ son esenciales para organizar el código y evitar conflictos de nombres en proyectos grandes. Permiten agrupar definiciones relacionadas, mejorar la modularidad y la claridad del código, y facilitar la integración de múltiples librerías. Comprender cómo declarar y utilizar namespaces de manera efectiva es crucial para escribir código C++ bien estructurado y mantenible.
@@ -224,6 +329,10 @@ Ejemplo de Alias de Namespace
 Ejemplo de Alias de Namespace Result
 Ejemplo de Namespace Anónimo
 Ejemplo de Namespace Anónimo Result
+Ejemplo de `inline namespace` para Versionado
+Ejemplo de `inline namespace` para Versionado Result
+Ejemplo de Reapertura de Namespaces
+Ejemplo de Reapertura de Namespaces Result
 <---Sintaxis Básica--->
 ```cpp
 namespace nombre_del_namespace {
@@ -324,3 +433,86 @@ int main() {
     return 0;
 }
 <---Ejemplo de Namespace Anónimo Result--->
+<---Ejemplo de `inline namespace` para Versionado--->
+```cpp
+#include <iostream>
+#include <string>
+
+namespace Protocolo {
+    // Versión anterior (legacy), accesible solo con cualificación explícita
+    namespace v2 {
+        std::string formatearMensaje(const std::string& msg) {
+            return "[v2] " + msg;
+        }
+    }
+
+    // Versión actual (inline), accesible directamente desde Protocolo::
+    inline namespace v3 {
+        std::string formatearMensaje(const std::string& msg) {
+            return "[v3] " + msg;
+        }
+
+        std::string formatearConPrioridad(const std::string& msg, int prioridad) {
+            return "[v3|P" + std::to_string(prioridad) + "] " + msg;
+        }
+    }
+}
+
+int main() {
+    // Usa v3 automáticamente (es inline)
+    std::cout << Protocolo::formatearMensaje("Hola") << std::endl;
+
+    // Acceso explícito a v2 cuando se necesita compatibilidad
+    std::cout << Protocolo::v2::formatearMensaje("Hola legacy") << std::endl;
+
+    // Función exclusiva de v3, accesible directamente
+    std::cout << Protocolo::formatearConPrioridad("Alerta", 1) << std::endl;
+
+    return 0;
+}
+<---Ejemplo de `inline namespace` para Versionado Result--->
+<---Ejemplo de Reapertura de Namespaces--->
+```cpp
+#include <iostream>
+#include <cmath>
+
+// Primera apertura: funciones de texto
+namespace Utilidades {
+    std::string repetir(const std::string& texto, int veces) {
+        std::string resultado;
+        for (int i = 0; i < veces; ++i) {
+            resultado += texto;
+        }
+        return resultado;
+    }
+
+    std::string enMayusculas(const std::string& texto) {
+        std::string resultado = texto;
+        for (char& c : resultado) {
+            c = std::toupper(c);
+        }
+        return resultado;
+    }
+}
+
+// Segunda apertura: funciones matemáticas (mismo namespace)
+namespace Utilidades {
+    double hipotenusa(double a, double b) {
+        return std::sqrt(a * a + b * b);
+    }
+
+    int factorial(int n) {
+        return (n <= 1) ? 1 : n * factorial(n - 1);
+    }
+}
+
+int main() {
+    // Ambas aperturas contribuyen al mismo namespace
+    std::cout << Utilidades::repetir("Hola ", 3) << std::endl;
+    std::cout << Utilidades::enMayusculas("mundo") << std::endl;
+    std::cout << "Hipotenusa(3,4): " << Utilidades::hipotenusa(3, 4) << std::endl;
+    std::cout << "Factorial(5): " << Utilidades::factorial(5) << std::endl;
+
+    return 0;
+}
+<---Ejemplo de Reapertura de Namespaces Result--->

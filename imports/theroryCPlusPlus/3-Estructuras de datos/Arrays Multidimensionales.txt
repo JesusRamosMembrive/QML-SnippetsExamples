@@ -185,6 +185,65 @@ int main() {
 }
 ```
 
+### Alternativas Modernas a Arrays Multidimensionales
+
+#### `std::array` (C++11) — Tamaño fijo, más seguro
+
+`std::array` es un wrapper sobre arrays C con bounds checking y compatibilidad con STL:
+
+```cpp
+#include <array>
+
+std::array<std::array<int, 3>, 3> matriz = {{
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9}
+}};
+
+// Acceso con at() (bounds checking) o []
+int valor = matriz.at(1).at(2);  // 6, lanza excepción si fuera de rango
+int valor2 = matriz[1][2];       // 6, sin bounds checking
+```
+
+#### `std::vector<std::vector<>>` — Tamaño dinámico
+
+Para matrices de tamaño variable, usar vectores anidados es más seguro que `new`/`delete`:
+
+```cpp
+#include <vector>
+
+// Crear matriz 3x4 inicializada a 0
+std::vector<std::vector<int>> matriz(3, std::vector<int>(4, 0));
+matriz[1][2] = 42;
+
+// Redimensionar dinámicamente
+matriz.push_back(std::vector<int>(4, 0));  // Añadir fila
+```
+
+### Arrays Multidimensionales en Qt
+
+Qt no tiene un tipo específico para matrices 2D, pero se usan `QList` anidados o `QVector` (alias de `QList` en Qt 6):
+
+```cpp
+#include <QList>
+#include <QDebug>
+
+// Matriz como QList anidado
+QList<QList<int>> matriz = {
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9}
+};
+
+for (const auto &fila : std::as_const(matriz)) {
+    for (int val : fila) {
+        qDebug() << val;
+    }
+}
+```
+
+> **Nota:** Para operaciones de álgebra lineal (transformaciones 3D, gráficos), Qt proporciona `QMatrix4x4`, `QVector3D`, `QVector4D` etc.
+
 ### Conclusión
 
 Los arrays multidimensionales son una herramienta poderosa en C++ para manejar datos estructurados en múltiples dimensiones. Permiten una representación clara y eficiente de datos como matrices y tablas, aunque su uso debe ser cuidadosamente gestionado para evitar problemas de memoria y flexibilidad. Comprender cómo declararlos, inicializarlos y acceder a ellos es esencial para aprovechar al máximo esta estructura de datos en aplicaciones complejas.
@@ -193,14 +252,15 @@ Inicialización Estática
 Inicialización Estática Result
 Inicialización Dinámica
 Inicialización Dinámica Result
-Ejemplo de Array Tridimensional
-Ejemplo de Array Tridimensional Result
+Array Tridimensional
+Array Tridimensional Result
 <---Inicialización Estática--->
 ```cpp
 int matriz[2][3] = {
     {1, 2, 3},
     {4, 5, 6}
 };
+```
 <---Inicialización Estática Result--->
 <---Inicialización Dinámica--->
 ```cpp
@@ -208,109 +268,41 @@ int matriz[2][3] = {
 using namespace std;
 
 int main() {
-    int filas = 3;
-    int columnas = 3;
-
-    // Declaración de un puntero a puntero
+    int filas = 3, columnas = 3;
     int** matriz = new int*[filas];
-
-    // Asignación de memoria para cada fila
-    for (int i = 0; i < filas; ++i) {
+    for (int i = 0; i < filas; ++i)
         matriz[i] = new int[columnas];
-    }
 
-    // Inicialización de la matriz
     int contador = 1;
-    for (int i = 0; i < filas; ++i) {
-        for (int j = 0; j < columnas; ++j) {
+    for (int i = 0; i < filas; ++i)
+        for (int j = 0; j < columnas; ++j)
             matriz[i][j] = contador++;
-        }
-    }
 
-    // Acceso a los elementos de la matriz
     for (int i = 0; i < filas; ++i) {
-        for (int j = 0; j < columnas; ++j) {
-            cout << "Elemento [" << i << "][" << j << "]: " << matriz[i][j] << endl;
-        }
-    }
-
-    // Liberación de la memoria
-    for (int i = 0; i < filas; ++i) {
-        delete[] matriz[i];
-    }
-    delete[] matriz;
-
-    return 0;
-}
-<---Inicialización Dinámica Result--->
-<---Ejemplo de Array Tridimensional--->
-```cpp
-#include <iostream>
-using namespace std;
-
-int main() {
-    // Declaración de un array 2x2x2
-    int cubo[2][2][2] = {
-        {
-            {1, 2},
-            {3, 4}
-        },
-        {
-            {5, 6},
-            {7, 8}
-        }
-    };
-
-    // Acceso a los elementos del array tridimensional
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 2; ++j) {
-            for (int k = 0; k < 2; ++k) {
-                cout << "Elemento [" << i << "][" << j << "][" << k << "]: " << cubo[i][j][k] << endl;
-            }
-        }
-    }
-
-    return 0;
-}
-```cpp
-#include <iostream>
-using namespace std;
-
-int main() {
-    int filas = 3;
-    int columnas = 3;
-
-    // Declaración de un puntero a puntero
-    int** matriz = new int*[filas];
-
-    // Asignación de memoria para cada fila
-    for (int i = 0; i < filas; ++i) {
-        matriz[i] = new int[columnas];
-    }
-
-    // Inicialización de la matriz
-    int contador = 1;
-    for (int i = 0; i < filas; ++i) {
-        for (int j = 0; j < columnas; ++j) {
-            matriz[i][j] = contador++;
-        }
-    }
-
-    // Acceso a los elementos de la matriz
-    cout << "Matriz inicializada:" << endl;
-    for (int i = 0; i < filas; ++i) {
-        for (int j = 0; j < columnas; ++j) {
+        for (int j = 0; j < columnas; ++j)
             cout << matriz[i][j] << " ";
-        }
         cout << endl;
     }
 
-    // Liberación de la memoria
-    for (int i = 0; i < filas; ++i) {
-        delete[] matriz[i];
-    }
+    for (int i = 0; i < filas; ++i) delete[] matriz[i];
     delete[] matriz;
-
     return 0;
 }
-<---Ejemplo de Array Tridimensional Result--->
+```
+<---Inicialización Dinámica Result--->
+<---Array Tridimensional--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int cubo[2][2][2] = {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}};
+
+    for (int i = 0; i < 2; ++i)
+        for (int j = 0; j < 2; ++j)
+            for (int k = 0; k < 2; ++k)
+                cout << "cubo[" << i << "][" << j << "][" << k << "] = " << cubo[i][j][k] << endl;
+    return 0;
+}
+```
+<---Array Tridimensional Result--->

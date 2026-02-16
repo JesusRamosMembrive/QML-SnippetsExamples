@@ -117,6 +117,30 @@ int main() {
 }
 ```
 
+### El Operador Ternario en QML
+
+En QML, el operador ternario es **fundamental**. Se usa constantemente en property bindings para cambiar valores dinámicamente:
+
+```qml
+// Cambiar color según estado
+Rectangle {
+    color: mouseArea.pressed ? "#FF0000" : "#00FF00"
+    opacity: enabled ? 1.0 : 0.5
+    visible: model.count > 0 ? true : false  // O simplemente: model.count > 0
+
+    // Ternario anidado (común pero cuidar legibilidad)
+    text: status === "error" ? "Error!"
+        : status === "loading" ? "Cargando..."
+        : "Listo"
+
+    // En dimensiones
+    width: isCompact ? 200 : 400
+    height: parent.height > 600 ? parent.height * 0.8 : parent.height
+}
+```
+
+> **Nota:** En QML, el ternario es la forma principal de hacer condicionales dentro de bindings. No existe `if-else` dentro de una expresión de binding.
+
 ### Conclusión
 
 El operador ternario es una herramienta útil en C++ para simplificar expresiones condicionales y hacer el código más compacto. Sin embargo, es importante usarlo con cuidado para mantener la legibilidad y claridad del código. Para condiciones simples, el operador ternario puede ser muy eficaz, mientras que para condiciones más complejas, una estructura `if-else` puede ser más adecuada.
@@ -125,6 +149,8 @@ Asignación Condicional
 Asignación Condicional Result
 Embedding en Expresiones
 Embedding en Expresiones Result
+Ejemplo Completo
+Ejemplo Completo Result
 <---Asignación Condicional--->
 ```cpp
 #include <iostream>
@@ -132,15 +158,11 @@ using namespace std;
 
 int main() {
     int numero = 8;
-    string resultado;
-
-    // Asignación condicional con el operador ternario
-    resultado = (numero % 2 == 0) ? "Par" : "Impar";
-
+    string resultado = (numero % 2 == 0) ? "Par" : "Impar";
     cout << "El número " << numero << " es " << resultado << endl;
-
     return 0;
 }
+```
 <---Asignación Condicional Result--->
 <---Embedding en Expresiones--->
 ```cpp
@@ -150,33 +172,30 @@ using namespace std;
 int main() {
     int edad = 20;
     string mensaje = "Eres " + ((edad >= 18) ? "mayor" : "menor") + " de edad.";
-
     cout << mensaje << endl;
-
     return 0;
 }
+```
+<---Embedding en Expresiones Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 using namespace std;
 
 int main() {
-    int x = 15;
-    int y = 30;
-
-    // Determinar el mayor número usando el operador ternario
+    int x = 15, y = 30;
     int mayor = (x > y) ? x : y;
     cout << "El mayor valor es: " << mayor << endl;
 
-    // Determinar si un número es par o impar usando el operador ternario
     int numero = 25;
     string paridad = (numero % 2 == 0) ? "par" : "impar";
     cout << "El número " << numero << " es " << paridad << endl;
 
-    // Asignar un mensaje basado en la edad
     int edad = 17;
     string mensaje = "Eres " + ((edad >= 18) ? "mayor" : "menor") + " de edad.";
     cout << mensaje << endl;
 
     return 0;
 }
-<---Embedding en Expresiones Result--->
+```
+<---Ejemplo Completo Result--->

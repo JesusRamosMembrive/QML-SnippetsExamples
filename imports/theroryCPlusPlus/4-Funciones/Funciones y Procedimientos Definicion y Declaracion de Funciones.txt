@@ -152,9 +152,71 @@ int main() {
 }
 ```
 
+### Atributo `[[nodiscard]]` (C++17)
+
+El atributo `[[nodiscard]]` se aplica a funciones para indicar al compilador que el valor de retorno no debe ser ignorado. Si el programador llama a la función y descarta el resultado, el compilador emitirá una advertencia. Esto es útil para funciones donde ignorar el valor de retorno probablemente sea un error lógico, como cálculos matemáticos, validaciones o funciones que devuelven códigos de error.
+
+##### Ejemplo de `[[nodiscard]]`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+[[nodiscard]] int calcular(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    // calcular(3, 4); // Warning: resultado descartado
+    int r = calcular(3, 4); // Correcto
+    cout << "Resultado: " << r << endl;
+    return 0;
+}
+```
+
+En este ejemplo, si se llama a `calcular(3, 4)` sin capturar el resultado, el compilador generará una advertencia indicando que el valor de retorno está siendo descartado.
+
+### Funciones en Qt: `Q_INVOKABLE` y Slots
+
+En el framework Qt, las funciones de clases C++ pueden exponerse al sistema de meta-objetos mediante dos mecanismos principales: `Q_INVOKABLE` y los slots.
+
+- **`Q_INVOKABLE`**: Este macro permite que una función miembro sea invocable desde QML y desde el sistema de meta-objetos de Qt. Es ideal para funciones que necesitan ser llamadas desde la interfaz QML pero que no necesitan conectarse a señales.
+
+- **Slots (`public slots`)**: Son funciones especiales que pueden conectarse a señales mediante el mecanismo signal-slot de Qt. También son invocables desde QML.
+
+##### Ejemplo de `Q_INVOKABLE` y Slots
+
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+class Motor : public QObject {
+    Q_OBJECT
+public:
+    explicit Motor(QObject *parent = nullptr);
+
+    // Q_INVOKABLE: callable desde QML
+    Q_INVOKABLE int calcularRPM(int velocidad, int marcha) {
+        return velocidad * marcha * 100;
+    }
+
+public slots:
+    // Slot: se puede conectar a señales
+    void encender() {
+        qDebug() << "Motor encendido";
+    }
+
+signals:
+    void temperaturaAlta(double temp);
+};
+```
+
+> **Nota:** Tanto `Q_INVOKABLE` como los slots son invocables desde QML, pero solo los slots pueden conectarse directamente a señales mediante `QObject::connect()`. Si solo necesitas llamar la función desde QML sin conectarla a señales, `Q_INVOKABLE` es la opción más limpia.
+
 ### Conclusión
 
-Las funciones son una parte esencial de la programación en C++. Comprender cómo declarar y definir funciones, así como las diferencias entre pasar parámetros por valor y por referencia, permite escribir código modular, reutilizable y fácil de mantener. La sobrecarga de funciones añade flexibilidad, permitiendo definir múltiples versiones de una función para manejar diferentes tipos de datos o cantidades de parámetros. Con estas habilidades, los desarrolladores pueden estructurar mejor sus programas y resolver problemas de manera eficiente.
+Las funciones son una parte esencial de la programación en C++. Comprender cómo declarar y definir funciones, así como las diferencias entre pasar parámetros por valor y por referencia, permite escribir código modular, reutilizable y fácil de mantener. La sobrecarga de funciones añade flexibilidad, permitiendo definir múltiples versiones de una función para manejar diferentes tipos de datos o cantidades de parámetros. Con C++17, el atributo `[[nodiscard]]` añade seguridad al advertir sobre valores de retorno ignorados. En el ecosistema Qt, `Q_INVOKABLE` y los slots extienden las funciones C++ al mundo QML y al sistema de señales. Con estas habilidades, los desarrolladores pueden estructurar mejor sus programas y resolver problemas de manera eficiente.
 <---FILES--->
 Sintaxis de la Declaración de Funciones
 Sintaxis de la Declaración de Funciones Result
@@ -170,6 +232,10 @@ Parámetros por Referencia
 Parámetros por Referencia Result
 Ejemplo de Sobrecarga de Funciones
 Ejemplo de Sobrecarga de Funciones Result
+Ejemplo de nodiscard
+Ejemplo de nodiscard Result
+Ejemplo de Q_INVOKABLE y Slots
+Ejemplo de Q_INVOKABLE y Slots Result
 <---Sintaxis de la Declaración de Funciones--->
 ```cpp
 tipo_retorno nombre_funcion(lista_de_parametros);
@@ -265,3 +331,45 @@ int main() {
     return 0;
 }
 <---Ejemplo de Sobrecarga de Funciones Result--->
+<---Ejemplo de nodiscard--->
+```cpp
+#include <iostream>
+using namespace std;
+
+[[nodiscard]] int calcular(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    // calcular(3, 4); // Warning: resultado descartado
+    int r = calcular(3, 4); // Correcto
+    cout << "Resultado: " << r << endl;
+    return 0;
+}
+<---Ejemplo de nodiscard Result--->
+<---Ejemplo de Q_INVOKABLE y Slots--->
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+class Motor : public QObject {
+    Q_OBJECT
+public:
+    explicit Motor(QObject *parent = nullptr);
+
+    // Q_INVOKABLE: callable desde QML
+    Q_INVOKABLE int calcularRPM(int velocidad, int marcha) {
+        return velocidad * marcha * 100;
+    }
+
+public slots:
+    // Slot: se puede conectar a señales
+    void encender() {
+        qDebug() << "Motor encendido";
+    }
+
+signals:
+    void temperaturaAlta(double temp);
+};
+<---Ejemplo de Q_INVOKABLE y Slots Result--->

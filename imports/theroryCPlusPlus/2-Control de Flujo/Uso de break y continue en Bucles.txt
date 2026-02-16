@@ -135,51 +135,45 @@ En este ejemplo:
 
 Las declaraciones `break` y `continue` son herramientas poderosas para controlar el flujo de bucles en C++. Entender cómo y cuándo usarlas de manera efectiva puede mejorar significativamente la flexibilidad y eficiencia del código, permitiendo a los desarrolladores manejar casos especiales y optimizar el rendimiento de sus programas.
 <---FILES--->
-Sintaxis
-Sintaxis Result
-Ejemplo de `break`
-Ejemplo de `break` Result
-Ejemplo de `continue`
-Ejemplo de `continue` Result
-Ejemplo con Bucles Anidados
-Ejemplo con Bucles Anidados Result
-<---Sintaxis--->
-```cpp
-continue;
-<---Sintaxis Result--->
-<---Ejemplo de `break`--->
+Ejemplo de break
+Ejemplo de break Result
+Ejemplo de continue
+Ejemplo de continue Result
+Bucles Anidados
+Bucles Anidados Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Ejemplo de break--->
 ```cpp
 #include <iostream>
 using namespace std;
 
 int main() {
     for (int i = 0; i < 10; ++i) {
-        if (i == 5) {
-            break; // Sale del bucle cuando i es 5
-        }
+        if (i == 5) break;
         cout << "Iteración " << i << endl;
     }
     cout << "Bucle terminado" << endl;
     return 0;
 }
-<---Ejemplo de `break` Result--->
-<---Ejemplo de `continue`--->
+```
+<---Ejemplo de break Result--->
+<---Ejemplo de continue--->
 ```cpp
 #include <iostream>
 using namespace std;
 
 int main() {
     for (int i = 0; i < 10; ++i) {
-        if (i % 2 == 0) {
-            continue; // Salta los números pares
-        }
+        if (i % 2 == 0) continue;
         cout << "Iteración " << i << endl;
     }
     cout << "Bucle terminado" << endl;
     return 0;
 }
-<---Ejemplo de `continue` Result--->
-<---Ejemplo con Bucles Anidados--->
+```
+<---Ejemplo de continue Result--->
+<---Bucles Anidados--->
 ```cpp
 #include <iostream>
 using namespace std;
@@ -187,18 +181,17 @@ using namespace std;
 int main() {
     for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 5; ++j) {
-            if (j == 2) {
-                continue; // Salta la iteración actual del bucle interno
-            }
-            if (i == 3) {
-                break; // Sale del bucle interno cuando i es 3
-            }
+            if (j == 2) continue;
+            if (i == 3) break;
             cout << "i: " << i << ", j: " << j << endl;
         }
     }
     cout << "Bucles anidados terminados" << endl;
     return 0;
 }
+```
+<---Bucles Anidados Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 #include <vector>
@@ -208,16 +201,12 @@ int main() {
     vector<int> numeros = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     for (int numero : numeros) {
-        if (numero % 2 == 0) {
-            continue; // Saltar los números pares
-        }
-        if (numero > 7) {
-            break; // Terminar el bucle si el número es mayor que 7
-        }
-        cout << "Número impar menor o igual a 7: " << numero << endl;
+        if (numero % 2 == 0) continue;
+        if (numero > 7) break;
+        cout << "Número impar <= 7: " << numero << endl;
     }
     cout << "Proceso terminado" << endl;
-
     return 0;
 }
-<---Ejemplo con Bucles Anidados Result--->
+```
+<---Ejemplo Completo Result--->

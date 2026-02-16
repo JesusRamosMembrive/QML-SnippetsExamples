@@ -126,6 +126,359 @@ En este ejemplo:
 - La función `operator+` es declarada como amiga de `Complejo` y puede acceder a sus miembros privados para sumar dos números complejos.
 - `Matematicas` también puede ser amiga para acceder a la sobrecarga si se necesita.
 
+#### Amistad con Clases Template
+
+La palabra clave `friend` puede combinarse con clases template para controlar qué instanciaciones de una clase template tienen acceso a los miembros privados de otra. Existen dos enfoques principales:
+
+1. **Todas las instanciaciones son amigas:** Se usa `template<typename> friend class OtraClase;` para que cualquier instanciación de `OtraClase` (ya sea `OtraClase<int>`, `OtraClase<double>`, etc.) tenga acceso a los miembros privados.
+2. **Solo una instanciación específica es amiga:** Se usa `friend class OtraClase<int>;` para que únicamente esa instanciación concreta tenga acceso, mientras que las demás no.
+
+El caso más común es hacer que solo la instanciación con el **mismo parámetro de tipo** sea amiga, lo cual se logra con `friend class OtraClase<T>;` dentro de una clase template parametrizada con `T`.
+
+##### Ejemplo de Amistad con Clases Template
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Declaración adelantada del template Inspector
+template<typename T>
+class Inspector;
+
+template<typename T>
+class Contenedor {
+private:
+    T valor;
+    string etiqueta;
+
+public:
+    Contenedor(T v, const string& e) : valor(v), etiqueta(e) {}
+
+    // Solo Inspector<T> con el MISMO tipo T es amigo
+    // Inspector<int> es amigo de Contenedor<int>, pero NO de Contenedor<double>
+    friend class Inspector<T>;
+
+    // Si quisiéramos que TODAS las instanciaciones sean amigas:
+    // template<typename> friend class Inspector;
+};
+
+template<typename T>
+class Inspector {
+public:
+    // Puede acceder a los miembros privados de Contenedor<T>
+    void inspeccionar(const Contenedor<T>& c) const {
+        cout << "Inspeccionando Contenedor:" << endl;
+        cout << "  Etiqueta: " << c.etiqueta << endl;
+        cout << "  Valor: " << c.valor << endl;
+    }
+
+    T obtenerValor(const Contenedor<T>& c) const {
+        return c.valor; // Acceso directo al miembro privado
+    }
+};
+
+int main() {
+    Contenedor<int> ci(42, "Entero");
+    Contenedor<double> cd(3.14, "Decimal");
+
+    Inspector<int> inspectorInt;
+    Inspector<double> inspectorDouble;
+
+    // Inspector<int> puede inspeccionar Contenedor<int>
+    inspectorInt.inspeccionar(ci);
+    // Salida:
+    // Inspeccionando Contenedor:
+    //   Etiqueta: Entero
+    //   Valor: 42
+
+    // Inspector<double> puede inspeccionar Contenedor<double>
+    inspectorDouble.inspeccionar(cd);
+    // Salida:
+    // Inspeccionando Contenedor:
+    //   Etiqueta: Decimal
+    //   Valor: 3.14
+
+    // NOTA: Inspector<int> NO puede inspeccionar Contenedor<double>
+    // porque solo Inspector<T> es amigo de Contenedor<T> con el mismo T.
+    // La siguiente línea causaría un error de compilación:
+    // inspectorInt.inspeccionar(cd); // ERROR: no tiene acceso
+
+    cout << "Valor obtenido: " << inspectorInt.obtenerValor(ci) << endl;
+    // Salida: Valor obtenido: 42
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Contenedor<T>` declara `Inspector<T>` (con el mismo `T`) como clase amiga.
+- `Inspector<int>` puede acceder a los miembros privados de `Contenedor<int>`, pero **no** a los de `Contenedor<double>`.
+- Si se necesitara que todas las instanciaciones de `Inspector` fueran amigas de todas las instanciaciones de `Contenedor`, se usaría `template<typename> friend class Inspector;`.
+
+#### Patrón Attorney-Client (Control Granular de Amistad)
+
+Uno de los principales inconvenientes de `friend` en C++ es que es "todo o nada": cuando se declara una clase o función como amiga, esta obtiene acceso a **todos** los miembros privados y protegidos, sin posibilidad de restringir a solo algunos métodos o atributos específicos.
+
+El **patrón Attorney-Client** resuelve este problema introduciendo una clase intermediaria (el "Attorney" o abogado) que actúa como mediador controlado. El funcionamiento es:
+
+1. La clase **Client** (que tiene los datos privados) declara al **Attorney** como `friend`.
+2. El **Attorney** expone solo los métodos específicos del Client que se necesitan, a través de métodos estáticos privados.
+3. El **Attorney** declara como `friend` a las clases que necesitan acceso limitado.
+4. Las clases consumidoras solo pueden acceder a lo que el Attorney expone, no a todo lo privado del Client.
+
+##### Ejemplo del Patrón Attorney-Client
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Clase Client: tiene varios métodos privados sensibles
+class BaseDatos {
+private:
+    string nombre;
+
+    string leer(const string& tabla) const {
+        return "Datos de " + tabla + " en " + nombre;
+    }
+
+    void escribir(const string& tabla, const string& datos) {
+        cout << "Escribiendo '" << datos << "' en " << tabla
+             << " de " << nombre << endl;
+    }
+
+    void borrar(const string& tabla) {
+        cout << "PELIGRO: Borrando tabla " << tabla
+             << " de " << nombre << endl;
+    }
+
+    // Solo los Attorneys son amigos, no las clases consumidoras
+    friend class AttorneyLectura;
+    friend class AttorneyEscritura;
+
+public:
+    BaseDatos(const string& n) : nombre(n) {}
+};
+
+// Attorney que solo expone lectura
+class AttorneyLectura {
+private:
+    // Método estático privado que delega al método privado del Client
+    static string leer(const BaseDatos& db, const string& tabla) {
+        return db.leer(tabla); // Accede al método privado
+    }
+
+    // Solo Reporte puede usar este Attorney
+    friend class Reporte;
+};
+
+// Attorney que expone lectura y escritura (pero NO borrado)
+class AttorneyEscritura {
+private:
+    static string leer(const BaseDatos& db, const string& tabla) {
+        return db.leer(tabla);
+    }
+
+    static void escribir(BaseDatos& db, const string& tabla, const string& datos) {
+        db.escribir(tabla, datos);
+    }
+
+    // Solo Editor puede usar este Attorney
+    friend class Editor;
+};
+
+// Clase consumidora: solo puede LEER (a través de AttorneyLectura)
+class Reporte {
+public:
+    void generar(const BaseDatos& db) {
+        // Puede leer a través del Attorney
+        string datos = AttorneyLectura::leer(db, "ventas");
+        cout << "Reporte generado: " << datos << endl;
+
+        // NO puede escribir ni borrar:
+        // AttorneyLectura::escribir(db, ...); // No existe
+        // db.escribir(...);                    // Error: es privado
+        // db.borrar(...);                      // Error: es privado
+    }
+};
+
+// Clase consumidora: puede LEER y ESCRIBIR (pero NO borrar)
+class Editor {
+public:
+    void actualizar(BaseDatos& db) {
+        string datos = AttorneyEscritura::leer(db, "productos");
+        cout << "Leyendo: " << datos << endl;
+
+        AttorneyEscritura::escribir(db, "productos", "nuevos datos");
+
+        // NO puede borrar:
+        // db.borrar("productos"); // Error: es privado
+    }
+};
+
+int main() {
+    BaseDatos db("MiBaseDatos");
+
+    Reporte reporte;
+    reporte.generar(db);
+    // Salida: Reporte generado: Datos de ventas en MiBaseDatos
+
+    Editor editor;
+    editor.actualizar(db);
+    // Salida:
+    // Leyendo: Datos de productos en MiBaseDatos
+    // Escribiendo 'nuevos datos' en productos de MiBaseDatos
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `BaseDatos` tiene tres métodos privados: `leer()`, `escribir()` y `borrar()`.
+- `AttorneyLectura` solo expone `leer()`, y únicamente a la clase `Reporte`.
+- `AttorneyEscritura` expone `leer()` y `escribir()`, y únicamente a la clase `Editor`.
+- **Nadie** puede acceder a `borrar()` excepto la propia `BaseDatos`, porque ningún Attorney lo expone.
+- Este patrón proporciona un control fino sobre qué partes de la interfaz privada se comparten con qué clases.
+
+#### `friend` en Qt: El Patrón Pimpl (d-pointer)
+
+Qt utiliza extensivamente la declaración `friend` en combinación con el patrón **Pimpl** (Pointer to Implementation), también conocido como **d-pointer**. Este patrón es fundamental en la arquitectura de Qt y consiste en separar la implementación de una clase en una clase privada auxiliar.
+
+El funcionamiento del patrón es el siguiente:
+1. La clase pública (`Avion`) contiene solo la interfaz pública y un puntero a la clase de implementación privada (`AvionPrivate`).
+2. La clase `AvionPrivate` contiene todos los datos y la lógica interna.
+3. `AvionPrivate` se declara como `friend` de `Avion` (o viceversa) para permitir el acceso mutuo a miembros privados.
+
+**Beneficios del patrón Pimpl con friend:**
+- **Ocultación de implementación:** Los detalles internos no aparecen en el archivo de cabecera público, reduciendo las dependencias de compilación.
+- **Compatibilidad binaria (ABI):** Se pueden agregar miembros a `AvionPrivate` sin cambiar el tamaño de `Avion`, manteniendo la compatibilidad binaria entre versiones de la biblioteca.
+- **Reducción de dependencias de compilación:** Los archivos que incluyen la cabecera de `Avion` no necesitan recompilarse cuando cambia la implementación interna.
+
+Qt proporciona las macros `Q_DECLARE_PRIVATE` y `Q_D` para simplificar este patrón.
+
+##### Ejemplo del Patrón Pimpl con Friend
+
+```cpp
+#include <iostream>
+#include <string>
+#include <memory> // Para unique_ptr (equivalente a QScopedPointer)
+using namespace std;
+
+// ============================================================
+// Archivo de cabecera: avion.h
+// (Esto es lo que los usuarios de la clase ven)
+// ============================================================
+
+// Declaración adelantada de la clase de implementación
+class AvionPrivate;
+
+class Avion {
+public:
+    Avion(const string& modelo, const string& aerolinea, int capacidad);
+    ~Avion(); // Necesario para unique_ptr con tipo incompleto
+
+    // Interfaz pública
+    string modelo() const;
+    string aerolinea() const;
+    int capacidad() const;
+    void setCapacidad(int nuevaCapacidad);
+    void mostrarInfo() const;
+
+private:
+    // La clase de implementación es amiga para acceso mutuo
+    friend class AvionPrivate;
+
+    // d-pointer: puntero a la implementación privada
+    // En Qt real se usaría QScopedPointer<AvionPrivate>
+    unique_ptr<AvionPrivate> d_ptr;
+};
+
+// ============================================================
+// Archivo de implementación: avion.cpp
+// (Los detalles están ocultos aquí)
+// ============================================================
+
+// Clase de implementación privada (d-class)
+class AvionPrivate {
+public:
+    string modelo;
+    string aerolinea;
+    int capacidad;
+    int horasVuelo;     // Detalle interno no expuesto
+    bool enServicio;    // Detalle interno no expuesto
+
+    AvionPrivate(const string& m, const string& a, int c)
+        : modelo(m), aerolinea(a), capacidad(c),
+          horasVuelo(0), enServicio(true) {}
+};
+
+// Implementación de los métodos de Avion
+Avion::Avion(const string& modelo, const string& aerolinea, int capacidad)
+    : d_ptr(make_unique<AvionPrivate>(modelo, aerolinea, capacidad)) {}
+
+Avion::~Avion() = default;
+
+string Avion::modelo() const {
+    return d_ptr->modelo; // Accede a través del d-pointer
+}
+
+string Avion::aerolinea() const {
+    return d_ptr->aerolinea;
+}
+
+int Avion::capacidad() const {
+    return d_ptr->capacidad;
+}
+
+void Avion::setCapacidad(int nuevaCapacidad) {
+    d_ptr->capacidad = nuevaCapacidad;
+}
+
+void Avion::mostrarInfo() const {
+    cout << "Avion: " << d_ptr->modelo
+         << " | Aerolinea: " << d_ptr->aerolinea
+         << " | Capacidad: " << d_ptr->capacidad
+         << " | Horas de vuelo: " << d_ptr->horasVuelo
+         << " | En servicio: " << (d_ptr->enServicio ? "Si" : "No")
+         << endl;
+}
+
+// ============================================================
+// Uso
+// ============================================================
+
+int main() {
+    Avion a1("Boeing 737", "Iberia", 189);
+    a1.mostrarInfo();
+    // Salida: Avion: Boeing 737 | Aerolinea: Iberia | Capacidad: 189
+    //         | Horas de vuelo: 0 | En servicio: Si
+
+    a1.setCapacidad(200);
+    a1.mostrarInfo();
+    // Salida: Avion: Boeing 737 | Aerolinea: Iberia | Capacidad: 200
+    //         | Horas de vuelo: 0 | En servicio: Si
+
+    // NOTA: Los campos horasVuelo y enServicio son detalles internos
+    // que no están expuestos en la interfaz pública de Avion.
+    // Si se necesitara agregar más campos internos, se añadirían
+    // a AvionPrivate sin cambiar la interfaz de Avion.
+
+    // En Qt real, este patrón usaría:
+    // - QScopedPointer<AvionPrivate> en lugar de unique_ptr
+    // - Q_DECLARE_PRIVATE(Avion) en la clase pública
+    // - Q_D(Avion) al inicio de cada método para obtener d_ptr
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Avion` es la clase pública que expone solo la interfaz necesaria.
+- `AvionPrivate` contiene todos los datos internos, incluyendo `horasVuelo` y `enServicio` que no aparecen en la interfaz pública.
+- `AvionPrivate` es declarada como `friend` de `Avion` para permitir el acceso mutuo.
+- Se usa `unique_ptr` como equivalente estándar de `QScopedPointer` de Qt.
+- Si se necesitara agregar nuevos campos (por ejemplo, `ultimoMantenimiento`), solo se modificaría `AvionPrivate` sin cambiar la cabecera de `Avion`, manteniendo la compatibilidad binaria.
+
 ### Conclusión
 
 Las clases amigas en C++ permiten un acceso controlado y directo a los miembros privados y protegidos de otras clases, facilitando la implementación de operaciones complejas y la sobrecarga de operadores. Aunque poderosas, deben usarse con moderación y cuidado para no comprometer la encapsulación y mantener un diseño de software limpio y mantenible. Entender y aplicar adecuadamente las clases amigas es esencial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
@@ -136,6 +489,12 @@ Ejemplo de Implementación
 Ejemplo de Implementación Result
 Ejemplo Avanzado: Sobrecarga de Operadores con Clases Amigas
 Ejemplo Avanzado: Sobrecarga de Operadores con Clases Amigas Result
+Ejemplo de Amistad con Clases Template
+Ejemplo de Amistad con Clases Template Result
+Ejemplo del Patrón Attorney-Client
+Ejemplo del Patrón Attorney-Client Result
+Ejemplo del Patrón Pimpl con Friend
+Ejemplo del Patrón Pimpl con Friend Result
 <---Sintaxis--->
 ```cpp
 class ClaseB; // Declaración adelantada
@@ -218,3 +577,295 @@ int main() {
     return 0;
 }
 <---Ejemplo Avanzado: Sobrecarga de Operadores con Clases Amigas Result--->
+<---Ejemplo de Amistad con Clases Template--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Declaración adelantada del template Inspector
+template<typename T>
+class Inspector;
+
+template<typename T>
+class Contenedor {
+private:
+    T valor;
+    string etiqueta;
+
+public:
+    Contenedor(T v, const string& e) : valor(v), etiqueta(e) {}
+
+    // Solo Inspector<T> con el MISMO tipo T es amigo
+    // Inspector<int> es amigo de Contenedor<int>, pero NO de Contenedor<double>
+    friend class Inspector<T>;
+
+    // Si quisiéramos que TODAS las instanciaciones sean amigas:
+    // template<typename> friend class Inspector;
+};
+
+template<typename T>
+class Inspector {
+public:
+    // Puede acceder a los miembros privados de Contenedor<T>
+    void inspeccionar(const Contenedor<T>& c) const {
+        cout << "Inspeccionando Contenedor:" << endl;
+        cout << "  Etiqueta: " << c.etiqueta << endl;
+        cout << "  Valor: " << c.valor << endl;
+    }
+
+    T obtenerValor(const Contenedor<T>& c) const {
+        return c.valor; // Acceso directo al miembro privado
+    }
+};
+
+int main() {
+    Contenedor<int> ci(42, "Entero");
+    Contenedor<double> cd(3.14, "Decimal");
+
+    Inspector<int> inspectorInt;
+    Inspector<double> inspectorDouble;
+
+    // Inspector<int> puede inspeccionar Contenedor<int>
+    inspectorInt.inspeccionar(ci);
+    // Salida:
+    // Inspeccionando Contenedor:
+    //   Etiqueta: Entero
+    //   Valor: 42
+
+    // Inspector<double> puede inspeccionar Contenedor<double>
+    inspectorDouble.inspeccionar(cd);
+    // Salida:
+    // Inspeccionando Contenedor:
+    //   Etiqueta: Decimal
+    //   Valor: 3.14
+
+    // NOTA: Inspector<int> NO puede inspeccionar Contenedor<double>
+    // porque solo Inspector<T> es amigo de Contenedor<T> con el mismo T.
+    // La siguiente línea causaría un error de compilación:
+    // inspectorInt.inspeccionar(cd); // ERROR: no tiene acceso
+
+    cout << "Valor obtenido: " << inspectorInt.obtenerValor(ci) << endl;
+    // Salida: Valor obtenido: 42
+
+    return 0;
+}
+<---Ejemplo de Amistad con Clases Template Result--->
+<---Ejemplo del Patrón Attorney-Client--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Clase Client: tiene varios métodos privados sensibles
+class BaseDatos {
+private:
+    string nombre;
+
+    string leer(const string& tabla) const {
+        return "Datos de " + tabla + " en " + nombre;
+    }
+
+    void escribir(const string& tabla, const string& datos) {
+        cout << "Escribiendo '" << datos << "' en " << tabla
+             << " de " << nombre << endl;
+    }
+
+    void borrar(const string& tabla) {
+        cout << "PELIGRO: Borrando tabla " << tabla
+             << " de " << nombre << endl;
+    }
+
+    // Solo los Attorneys son amigos, no las clases consumidoras
+    friend class AttorneyLectura;
+    friend class AttorneyEscritura;
+
+public:
+    BaseDatos(const string& n) : nombre(n) {}
+};
+
+// Attorney que solo expone lectura
+class AttorneyLectura {
+private:
+    // Método estático privado que delega al método privado del Client
+    static string leer(const BaseDatos& db, const string& tabla) {
+        return db.leer(tabla); // Accede al método privado
+    }
+
+    // Solo Reporte puede usar este Attorney
+    friend class Reporte;
+};
+
+// Attorney que expone lectura y escritura (pero NO borrado)
+class AttorneyEscritura {
+private:
+    static string leer(const BaseDatos& db, const string& tabla) {
+        return db.leer(tabla);
+    }
+
+    static void escribir(BaseDatos& db, const string& tabla, const string& datos) {
+        db.escribir(tabla, datos);
+    }
+
+    // Solo Editor puede usar este Attorney
+    friend class Editor;
+};
+
+// Clase consumidora: solo puede LEER (a través de AttorneyLectura)
+class Reporte {
+public:
+    void generar(const BaseDatos& db) {
+        // Puede leer a través del Attorney
+        string datos = AttorneyLectura::leer(db, "ventas");
+        cout << "Reporte generado: " << datos << endl;
+
+        // NO puede escribir ni borrar:
+        // AttorneyLectura::escribir(db, ...); // No existe
+        // db.escribir(...);                    // Error: es privado
+        // db.borrar(...);                      // Error: es privado
+    }
+};
+
+// Clase consumidora: puede LEER y ESCRIBIR (pero NO borrar)
+class Editor {
+public:
+    void actualizar(BaseDatos& db) {
+        string datos = AttorneyEscritura::leer(db, "productos");
+        cout << "Leyendo: " << datos << endl;
+
+        AttorneyEscritura::escribir(db, "productos", "nuevos datos");
+
+        // NO puede borrar:
+        // db.borrar("productos"); // Error: es privado
+    }
+};
+
+int main() {
+    BaseDatos db("MiBaseDatos");
+
+    Reporte reporte;
+    reporte.generar(db);
+    // Salida: Reporte generado: Datos de ventas en MiBaseDatos
+
+    Editor editor;
+    editor.actualizar(db);
+    // Salida:
+    // Leyendo: Datos de productos en MiBaseDatos
+    // Escribiendo 'nuevos datos' en productos de MiBaseDatos
+
+    return 0;
+}
+<---Ejemplo del Patrón Attorney-Client Result--->
+<---Ejemplo del Patrón Pimpl con Friend--->
+```cpp
+#include <iostream>
+#include <string>
+#include <memory> // Para unique_ptr (equivalente a QScopedPointer)
+using namespace std;
+
+// ============================================================
+// Archivo de cabecera: avion.h
+// (Esto es lo que los usuarios de la clase ven)
+// ============================================================
+
+// Declaración adelantada de la clase de implementación
+class AvionPrivate;
+
+class Avion {
+public:
+    Avion(const string& modelo, const string& aerolinea, int capacidad);
+    ~Avion(); // Necesario para unique_ptr con tipo incompleto
+
+    // Interfaz pública
+    string modelo() const;
+    string aerolinea() const;
+    int capacidad() const;
+    void setCapacidad(int nuevaCapacidad);
+    void mostrarInfo() const;
+
+private:
+    // La clase de implementación es amiga para acceso mutuo
+    friend class AvionPrivate;
+
+    // d-pointer: puntero a la implementación privada
+    // En Qt real se usaría QScopedPointer<AvionPrivate>
+    unique_ptr<AvionPrivate> d_ptr;
+};
+
+// ============================================================
+// Archivo de implementación: avion.cpp
+// (Los detalles están ocultos aquí)
+// ============================================================
+
+// Clase de implementación privada (d-class)
+class AvionPrivate {
+public:
+    string modelo;
+    string aerolinea;
+    int capacidad;
+    int horasVuelo;     // Detalle interno no expuesto
+    bool enServicio;    // Detalle interno no expuesto
+
+    AvionPrivate(const string& m, const string& a, int c)
+        : modelo(m), aerolinea(a), capacidad(c),
+          horasVuelo(0), enServicio(true) {}
+};
+
+// Implementación de los métodos de Avion
+Avion::Avion(const string& modelo, const string& aerolinea, int capacidad)
+    : d_ptr(make_unique<AvionPrivate>(modelo, aerolinea, capacidad)) {}
+
+Avion::~Avion() = default;
+
+string Avion::modelo() const {
+    return d_ptr->modelo; // Accede a través del d-pointer
+}
+
+string Avion::aerolinea() const {
+    return d_ptr->aerolinea;
+}
+
+int Avion::capacidad() const {
+    return d_ptr->capacidad;
+}
+
+void Avion::setCapacidad(int nuevaCapacidad) {
+    d_ptr->capacidad = nuevaCapacidad;
+}
+
+void Avion::mostrarInfo() const {
+    cout << "Avion: " << d_ptr->modelo
+         << " | Aerolinea: " << d_ptr->aerolinea
+         << " | Capacidad: " << d_ptr->capacidad
+         << " | Horas de vuelo: " << d_ptr->horasVuelo
+         << " | En servicio: " << (d_ptr->enServicio ? "Si" : "No")
+         << endl;
+}
+
+// ============================================================
+// Uso
+// ============================================================
+
+int main() {
+    Avion a1("Boeing 737", "Iberia", 189);
+    a1.mostrarInfo();
+    // Salida: Avion: Boeing 737 | Aerolinea: Iberia | Capacidad: 189
+    //         | Horas de vuelo: 0 | En servicio: Si
+
+    a1.setCapacidad(200);
+    a1.mostrarInfo();
+    // Salida: Avion: Boeing 737 | Aerolinea: Iberia | Capacidad: 200
+    //         | Horas de vuelo: 0 | En servicio: Si
+
+    // NOTA: Los campos horasVuelo y enServicio son detalles internos
+    // que no están expuestos en la interfaz pública de Avion.
+    // Si se necesitara agregar más campos internos, se añadirían
+    // a AvionPrivate sin cambiar la interfaz de Avion.
+
+    // En Qt real, este patrón usaría:
+    // - QScopedPointer<AvionPrivate> en lugar de unique_ptr
+    // - Q_DECLARE_PRIVATE(Avion) en la clase pública
+    // - Q_D(Avion) al inicio de cada método para obtener d_ptr
+
+    return 0;
+}
+<---Ejemplo del Patrón Pimpl con Friend Result--->

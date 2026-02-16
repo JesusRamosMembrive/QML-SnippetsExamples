@@ -248,6 +248,242 @@ public:
 #endif // CLASEB_H
 ```
 
+#### 7. `#pragma once` vs Guardas de Inclusión
+
+`#pragma once` es una alternativa más simple a las guardas de inclusión tradicionales (`#ifndef`/`#define`/`#endif`). Aunque **no forma parte del estándar C++**, es soportada por todos los compiladores principales (MSVC, GCC, Clang, ICC) y es ampliamente utilizada en proyectos modernos. Su ventaja es que elimina la posibilidad de errores por nombres de macro duplicados y es más concisa.
+
+##### Ejemplo de `#pragma once` vs Guardas
+
+```cpp
+// =============================================
+// Enfoque 1: Guardas de inclusión tradicionales
+// Ventaja: estándar C++, portabilidad garantizada
+// Desventaja: requiere elegir un nombre de macro único
+// =============================================
+
+// MiClase.h (con guardas tradicionales)
+#ifndef PROYECTO_MODULO_MICLASE_H
+#define PROYECTO_MODULO_MICLASE_H
+
+namespace MiProyecto {
+    class MiClase {
+    public:
+        void procesar();
+        int obtenerValor() const;
+    private:
+        int valor_ = 0;
+    };
+}
+
+#endif // PROYECTO_MODULO_MICLASE_H
+
+
+// =============================================
+// Enfoque 2: #pragma once
+// Ventaja: simple, sin riesgo de colisión de macros
+// Desventaja: no es parte del estándar (pero funciona en todos los compiladores modernos)
+// =============================================
+
+// MiClase.h (con #pragma once)
+#pragma once
+
+namespace MiProyecto {
+    class MiClase {
+    public:
+        void procesar();
+        int obtenerValor() const;
+    private:
+        int valor_ = 0;
+    };
+}
+```
+
+En este ejemplo:
+- Las guardas tradicionales requieren un nombre de macro único (convención: `PROYECTO_MODULO_ARCHIVO_H`). Si dos archivos usan el mismo nombre de macro por error, uno de ellos será silenciosamente ignorado.
+- `#pragma once` elimina ese riesgo por completo y reduce el código repetitivo.
+- **Recomendación práctica:** en proyectos nuevos, `#pragma once` es la opción más común. En librerías que requieren máxima portabilidad a compiladores exóticos, las guardas tradicionales son más seguras.
+
+#### 8. Módulos C++20: Reemplazando Headers y Namespaces
+
+C++20 introduce los **módulos** (`export module`, `import`), un nuevo paradigma que busca reemplazar el sistema de headers (`#include`). Los módulos ofrecen varias ventajas: no necesitan guardas de inclusión, eliminan la separación obligatoria header/source, proporcionan mejor encapsulación (solo los símbolos exportados son visibles), y mejoran significativamente los tiempos de compilación al evitar el reprocesamiento de headers.
+
+##### Ejemplo de Módulos C++20
+
+```cpp
+// =============================================
+// Archivo: matematicas.cppm (módulo C++20)
+// =============================================
+export module Matematicas;  // Declara el módulo
+
+import <cmath>;   // Importar headers de la biblioteca estándar
+import <string>;
+
+// Solo lo marcado con 'export' será visible para quien importe el módulo
+export namespace Geometria {
+    constexpr double PI = 3.141592653589793;
+
+    double areaCirculo(double radio) {
+        return PI * radio * radio;
+    }
+
+    double perimetroCirculo(double radio) {
+        return 2.0 * PI * radio;
+    }
+
+    double distancia(double x1, double y1, double x2, double y2) {
+        return std::sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+    }
+}
+
+// Esto NO se exporta: es privado del módulo
+namespace Detalle {
+    double gradosARadianes(double grados) {
+        return grados * Geometria::PI / 180.0;
+    }
+}
+
+// Se puede exportar selectivamente
+export std::string descripcionModulo() {
+    return "Módulo de funciones geométricas v1.0";
+}
+
+
+// =============================================
+// Archivo: main.cpp (consumidor del módulo)
+// =============================================
+import Matematicas;   // Importar el módulo (sin #include)
+import <iostream>;
+
+int main() {
+    // Acceso a las funciones exportadas
+    std::cout << "Área (r=5): " << Geometria::areaCirculo(5.0) << std::endl;
+    std::cout << "Perímetro (r=5): " << Geometria::perimetroCirculo(5.0) << std::endl;
+    std::cout << "Distancia: " << Geometria::distancia(0, 0, 3, 4) << std::endl;
+    std::cout << descripcionModulo() << std::endl;
+
+    // Detalle::gradosARadianes(90);  // ERROR: no fue exportado, no es visible
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `export module Matematicas;` declara un módulo llamado `Matematicas`.
+- `export namespace Geometria` hace visible todo el namespace para los consumidores.
+- `namespace Detalle` no tiene `export`, por lo que sus funciones son privadas del módulo.
+- El consumidor usa `import Matematicas;` en lugar de `#include`, sin necesidad de guardas de inclusión.
+- **Nota:** el soporte de módulos varía entre compiladores (MSVC tiene el soporte más maduro; GCC y Clang lo están completando).
+
+#### 9. Convenciones de Namespaces en Proyectos Qt
+
+Qt utiliza un enfoque particular para la organización de nombres que difiere del uso típico de namespaces en C++. En lugar de namespaces, Qt usa el **prefijo `Q`** en todas sus clases (`QString`, `QWidget`, `QObject`). El namespace `Qt` se reserva para enumeraciones globales (`Qt::AlignLeft`, `Qt::Key_Enter`). Las macros `QT_BEGIN_NAMESPACE`/`QT_END_NAMESPACE` proporcionan compatibilidad ABI cuando Qt se compila dentro de un namespace personalizado.
+
+##### Ejemplo de Convenciones Qt con Namespaces Propios
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+
+// =============================================
+// Simulación de clases estilo Qt (prefijo Q en lugar de namespace)
+// =============================================
+// En Qt real: #include <QString>, #include <QVector>, etc.
+// Las clases Qt usan prefijo Q: QString, QWidget, QObject, QVector...
+// El namespace Qt:: se usa para enumeraciones: Qt::AlignLeft, Qt::Key_Enter...
+
+// =============================================
+// Namespace propio del proyecto, conviviendo con tipos Qt
+// =============================================
+namespace MiAvionicaApp {
+
+    // Sub-namespace para modelos de datos
+    namespace Modelos {
+        struct DatosSensor {
+            std::string nombre;
+            double valor;
+            double minimo;
+            double maximo;
+
+            bool enRango() const {
+                return valor >= minimo && valor <= maximo;
+            }
+        };
+
+        struct EstadoMotor {
+            int rpm;
+            double temperatura;
+            bool activo;
+        };
+    }
+
+    // Sub-namespace para lógica de negocio
+    namespace Servicios {
+        class MonitorSensores {
+        public:
+            void registrarSensor(const Modelos::DatosSensor& sensor) {
+                sensores_.push_back(sensor);
+            }
+
+            void mostrarEstado() const {
+                for (const auto& s : sensores_) {
+                    std::cout << s.nombre << ": " << s.valor
+                              << (s.enRango() ? " [OK]" : " [ALERTA]")
+                              << std::endl;
+                }
+            }
+
+        private:
+            std::vector<Modelos::DatosSensor> sensores_;
+        };
+    }
+
+    // Sub-namespace para utilidades
+    namespace Utils {
+        std::string formatearValor(double valor, const std::string& unidad) {
+            // En un proyecto Qt real, usarías QString::number()
+            return std::to_string(valor) + " " + unidad;
+        }
+    }
+}
+
+// Alias para simplificar el acceso
+namespace App = MiAvionicaApp;
+namespace Modelos = MiAvionicaApp::Modelos;
+
+int main() {
+    // Crear sensores usando el namespace del proyecto
+    Modelos::DatosSensor altitud{"Altitud", 35000, 0, 45000};
+    Modelos::DatosSensor velocidad{"Velocidad", 480, 0, 600};
+    Modelos::DatosSensor temperatura{"Temp. Motor", 950, 200, 900};  // Fuera de rango
+
+    // Usar el servicio de monitoreo
+    App::Servicios::MonitorSensores monitor;
+    monitor.registrarSensor(altitud);
+    monitor.registrarSensor(velocidad);
+    monitor.registrarSensor(temperatura);
+
+    monitor.mostrarEstado();
+
+    // Usar utilidades
+    std::cout << App::Utils::formatearValor(35000, "ft") << std::endl;
+
+    // En un proyecto Qt real, además usarías:
+    // QString texto = QString("Altitud: %1 ft").arg(35000);
+    // Qt::AlignmentFlag alineacion = Qt::AlignCenter;
+    // emit sensorActualizado(datos);  // Señales y slots Qt
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `MiAvionicaApp` es el namespace raíz del proyecto, con sub-namespaces para `Modelos`, `Servicios` y `Utils`.
+- Los tipos propios usan namespaces estándar de C++, mientras que los tipos Qt usan el prefijo `Q` (sin namespace).
+- Los alias `App` y `Modelos` simplifican el acceso a namespaces largos.
+- En un proyecto Qt real, las señales/slots, `QString`, y los enums de `Qt::` coexisten naturalmente con los namespaces propios del proyecto.
+
 ### Conclusión
 
 El uso adecuado de namespaces en archivos de cabecera en C++ es crucial para mantener un código limpio, organizado y libre de conflictos de nombres. Evitar `using namespace` en archivos de cabecera, utilizar guardas de inclusión, mantener namespaces consistentes y documentar adecuadamente son buenas prácticas que mejoran la claridad y mantenibilidad del código. Además, manejar las dependencias de manera eficiente previene problemas de compilación y facilita el desarrollo en proyectos grandes.
@@ -264,6 +500,12 @@ Ejemplo de Dependencia Circular
 Ejemplo de Dependencia Circular Result
 Solución
 Solución Result
+Ejemplo de `#pragma once` vs Guardas
+Ejemplo de `#pragma once` vs Guardas Result
+Ejemplo de Módulos C++20
+Ejemplo de Módulos C++20 Result
+Ejemplo de Convenciones Qt con Namespaces Propios
+Ejemplo de Convenciones Qt con Namespaces Propios Result
 <---Ejemplo Básico--->
 ```cpp
 // MiClase.h
@@ -382,3 +624,203 @@ public:
 
 #endif // CLASEB_H
 <---Solución Result--->
+<---Ejemplo de `#pragma once` vs Guardas--->
+```cpp
+// =============================================
+// Enfoque 1: Guardas de inclusión tradicionales
+// Ventaja: estándar C++, portabilidad garantizada
+// Desventaja: requiere elegir un nombre de macro único
+// =============================================
+
+// MiClase.h (con guardas tradicionales)
+#ifndef PROYECTO_MODULO_MICLASE_H
+#define PROYECTO_MODULO_MICLASE_H
+
+namespace MiProyecto {
+    class MiClase {
+    public:
+        void procesar();
+        int obtenerValor() const;
+    private:
+        int valor_ = 0;
+    };
+}
+
+#endif // PROYECTO_MODULO_MICLASE_H
+
+
+// =============================================
+// Enfoque 2: #pragma once
+// Ventaja: simple, sin riesgo de colisión de macros
+// Desventaja: no es parte del estándar (pero funciona en todos los compiladores modernos)
+// =============================================
+
+// MiClase.h (con #pragma once)
+#pragma once
+
+namespace MiProyecto {
+    class MiClase {
+    public:
+        void procesar();
+        int obtenerValor() const;
+    private:
+        int valor_ = 0;
+    };
+}
+<---Ejemplo de `#pragma once` vs Guardas Result--->
+<---Ejemplo de Módulos C++20--->
+```cpp
+// =============================================
+// Archivo: matematicas.cppm (módulo C++20)
+// =============================================
+export module Matematicas;  // Declara el módulo
+
+import <cmath>;   // Importar headers de la biblioteca estándar
+import <string>;
+
+// Solo lo marcado con 'export' será visible para quien importe el módulo
+export namespace Geometria {
+    constexpr double PI = 3.141592653589793;
+
+    double areaCirculo(double radio) {
+        return PI * radio * radio;
+    }
+
+    double perimetroCirculo(double radio) {
+        return 2.0 * PI * radio;
+    }
+
+    double distancia(double x1, double y1, double x2, double y2) {
+        return std::sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+    }
+}
+
+// Esto NO se exporta: es privado del módulo
+namespace Detalle {
+    double gradosARadianes(double grados) {
+        return grados * Geometria::PI / 180.0;
+    }
+}
+
+// Se puede exportar selectivamente
+export std::string descripcionModulo() {
+    return "Módulo de funciones geométricas v1.0";
+}
+
+
+// =============================================
+// Archivo: main.cpp (consumidor del módulo)
+// =============================================
+import Matematicas;   // Importar el módulo (sin #include)
+import <iostream>;
+
+int main() {
+    // Acceso a las funciones exportadas
+    std::cout << "Área (r=5): " << Geometria::areaCirculo(5.0) << std::endl;
+    std::cout << "Perímetro (r=5): " << Geometria::perimetroCirculo(5.0) << std::endl;
+    std::cout << "Distancia: " << Geometria::distancia(0, 0, 3, 4) << std::endl;
+    std::cout << descripcionModulo() << std::endl;
+
+    // Detalle::gradosARadianes(90);  // ERROR: no fue exportado, no es visible
+
+    return 0;
+}
+<---Ejemplo de Módulos C++20 Result--->
+<---Ejemplo de Convenciones Qt con Namespaces Propios--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+
+// =============================================
+// Simulación de clases estilo Qt (prefijo Q en lugar de namespace)
+// =============================================
+// En Qt real: #include <QString>, #include <QVector>, etc.
+// Las clases Qt usan prefijo Q: QString, QWidget, QObject, QVector...
+// El namespace Qt:: se usa para enumeraciones: Qt::AlignLeft, Qt::Key_Enter...
+
+// =============================================
+// Namespace propio del proyecto, conviviendo con tipos Qt
+// =============================================
+namespace MiAvionicaApp {
+
+    // Sub-namespace para modelos de datos
+    namespace Modelos {
+        struct DatosSensor {
+            std::string nombre;
+            double valor;
+            double minimo;
+            double maximo;
+
+            bool enRango() const {
+                return valor >= minimo && valor <= maximo;
+            }
+        };
+
+        struct EstadoMotor {
+            int rpm;
+            double temperatura;
+            bool activo;
+        };
+    }
+
+    // Sub-namespace para lógica de negocio
+    namespace Servicios {
+        class MonitorSensores {
+        public:
+            void registrarSensor(const Modelos::DatosSensor& sensor) {
+                sensores_.push_back(sensor);
+            }
+
+            void mostrarEstado() const {
+                for (const auto& s : sensores_) {
+                    std::cout << s.nombre << ": " << s.valor
+                              << (s.enRango() ? " [OK]" : " [ALERTA]")
+                              << std::endl;
+                }
+            }
+
+        private:
+            std::vector<Modelos::DatosSensor> sensores_;
+        };
+    }
+
+    // Sub-namespace para utilidades
+    namespace Utils {
+        std::string formatearValor(double valor, const std::string& unidad) {
+            // En un proyecto Qt real, usarías QString::number()
+            return std::to_string(valor) + " " + unidad;
+        }
+    }
+}
+
+// Alias para simplificar el acceso
+namespace App = MiAvionicaApp;
+namespace Modelos = MiAvionicaApp::Modelos;
+
+int main() {
+    // Crear sensores usando el namespace del proyecto
+    Modelos::DatosSensor altitud{"Altitud", 35000, 0, 45000};
+    Modelos::DatosSensor velocidad{"Velocidad", 480, 0, 600};
+    Modelos::DatosSensor temperatura{"Temp. Motor", 950, 200, 900};  // Fuera de rango
+
+    // Usar el servicio de monitoreo
+    App::Servicios::MonitorSensores monitor;
+    monitor.registrarSensor(altitud);
+    monitor.registrarSensor(velocidad);
+    monitor.registrarSensor(temperatura);
+
+    monitor.mostrarEstado();
+
+    // Usar utilidades
+    std::cout << App::Utils::formatearValor(35000, "ft") << std::endl;
+
+    // En un proyecto Qt real, además usarías:
+    // QString texto = QString("Altitud: %1 ft").arg(35000);
+    // Qt::AlignmentFlag alineacion = Qt::AlignCenter;
+    // emit sensorActualizado(datos);  // Señales y slots Qt
+
+    return 0;
+}
+<---Ejemplo de Convenciones Qt con Namespaces Propios Result--->

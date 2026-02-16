@@ -151,119 +151,149 @@ int main() {
 }
 ```
 
+### Listas y Colas en Qt
+
+#### `QList` — El contenedor principal de Qt 6
+
+En Qt 6, `QList` reemplaza a `QVector` y es el contenedor por defecto. Internamente es un array dinámico (como `std::vector`), NO una lista enlazada:
+
+```cpp
+#include <QList>
+#include <QDebug>
+
+QList<int> numeros = {10, 20, 30, 40};
+numeros.append(50);          // Añade al final
+numeros.prepend(5);          // Añade al inicio
+numeros.insert(2, 15);       // Inserta en posición 2
+
+qDebug() << numeros;         // (5, 10, 15, 20, 30, 40, 50)
+
+// Acceso por índice (O(1), a diferencia de std::list)
+int tercero = numeros.at(2); // 15
+numeros[0] = 1;              // Modificar por índice
+
+// Búsqueda
+bool contiene = numeros.contains(30);  // true
+int indice = numeros.indexOf(20);      // 3
+
+// Eliminar
+numeros.removeAt(0);         // Elimina por índice
+numeros.removeOne(40);       // Elimina primera ocurrencia de 40
+```
+
+#### Comparación `std::list` vs `QList`
+
+| Característica | `std::list` | `QList` (Qt 6) |
+|---------------|-------------|-----------------|
+| Estructura interna | Lista doblemente enlazada | Array dinámico |
+| Acceso por índice | O(n) | O(1) |
+| Inserción en medio | O(1) | O(n) |
+| Copy-on-Write | No | Sí (COW) |
+| Uso recomendado | Inserciones frecuentes en medio | Uso general en Qt |
+
+#### `QQueue` — Cola FIFO de Qt
+
+```cpp
+#include <QQueue>
+#include <QDebug>
+
+QQueue<QString> cola;
+cola.enqueue("Primero");
+cola.enqueue("Segundo");
+cola.enqueue("Tercero");
+
+qDebug() << cola.head();     // "Primero" (peek sin remover)
+QString primero = cola.dequeue();  // "Primero" (remueve y retorna)
+qDebug() << cola.head();     // "Segundo"
+```
+
+#### `QStringList` — Lista especializada para strings
+
+```cpp
+QStringList nombres = {"Ana", "Carlos", "Lucía"};
+nombres << "Pedro" << "María";  // Operador << para append
+
+QString filtrados = nombres.filter("a").join(", ");  // "Ana, María, Lucía"
+bool existe = nombres.contains("Carlos", Qt::CaseInsensitive);
+```
+
 ### Conclusión
 
 Las listas y las colas son estructuras de datos esenciales en C++ que proporcionan flexibilidad y eficiencia para diferentes tipos de operaciones. Las listas permiten inserciones y eliminaciones eficientes en cualquier posición, mientras que las colas facilitan un acceso ordenado y secuencial siguiendo el principio FIFO. Conocer cómo y cuándo usar cada estructura de datos es fundamental para escribir programas eficientes y bien estructurados en C++.
 <---FILES--->
-Características de `std::list`
-Características de `std::list` Result
-Ejemplo de Uso de `std::list`
-Ejemplo de Uso de `std::list` Result
-Características de `std::queue`
-Características de `std::queue` Result
-Ejemplo de Uso de `std::queue`
-Ejemplo de Uso de `std::queue` Result
-<---Características de `std::list`--->
-<---Características de `std::list` Result--->
-<---Ejemplo de Uso de `std::list`--->
+std::list
+std::list Result
+std::queue
+std::queue Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---std::list--->
 ```cpp
 #include <iostream>
 #include <list>
 using namespace std;
 
 int main() {
-    // Declaración e inicialización de una lista
     list<int> miLista = {10, 20, 30, 40};
+    miLista.push_back(50);
+    miLista.push_front(5);
 
-    // Inserción de elementos
-    miLista.push_back(50);  // Añade al final
-    miLista.push_front(5);  // Añade al inicio
-
-    // Iteración y acceso a los elementos
-    for (int elemento : miLista) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-
-    // Eliminación de elementos
-    miLista.pop_back();  // Elimina el último elemento
-    miLista.pop_front(); // Elimina el primer elemento
-
-    // Iteración y acceso a los elementos después de la eliminación
-    for (int elemento : miLista) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-
-    return 0;
-}
-<---Ejemplo de Uso de `std::list` Result--->
-<---Características de `std::queue`--->
-<---Características de `std::queue` Result--->
-<---Ejemplo de Uso de `std::queue`--->
-```cpp
-#include <iostream>
-#include <queue>
-using namespace std;
-
-int main() {
-    // Declaración e inicialización de una cola
-    queue<int> miCola;
-
-    // Inserción de elementos
-    miCola.push(10);
-    miCola.push(20);
-    miCola.push(30);
-
-    // Acceso al primer y último elemento
-    cout << "Frente: " << miCola.front() << endl;
-    cout << "Final: " << miCola.back() << endl;
-
-    // Eliminación de elementos
-    miCola.pop(); // Elimina el primer elemento (10)
-
-    // Acceso después de la eliminación
-    cout << "Frente después de pop: " << miCola.front() << endl;
-
-    return 0;
-}
-```cpp
-#include <iostream>
-#include <list>
-#include <queue>
-using namespace std;
-
-int main() {
-    // Uso de std::list
-    list<int> miLista = {1, 2, 3, 4, 5};
-    miLista.push_back(6);
-    miLista.push_front(0);
-
-    cout << "Lista: ";
-    for (int elemento : miLista) {
-        cout << elemento << " ";
-    }
+    for (int e : miLista) cout << e << " ";
     cout << endl;
 
     miLista.pop_back();
     miLista.pop_front();
 
-    cout << "Lista después de pop: ";
-    for (int elemento : miLista) {
-        cout << elemento << " ";
-    }
+    for (int e : miLista) cout << e << " ";
     cout << endl;
+    return 0;
+}
+```
+<---std::list Result--->
+<---std::queue--->
+```cpp
+#include <iostream>
+#include <queue>
+using namespace std;
 
-    // Uso de std::queue
+int main() {
     queue<int> miCola;
     miCola.push(10);
     miCola.push(20);
     miCola.push(30);
 
-    cout << "Cola frente: " << miCola.front() << ", final: " << miCola.back() << endl;
-    miCola.pop();
-    cout << "Cola frente después de pop: " << miCola.front() << endl;
+    cout << "Frente: " << miCola.front() << endl;
+    cout << "Final: " << miCola.back() << endl;
 
+    miCola.pop();
+    cout << "Frente después de pop: " << miCola.front() << endl;
     return 0;
 }
-<---Ejemplo de Uso de `std::queue` Result--->
+```
+<---std::queue Result--->
+<---Ejemplo Completo--->
+```cpp
+#include <iostream>
+#include <list>
+#include <queue>
+using namespace std;
+
+int main() {
+    list<int> miLista = {1, 2, 3, 4, 5};
+    miLista.push_back(6);
+    miLista.push_front(0);
+    cout << "Lista: ";
+    for (int e : miLista) cout << e << " ";
+    cout << endl;
+
+    queue<int> miCola;
+    miCola.push(10);
+    miCola.push(20);
+    miCola.push(30);
+    cout << "Cola frente: " << miCola.front() << endl;
+    miCola.pop();
+    cout << "Cola frente después de pop: " << miCola.front() << endl;
+    return 0;
+}
+```
+<---Ejemplo Completo Result--->

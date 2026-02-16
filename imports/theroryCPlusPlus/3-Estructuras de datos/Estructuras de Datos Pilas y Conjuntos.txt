@@ -151,113 +151,126 @@ int main() {
 }
 ```
 
+### Pilas y Conjuntos en Qt
+
+#### `QStack` — Pila de Qt
+
+`QStack` hereda de `QList` y añade métodos `push()`, `pop()` y `top()`:
+
+```cpp
+#include <QStack>
+#include <QDebug>
+
+QStack<int> pila;
+pila.push(10);
+pila.push(20);
+pila.push(30);
+
+qDebug() << pila.top();   // 30
+pila.pop();                // Elimina 30
+qDebug() << pila.top();   // 20
+
+// También puedes acceder por índice (es un QList internamente)
+qDebug() << pila.at(0);   // 10
+```
+
+#### `QSet` — Conjunto de Qt
+
+`QSet` es un conjunto basado en hash (como `std::unordered_set`, NO como `std::set`):
+
+```cpp
+#include <QSet>
+#include <QDebug>
+
+QSet<QString> frutas;
+frutas.insert("Manzana");
+frutas.insert("Banana");
+frutas.insert("Manzana");  // Ignorado (duplicado)
+
+qDebug() << frutas.size();           // 2
+qDebug() << frutas.contains("Banana"); // true
+
+// Operaciones de conjuntos
+QSet<QString> otras = {"Banana", "Cereza"};
+QSet<QString> interseccion = frutas & otras;     // {"Banana"}
+QSet<QString> union_ = frutas | otras;           // {"Manzana", "Banana", "Cereza"}
+QSet<QString> diferencia = frutas - otras;       // {"Manzana"}
+```
+
+> **Nota:** `QSet` no mantiene orden. Si necesitas un conjunto ordenado, usa `std::set` o un `QList` con `removeDuplicates()`.
+
 ### Conclusión
 
 Las pilas y los conjuntos son estructuras de datos esenciales en C++ que proporcionan soluciones eficientes para diferentes tipos de problemas. Las pilas siguen el principio LIFO y son útiles para tareas como la evaluación de expresiones y el seguimiento de contexto. Los conjuntos garantizan la unicidad de los elementos y mantienen el orden, siendo útiles para tareas de búsqueda y eliminación de duplicados. Comprender cómo y cuándo usar estas estructuras de datos es fundamental para escribir programas eficientes y bien estructurados en C++.
 <---FILES--->
-Características de `std::stack`
-Características de `std::stack` Result
-Ejemplo de Uso de `std::stack`
-Ejemplo de Uso de `std::stack` Result
-Características de `std::set`
-Características de `std::set` Result
-Ejemplo de Uso de `std::set`
-Ejemplo de Uso de `std::set` Result
-<---Características de `std::stack`--->
-<---Características de `std::stack` Result--->
-<---Ejemplo de Uso de `std::stack`--->
+std::stack
+std::stack Result
+std::set
+std::set Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---std::stack--->
 ```cpp
 #include <iostream>
 #include <stack>
 using namespace std;
 
 int main() {
-    // Declaración e inicialización de una pila
-    stack<int> miPila;
-
-    // Inserción de elementos
-    miPila.push(10);
-    miPila.push(20);
-    miPila.push(30);
-
-    // Acceso al elemento superior
-    cout << "Elemento superior: " << miPila.top() << endl;
-
-    // Eliminación de elementos
-    miPila.pop(); // Elimina el elemento superior (30)
-
-    // Acceso después de la eliminación
-    cout << "Elemento superior después de pop: " << miPila.top() << endl;
-
-    return 0;
-}
-<---Ejemplo de Uso de `std::stack` Result--->
-<---Características de `std::set`--->
-<---Características de `std::set` Result--->
-<---Ejemplo de Uso de `std::set`--->
-```cpp
-#include <iostream>
-#include <set>
-using namespace std;
-
-int main() {
-    // Declaración e inicialización de un conjunto
-    set<int> miConjunto = {30, 10, 20, 40};
-
-    // Inserción de elementos
-    miConjunto.insert(50);
-    miConjunto.insert(20); // No se añade ya que 20 ya existe
-
-    // Iteración y acceso a los elementos
-    cout << "Conjunto: ";
-    for (int elemento : miConjunto) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-
-    // Eliminación de un elemento
-    miConjunto.erase(30);
-
-    // Iteración y acceso a los elementos después de la eliminación
-    cout << "Conjunto después de erase: ";
-    for (int elemento : miConjunto) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-
-    return 0;
-}
-```cpp
-#include <iostream>
-#include <stack>
-#include <set>
-using namespace std;
-
-int main() {
-    // Uso de std::stack
     stack<int> miPila;
     miPila.push(10);
     miPila.push(20);
     miPila.push(30);
-    cout << "Pila elemento superior: " << miPila.top() << endl;
+
+    cout << "Top: " << miPila.top() << endl;
     miPila.pop();
-    cout << "Pila elemento superior después de pop: " << miPila.top() << endl;
-
-    // Uso de std::set
-    set<int> miConjunto = {30, 10, 20, 40};
-    miConjunto.insert(50);
-    cout << "Conjunto: ";
-    for (int elemento : miConjunto) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-    miConjunto.erase(30);
-    cout << "Conjunto después de erase: ";
-    for (int elemento : miConjunto) {
-        cout << elemento << " ";
-    }
-    cout << endl;
-
+    cout << "Top después de pop: " << miPila.top() << endl;
     return 0;
 }
-<---Ejemplo de Uso de `std::set` Result--->
+```
+<---std::stack Result--->
+<---std::set--->
+```cpp
+#include <iostream>
+#include <set>
+using namespace std;
+
+int main() {
+    set<int> miSet = {30, 10, 20, 40};
+    miSet.insert(50);
+    miSet.insert(20);  // Ignorado (duplicado)
+
+    cout << "Set: ";
+    for (int e : miSet) cout << e << " ";
+    cout << endl;
+
+    miSet.erase(30);
+    cout << "Después de erase: ";
+    for (int e : miSet) cout << e << " ";
+    cout << endl;
+    return 0;
+}
+```
+<---std::set Result--->
+<---Ejemplo Completo--->
+```cpp
+#include <iostream>
+#include <stack>
+#include <set>
+using namespace std;
+
+int main() {
+    stack<int> pila;
+    pila.push(10); pila.push(20); pila.push(30);
+    cout << "Pila top: " << pila.top() << endl;
+    pila.pop();
+    cout << "Pila top después de pop: " << pila.top() << endl;
+
+    set<int> conj = {30, 10, 20, 40};
+    conj.insert(50);
+    cout << "Conjunto: ";
+    for (int e : conj) cout << e << " ";
+    cout << endl;
+    return 0;
+}
+```
+<---Ejemplo Completo Result--->

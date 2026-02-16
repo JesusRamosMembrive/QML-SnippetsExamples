@@ -103,6 +103,67 @@ int main() {
 - Declara variables lo más cerca posible de su primer uso para mejorar la claridad del código y evitar errores.
 
 Estas prácticas te ayudarán a escribir código más claro y fácil de mantener, asegurando que los valores importantes no se modifiquen accidentalmente durante la ejecución del programa.
+
+### Variables y Constantes en Qt
+
+En el contexto de Qt, se aplican las mismas reglas de C++ con algunas particularidades:
+
+#### QString sobre std::string
+
+Qt utiliza `QString` como tipo principal de cadena. Es Unicode nativo (UTF-16) y ofrece una API más rica que `std::string`:
+
+```cpp
+#include <QString>
+
+QString nombre = "Carlos";
+QString saludo = QString("Hola, %1").arg(nombre);
+QString ruta = QStringLiteral("/home/user/datos.txt"); // Más eficiente en compilación
+```
+
+#### Constantes en clases Qt
+
+En clases con `Q_OBJECT`, se prefiere `const` y `constexpr` sobre `#define`. Los macros no respetan el ámbito de la clase y pueden causar conflictos:
+
+```cpp
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    static constexpr int MAX_ITEMS = 100;       // constexpr para tipos primitivos
+    static const QString DEFAULT_TITLE;          // const para tipos no triviales
+
+    // Evitar:
+    // #define MAX_ITEMS 100  // No respeta el ámbito de la clase
+};
+
+// En el .cpp:
+const QString MiWidget::DEFAULT_TITLE = QStringLiteral("Sin título");
+```
+
+#### qDebug() en lugar de cout
+
+Para salida de depuración, Qt proporciona `qDebug()`, `qInfo()`, `qWarning()` y `qCritical()`. Estas funciones respetan el sistema de logging de Qt y pueden redirigirse:
+
+```cpp
+#include <QDebug>
+
+int edad = 25;
+QString nombre = "Carlos";
+qDebug() << "Nombre:" << nombre << "Edad:" << edad;
+qInfo() << "Aplicación iniciada";
+qWarning() << "Valor fuera de rango:" << edad;
+```
+
+#### Tipos portables Qt
+
+Qt define alias de tipos que garantizan el mismo tamaño en todas las plataformas:
+
+```cpp
+qint32 contador = 0;     // Siempre 32 bits (equivale a int en la mayoría de plataformas)
+qreal  factor = 1.5;     // double en la mayoría de plataformas, float en ARM
+```
+
+> **Nota:** Los tipos portables Qt (`qint32`, `qreal`, etc.) se tratan en detalle en el archivo "Tipos de Datos Básicos".
+
 <---FILES--->
 **Declaración y Asignación**
 **Declaración y Asignación** Result
@@ -122,6 +183,7 @@ int edad;            // Declaración de una variable entera
 edad = 25;           // Asignación de un valor a la variable
 
 float altura = 1.75; // Declaración y asignación en una sola línea
+```
 <---**Declaración y Asignación** Result--->
 <---**Tipos Comunes de Variables**--->
 <---**Tipos Comunes de Variables** Result--->
@@ -143,16 +205,19 @@ int main() {
 
     return 0;
 }
+```
 <---**Ejemplo de Uso de Variables** Result--->
 <---**Constantes con `const`**--->
 ```cpp
 const int DIAS_EN_SEMANA = 7;
 const float PI = 3.14159;
+```
 <---**Constantes con `const`** Result--->
 <---**Constantes con `#define`**--->
 ```cpp
 #define MESES_EN_ANO 12
 #define GRAVEDAD 9.81
+```
 <---**Constantes con `#define`** Result--->
 <---**Ejemplo de Uso de Constantes**--->
 ```cpp
@@ -176,4 +241,5 @@ int main() {
 
     return 0;
 }
+```
 <---**Ejemplo de Uso de Constantes** Result--->

@@ -183,6 +183,108 @@ int main() {
 
 En el caso del constructor implícito, la conversión de `int` a `Impl` se realiza automáticamente, mientras que en el caso del constructor explícito, se requiere una conversión explícita de `int` a `Expl`.
 
+### `explicit(bool)`: Explicit Condicional (C++20)
+
+C++20 introduce `explicit(bool)`, que permite hacer un constructor condicionalmente explícito basándose en una expresión booleana evaluada en tiempo de compilación. Esto es especialmente útil en plantillas donde queremos que la explicitud dependa de las propiedades del tipo plantilla.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+template<typename T>
+class Wrapper {
+    T valor;
+public:
+    // explicit solo si T NO es convertible implícitamente desde int
+    explicit(!is_convertible_v<int, T>) Wrapper(T v) : valor(v) {}
+
+    T get() const { return valor; }
+};
+
+int main() {
+    Wrapper<int> w1 = 42;       // OK: int es convertible desde int
+    // Wrapper<string> w2 = 42; // ERROR: string no es convertible desde int
+    Wrapper<string> w3(string("hola")); // OK: explicit
+    return 0;
+}
+```
+
+**Ventajas de `explicit(bool)`:**
+- Permite que las plantillas sean tan permisivas o restrictivas como los tipos subyacentes.
+- Evita tener que crear especializaciones separadas para tipos con y sin conversión implícita.
+- Usado internamente en la STL, por ejemplo en `std::pair`, `std::tuple` y `std::optional`.
+
+### `explicit operator bool()` y Operadores de Conversión
+
+La palabra clave `explicit` no solo aplica a constructores, sino también a operadores de conversión. Un `explicit operator bool()` permite que un objeto se use en contextos booleanos (como `if`, `while`, `&&`, `||`, `!`) pero impide conversiones implícitas a tipos numéricos.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Conexion {
+    bool activa;
+public:
+    Conexion(bool a) : activa(a) {}
+
+    // Sin explicit: permitiría Conexion en contextos aritméticos
+    // operator bool() const { return activa; }
+
+    // Con explicit: solo en contextos booleanos (if, while, &&, ||, !)
+    explicit operator bool() const { return activa; }
+};
+
+int main() {
+    Conexion c(true);
+
+    if (c) {  // OK: contexto booleano
+        cout << "Conexión activa" << endl;
+    }
+
+    // int x = c;     // ERROR con explicit: no permite conversión a int
+    // int y = c + 1; // ERROR con explicit: no permite aritmética
+
+    bool b = static_cast<bool>(c); // OK: conversión explícita
+    return 0;
+}
+```
+
+**Nota:** Este patrón es ampliamente utilizado en la STL. Por ejemplo, `std::optional`, `std::shared_ptr` y `std::unique_ptr` usan `explicit operator bool()` para verificar si contienen un valor o puntero válido.
+
+### Constructores Explicit en Qt
+
+Qt utiliza extensivamente la palabra clave `explicit` en sus constructores, siguiendo las mejores prácticas de C++ moderno. Los constructores de clases que heredan de `QObject` siempre deben ser `explicit` para evitar conversiones accidentales desde punteros padre.
+
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+// Qt usa explicit extensivamente en sus constructores
+
+// Patrón Qt: constructores de QObject siempre son explicit
+class Widget : public QObject {
+    Q_OBJECT
+public:
+    // explicit evita: Widget w = nullptr; (conversión implícita)
+    explicit Widget(QObject *parent = nullptr) : QObject(parent) {}
+};
+
+// Ejemplos de Qt donde explicit es importante:
+// explicit QColor(int r, int g, int b);
+// explicit QString(const char *str);  // En modo QT_NO_CAST_FROM_ASCII
+// explicit QUrl(const QString &url);
+
+// Sin explicit sería posible escribir código confuso:
+// QColor c = 42;         // ¿Qué color es 42?
+// QUrl url = "texto";    // ¿Es una URL válida?
+```
+
+**Buenas prácticas en Qt:**
+- Siempre usa `explicit` en constructores de clases que heredan de `QObject`.
+- Usa `explicit` en cualquier constructor de un solo argumento (o con argumentos por defecto que permitan llamada con un solo argumento).
+- La macro `QT_NO_CAST_FROM_ASCII` activa constructores `explicit` adicionales en `QString`, previniendo conversiones implícitas desde `const char*`.
+
 ### Conclusión
 
 Los constructores explícitos son una característica importante de C++ que mejora la seguridad del tipo y la claridad del código al evitar conversiones implícitas no deseadas. Al usar la palabra clave `explicit`, los programadores pueden controlar mejor cuándo y cómo se realizan las conversiones, previniendo errores y asegurando que las intenciones del código sean claras y precisas. Implementar constructores explícitos es una práctica recomendada cuando se diseña clases que pueden ser construidas a partir de un solo argumento de un tipo diferente.
@@ -199,6 +301,12 @@ Constructor Implícito
 Constructor Implícito Result
 Constructor Explícito
 Constructor Explícito Result
+Explicit Condicional (C++20)
+Explicit Condicional (C++20) Result
+explicit operator bool() y Operadores de Conversión
+explicit operator bool() y Operadores de Conversión Result
+Constructores Explicit en Qt
+Constructores Explicit en Qt Result
 <---Sintaxis--->
 ```cpp
 class Clase {
@@ -337,3 +445,81 @@ int main() {
     return 0;
 }
 <---Constructor Explícito Result--->
+<---Explicit Condicional (C++20)--->
+```cpp
+#include <iostream>
+using namespace std;
+
+template<typename T>
+class Wrapper {
+    T valor;
+public:
+    // explicit solo si T NO es convertible implícitamente desde int
+    explicit(!is_convertible_v<int, T>) Wrapper(T v) : valor(v) {}
+
+    T get() const { return valor; }
+};
+
+int main() {
+    Wrapper<int> w1 = 42;       // OK: int es convertible desde int
+    // Wrapper<string> w2 = 42; // ERROR: string no es convertible desde int
+    Wrapper<string> w3(string("hola")); // OK: explicit
+    return 0;
+}
+<---Explicit Condicional (C++20) Result--->
+<---explicit operator bool() y Operadores de Conversión--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Conexion {
+    bool activa;
+public:
+    Conexion(bool a) : activa(a) {}
+
+    // Sin explicit: permitiría Conexion en contextos aritméticos
+    // operator bool() const { return activa; }
+
+    // Con explicit: solo en contextos booleanos (if, while, &&, ||, !)
+    explicit operator bool() const { return activa; }
+};
+
+int main() {
+    Conexion c(true);
+
+    if (c) {  // OK: contexto booleano
+        cout << "Conexión activa" << endl;
+    }
+
+    // int x = c;     // ERROR con explicit: no permite conversión a int
+    // int y = c + 1; // ERROR con explicit: no permite aritmética
+
+    bool b = static_cast<bool>(c); // OK: conversión explícita
+    return 0;
+}
+<---explicit operator bool() y Operadores de Conversión Result--->
+<---Constructores Explicit en Qt--->
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+// Qt usa explicit extensivamente en sus constructores
+
+// Patrón Qt: constructores de QObject siempre son explicit
+class Widget : public QObject {
+    Q_OBJECT
+public:
+    // explicit evita: Widget w = nullptr; (conversión implícita)
+    explicit Widget(QObject *parent = nullptr) : QObject(parent) {}
+};
+
+// Ejemplos de Qt donde explicit es importante:
+// explicit QColor(int r, int g, int b);
+// explicit QString(const char *str);  // En modo QT_NO_CAST_FROM_ASCII
+// explicit QUrl(const QString &url);
+
+// Sin explicit sería posible escribir código confuso:
+// QColor c = 42;         // ¿Qué color es 42?
+// QUrl url = "texto";    // ¿Es una URL válida?
+<---Constructores Explicit en Qt Result--->

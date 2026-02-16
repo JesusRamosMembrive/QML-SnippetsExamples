@@ -144,12 +144,128 @@ int main() {
 }
 ```
 
+### `std::is_constant_evaluated()` (C++20)
+
+`std::is_constant_evaluated()` es una función introducida en C++20 que permite detectar, dentro de una función `constexpr`, si la evaluación actual se está realizando en tiempo de compilación o en tiempo de ejecución. Esto permite implementar rutas de código diferentes según el contexto de evaluación.
+
+```cpp
+#include <iostream>
+#include <type_traits>
+using namespace std;
+
+constexpr int calcular(int x) {
+    if (std::is_constant_evaluated()) {
+        // Ruta de compilación: algoritmo simple pero constexpr-compatible
+        return x * x;
+    } else {
+        // Ruta de ejecución: puede usar funciones no-constexpr
+        cout << "Calculando en runtime..." << endl;
+        return x * x;
+    }
+}
+
+int main() {
+    constexpr int a = calcular(5); // Usa ruta de compilación
+    cout << "Compile-time: " << a << endl;
+
+    int x = 7;
+    int b = calcular(x);           // Usa ruta de ejecución
+    cout << "Runtime: " << b << endl;
+    return 0;
+}
+```
+
+### `if consteval` (C++23)
+
+C++23 introduce `if consteval`, una sintaxis más limpia y directa que reemplaza a `std::is_constant_evaluated()`. A diferencia de la función de C++20, `if consteval` es una sentencia del lenguaje y no requiere incluir ninguna cabecera.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+constexpr int procesar(int x) {
+    if consteval {
+        // Evaluación en tiempo de compilación
+        return x * x * x;  // Cubo
+    } else {
+        // Evaluación en tiempo de ejecución
+        return x * x;      // Cuadrado (más rápido en runtime)
+    }
+}
+
+int main() {
+    constexpr int a = procesar(3);  // 27 (compile-time: cubo)
+    cout << "Compile-time: " << a << endl;
+
+    int x = 3;
+    int b = procesar(x);            // 9 (runtime: cuadrado)
+    cout << "Runtime: " << b << endl;
+    return 0;
+}
+```
+
+### Casos de Uso Prácticos de `consteval`
+
+Las funciones `consteval` son especialmente útiles para generar tablas de lookup en tiempo de compilación y para validar constantes. Al garantizar la evaluación en compilación, se eliminan cálculos en tiempo de ejecución y se detectan errores de configuración antes de ejecutar el programa.
+
+```cpp
+#include <iostream>
+#include <array>
+#include <cmath>
+using namespace std;
+
+// Tabla de lookup generada en compilación
+consteval auto generarTablaSenos() {
+    array<double, 360> tabla{};
+    for (int i = 0; i < 360; ++i) {
+        double rad = i * 3.14159265358979 / 180.0;
+        // Aproximación de seno usando serie de Taylor
+        double x = rad;
+        double term = rad;
+        double result = rad;
+        for (int n = 1; n < 10; ++n) {
+            term *= -rad * rad / ((2 * n) * (2 * n + 1));
+            result += term;
+        }
+        tabla[i] = result;
+    }
+    return tabla;
+}
+
+// Validación de constantes en compilación
+consteval int validarPuerto(int puerto) {
+    if (puerto < 1 || puerto > 65535) {
+        throw "Puerto fuera de rango"; // Error de compilación si es inválido
+    }
+    return puerto;
+}
+
+int main() {
+    // Tabla precalculada en compilación
+    constexpr auto tablaSenos = generarTablaSenos();
+    cout << "sin(30°) ≈ " << tablaSenos[30] << endl;
+    cout << "sin(90°) ≈ " << tablaSenos[90] << endl;
+
+    // Validación en compilación
+    constexpr int puerto = validarPuerto(8080);  // OK
+    // constexpr int malo = validarPuerto(99999); // ERROR de compilación
+    cout << "Puerto: " << puerto << endl;
+    return 0;
+}
+```
+
 ### Conclusión
 
 La palabra clave `consteval` en C++20 proporciona una manera de asegurar que ciertas funciones sean evaluadas exclusivamente en tiempo de compilación. Esto permite optimizaciones adicionales y ayuda a garantizar la corrección del programa al detectar errores en una etapa temprana. Comprender y utilizar `consteval` puede mejorar significativamente la eficiencia y la seguridad del código en C++.
 <---FILES--->
 Ejemplo Comparativo
 Ejemplo Comparativo Result
+std::is_constant_evaluated() (C++20)
+std::is_constant_evaluated() (C++20) Result
+if consteval (C++23)
+if consteval (C++23) Result
+Casos de Uso Prácticos de consteval
+Casos de Uso Prácticos de consteval Result
 <---Ejemplo Comparativo--->
 ```cpp
 #include <iostream>
@@ -222,3 +338,101 @@ int main() {
     return 0;
 }
 <---Ejemplo Comparativo Result--->
+<---std::is_constant_evaluated() (C++20)--->
+```cpp
+#include <iostream>
+#include <type_traits>
+using namespace std;
+
+constexpr int calcular(int x) {
+    if (std::is_constant_evaluated()) {
+        // Ruta de compilación: algoritmo simple pero constexpr-compatible
+        return x * x;
+    } else {
+        // Ruta de ejecución: puede usar funciones no-constexpr
+        cout << "Calculando en runtime..." << endl;
+        return x * x;
+    }
+}
+
+int main() {
+    constexpr int a = calcular(5); // Usa ruta de compilación
+    cout << "Compile-time: " << a << endl;
+
+    int x = 7;
+    int b = calcular(x);           // Usa ruta de ejecución
+    cout << "Runtime: " << b << endl;
+    return 0;
+}
+<---std::is_constant_evaluated() (C++20) Result--->
+<---if consteval (C++23)--->
+```cpp
+#include <iostream>
+using namespace std;
+
+constexpr int procesar(int x) {
+    if consteval {
+        // Evaluación en tiempo de compilación
+        return x * x * x;  // Cubo
+    } else {
+        // Evaluación en tiempo de ejecución
+        return x * x;      // Cuadrado (más rápido en runtime)
+    }
+}
+
+int main() {
+    constexpr int a = procesar(3);  // 27 (compile-time: cubo)
+    cout << "Compile-time: " << a << endl;
+
+    int x = 3;
+    int b = procesar(x);            // 9 (runtime: cuadrado)
+    cout << "Runtime: " << b << endl;
+    return 0;
+}
+<---if consteval (C++23) Result--->
+<---Casos de Uso Prácticos de consteval--->
+```cpp
+#include <iostream>
+#include <array>
+#include <cmath>
+using namespace std;
+
+// Tabla de lookup generada en compilación
+consteval auto generarTablaSenos() {
+    array<double, 360> tabla{};
+    for (int i = 0; i < 360; ++i) {
+        double rad = i * 3.14159265358979 / 180.0;
+        // Aproximación de seno usando serie de Taylor
+        double x = rad;
+        double term = rad;
+        double result = rad;
+        for (int n = 1; n < 10; ++n) {
+            term *= -rad * rad / ((2 * n) * (2 * n + 1));
+            result += term;
+        }
+        tabla[i] = result;
+    }
+    return tabla;
+}
+
+// Validación de constantes en compilación
+consteval int validarPuerto(int puerto) {
+    if (puerto < 1 || puerto > 65535) {
+        throw "Puerto fuera de rango"; // Error de compilación si es inválido
+    }
+    return puerto;
+}
+
+int main() {
+    // Tabla precalculada en compilación
+    constexpr auto tablaSenos = generarTablaSenos();
+    cout << "sin(30°) ≈ " << tablaSenos[30] << endl;
+    cout << "sin(90°) ≈ " << tablaSenos[90] << endl;
+
+    // Validación en compilación
+    constexpr int puerto = validarPuerto(8080);  // OK
+    // constexpr int malo = validarPuerto(99999); // ERROR de compilación
+    cout << "Puerto: " << puerto << endl;
+    return 0;
+}
+<---Casos de Uso Prácticos de consteval Result--->

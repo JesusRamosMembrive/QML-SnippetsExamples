@@ -221,6 +221,212 @@ int main() {
 
 En este ejemplo, `Perro` hereda de `Mamifero` (que a su vez hereda de `Animal`) y también de `Mascota`, combinando herencia múltiple y multinivel, formando una herencia híbrida.
 
+#### Composición vs Herencia en C++ Moderno
+
+En el diseño orientado a objetos moderno, existe un principio ampliamente aceptado: **"preferir la composición sobre la herencia"** (en inglés, *"favor composition over inheritance"*). Esto no significa que la herencia sea mala, sino que la composición suele ser una alternativa más flexible y con menor acoplamiento.
+
+**Herencia** modela una relación **"es un"** (is-a): un `Perro` **es un** `Animal`.
+**Composición** modela una relación **"tiene un"** (has-a): un `Coche` **tiene un** `Motor`.
+
+Cuándo usar cada enfoque:
+- **Herencia:** Cuando existe una verdadera relación jerárquica de tipo "es un" y se necesita polimorfismo.
+- **Composición:** Cuando un objeto simplemente utiliza o contiene a otro. Es más flexible porque permite cambiar los componentes en tiempo de ejecución.
+
+##### Ejemplo de Composición vs Herencia
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// ====== ENFOQUE CON HERENCIA (menos flexible) ======
+// El Motor está "pegado" a la jerarquía de Coche
+class VehiculoConMotor {
+protected:
+    int caballosDeFuerza;
+public:
+    VehiculoConMotor(int hp) : caballosDeFuerza(hp) {}
+    void encenderMotor() {
+        cout << "Motor de " << caballosDeFuerza << " HP encendido" << endl;
+    }
+};
+
+class CocheHerencia : public VehiculoConMotor {
+    string modelo;
+public:
+    CocheHerencia(const string& m, int hp)
+        : VehiculoConMotor(hp), modelo(m) {}
+
+    void mostrar() {
+        cout << modelo << " (herencia): ";
+        encenderMotor();
+    }
+};
+
+// ====== ENFOQUE CON COMPOSICIÓN (más flexible) ======
+class Motor {
+    int caballosDeFuerza;
+    string tipo; // "gasolina", "eléctrico", "híbrido"
+public:
+    Motor(int hp, const string& t) : caballosDeFuerza(hp), tipo(t) {}
+
+    void encender() {
+        cout << "Motor " << tipo << " de " << caballosDeFuerza
+             << " HP encendido" << endl;
+    }
+
+    string obtenerTipo() const { return tipo; }
+};
+
+class CocheComposicion {
+    string modelo;
+    Motor motor;  // Composición: Coche "tiene un" Motor
+public:
+    CocheComposicion(const string& m, Motor mot)
+        : modelo(m), motor(mot) {}
+
+    void encender() {
+        cout << modelo << " (composición): ";
+        motor.encender();
+    }
+
+    // Se puede cambiar el motor fácilmente
+    void cambiarMotor(Motor nuevoMotor) {
+        cout << "Cambiando motor " << motor.obtenerTipo()
+             << " por " << nuevoMotor.obtenerTipo() << endl;
+        motor = nuevoMotor;
+    }
+};
+
+int main() {
+    // Con herencia: el motor está fijo en la jerarquía
+    CocheHerencia ch("Sedan-H", 150);
+    ch.mostrar();
+
+    cout << endl;
+
+    // Con composición: el motor es un componente intercambiable
+    Motor motorGasolina(150, "gasolina");
+    Motor motorElectrico(200, "eléctrico");
+
+    CocheComposicion cc("Sedan-C", motorGasolina);
+    cc.encender();
+
+    // Ventaja de la composición: se puede cambiar el motor
+    cc.cambiarMotor(motorElectrico);
+    cc.encender();
+
+    return 0;
+}
+```
+
+En este ejemplo, el enfoque con composición es más flexible: el `Motor` es un componente independiente que puede cambiarse en tiempo de ejecución. Con herencia, el motor queda fijo en la jerarquía de clases y no puede modificarse sin crear nuevas subclases.
+
+#### Restricción de Herencia Simple en Qt (QObject)
+
+En Qt, las clases que derivan de `QObject` **solo admiten herencia simple**. Esto es una restricción del sistema de meta-objetos de Qt (MOC - Meta-Object Compiler). Sin embargo, C++ soporta herencia múltiple, por lo que Qt ofrece una solución: usar **interfaces** implementadas como clases abstractas puras que **no** heredan de `QObject`.
+
+Una interfaz en C++ es una clase que contiene únicamente funciones virtuales puras (sin implementación) y un destructor virtual. Al no heredar de `QObject`, estas interfaces pueden combinarse libremente con la herencia de `QObject`.
+
+El patrón es:
+1. Definir la interfaz como una clase abstracta pura (sin heredar de `QObject`).
+2. Hacer que la clase concreta herede de `QObject` (herencia simple) y también de la interfaz.
+
+##### Ejemplo de Interfaz con QObject
+
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QJsonObject>
+
+// Interfaz pura: NO hereda de QObject
+// Puede usarse con herencia múltiple sin problemas
+class Serializable {
+public:
+    virtual ~Serializable() = default;
+
+    // Funciones virtuales puras (interfaz)
+    virtual QJsonObject serializar() const = 0;
+    virtual void deserializar(const QJsonObject& json) = 0;
+};
+
+// Otra interfaz pura
+class Imprimible {
+public:
+    virtual ~Imprimible() = default;
+    virtual QString aTexto() const = 0;
+};
+
+// Clase que hereda de QObject (simple) + interfaces (múltiple)
+// QObject DEBE ser la primera clase base
+class Configuracion : public QObject, public Serializable, public Imprimible {
+    Q_OBJECT
+
+public:
+    explicit Configuracion(QObject* parent = nullptr)
+        : QObject(parent), m_idioma("es"), m_volumen(75)
+    {}
+
+    // Implementación de Serializable
+    QJsonObject serializar() const override {
+        QJsonObject json;
+        json["idioma"] = m_idioma;
+        json["volumen"] = m_volumen;
+        return json;
+    }
+
+    void deserializar(const QJsonObject& json) override {
+        m_idioma = json["idioma"].toString();
+        m_volumen = json["volumen"].toInt();
+        emit configuracionCargada();
+    }
+
+    // Implementación de Imprimible
+    QString aTexto() const override {
+        return QString("Configuración: idioma=%1, volumen=%2")
+                .arg(m_idioma)
+                .arg(m_volumen);
+    }
+
+    void setIdioma(const QString& idioma) {
+        m_idioma = idioma;
+        emit idiomaModificado(idioma);
+    }
+
+signals:
+    void configuracionCargada();
+    void idiomaModificado(const QString& nuevoIdioma);
+
+private:
+    QString m_idioma;
+    int m_volumen;
+};
+
+int main() {
+    Configuracion config;
+
+    // Usar como Serializable
+    QJsonObject json = config.serializar();
+    qDebug() << "Serializado:" << json;
+
+    // Usar como Imprimible
+    qDebug() << config.aTexto();
+
+    // Usar como QObject (señales y slots)
+    QObject::connect(&config, &Configuracion::idiomaModificado,
+        [](const QString& idioma) {
+            qDebug() << "Idioma cambiado a:" << idioma;
+        }
+    );
+
+    config.setIdioma("en");
+
+    return 0;
+}
+```
+
+En este ejemplo, `Configuracion` hereda de `QObject` (herencia simple para el sistema de meta-objetos) y también implementa dos interfaces (`Serializable` e `Imprimible`). Las interfaces no heredan de `QObject`, por lo que esta combinación es válida y es el patrón recomendado en Qt para lograr funcionalidad similar a la herencia múltiple.
+
 ### Conclusión
 
 C++ ofrece varios tipos de herencia que permiten a los desarrolladores diseñar jerarquías de clases de acuerdo con las necesidades del problema. Herencia simple, múltiple, multinivel, jerárquica e híbrida son herramientas poderosas para crear relaciones entre clases y reutilizar código de manera eficiente. Sin embargo, es importante utilizar la herencia de manera adecuada para evitar problemas de complejidad y mantenimiento del código. Entender estos tipos de herencia y cómo aplicarlos correctamente es esencial para el desarrollo de software orientado a objetos en C++.
@@ -235,6 +441,10 @@ Ejemplo de Herencia Jerárquica
 Ejemplo de Herencia Jerárquica Result
 Ejemplo de Herencia Híbrida
 Ejemplo de Herencia Híbrida Result
+Ejemplo de Composición vs Herencia
+Ejemplo de Composición vs Herencia Result
+Ejemplo de Interfaz con QObject
+Ejemplo de Interfaz con QObject Result
 <---Ejemplo de Herencia Simple--->
 ```cpp
 #include <iostream>
@@ -413,3 +623,180 @@ int main() {
     return 0;
 }
 <---Ejemplo de Herencia Híbrida Result--->
+<---Ejemplo de Composición vs Herencia--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// ====== ENFOQUE CON HERENCIA (menos flexible) ======
+// El Motor está "pegado" a la jerarquía de Coche
+class VehiculoConMotor {
+protected:
+    int caballosDeFuerza;
+public:
+    VehiculoConMotor(int hp) : caballosDeFuerza(hp) {}
+    void encenderMotor() {
+        cout << "Motor de " << caballosDeFuerza << " HP encendido" << endl;
+    }
+};
+
+class CocheHerencia : public VehiculoConMotor {
+    string modelo;
+public:
+    CocheHerencia(const string& m, int hp)
+        : VehiculoConMotor(hp), modelo(m) {}
+
+    void mostrar() {
+        cout << modelo << " (herencia): ";
+        encenderMotor();
+    }
+};
+
+// ====== ENFOQUE CON COMPOSICIÓN (más flexible) ======
+class Motor {
+    int caballosDeFuerza;
+    string tipo; // "gasolina", "eléctrico", "híbrido"
+public:
+    Motor(int hp, const string& t) : caballosDeFuerza(hp), tipo(t) {}
+
+    void encender() {
+        cout << "Motor " << tipo << " de " << caballosDeFuerza
+             << " HP encendido" << endl;
+    }
+
+    string obtenerTipo() const { return tipo; }
+};
+
+class CocheComposicion {
+    string modelo;
+    Motor motor;  // Composición: Coche "tiene un" Motor
+public:
+    CocheComposicion(const string& m, Motor mot)
+        : modelo(m), motor(mot) {}
+
+    void encender() {
+        cout << modelo << " (composición): ";
+        motor.encender();
+    }
+
+    // Se puede cambiar el motor fácilmente
+    void cambiarMotor(Motor nuevoMotor) {
+        cout << "Cambiando motor " << motor.obtenerTipo()
+             << " por " << nuevoMotor.obtenerTipo() << endl;
+        motor = nuevoMotor;
+    }
+};
+
+int main() {
+    // Con herencia: el motor está fijo en la jerarquía
+    CocheHerencia ch("Sedan-H", 150);
+    ch.mostrar();
+
+    cout << endl;
+
+    // Con composición: el motor es un componente intercambiable
+    Motor motorGasolina(150, "gasolina");
+    Motor motorElectrico(200, "eléctrico");
+
+    CocheComposicion cc("Sedan-C", motorGasolina);
+    cc.encender();
+
+    // Ventaja de la composición: se puede cambiar el motor
+    cc.cambiarMotor(motorElectrico);
+    cc.encender();
+
+    return 0;
+}
+<---Ejemplo de Composición vs Herencia Result--->
+<---Ejemplo de Interfaz con QObject--->
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QJsonObject>
+
+// Interfaz pura: NO hereda de QObject
+// Puede usarse con herencia múltiple sin problemas
+class Serializable {
+public:
+    virtual ~Serializable() = default;
+
+    // Funciones virtuales puras (interfaz)
+    virtual QJsonObject serializar() const = 0;
+    virtual void deserializar(const QJsonObject& json) = 0;
+};
+
+// Otra interfaz pura
+class Imprimible {
+public:
+    virtual ~Imprimible() = default;
+    virtual QString aTexto() const = 0;
+};
+
+// Clase que hereda de QObject (simple) + interfaces (múltiple)
+// QObject DEBE ser la primera clase base
+class Configuracion : public QObject, public Serializable, public Imprimible {
+    Q_OBJECT
+
+public:
+    explicit Configuracion(QObject* parent = nullptr)
+        : QObject(parent), m_idioma("es"), m_volumen(75)
+    {}
+
+    // Implementación de Serializable
+    QJsonObject serializar() const override {
+        QJsonObject json;
+        json["idioma"] = m_idioma;
+        json["volumen"] = m_volumen;
+        return json;
+    }
+
+    void deserializar(const QJsonObject& json) override {
+        m_idioma = json["idioma"].toString();
+        m_volumen = json["volumen"].toInt();
+        emit configuracionCargada();
+    }
+
+    // Implementación de Imprimible
+    QString aTexto() const override {
+        return QString("Configuración: idioma=%1, volumen=%2")
+                .arg(m_idioma)
+                .arg(m_volumen);
+    }
+
+    void setIdioma(const QString& idioma) {
+        m_idioma = idioma;
+        emit idiomaModificado(idioma);
+    }
+
+signals:
+    void configuracionCargada();
+    void idiomaModificado(const QString& nuevoIdioma);
+
+private:
+    QString m_idioma;
+    int m_volumen;
+};
+
+int main() {
+    Configuracion config;
+
+    // Usar como Serializable
+    QJsonObject json = config.serializar();
+    qDebug() << "Serializado:" << json;
+
+    // Usar como Imprimible
+    qDebug() << config.aTexto();
+
+    // Usar como QObject (señales y slots)
+    QObject::connect(&config, &Configuracion::idiomaModificado,
+        [](const QString& idioma) {
+            qDebug() << "Idioma cambiado a:" << idioma;
+        }
+    );
+
+    config.setIdioma("en");
+
+    return 0;
+}
+<---Ejemplo de Interfaz con QObject Result--->

@@ -116,6 +116,168 @@ En este ejemplo:
 2. **Evitar Abusos:** No abuse de los namespaces sin nombre para ocultar demasiada lógica. Si múltiples archivos necesitan compartir la misma lógica, considere usar un namespace con nombre y declarar sus miembros en un archivo de cabecera (`.h`).
 3. **Claridad del Código:** Documente adecuadamente las razones para usar un namespace sin nombre, facilitando el mantenimiento y la comprensión del código.
 
+#### Namespace Anónimo vs `static`: Diferencias Modernas
+
+Los namespaces anónimos son la forma **recomendada en C++ moderno** para lograr enlace interno (internal linkage), reemplazando el uso de `static` a nivel de archivo que proviene de C. Sin embargo, `static` todavía funciona para funciones y variables. La **ventaja clave** de los namespaces anónimos es que también pueden contener definiciones de clases, structs y enumeraciones con enlace interno, algo que `static` **no puede hacer**.
+
+##### Ejemplo de Namespace Anónimo vs `static`
+
+```cpp
+#include <iostream>
+#include <string>
+
+// =============================================
+// Enfoque 1: Usando 'static' (estilo C)
+// Funciona para funciones y variables, pero NO para clases/structs/enums
+// =============================================
+static int contadorArchivo = 0;
+
+static void incrementarContador() {
+    contadorArchivo++;
+}
+
+// static class MiClase {}; // ERROR: 'static' no se puede usar con clases
+
+// =============================================
+// Enfoque 2: Usando namespace anónimo (recomendado en C++)
+// Funciona para TODO: funciones, variables, clases, structs, enums
+// =============================================
+namespace {
+    int contadorModulo = 0;
+
+    void incrementarModulo() {
+        contadorModulo++;
+    }
+
+    // Esto SÍ es posible con namespace anónimo
+    struct DatosInternos {
+        std::string nombre;
+        int valor;
+
+        std::string toString() const {
+            return nombre + ": " + std::to_string(valor);
+        }
+    };
+
+    enum class EstadoInterno {
+        Activo,
+        Inactivo,
+        Error
+    };
+
+    std::string estadoATexto(EstadoInterno estado) {
+        switch (estado) {
+            case EstadoInterno::Activo:   return "Activo";
+            case EstadoInterno::Inactivo: return "Inactivo";
+            case EstadoInterno::Error:    return "Error";
+        }
+        return "Desconocido";
+    }
+}
+
+int main() {
+    // Ambos enfoques funcionan para funciones y variables
+    incrementarContador();
+    incrementarModulo();
+    std::cout << "Contador static: " << contadorArchivo << std::endl;
+    std::cout << "Contador anónimo: " << contadorModulo << std::endl;
+
+    // Solo el namespace anónimo permite clases y enums internos
+    DatosInternos datos{"Sensor", 42};
+    std::cout << datos.toString() << std::endl;
+    std::cout << "Estado: " << estadoATexto(EstadoInterno::Activo) << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `static` funciona para `contadorArchivo` e `incrementarContador`, pero no puede aplicarse a clases ni enumeraciones.
+- El namespace anónimo permite encapsular funciones, variables, clases (`DatosInternos`), y enumeraciones (`EstadoInterno`) con enlace interno.
+- En código C++ moderno, se recomienda usar namespaces anónimos como enfoque unificado para todo tipo de declaraciones con enlace interno.
+
+#### `constexpr` y `consteval` en Namespaces Anónimos
+
+Las funciones `constexpr` y `consteval` (C++20) dentro de namespaces anónimos son útiles para definir **utilidades de tiempo de compilación locales al archivo**. Dado que las funciones `constexpr` son `inline` por defecto, si se definen en un header sin namespace anónimo, múltiples unidades de traducción podrían incluirlas y causar problemas con la ODR (One Definition Rule). Colocarlas en un namespace anónimo garantiza enlace interno y elimina ese riesgo.
+
+##### Ejemplo de `constexpr` y `consteval` en Namespace Anónimo
+
+```cpp
+#include <iostream>
+#include <array>
+#include <cstddef>
+
+namespace {
+    // constexpr: evaluable en tiempo de compilación O en tiempo de ejecución
+    constexpr int potencia(int base, int exponente) {
+        int resultado = 1;
+        for (int i = 0; i < exponente; ++i) {
+            resultado *= base;
+        }
+        return resultado;
+    }
+
+    // constexpr: genera tabla de cuadrados en tiempo de compilación
+    template <std::size_t N>
+    constexpr std::array<int, N> generarCuadrados() {
+        std::array<int, N> tabla{};
+        for (std::size_t i = 0; i < N; ++i) {
+            tabla[i] = static_cast<int>(i * i);
+        }
+        return tabla;
+    }
+
+    // consteval (C++20): SOLO evaluable en tiempo de compilación
+    consteval int factorialCompilacion(int n) {
+        int resultado = 1;
+        for (int i = 2; i <= n; ++i) {
+            resultado *= i;
+        }
+        return resultado;
+    }
+
+    // constexpr para validación en tiempo de compilación
+    constexpr bool esPrimo(int n) {
+        if (n < 2) return false;
+        for (int i = 2; i * i <= n; ++i) {
+            if (n % i == 0) return false;
+        }
+        return true;
+    }
+}
+
+int main() {
+    // Uso en tiempo de compilación (constexpr)
+    constexpr int resultado = potencia(2, 10);
+    std::cout << "2^10 = " << resultado << std::endl;
+
+    // Tabla generada completamente en tiempo de compilación
+    constexpr auto cuadrados = generarCuadrados<8>();
+    std::cout << "Cuadrados: ";
+    for (int c : cuadrados) {
+        std::cout << c << " ";
+    }
+    std::cout << std::endl;
+
+    // consteval: siempre en tiempo de compilación
+    constexpr int fact = factorialCompilacion(6);
+    std::cout << "6! = " << fact << std::endl;
+
+    // Validación en tiempo de compilación con static_assert
+    static_assert(esPrimo(17), "17 debe ser primo");
+    static_assert(!esPrimo(15), "15 no debe ser primo");
+    std::cout << "Validaciones de primos correctas" << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `potencia` y `generarCuadrados` son `constexpr`: pueden evaluarse tanto en compilación como en ejecución.
+- `factorialCompilacion` es `consteval`: el compilador **obliga** a que se evalúe en tiempo de compilación.
+- `esPrimo` se usa con `static_assert` para validar condiciones en compilación.
+- Al estar en un namespace anónimo, estas funciones tienen enlace interno: cada unidad de traducción que incluya este código tendrá su propia copia, evitando violaciones de la ODR.
+
 ### Conclusión
 
 Los namespaces sin nombre en C++ son una herramienta poderosa para limitar el alcance de funciones, variables y clases al archivo en el que se definen. Esto ayuda a evitar conflictos de nombres y mejora la encapsulación del código. Utilizar namespaces sin nombre de manera adecuada puede resultar en un código más limpio, organizado y mantenible, garantizando que las definiciones internas no interfieran con otras partes del proyecto.
@@ -124,6 +286,10 @@ Sintaxis
 Sintaxis Result
 Ejemplo con `static`
 Ejemplo con `static` Result
+Ejemplo de Namespace Anónimo vs `static`
+Ejemplo de Namespace Anónimo vs `static` Result
+Ejemplo de `constexpr` y `consteval` en Namespace Anónimo
+Ejemplo de `constexpr` y `consteval` en Namespace Anónimo Result
 <---Sintaxis--->
 ```cpp
 namespace {
@@ -194,3 +360,142 @@ int main() {
     return 0;
 }
 <---Ejemplo con `static` Result--->
+<---Ejemplo de Namespace Anónimo vs `static`--->
+```cpp
+#include <iostream>
+#include <string>
+
+// =============================================
+// Enfoque 1: Usando 'static' (estilo C)
+// Funciona para funciones y variables, pero NO para clases/structs/enums
+// =============================================
+static int contadorArchivo = 0;
+
+static void incrementarContador() {
+    contadorArchivo++;
+}
+
+// static class MiClase {}; // ERROR: 'static' no se puede usar con clases
+
+// =============================================
+// Enfoque 2: Usando namespace anónimo (recomendado en C++)
+// Funciona para TODO: funciones, variables, clases, structs, enums
+// =============================================
+namespace {
+    int contadorModulo = 0;
+
+    void incrementarModulo() {
+        contadorModulo++;
+    }
+
+    // Esto SÍ es posible con namespace anónimo
+    struct DatosInternos {
+        std::string nombre;
+        int valor;
+
+        std::string toString() const {
+            return nombre + ": " + std::to_string(valor);
+        }
+    };
+
+    enum class EstadoInterno {
+        Activo,
+        Inactivo,
+        Error
+    };
+
+    std::string estadoATexto(EstadoInterno estado) {
+        switch (estado) {
+            case EstadoInterno::Activo:   return "Activo";
+            case EstadoInterno::Inactivo: return "Inactivo";
+            case EstadoInterno::Error:    return "Error";
+        }
+        return "Desconocido";
+    }
+}
+
+int main() {
+    // Ambos enfoques funcionan para funciones y variables
+    incrementarContador();
+    incrementarModulo();
+    std::cout << "Contador static: " << contadorArchivo << std::endl;
+    std::cout << "Contador anónimo: " << contadorModulo << std::endl;
+
+    // Solo el namespace anónimo permite clases y enums internos
+    DatosInternos datos{"Sensor", 42};
+    std::cout << datos.toString() << std::endl;
+    std::cout << "Estado: " << estadoATexto(EstadoInterno::Activo) << std::endl;
+
+    return 0;
+}
+<---Ejemplo de Namespace Anónimo vs `static` Result--->
+<---Ejemplo de `constexpr` y `consteval` en Namespace Anónimo--->
+```cpp
+#include <iostream>
+#include <array>
+#include <cstddef>
+
+namespace {
+    // constexpr: evaluable en tiempo de compilación O en tiempo de ejecución
+    constexpr int potencia(int base, int exponente) {
+        int resultado = 1;
+        for (int i = 0; i < exponente; ++i) {
+            resultado *= base;
+        }
+        return resultado;
+    }
+
+    // constexpr: genera tabla de cuadrados en tiempo de compilación
+    template <std::size_t N>
+    constexpr std::array<int, N> generarCuadrados() {
+        std::array<int, N> tabla{};
+        for (std::size_t i = 0; i < N; ++i) {
+            tabla[i] = static_cast<int>(i * i);
+        }
+        return tabla;
+    }
+
+    // consteval (C++20): SOLO evaluable en tiempo de compilación
+    consteval int factorialCompilacion(int n) {
+        int resultado = 1;
+        for (int i = 2; i <= n; ++i) {
+            resultado *= i;
+        }
+        return resultado;
+    }
+
+    // constexpr para validación en tiempo de compilación
+    constexpr bool esPrimo(int n) {
+        if (n < 2) return false;
+        for (int i = 2; i * i <= n; ++i) {
+            if (n % i == 0) return false;
+        }
+        return true;
+    }
+}
+
+int main() {
+    // Uso en tiempo de compilación (constexpr)
+    constexpr int resultado = potencia(2, 10);
+    std::cout << "2^10 = " << resultado << std::endl;
+
+    // Tabla generada completamente en tiempo de compilación
+    constexpr auto cuadrados = generarCuadrados<8>();
+    std::cout << "Cuadrados: ";
+    for (int c : cuadrados) {
+        std::cout << c << " ";
+    }
+    std::cout << std::endl;
+
+    // consteval: siempre en tiempo de compilación
+    constexpr int fact = factorialCompilacion(6);
+    std::cout << "6! = " << fact << std::endl;
+
+    // Validación en tiempo de compilación con static_assert
+    static_assert(esPrimo(17), "17 debe ser primo");
+    static_assert(!esPrimo(15), "15 no debe ser primo");
+    std::cout << "Validaciones de primos correctas" << std::endl;
+
+    return 0;
+}
+<---Ejemplo de `constexpr` y `consteval` en Namespace Anónimo Result--->

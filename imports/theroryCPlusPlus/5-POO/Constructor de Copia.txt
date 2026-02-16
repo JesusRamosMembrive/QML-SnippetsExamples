@@ -205,6 +205,133 @@ int main() {
 
 En este ejemplo, la clase `Recurso` implementa la regla de tres, asegurando una gestión adecuada de la memoria dinámica.
 
+### La Regla de Cero
+
+La **Regla de Cero** es el complemento moderno de la Regla de Tres (y la Regla de Cinco). Establece que si una clase no gestiona recursos crudos directamente (como punteros `new`/`delete`, handles de archivos, etc.), **no debe definir ninguna función miembro especial**: ni destructor, ni constructor de copia, ni operador de asignación, ni sus equivalentes de movimiento.
+
+En su lugar, se deben usar tipos de la biblioteca estándar como `std::string`, `std::vector`, `std::unique_ptr`, etc., que ya gestionan sus propios recursos correctamente. Al componer la clase con estos tipos, el compilador genera automáticamente constructores de copia, movimiento y destructor que funcionan correctamente.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+// Regla de Cero: no definir ningún método especial
+// Los tipos estándar (string, vector, etc.) ya gestionan sus recursos
+class Persona {
+    string nombre;
+    int edad;
+    vector<string> hobbies;
+public:
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    void agregarHobby(const string& h) { hobbies.push_back(h); }
+
+    void mostrar() const {
+        cout << nombre << ", " << edad << " años" << endl;
+        for (const auto& h : hobbies) cout << "  - " << h << endl;
+    }
+    // No necesita destructor, constructor de copia, ni operador de asignación
+    // porque string y vector ya los gestionan correctamente
+};
+
+int main() {
+    Persona p1("Ana", 25);
+    p1.agregarHobby("Lectura");
+    p1.agregarHobby("Natación");
+
+    Persona p2 = p1;  // Copia profunda automática (string y vector lo hacen)
+    p2.agregarHobby("Música");
+
+    p1.mostrar();
+    p2.mostrar();  // p2 tiene "Música" pero p1 no
+    return 0;
+}
+```
+
+### `= delete` para Prohibir la Copia
+
+En C++11 y posteriores, se puede usar `= delete` para prohibir explícitamente la copia de una clase. Esto es útil para clases que representan recursos únicos que no deben duplicarse, como conexiones de base de datos, handles de archivos, o mutexes.
+
+Al marcar el constructor de copia y el operador de asignación como `= delete`, cualquier intento de copiar el objeto generará un **error en tiempo de compilación**, lo cual es preferible a descubrir el problema en tiempo de ejecución. Combinado con constructores y operadores de movimiento, se permite transferir la propiedad del recurso sin duplicarlo.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Clase que NO debe copiarse (recurso único)
+class ConexionBD {
+    string url;
+    // ... handle de conexión
+public:
+    ConexionBD(const string& u) : url(u) {
+        cout << "Conectado a " << url << endl;
+    }
+
+    // Prohibir copia explícitamente
+    ConexionBD(const ConexionBD&) = delete;
+    ConexionBD& operator=(const ConexionBD&) = delete;
+
+    // Permitir movimiento
+    ConexionBD(ConexionBD&& other) noexcept : url(std::move(other.url)) {}
+    ConexionBD& operator=(ConexionBD&& other) noexcept {
+        url = std::move(other.url);
+        return *this;
+    }
+
+    void consultar() const { cout << "Consultando " << url << endl; }
+};
+
+int main() {
+    ConexionBD c1("postgresql://localhost/db");
+    // ConexionBD c2 = c1;      // ERROR: copia prohibida
+    ConexionBD c2 = std::move(c1); // OK: movimiento
+    c2.consultar();
+    return 0;
+}
+```
+
+### Copia en Qt: `Q_DISABLE_COPY`
+
+En Qt, `QObject` y todas sus subclases son **no copiables por diseño**. Esto se debe a que cada `QObject` tiene una identidad única en el sistema de metaobjetos: tiene un nombre, pertenece a una jerarquía padre-hijo, puede tener conexiones de señales y slots, y mantiene propiedades dinámicas. Copiar todo esto generaría ambigüedades y errores difíciles de diagnosticar.
+
+El macro `Q_DISABLE_COPY(Clase)` genera automáticamente `= delete` para el constructor de copia y el operador de asignación de copia, previniendo copias accidentales.
+
+Sin embargo, muchas clases de Qt que **no** heredan de `QObject` (como `QString`, `QList`, `QMap`, `QVariant`) sí son copiables. Estas clases usan internamente **Copy-on-Write (COW)**: al copiar, solo se comparte un puntero al bloque de datos; la copia real de los datos se realiza solo cuando uno de los objetos modifica el contenido. Esto hace que las copias sean muy eficientes.
+
+```cpp
+#include <QObject>
+#include <QDebug>
+
+// QObject NO es copiable por diseño
+// Q_DISABLE_COPY genera automáticamente = delete para copia
+
+class Controlador : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY(Controlador)
+    // Equivale a:
+    // Controlador(const Controlador&) = delete;
+    // Controlador& operator=(const Controlador&) = delete;
+
+public:
+    explicit Controlador(QObject *parent = nullptr)
+        : QObject(parent) {}
+
+    // Para clases Qt que SÍ necesitan copiarse (sin QObject):
+    // Se puede implementar el patrón clone()
+};
+
+// Clases Qt copiables (no heredan QObject):
+// QString, QList, QMap, QVariant - todas son copiables
+// Usan Copy-on-Write (COW) internamente para eficiencia
+
+// Ejemplo COW:
+// QString s1 = "Hola";
+// QString s2 = s1;       // No copia datos, comparten memoria
+// s2.append(" Mundo");   // Ahora sí copia (copy-on-write)
+```
+
 ### Conclusión
 
 El constructor de copia es una característica esencial en C++ para la correcta gestión de la copia de objetos, especialmente cuando estos manejan recursos dinámicos. Implementar un constructor de copia adecuada previene problemas relacionados con copias superficiales y doble liberación de memoria. La regla de tres asegura que los destructores, constructores de copia y operadores de asignación de copia estén correctamente implementados para garantizar la integridad y eficiencia del manejo de recursos en las clases.
@@ -215,6 +342,12 @@ Solución con Constructor de Copia Profunda
 Solución con Constructor de Copia Profunda Result
 Ejemplo Completo con la Regla de Tres
 Ejemplo Completo con la Regla de Tres Result
+La Regla de Cero
+La Regla de Cero Result
+Prohibir la Copia con delete
+Prohibir la Copia con delete Result
+Copia en Qt Q_DISABLE_COPY
+Copia en Qt Q_DISABLE_COPY Result
 <---Problema de la Copia Superficial--->
 ```cpp
 class Cadena {
@@ -342,3 +475,110 @@ int main() {
     return 0;
 }
 <---Ejemplo Completo con la Regla de Tres Result--->
+<---La Regla de Cero--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+// Regla de Cero: no definir ningún método especial
+// Los tipos estándar (string, vector, etc.) ya gestionan sus recursos
+class Persona {
+    string nombre;
+    int edad;
+    vector<string> hobbies;
+public:
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    void agregarHobby(const string& h) { hobbies.push_back(h); }
+
+    void mostrar() const {
+        cout << nombre << ", " << edad << " años" << endl;
+        for (const auto& h : hobbies) cout << "  - " << h << endl;
+    }
+    // No necesita destructor, constructor de copia, ni operador de asignación
+    // porque string y vector ya los gestionan correctamente
+};
+
+int main() {
+    Persona p1("Ana", 25);
+    p1.agregarHobby("Lectura");
+    p1.agregarHobby("Natación");
+
+    Persona p2 = p1;  // Copia profunda automática (string y vector lo hacen)
+    p2.agregarHobby("Música");
+
+    p1.mostrar();
+    p2.mostrar();  // p2 tiene "Música" pero p1 no
+    return 0;
+}
+<---La Regla de Cero Result--->
+<---Prohibir la Copia con delete--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Clase que NO debe copiarse (recurso único)
+class ConexionBD {
+    string url;
+    // ... handle de conexión
+public:
+    ConexionBD(const string& u) : url(u) {
+        cout << "Conectado a " << url << endl;
+    }
+
+    // Prohibir copia explícitamente
+    ConexionBD(const ConexionBD&) = delete;
+    ConexionBD& operator=(const ConexionBD&) = delete;
+
+    // Permitir movimiento
+    ConexionBD(ConexionBD&& other) noexcept : url(std::move(other.url)) {}
+    ConexionBD& operator=(ConexionBD&& other) noexcept {
+        url = std::move(other.url);
+        return *this;
+    }
+
+    void consultar() const { cout << "Consultando " << url << endl; }
+};
+
+int main() {
+    ConexionBD c1("postgresql://localhost/db");
+    // ConexionBD c2 = c1;      // ERROR: copia prohibida
+    ConexionBD c2 = std::move(c1); // OK: movimiento
+    c2.consultar();
+    return 0;
+}
+<---Prohibir la Copia con delete Result--->
+<---Copia en Qt Q_DISABLE_COPY--->
+```cpp
+#include <QObject>
+#include <QDebug>
+
+// QObject NO es copiable por diseño
+// Q_DISABLE_COPY genera automáticamente = delete para copia
+
+class Controlador : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY(Controlador)
+    // Equivale a:
+    // Controlador(const Controlador&) = delete;
+    // Controlador& operator=(const Controlador&) = delete;
+
+public:
+    explicit Controlador(QObject *parent = nullptr)
+        : QObject(parent) {}
+
+    // Para clases Qt que SÍ necesitan copiarse (sin QObject):
+    // Se puede implementar el patrón clone()
+};
+
+// Clases Qt copiables (no heredan QObject):
+// QString, QList, QMap, QVariant - todas son copiables
+// Usan Copy-on-Write (COW) internamente para eficiencia
+
+// Ejemplo COW:
+// QString s1 = "Hola";
+// QString s2 = s1;       // No copia datos, comparten memoria
+// s2.append(" Mundo");   // Ahora sí copia (copy-on-write)
+<---Copia en Qt Q_DISABLE_COPY Result--->

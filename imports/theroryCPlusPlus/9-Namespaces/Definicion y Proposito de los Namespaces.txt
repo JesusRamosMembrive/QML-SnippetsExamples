@@ -139,6 +139,96 @@ int main() {
 
 En este ejemplo, `funcionPrivada` solo es accesible dentro del archivo donde se define, ya que está en un namespace anónimo.
 
+#### `inline namespace` (C++11): Versionado de APIs
+
+A partir de C++11, se introdujo el concepto de `inline namespace`. Un `inline namespace` hace que todos sus miembros sean accesibles como si estuvieran directamente en el namespace que lo contiene. Esto es especialmente útil para el **versionado de APIs**: se pueden mantener múltiples versiones de una biblioteca y seleccionar cuál es la versión predeterminada marcándola como `inline`.
+
+Cuando un namespace se declara como `inline`, el compilador permite acceder a sus miembros tanto con el nombre completo como sin el nivel intermedio del namespace inline. Las versiones anteriores siguen disponibles usando su calificador completo.
+
+##### Ejemplo de inline namespace para Versionado
+
+```cpp
+#include <iostream>
+
+namespace Graficos {
+    namespace v1 {
+        void renderizar() {
+            std::cout << "Graficos v1: Renderizado básico con rasterización" << std::endl;
+        }
+    }
+
+    // La versión 2 es la predeterminada gracias a 'inline'
+    inline namespace v2 {
+        void renderizar() {
+            std::cout << "Graficos v2: Renderizado avanzado con ray tracing" << std::endl;
+        }
+    }
+}
+
+int main() {
+    // Usa v2 automáticamente (es el inline namespace)
+    Graficos::renderizar();
+
+    // Se puede acceder explícitamente a v1 si se necesita
+    Graficos::v1::renderizar();
+
+    // También se puede acceder explícitamente a v2
+    Graficos::v2::renderizar();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Graficos::v2` está marcado como `inline`, por lo que `Graficos::renderizar()` llama a la versión v2 automáticamente.
+- Los usuarios que necesiten la versión anterior pueden usar `Graficos::v1::renderizar()` explícitamente.
+- Este patrón es el estándar para versionado de APIs en bibliotecas de C++ moderno.
+
+#### Módulos en C++20: El Futuro de la Organización de Código
+
+C++20 introdujo los **módulos**, una nueva forma de organizar y compartir código que complementa y en muchos casos puede reemplazar el modelo tradicional de namespaces + archivos de cabecera (`#include`). Los módulos ofrecen varias ventajas significativas:
+
+1. **Mejor encapsulación:** Solo se exporta lo que se declara explícitamente con `export`, a diferencia de los headers donde todo lo incluido es visible.
+2. **Compilación más rápida:** Los módulos se compilan una sola vez y se reutilizan, eliminando la recompilación repetida de headers.
+3. **Sin problemas de headers:** No hay dependencias de orden de inclusión, guardas de inclusión (`#pragma once` / `#ifndef`), ni macros que se filtren entre archivos.
+4. **Independencia del preprocesador:** Los módulos no dependen de `#include` ni del preprocesador de C.
+
+##### Ejemplo de Módulos en C++20
+
+```cpp
+// --- Archivo: matematicas.cppm (declaración del módulo) ---
+export module Matematicas;
+
+export const double PI = 3.141592653589793;
+
+export double cuadrado(double x) {
+    return x * x;
+}
+
+export double areaCirculo(double radio) {
+    return PI * cuadrado(radio);
+}
+
+// --- Archivo: main.cpp (uso del módulo) ---
+import Matematicas;
+#include <iostream>
+
+int main() {
+    double radio = 5.0;
+    std::cout << "El área del círculo con radio " << radio
+              << " es " << areaCirculo(radio) << std::endl;
+    // Se accede directamente a las funciones exportadas
+    std::cout << "PI = " << PI << std::endl;
+    return 0;
+}
+```
+
+En este ejemplo:
+- `export module Matematicas;` declara un módulo llamado `Matematicas`.
+- Las funciones y constantes marcadas con `export` son accesibles desde otros archivos que importen el módulo.
+- `import Matematicas;` importa el módulo sin necesidad de `#include` ni archivos de cabecera.
+- Los módulos y los namespaces pueden usarse juntos: un módulo puede contener namespaces internos para organizar su contenido.
+
 ### Conclusión
 
 Los namespaces en C++ son una herramienta poderosa para organizar el código y evitar conflictos de nombres. Permiten agrupar definiciones relacionadas, mejorar la modularidad y la mantenibilidad del código, y facilitar la integración de múltiples librerías en un programa. Utilizar namespaces de manera adecuada es crucial para escribir código limpio, organizado y libre de colisiones de nombres.
@@ -147,6 +237,10 @@ Sintaxis
 Sintaxis Result
 Ejemplo
 Ejemplo Result
+Ejemplo de inline namespace para Versionado
+Ejemplo de inline namespace para Versionado Result
+Ejemplo de Módulos en C++20
+Ejemplo de Módulos en C++20 Result
 <---Sintaxis--->
 ```cpp
 namespace nombre_del_namespace {
@@ -168,3 +262,63 @@ int main() {
     return 0;
 }
 <---Ejemplo Result--->
+<---Ejemplo de inline namespace para Versionado--->
+```cpp
+#include <iostream>
+
+namespace Graficos {
+    namespace v1 {
+        void renderizar() {
+            std::cout << "Graficos v1: Renderizado básico con rasterización" << std::endl;
+        }
+    }
+
+    // La versión 2 es la predeterminada gracias a 'inline'
+    inline namespace v2 {
+        void renderizar() {
+            std::cout << "Graficos v2: Renderizado avanzado con ray tracing" << std::endl;
+        }
+    }
+}
+
+int main() {
+    // Usa v2 automáticamente (es el inline namespace)
+    Graficos::renderizar();
+
+    // Se puede acceder explícitamente a v1 si se necesita
+    Graficos::v1::renderizar();
+
+    // También se puede acceder explícitamente a v2
+    Graficos::v2::renderizar();
+
+    return 0;
+}
+<---Ejemplo de inline namespace para Versionado Result--->
+<---Ejemplo de Módulos en C++20--->
+```cpp
+// --- Archivo: matematicas.cppm (declaración del módulo) ---
+export module Matematicas;
+
+export const double PI = 3.141592653589793;
+
+export double cuadrado(double x) {
+    return x * x;
+}
+
+export double areaCirculo(double radio) {
+    return PI * cuadrado(radio);
+}
+
+// --- Archivo: main.cpp (uso del módulo) ---
+import Matematicas;
+#include <iostream>
+
+int main() {
+    double radio = 5.0;
+    std::cout << "El área del círculo con radio " << radio
+              << " es " << areaCirculo(radio) << std::endl;
+    // Se accede directamente a las funciones exportadas
+    std::cout << "PI = " << PI << std::endl;
+    return 0;
+}
+<---Ejemplo de Módulos en C++20 Result--->

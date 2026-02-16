@@ -134,12 +134,69 @@ int main() {
 3. **Punteros Inteligentes:** `auto` se utiliza para deducir el tipo de un puntero inteligente, haciendo el código más claro y menos propenso a errores.
 
 El uso de `auto` en C++ proporciona una forma más limpia y concisa de declarar variables, especialmente cuando los tipos son largos o complejos. Sin embargo, es importante entender cómo `auto` deduce los tipos para evitar errores sutiles en el código.
+
+### `auto` con Contenedores y APIs de Qt
+
+`auto` es especialmente útil en código Qt, donde los tipos pueden ser largos:
+
+#### Con contenedores Qt
+
+```cpp
+#include <QList>
+#include <QMap>
+#include <QDebug>
+
+QList<int> numeros = {1, 2, 3, 4, 5};
+auto it = numeros.begin();              // QList<int>::iterator
+
+QMap<QString, int> edades = {{"Ana", 25}, {"Carlos", 30}};
+auto valor = edades.value("Ana");       // int
+
+// Range-for con auto (uso muy frecuente en Qt)
+for (const auto &nombre : edades.keys()) {
+    qDebug() << nombre << edades[nombre];
+}
+```
+
+#### Con señales y lambdas
+
+`auto` es común al conectar señales a lambdas:
+
+```cpp
+auto *boton = new QPushButton("Click");
+QObject::connect(boton, &QPushButton::clicked, [](bool checked) {
+    qDebug() << "Clicked:" << checked;
+});
+
+// auto para almacenar la conexión (útil para desconectar después)
+auto conexion = QObject::connect(boton, &QPushButton::clicked, []() {
+    qDebug() << "Clicked!";
+});
+QObject::disconnect(conexion);
+```
+
+#### Structured bindings (C++17) con Qt
+
+```cpp
+QMap<QString, int> mapa = {{"x", 10}, {"y", 20}};
+
+// C++17: descomponer par clave-valor
+for (auto it = mapa.cbegin(); it != mapa.cend(); ++it) {
+    auto [clave, valor] = *it;  // structured binding (C++17, no soportado con range-for en QMap directamente)
+    qDebug() << clave << "=" << valor;
+}
+```
+
+> **Nota:** En Qt, `auto` no debe usarse en declaraciones de señales/slots en la cabecera (el MOC necesita tipos explícitos).
+
 <---FILES--->
-**Con Iteradores**
-**Con Iteradores** Result
-**Con Punteros Inteligentes**
-**Con Punteros Inteligentes** Result
-<---**Con Iteradores**--->
+Con Iteradores
+Con Iteradores Result
+Con Punteros Inteligentes
+Con Punteros Inteligentes Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Con Iteradores--->
 ```cpp
 #include <vector>
 #include <iostream>
@@ -158,18 +215,16 @@ int main() {
 
     return 0;
 }
-<---**Con Iteradores** Result--->
-<---**Con Punteros Inteligentes**--->
+```
+<---Con Iteradores Result--->
+<---Con Punteros Inteligentes--->
 ```cpp
 #include <memory>
 #include <iostream>
 using namespace std;
 
 int main() {
-    // Declaración explícita
     unique_ptr<int> punteroInt(new int(10));
-
-    // Declaración con auto
     auto punteroAuto = make_unique<int>(20);
 
     cout << "Valor apuntado por punteroInt: " << *punteroInt << endl;
@@ -177,6 +232,9 @@ int main() {
 
     return 0;
 }
+```
+<---Con Punteros Inteligentes Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <vector>
 #include <iostream>
@@ -184,20 +242,16 @@ int main() {
 using namespace std;
 
 int main() {
-    // Inicialización básica
     auto numero = 10;         // int
     auto decimal = 3.14;      // double
     auto caracter = 'A';      // char
     auto booleano = true;     // bool
 
-    // Uso con contenedores
     vector<int> numeros = {1, 2, 3, 4, 5};
-    auto it = numeros.begin(); // vector<int>::iterator
+    auto it = numeros.begin();
 
-    // Uso con punteros inteligentes
     auto puntero = make_unique<int>(100);
 
-    // Salida de los valores
     cout << "Número: " << numero << endl;
     cout << "Decimal: " << decimal << endl;
     cout << "Carácter: " << caracter << endl;
@@ -207,4 +261,5 @@ int main() {
 
     return 0;
 }
-<---**Con Punteros Inteligentes** Result--->
+```
+<---Ejemplo Completo Result--->

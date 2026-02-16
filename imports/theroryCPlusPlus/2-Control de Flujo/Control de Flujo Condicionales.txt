@@ -202,29 +202,95 @@ int main() {
 }
 ```
 
+#### 5. **Atributo `[[fallthrough]]` (C++17)**
+
+Cuando en un `switch` se omite `break` intencionalmente, se usa `[[fallthrough]]` para indicar al compilador que es deliberado:
+
+```cpp
+switch (nivel) {
+    case 3:
+        aplicarPermisoAdmin();
+        [[fallthrough]];
+    case 2:
+        aplicarPermisoEditor();
+        [[fallthrough]];
+    case 1:
+        aplicarPermisoLector();
+        break;
+    default:
+        break;
+}
+```
+
+### Condicionales en el Contexto de Qt
+
+#### `switch` con enums de Qt
+
+Un patrón muy común en Qt es usar `switch` con los enums que definen estados, tipos de evento, etc.:
+
+```cpp
+void MiWidget::keyPressEvent(QKeyEvent *event) {
+    switch (event->key()) {
+        case Qt::Key_Enter:
+        case Qt::Key_Return:
+            aceptar();
+            break;
+        case Qt::Key_Escape:
+            cancelar();
+            break;
+        default:
+            QWidget::keyPressEvent(event);  // Pasar al padre
+            break;
+    }
+}
+```
+
+#### `qobject_cast` con condicionales
+
+Para determinar el tipo dinámico de un `QObject`, se usa `qobject_cast` (el "dynamic_cast de Qt"):
+
+```cpp
+void procesarWidget(QObject *obj) {
+    if (auto *boton = qobject_cast<QPushButton*>(obj)) {
+        qDebug() << "Es un botón:" << boton->text();
+    } else if (auto *label = qobject_cast<QLabel*>(obj)) {
+        qDebug() << "Es un label:" << label->text();
+    } else {
+        qDebug() << "Tipo desconocido:" << obj->metaObject()->className();
+    }
+}
+```
+
+#### Condicionales en QML
+
+En QML, los condicionales se usan en JavaScript dentro de handlers y en bindings con el operador ternario:
+
+```qml
+// Ternario en bindings (muy frecuente)
+color: mouseArea.pressed ? "red" : "blue"
+visible: model.count > 0
+
+// if-else en handlers
+onClicked: {
+    if (estado === "activo") {
+        desactivar()
+    } else {
+        activar()
+    }
+}
+```
+
 ### Conclusión
 
 El uso de estructuras condicionales en C++ permite a los programadores controlar el flujo de ejecución del programa de manera efectiva. Entender cómo y cuándo usar `if`, `else if`, `else`, y `switch` es esencial para escribir código claro y eficiente.
 <---FILES--->
-Sintaxis Básica
-Sintaxis Básica Result
-Ejemplo
-Ejemplo Result
-<---Sintaxis Básica--->
-```cpp
-switch (variable) {
-    case valor1:
-        // Código a ejecutar si variable == valor1
-        break;
-    case valor2:
-        // Código a ejecutar si variable == valor2
-        break;
-    // Más casos según sea necesario
-    default:
-        // Código a ejecutar si ningún caso coincide
-}
-<---Sintaxis Básica Result--->
-<---Ejemplo--->
+Switch con Dias
+Switch con Dias Result
+if-else if-else
+if-else if-else Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Switch con Dias--->
 ```cpp
 #include <iostream>
 using namespace std;
@@ -232,33 +298,38 @@ using namespace std;
 int main() {
     int dia = 3;
     switch (dia) {
-        case 1:
-            cout << "Lunes" << endl;
-            break;
-        case 2:
-            cout << "Martes" << endl;
-            break;
-        case 3:
-            cout << "Miércoles" << endl;
-            break;
-        case 4:
-            cout << "Jueves" << endl;
-            break;
-        case 5:
-            cout << "Viernes" << endl;
-            break;
-        case 6:
-            cout << "Sábado" << endl;
-            break;
-        case 7:
-            cout << "Domingo" << endl;
-            break;
-        default:
-            cout << "Día no válido" << endl;
-            break;
+        case 1: cout << "Lunes" << endl; break;
+        case 2: cout << "Martes" << endl; break;
+        case 3: cout << "Miércoles" << endl; break;
+        case 4: cout << "Jueves" << endl; break;
+        case 5: cout << "Viernes" << endl; break;
+        case 6: cout << "Sábado" << endl; break;
+        case 7: cout << "Domingo" << endl; break;
+        default: cout << "Día no válido" << endl; break;
     }
     return 0;
 }
+```
+<---Switch con Dias Result--->
+<---if-else if-else--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int numero = 7;
+    if (numero > 10) {
+        cout << "El número es mayor que 10." << endl;
+    } else if (numero > 5) {
+        cout << "El número es mayor que 5 pero menor o igual a 10." << endl;
+    } else {
+        cout << "El número es 5 o menor." << endl;
+    }
+    return 0;
+}
+```
+<---if-else if-else Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 using namespace std;
@@ -281,20 +352,13 @@ int main() {
     cin >> opcion;
 
     switch (opcion) {
-        case 'a':
-            cout << "Opción A seleccionada." << endl;
-            break;
-        case 'b':
-            cout << "Opción B seleccionada." << endl;
-            break;
-        case 'c':
-            cout << "Opción C seleccionada." << endl;
-            break;
-        default:
-            cout << "Opción no válida." << endl;
-            break;
+        case 'a': cout << "Opción A seleccionada." << endl; break;
+        case 'b': cout << "Opción B seleccionada." << endl; break;
+        case 'c': cout << "Opción C seleccionada." << endl; break;
+        default: cout << "Opción no válida." << endl; break;
     }
 
     return 0;
 }
-<---Ejemplo Result--->
+```
+<---Ejemplo Completo Result--->

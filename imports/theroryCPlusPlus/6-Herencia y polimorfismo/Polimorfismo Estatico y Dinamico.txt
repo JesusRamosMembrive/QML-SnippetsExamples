@@ -136,6 +136,178 @@ En este ejemplo, la función `hacerSonidoAnimal` acepta una referencia a `Animal
    - **Polimorfismo Estático:** Generalmente más eficiente en términos de uso de recursos ya que no hay sobrecarga en tiempo de ejecución.
    - **Polimorfismo Dinámico:** Puede tener una sobrecarga en tiempo de ejecución debido a la resolución dinámica de las funciones.
 
+#### CRTP: Polimorfismo Estático Avanzado
+
+El **CRTP (Curiously Recurring Template Pattern)** o "Patrón de Plantilla Curiosamente Recurrente" es una técnica avanzada de polimorfismo estático en la que una clase derivada se pasa a sí misma como argumento de plantilla a su clase base. Esto permite que la clase base invoque métodos de la clase derivada **sin funciones virtuales**, ya que la resolución ocurre completamente en tiempo de compilación.
+
+El patrón funciona así:
+1. La clase base es una plantilla parametrizada por el tipo derivado: `template<typename Derivada> class Base`.
+2. La clase base usa `static_cast<Derivada*>(this)` para acceder a los métodos de la derivada.
+3. Cada clase derivada hereda de la base pasándose a sí misma: `class MiClase : public Base<MiClase>`.
+
+**Ventajas sobre el polimorfismo dinámico:**
+- No hay vtable ni overhead de indirección en tiempo de ejecución.
+- El compilador puede optimizar agresivamente (inlining).
+- Resolución completa en tiempo de compilación.
+
+**Desventaja:** No se pueden almacenar diferentes tipos derivados en una misma colección (no hay una clase base común no-template).
+
+##### Ejemplo de CRTP
+
+```cpp
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+// Clase base CRTP: el parámetro de plantilla es la clase derivada
+template <typename Derivada>
+class Forma {
+public:
+    double area() const {
+        // Despacho estático: llama a areaImpl() de la clase derivada
+        return static_cast<const Derivada*>(this)->areaImpl();
+    }
+
+    void describir() const {
+        cout << "Área de la forma: " << area() << endl;
+    }
+};
+
+// Cada derivada se pasa a sí misma como argumento de plantilla
+class Circulo : public Forma<Circulo> {
+    double radio_;
+public:
+    Circulo(double r) : radio_(r) {}
+    double areaImpl() const { return M_PI * radio_ * radio_; }
+};
+
+class Rectangulo : public Forma<Rectangulo> {
+    double ancho_, alto_;
+public:
+    Rectangulo(double a, double b) : ancho_(a), alto_(b) {}
+    double areaImpl() const { return ancho_ * alto_; }
+};
+
+// Función plantilla que acepta cualquier Forma CRTP
+template <typename T>
+void mostrarArea(const Forma<T>& forma) {
+    forma.describir();
+}
+
+int main() {
+    Circulo c(5.0);
+    Rectangulo r(4.0, 6.0);
+
+    mostrarArea(c); // Área de la forma: 78.5398
+    mostrarArea(r); // Área de la forma: 24
+
+    // Nota: no se puede hacer vector<Forma*> porque Forma es un template,
+    // no una clase base común. Esta es la principal limitación del CRTP.
+
+    return 0;
+}
+```
+
+A diferencia de las funciones virtuales, el CRTP resuelve todo en compilación. El compilador sabe exactamente qué función `areaImpl()` llamar en cada caso, lo que permite optimizaciones como el inlining completo.
+
+#### Concepts como Polimorfismo Estático (C++20)
+
+Los **Concepts** de C++20 proporcionan una alternativa más limpia y expresiva al CRTP para lograr polimorfismo estático. Un Concept define un conjunto de requisitos que un tipo debe cumplir, actuando como una "interfaz en tiempo de compilación". A diferencia del CRTP, los Concepts no requieren herencia: cualquier tipo que cumpla los requisitos puede ser utilizado.
+
+Los Concepts ofrecen:
+- **Mensajes de error claros:** Si un tipo no cumple el concepto, el compilador genera un error descriptivo.
+- **Sin acoplamiento:** Los tipos no necesitan heredar de ninguna clase base.
+- **Composición:** Los Concepts se pueden combinar con `&&` y `||`.
+
+##### Ejemplo de Concepts como Polimorfismo Estático
+
+```cpp
+#include <iostream>
+#include <concepts>
+#include <cmath>
+#include <vector>
+using namespace std;
+
+// Definir un Concept: cualquier tipo que tenga un método area() que retorne algo convertible a double
+template <typename T>
+concept Forma = requires(const T& t) {
+    { t.area() } -> convertible_to<double>;
+};
+
+// Concept más completo con múltiples requisitos
+template <typename T>
+concept FormaDescriptible = Forma<T> && requires(const T& t) {
+    { t.nombre() } -> convertible_to<string>;
+};
+
+// Clases independientes (sin herencia de ninguna base)
+struct Circulo {
+    double radio;
+    double area() const { return M_PI * radio * radio; }
+    string nombre() const { return "Círculo"; }
+};
+
+struct Rectangulo {
+    double ancho, alto;
+    double area() const { return ancho * alto; }
+    string nombre() const { return "Rectángulo"; }
+};
+
+struct Triangulo {
+    double base, altura;
+    double area() const { return 0.5 * base * altura; }
+    string nombre() const { return "Triángulo"; }
+};
+
+// Función restringida con Concept (polimorfismo estático limpio)
+void mostrarArea(const Forma auto& forma) {
+    cout << "Área: " << forma.area() << endl;
+}
+
+// Función con Concept compuesto
+void describir(const FormaDescriptible auto& forma) {
+    cout << forma.nombre() << " - Área: " << forma.area() << endl;
+}
+
+// Comparación de enfoques:
+// 1. Virtual: void mostrarArea(const FormaBase& f) { f.area(); }
+//    -> Resolución en ejecución, overhead de vtable
+// 2. CRTP: template<typename T> void mostrarArea(const Forma<T>& f)
+//    -> Resolución en compilación, requiere herencia de plantilla
+// 3. Concept: void mostrarArea(const Forma auto& f)
+//    -> Resolución en compilación, sin herencia, errores claros
+
+int main() {
+    Circulo c{5.0};
+    Rectangulo r{4.0, 6.0};
+    Triangulo t{3.0, 8.0};
+
+    // Polimorfismo estático con Concepts
+    mostrarArea(c); // Área: 78.5398
+    mostrarArea(r); // Área: 24
+    mostrarArea(t); // Área: 12
+
+    describir(c); // Círculo - Área: 78.5398
+    describir(r); // Rectángulo - Área: 24
+    describir(t); // Triángulo - Área: 12
+
+    // Error de compilación claro si el tipo no cumple el Concept:
+    // struct Punto { double x, y; };
+    // mostrarArea(Punto{1.0, 2.0}); // Error: Punto no satisface el concepto 'Forma'
+
+    return 0;
+}
+```
+
+**Comparación resumen:**
+| Característica | Virtual | CRTP | Concepts |
+|---|---|---|---|
+| Resolución | Ejecución | Compilación | Compilación |
+| Herencia requerida | Sí | Sí (plantilla) | No |
+| Colección heterogénea | Sí (`vector<Base*>`) | No | No |
+| Errores del compilador | Buenos | Crípticos | Excelentes |
+| Overhead en ejecución | Vtable | Ninguno | Ninguno |
+
 ### Conclusión
 
 El polimorfismo es una característica fundamental de la programación orientada a objetos que permite a las funciones comportarse de manera diferente según el contexto. En C++, el polimorfismo puede ser estático o dinámico. El polimorfismo estático se resuelve en tiempo de compilación mediante sobrecarga de funciones y plantillas, mientras que el polimorfismo dinámico se resuelve en tiempo de ejecución mediante herencia y funciones virtuales. Entender y utilizar ambos tipos de polimorfismo permite a los desarrolladores diseñar sistemas más flexibles, reutilizables y eficientes.
@@ -146,6 +318,10 @@ Plantillas (Templates)
 Plantillas (Templates) Result
 Ejemplo de Polimorfismo Dinámico
 Ejemplo de Polimorfismo Dinámico Result
+Ejemplo de CRTP
+Ejemplo de CRTP Result
+Ejemplo de Concepts como Polimorfismo Estático
+Ejemplo de Concepts como Polimorfismo Estático Result
 <---Sobrecarga de Funciones--->
 ```cpp
 #include <iostream>
@@ -237,3 +413,135 @@ int main() {
     return 0;
 }
 <---Ejemplo de Polimorfismo Dinámico Result--->
+<---Ejemplo de CRTP--->
+```cpp
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+// Clase base CRTP: el parámetro de plantilla es la clase derivada
+template <typename Derivada>
+class Forma {
+public:
+    double area() const {
+        // Despacho estático: llama a areaImpl() de la clase derivada
+        return static_cast<const Derivada*>(this)->areaImpl();
+    }
+
+    void describir() const {
+        cout << "Área de la forma: " << area() << endl;
+    }
+};
+
+// Cada derivada se pasa a sí misma como argumento de plantilla
+class Circulo : public Forma<Circulo> {
+    double radio_;
+public:
+    Circulo(double r) : radio_(r) {}
+    double areaImpl() const { return M_PI * radio_ * radio_; }
+};
+
+class Rectangulo : public Forma<Rectangulo> {
+    double ancho_, alto_;
+public:
+    Rectangulo(double a, double b) : ancho_(a), alto_(b) {}
+    double areaImpl() const { return ancho_ * alto_; }
+};
+
+// Función plantilla que acepta cualquier Forma CRTP
+template <typename T>
+void mostrarArea(const Forma<T>& forma) {
+    forma.describir();
+}
+
+int main() {
+    Circulo c(5.0);
+    Rectangulo r(4.0, 6.0);
+
+    mostrarArea(c); // Área de la forma: 78.5398
+    mostrarArea(r); // Área de la forma: 24
+
+    // Nota: no se puede hacer vector<Forma*> porque Forma es un template,
+    // no una clase base común. Esta es la principal limitación del CRTP.
+
+    return 0;
+}
+<---Ejemplo de CRTP Result--->
+<---Ejemplo de Concepts como Polimorfismo Estático--->
+```cpp
+#include <iostream>
+#include <concepts>
+#include <cmath>
+#include <vector>
+using namespace std;
+
+// Definir un Concept: cualquier tipo que tenga un método area() que retorne algo convertible a double
+template <typename T>
+concept Forma = requires(const T& t) {
+    { t.area() } -> convertible_to<double>;
+};
+
+// Concept más completo con múltiples requisitos
+template <typename T>
+concept FormaDescriptible = Forma<T> && requires(const T& t) {
+    { t.nombre() } -> convertible_to<string>;
+};
+
+// Clases independientes (sin herencia de ninguna base)
+struct Circulo {
+    double radio;
+    double area() const { return M_PI * radio * radio; }
+    string nombre() const { return "Círculo"; }
+};
+
+struct Rectangulo {
+    double ancho, alto;
+    double area() const { return ancho * alto; }
+    string nombre() const { return "Rectángulo"; }
+};
+
+struct Triangulo {
+    double base, altura;
+    double area() const { return 0.5 * base * altura; }
+    string nombre() const { return "Triángulo"; }
+};
+
+// Función restringida con Concept (polimorfismo estático limpio)
+void mostrarArea(const Forma auto& forma) {
+    cout << "Área: " << forma.area() << endl;
+}
+
+// Función con Concept compuesto
+void describir(const FormaDescriptible auto& forma) {
+    cout << forma.nombre() << " - Área: " << forma.area() << endl;
+}
+
+// Comparación de enfoques:
+// 1. Virtual: void mostrarArea(const FormaBase& f) { f.area(); }
+//    -> Resolución en ejecución, overhead de vtable
+// 2. CRTP: template<typename T> void mostrarArea(const Forma<T>& f)
+//    -> Resolución en compilación, requiere herencia de plantilla
+// 3. Concept: void mostrarArea(const Forma auto& f)
+//    -> Resolución en compilación, sin herencia, errores claros
+
+int main() {
+    Circulo c{5.0};
+    Rectangulo r{4.0, 6.0};
+    Triangulo t{3.0, 8.0};
+
+    // Polimorfismo estático con Concepts
+    mostrarArea(c); // Área: 78.5398
+    mostrarArea(r); // Área: 24
+    mostrarArea(t); // Área: 12
+
+    describir(c); // Círculo - Área: 78.5398
+    describir(r); // Rectángulo - Área: 24
+    describir(t); // Triángulo - Área: 12
+
+    // Error de compilación claro si el tipo no cumple el Concept:
+    // struct Punto { double x, y; };
+    // mostrarArea(Punto{1.0, 2.0}); // Error: Punto no satisface el concepto 'Forma'
+
+    return 0;
+}
+<---Ejemplo de Concepts como Polimorfismo Estático Result--->

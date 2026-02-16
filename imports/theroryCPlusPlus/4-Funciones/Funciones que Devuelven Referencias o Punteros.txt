@@ -155,6 +155,158 @@ int main() {
 
 En este ejemplo, la clase `Contenedor` utiliza funciones que devuelven referencias y punteros para permitir el acceso y modificación directa de los elementos de un vector.
 
+### Smart Pointers como Tipo de Retorno (C++ Moderno)
+
+En C++ moderno, se recomienda evitar el uso de punteros crudos (*raw pointers*) para la gestión de memoria dinámica. En su lugar, se deben usar *smart pointers* (punteros inteligentes) del encabezado `<memory>`, que gestionan automáticamente la vida útil de los objetos y previenen fugas de memoria.
+
+Los tres tipos principales de smart pointers son:
+- **`std::unique_ptr`**: Propiedad exclusiva. Solo un `unique_ptr` puede poseer el recurso a la vez. Es el más ligero y el recomendado por defecto.
+- **`std::shared_ptr`**: Propiedad compartida. Múltiples `shared_ptr` pueden poseer el mismo recurso, que se destruye cuando el último `shared_ptr` se destruye.
+- **`std::weak_ptr`**: Referencia débil a un `shared_ptr`. No incrementa el contador de referencias y se usa para romper ciclos.
+
+##### Ejemplo de Smart Pointers como Retorno
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+class Recurso {
+    string nombre;
+public:
+    Recurso(const string& n) : nombre(n) {
+        cout << "Creando: " << nombre << endl;
+    }
+    ~Recurso() { cout << "Destruyendo: " << nombre << endl; }
+    string getNombre() const { return nombre; }
+};
+
+// unique_ptr: propiedad exclusiva (lo más común)
+unique_ptr<Recurso> crearRecurso(const string& nombre) {
+    return make_unique<Recurso>(nombre);
+}
+
+// shared_ptr: propiedad compartida
+shared_ptr<Recurso> crearRecursoCompartido(const string& nombre) {
+    return make_shared<Recurso>(nombre);
+}
+
+int main() {
+    auto r1 = crearRecurso("Motor");
+    cout << "Recurso: " << r1->getNombre() << endl;
+
+    auto r2 = crearRecursoCompartido("Sensor");
+    auto r3 = r2; // Comparten propiedad
+    cout << "Referencias: " << r2.use_count() << endl; // 2
+
+    return 0;
+} // Recursos se destruyen automáticamente
+```
+
+En este ejemplo, `crearRecurso` devuelve un `unique_ptr` que posee exclusivamente el recurso, mientras que `crearRecursoCompartido` devuelve un `shared_ptr` que permite compartir la propiedad entre múltiples punteros.
+
+### Smart Pointers en Qt: `QSharedPointer` y `QScopedPointer`
+
+Qt proporciona sus propios smart pointers que son equivalentes a los de la biblioteca estándar de C++. Estos fueron creados antes de que C++11 estandarizara los smart pointers y siguen siendo útiles en proyectos Qt por su integración con el ecosistema Qt.
+
+La correspondencia entre los smart pointers estándar y los de Qt es:
+- `std::unique_ptr` corresponde a `QScopedPointer` (propiedad exclusiva dentro de un scope)
+- `std::shared_ptr` corresponde a `QSharedPointer` (propiedad compartida)
+- `std::weak_ptr` corresponde a `QWeakPointer` (referencia débil)
+- `QPointer` es exclusivo de Qt: un puntero observador para objetos `QObject` que se anula automáticamente si el objeto es destruido
+
+##### Ejemplo de Smart Pointers en Qt
+
+```cpp
+#include <QSharedPointer>
+#include <QScopedPointer>
+#include <QDebug>
+#include <QString>
+
+class Sensor {
+    QString tipo;
+public:
+    Sensor(const QString& t) : tipo(t) {
+        qDebug() << "Sensor creado:" << tipo;
+    }
+    ~Sensor() { qDebug() << "Sensor destruido:" << tipo; }
+    QString getTipo() const { return tipo; }
+};
+
+// Equivalente Qt de shared_ptr
+QSharedPointer<Sensor> crearSensor(const QString& tipo) {
+    return QSharedPointer<Sensor>::create(tipo);
+}
+
+void ejemplo() {
+    // QSharedPointer: propiedad compartida (como std::shared_ptr)
+    auto s1 = crearSensor("Temperatura");
+    auto s2 = s1; // Comparten propiedad
+
+    // QScopedPointer: propiedad exclusiva en scope (como unique_ptr)
+    QScopedPointer<Sensor> s3(new Sensor("Presión"));
+    qDebug() << s3->getTipo();
+    // s3 se destruye al salir del scope
+
+    // QPointer: puntero observador para QObject (se anula si el objeto se destruye)
+    // QWeakPointer: versión débil de QSharedPointer
+}
+
+// Comparación:
+// std::unique_ptr    ↔  QScopedPointer
+// std::shared_ptr    ↔  QSharedPointer
+// std::weak_ptr      ↔  QWeakPointer
+// (sin equivalente)  ↔  QPointer (solo para QObject, observador seguro)
+```
+
+### RVO y NRVO: Optimización del Valor de Retorno
+
+RVO (*Return Value Optimization*) y NRVO (*Named Return Value Optimization*) son optimizaciones del compilador que eliminan las copias innecesarias cuando una función devuelve un objeto por valor. El compilador construye el objeto directamente en la ubicación de memoria del receptor, evitando llamar al constructor de copia o al constructor de movimiento.
+
+- **RVO**: Se aplica cuando se retorna un objeto temporal (prvalue). Desde C++17, RVO es **obligatorio** para prvalues, lo que significa que el compilador debe eliminar la copia.
+- **NRVO**: Se aplica cuando se retorna una variable local con nombre. Sigue siendo una optimización opcional, pero prácticamente todos los compiladores modernos la realizan.
+
+Estas optimizaciones significan que devolver objetos grandes por valor es eficiente y preferible a devolver punteros o referencias en la mayoría de los casos.
+
+##### Ejemplo de RVO y NRVO
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Grande {
+    int datos[1000];
+public:
+    Grande() { cout << "Constructor" << endl; }
+    Grande(const Grande&) { cout << "Copia" << endl; }
+    Grande(Grande&&) { cout << "Move" << endl; }
+};
+
+// RVO (Return Value Optimization): el compilador elimina la copia
+Grande crearGrande() {
+    return Grande(); // RVO: construye directamente en el destino
+}
+
+// NRVO (Named RVO): optimiza también variables con nombre
+Grande crearConNombre() {
+    Grande g;        // Variable local con nombre
+    return g;        // NRVO: puede eliminar la copia
+}
+
+int main() {
+    Grande g1 = crearGrande();     // Solo "Constructor", sin copia
+    Grande g2 = crearConNombre();  // Solo "Constructor" (con NRVO)
+
+    // Nota: RVO es obligatorio desde C++17 para prvalues
+    // NRVO sigue siendo opcional (pero casi todos los compiladores lo hacen)
+    return 0;
+}
+```
+
+En este ejemplo, a pesar de que la clase `Grande` tiene constructores de copia y movimiento, ninguno se invoca gracias a RVO y NRVO. El compilador construye los objetos directamente en `g1` y `g2`.
+
 ### Conclusión
 
 Las funciones que devuelven referencias o punteros son herramientas poderosas en C++ que permiten manipular datos de manera eficiente y directa. Al usarlas, es crucial garantizar que las referencias y punteros devueltos sean válidos para evitar errores como referencias y punteros colgantes. Comprender cuándo y cómo usar estos tipos de retorno puede mejorar significativamente el rendimiento y la flexibilidad del código en C++.
@@ -169,6 +321,12 @@ Ejemplo de Función que Devuelve un Puntero
 Ejemplo de Función que Devuelve un Puntero Result
 Cuidado con Punteros Colgantes
 Cuidado con Punteros Colgantes Result
+Ejemplo de Smart Pointers como Retorno
+Ejemplo de Smart Pointers como Retorno Result
+Ejemplo de Smart Pointers en Qt
+Ejemplo de Smart Pointers en Qt Result
+Ejemplo de RVO y NRVO
+Ejemplo de RVO y NRVO Result
 <---Sintaxis--->
 ```cpp
 tipo* nombre_funcion(parametros);
@@ -275,3 +433,117 @@ int main() {
     return 0;
 }
 <---Cuidado con Punteros Colgantes Result--->
+<---Ejemplo de Smart Pointers como Retorno--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+class Recurso {
+    string nombre;
+public:
+    Recurso(const string& n) : nombre(n) {
+        cout << "Creando: " << nombre << endl;
+    }
+    ~Recurso() { cout << "Destruyendo: " << nombre << endl; }
+    string getNombre() const { return nombre; }
+};
+
+// unique_ptr: propiedad exclusiva (lo más común)
+unique_ptr<Recurso> crearRecurso(const string& nombre) {
+    return make_unique<Recurso>(nombre);
+}
+
+// shared_ptr: propiedad compartida
+shared_ptr<Recurso> crearRecursoCompartido(const string& nombre) {
+    return make_shared<Recurso>(nombre);
+}
+
+int main() {
+    auto r1 = crearRecurso("Motor");
+    cout << "Recurso: " << r1->getNombre() << endl;
+
+    auto r2 = crearRecursoCompartido("Sensor");
+    auto r3 = r2; // Comparten propiedad
+    cout << "Referencias: " << r2.use_count() << endl; // 2
+
+    return 0;
+} // Recursos se destruyen automáticamente
+<---Ejemplo de Smart Pointers como Retorno Result--->
+<---Ejemplo de Smart Pointers en Qt--->
+```cpp
+#include <QSharedPointer>
+#include <QScopedPointer>
+#include <QDebug>
+#include <QString>
+
+class Sensor {
+    QString tipo;
+public:
+    Sensor(const QString& t) : tipo(t) {
+        qDebug() << "Sensor creado:" << tipo;
+    }
+    ~Sensor() { qDebug() << "Sensor destruido:" << tipo; }
+    QString getTipo() const { return tipo; }
+};
+
+// Equivalente Qt de shared_ptr
+QSharedPointer<Sensor> crearSensor(const QString& tipo) {
+    return QSharedPointer<Sensor>::create(tipo);
+}
+
+void ejemplo() {
+    // QSharedPointer: propiedad compartida (como std::shared_ptr)
+    auto s1 = crearSensor("Temperatura");
+    auto s2 = s1; // Comparten propiedad
+
+    // QScopedPointer: propiedad exclusiva en scope (como unique_ptr)
+    QScopedPointer<Sensor> s3(new Sensor("Presión"));
+    qDebug() << s3->getTipo();
+    // s3 se destruye al salir del scope
+
+    // QPointer: puntero observador para QObject (se anula si el objeto se destruye)
+    // QWeakPointer: versión débil de QSharedPointer
+}
+
+// Comparación:
+// std::unique_ptr    ↔  QScopedPointer
+// std::shared_ptr    ↔  QSharedPointer
+// std::weak_ptr      ↔  QWeakPointer
+// (sin equivalente)  ↔  QPointer (solo para QObject, observador seguro)
+<---Ejemplo de Smart Pointers en Qt Result--->
+<---Ejemplo de RVO y NRVO--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Grande {
+    int datos[1000];
+public:
+    Grande() { cout << "Constructor" << endl; }
+    Grande(const Grande&) { cout << "Copia" << endl; }
+    Grande(Grande&&) { cout << "Move" << endl; }
+};
+
+// RVO (Return Value Optimization): el compilador elimina la copia
+Grande crearGrande() {
+    return Grande(); // RVO: construye directamente en el destino
+}
+
+// NRVO (Named RVO): optimiza también variables con nombre
+Grande crearConNombre() {
+    Grande g;        // Variable local con nombre
+    return g;        // NRVO: puede eliminar la copia
+}
+
+int main() {
+    Grande g1 = crearGrande();     // Solo "Constructor", sin copia
+    Grande g2 = crearConNombre();  // Solo "Constructor" (con NRVO)
+
+    // Nota: RVO es obligatorio desde C++17 para prvalues
+    // NRVO sigue siendo opcional (pero casi todos los compiladores lo hacen)
+    return 0;
+}
+<---Ejemplo de RVO y NRVO Result--->

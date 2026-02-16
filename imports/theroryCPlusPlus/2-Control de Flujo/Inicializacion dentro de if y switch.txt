@@ -96,22 +96,24 @@ int main() {
         case 'N':
             cout << "Categoría: Niño" << endl;
             break;
-        case 'A':
+        case 'D':  // aD-olescente (no se puede usar 'A' dos veces)
             cout << "Categoría: Adolescente" << endl;
             break;
         case 'A':
-            cout << "Categoría: Adulto" << endl;
+            cout << "Categoría: Adulto o Anciano" << endl;
             break;
-        case 'A':
-            cout << "Categoría: Anciano" << endl;
+        case 'I':
+            cout << "Categoría: Invalido" << endl;
             break;
         default:
-            cout << "Categoría: Invalido" << endl;
+            cout << "Categoría desconocida: " << categoria << endl;
     }
 
     return 0;
 }
 ```
+
+> **Nota:** Este ejemplo simplificado muestra la sintaxis. En la práctica, comparar por la primera letra tiene colisiones ('A' para Adulto y Anciano). Sería mejor usar un `enum` o comparar la cadena completa con `if-else`.
 
 En este ejemplo, la variable `categoria` es declarada y inicializada dentro de la expresión del `switch`, y su alcance se limita al bloque del `switch`.
 
@@ -172,67 +174,91 @@ int main() {
 }
 ```
 
+### Init-Statements en el Contexto de Qt
+
+#### `qobject_cast` con if-init (patrón muy frecuente)
+
+El uso más común de init-statements en Qt es con `qobject_cast`:
+
+```cpp
+void procesarEvento(QObject *emisor) {
+    // C++17: qobject_cast + condición en una línea
+    if (auto *boton = qobject_cast<QPushButton*>(emisor); boton) {
+        qDebug() << "Botón presionado:" << boton->text();
+    } else if (auto *input = qobject_cast<QLineEdit*>(emisor); input) {
+        qDebug() << "Texto editado:" << input->text();
+    }
+    // boton e input ya no existen aquí
+}
+```
+
+#### Con `QFile::open()`
+
+```cpp
+if (QFile archivo("datos.txt"); archivo.open(QIODevice::ReadOnly)) {
+    QTextStream in(&archivo);
+    qDebug() << in.readAll();
+    // archivo se cierra automáticamente al salir del scope
+}
+```
+
+#### Con `QVariant` y conversión
+
+```cpp
+if (auto valor = settings.value("puerto"); valor.isValid()) {
+    int puerto = valor.toInt();
+    qDebug() << "Puerto:" << puerto;
+}
+```
+
 ### Conclusión
 
 La capacidad de inicializar variables dentro de `if` y `switch` en C++17 y posteriores mejora significativamente la legibilidad y el manejo de ámbitos en el código. Esta característica permite escribir código más limpio y seguro, reduciendo la posibilidad de errores relacionados con el alcance de las variables y mejorando la eficiencia del programa.
 <---FILES--->
-Sintaxis Básica
-Sintaxis Básica Result
-Ejemplo
-Ejemplo Result
-<---Sintaxis Básica--->
-```cpp
-switch (auto variable = expresion; variable) {
-    case valor1:
-        // Código a ejecutar si variable == valor1
-        break;
-    case valor2:
-        // Código a ejecutar si variable == valor2
-        break;
-    default:
-        // Código a ejecutar si variable no coincide con ningún caso
-}
-<---Sintaxis Básica Result--->
-<---Ejemplo--->
+if con optional
+if con optional Result
+switch con init
+switch con init Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---if con optional--->
 ```cpp
 #include <iostream>
-#include <string>
+#include <optional>
 using namespace std;
 
-string obtenerCategoria(int edad) {
-    if (edad < 0) {
-        return "Invalido";
-    } else if (edad <= 12) {
-        return "Niño";
-    } else if (edad <= 19) {
-        return "Adolescente";
-    } else if (edad <= 65) {
-        return "Adulto";
-    } else {
-        return "Anciano";
-    }
+optional<int> obtenerValor(bool exito) {
+    return exito ? optional<int>(42) : nullopt;
 }
 
 int main() {
-    switch (auto categoria = obtenerCategoria(25); categoria[0]) {
-        case 'N':
-            cout << "Categoría: Niño" << endl;
-            break;
-        case 'A':
-            cout << "Categoría: Adolescente" << endl;
-            break;
-        case 'A':
-            cout << "Categoría: Adulto" << endl;
-            break;
-        case 'A':
-            cout << "Categoría: Anciano" << endl;
-            break;
-        default:
-            cout << "Categoría: Invalido" << endl;
+    if (auto valor = obtenerValor(true); valor.has_value()) {
+        cout << "Valor obtenido: " << valor.value() << endl;
+    } else {
+        cout << "No se obtuvo un valor." << endl;
     }
-
     return 0;
 }
+```
+<---if con optional Result--->
+<---switch con init--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    switch (auto dia = 3; dia) {
+        case 1: cout << "Lunes" << endl; break;
+        case 2: cout << "Martes" << endl; break;
+        case 3: cout << "Miércoles" << endl; break;
+        default: cout << "Otro día" << endl; break;
+    }
+    // dia no existe aquí
+    return 0;
+}
+```
+<---switch con init Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 #include <optional>
@@ -240,42 +266,23 @@ int main() {
 using namespace std;
 
 optional<string> obtenerNombre(bool exito) {
-    if (exito) {
-        return "Juan";
-    } else {
-        return nullopt;
-    }
-}
-
-string obtenerSaludo(const string& nombre) {
-    if (nombre == "Juan") {
-        return "Hola, Juan!";
-    } else {
-        return "Hola, desconocido!";
-    }
+    return exito ? optional<string>("Juan") : nullopt;
 }
 
 int main() {
     if (auto nombre = obtenerNombre(true); nombre.has_value()) {
-        cout << obtenerSaludo(nombre.value()) << endl;
+        cout << "Hola, " << nombre.value() << "!" << endl;
     } else {
         cout << "No se obtuvo un nombre." << endl;
     }
 
     if (auto nombre = obtenerNombre(false); nombre.has_value()) {
-        cout << obtenerSaludo(nombre.value()) << endl;
+        cout << "Hola, " << nombre.value() << "!" << endl;
     } else {
         cout << "No se obtuvo un nombre." << endl;
     }
 
-    switch (auto saludo = obtenerSaludo("Juan"); saludo[0]) {
-        case 'H':
-            cout << "Saludo: " << saludo << endl;
-            break;
-        default:
-            cout << "Saludo desconocido" << endl;
-    }
-
     return 0;
 }
-<---Ejemplo Result--->
+```
+<---Ejemplo Completo Result--->

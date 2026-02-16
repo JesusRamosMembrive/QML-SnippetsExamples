@@ -177,6 +177,68 @@ int main() {
 }
 ```
 
+### Alias de Tipos en Qt
+
+#### Typedefs predefinidos en Qt
+
+Qt define numerosos alias de tipos portables usando `typedef`:
+
+```cpp
+// Definidos en <QtGlobal>
+typedef signed char     qint8;     // int8_t garantizado
+typedef unsigned char   quint8;
+typedef short           qint16;
+typedef unsigned short  quint16;
+typedef int             qint32;
+typedef unsigned int    quint32;
+typedef long long       qint64;
+typedef unsigned long long quint64;
+typedef double          qreal;     // float en ARM, double en el resto
+typedef qint64          qsizetype; // Tamaño de contenedores (Qt 6)
+```
+
+#### `using` en Qt moderno
+
+Qt 6 usa `using` en vez de `typedef` internamente:
+
+```cpp
+// Alias comunes en código Qt
+using StringList = QStringList;
+using WidgetList = QList<QWidget*>;
+
+// Alias de plantilla para callbacks
+template<typename T>
+using Callback = std::function<void(const T&)>;
+
+Callback<QString> onTextoChanged = [](const QString &texto) {
+    qDebug() << texto;
+};
+```
+
+#### `Q_DECLARE_FLAGS` — Alias para flags combinables
+
+Qt usa un macro especial para crear aliases de flags basados en enums:
+
+```cpp
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    enum Opcion {
+        SinOpcion   = 0x00,
+        Editable    = 0x01,
+        Selectable  = 0x02,
+        Draggable   = 0x04
+    };
+    Q_DECLARE_FLAGS(Opciones, Opcion)  // Crea alias "Opciones" para QFlags<Opcion>
+
+    void configurar(Opciones opts);
+};
+Q_DECLARE_OPERATORS_FOR_FLAGS(MiWidget::Opciones)
+
+// Uso:
+widget->configurar(MiWidget::Editable | MiWidget::Draggable);
+```
+
 ### Conclusión
 
 `typedef` y `using` son herramientas útiles en C++ para crear alias de tipos de datos, mejorando la legibilidad y manejabilidad del código. Mientras que `typedef` ha sido la forma tradicional de hacerlo, `using` introduce una sintaxis más moderna y flexible, especialmente útil para alias de plantillas. Comprender cómo y cuándo usar cada uno es esencial para escribir código C++ limpio y eficiente.
@@ -191,7 +253,12 @@ Alias de Plantillas
 Alias de Plantillas Result
 <---Sintaxis--->
 ```cpp
-using nuevo_nombre = tipo_original;
+// typedef (tradicional)
+typedef unsigned long ulong;
+
+// using (moderno, C++11)
+using ulong = unsigned long;
+```
 <---Sintaxis Result--->
 <---Ejemplo Básico--->
 ```cpp
@@ -205,6 +272,7 @@ int main() {
     cout << "Número: " << numero << endl;
     return 0;
 }
+```
 <---Ejemplo Básico Result--->
 <---Alias para Tipos Complejos--->
 ```cpp
@@ -213,15 +281,14 @@ using namespace std;
 
 using FuncionPtr = int(*)(int, int);
 
-int sumar(int a, int b) {
-    return a + b;
-}
+int sumar(int a, int b) { return a + b; }
 
 int main() {
     FuncionPtr fp = sumar;
     cout << "Suma: " << fp(5, 3) << endl;
     return 0;
 }
+```
 <---Alias para Tipos Complejos Result--->
 <---Alias de Plantillas--->
 ```cpp
@@ -234,52 +301,9 @@ using Vec = vector<T>;
 
 int main() {
     Vec<int> numeros = {1, 2, 3, 4, 5};
-    for (int num : numeros) {
-        cout << num << " ";
-    }
+    for (int num : numeros) cout << num << " ";
     cout << endl;
     return 0;
 }
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-// Alias con typedef
-typedef unsigned long ulong;
-typedef int (*FuncionPtr)(int, int);
-
-// Alias con using
-using ulong_alias = unsigned long;
-using FuncionPtr_alias = int(*)(int, int);
-
-template <typename T>
-using Vec = vector<T>;
-
-int sumar(int a, int b) {
-    return a + b;
-}
-
-int main() {
-    // Uso de typedef
-    ulong numero1 = 1000000;
-    FuncionPtr fp1 = sumar;
-    cout << "Número1: " << numero1 << endl;
-    cout << "Suma1: " << fp1(5, 3) << endl;
-
-    // Uso de using
-    ulong_alias numero2 = 2000000;
-    FuncionPtr_alias fp2 = sumar;
-    cout << "Número2: " << numero2 << endl;
-    cout << "Suma2: " << fp2(7, 2) << endl;
-
-    // Uso de alias de plantilla con using
-    Vec<int> numeros = {1, 2, 3, 4, 5};
-    for (int num : numeros) {
-        cout << num << " ";
-    }
-    cout << endl;
-
-    return 0;
-}
+```
 <---Alias de Plantillas Result--->

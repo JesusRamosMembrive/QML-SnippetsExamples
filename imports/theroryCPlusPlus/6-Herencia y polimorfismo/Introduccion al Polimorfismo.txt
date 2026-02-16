@@ -161,6 +161,141 @@ int main() {
 
 En este ejemplo, un vector de punteros a `Animal` contiene objetos de diferentes tipos derivados. El polimorfismo permite que `hacerSonido` llame a la implementación correcta para cada tipo de objeto.
 
+#### Polimorfismo con `std::variant` y `std::visit` (C++17)
+
+A partir de C++17, es posible lograr polimorfismo **sin herencia ni funciones virtuales** utilizando `std::variant` y `std::visit`. `std::variant` es una unión con seguridad de tipos (type-safe union) que puede almacenar uno de varios tipos predefinidos en un momento dado. A diferencia del polimorfismo clásico basado en herencia, `std::variant` trabaja con un **conjunto cerrado de tipos** conocidos en tiempo de compilación.
+
+`std::visit` aplica un "visitante" (una función o functor) al valor almacenado dentro del `variant`, ejecutando automáticamente la sobrecarga correcta según el tipo activo. Esto implementa el **patrón Visitor** de forma compacta y eficiente.
+
+##### Ejemplo de Polimorfismo con `std::variant`
+
+```cpp
+#include <iostream>
+#include <variant>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+// Estructuras simples sin herencia
+struct Circulo {
+    double radio;
+    double area() const { return M_PI * radio * radio; }
+};
+
+struct Rectangulo {
+    double ancho, alto;
+    double area() const { return ancho * alto; }
+};
+
+struct Triangulo {
+    double base, altura;
+    double area() const { return 0.5 * base * altura; }
+};
+
+// Tipo variant que puede contener cualquiera de las tres formas
+using Forma = variant<Circulo, Rectangulo, Triangulo>;
+
+// Visitante que calcula el área de cualquier forma
+struct CalcularArea {
+    double operator()(const Circulo& c) const { return c.area(); }
+    double operator()(const Rectangulo& r) const { return r.area(); }
+    double operator()(const Triangulo& t) const { return t.area(); }
+};
+
+int main() {
+    // Colección polimórfica sin punteros ni herencia
+    vector<Forma> formas;
+    formas.push_back(Circulo{5.0});
+    formas.push_back(Rectangulo{4.0, 6.0});
+    formas.push_back(Triangulo{3.0, 8.0});
+
+    for (const auto& forma : formas) {
+        double area = visit(CalcularArea{}, forma);
+        cout << "Área: " << area << endl;
+    }
+
+    // También se puede usar con una lambda genérica
+    for (const auto& forma : formas) {
+        visit([](const auto& f) {
+            cout << "Área (lambda): " << f.area() << endl;
+        }, forma);
+    }
+
+    return 0;
+}
+```
+
+**Ventajas de `std::variant` sobre herencia virtual:**
+- **Sin asignación en el heap:** Los objetos se almacenan directamente en el `variant`, sin necesidad de `new`/`delete` ni punteros.
+- **Sin overhead de vtable:** No hay tabla de funciones virtuales, lo que puede ser más eficiente en rendimiento.
+- **Seguridad de tipos:** El compilador verifica que el visitante maneje todos los tipos posibles.
+
+**Desventajas:**
+- **Conjunto cerrado de tipos:** No se pueden agregar nuevos tipos sin modificar la definición del `variant` y recompilar.
+- **Tamaño fijo:** El `variant` ocupa el tamaño del tipo más grande que puede almacenar.
+
+#### Sistema de Meta-Tipos en Qt
+
+Qt implementa su propio sistema de polimorfismo dinámico a través del **sistema de meta-objetos** y la clase `QVariant`. A diferencia de `std::variant` (que requiere tipos conocidos en compilación), `QVariant` puede almacenar prácticamente cualquier tipo registrado en el sistema de meta-tipos de Qt, proporcionando polimorfismo dinámico en tiempo de ejecución.
+
+El sistema funciona mediante:
+- **`Q_DECLARE_METATYPE(Type)`**: Macro que registra un tipo personalizado para que pueda ser almacenado en `QVariant`.
+- **`QVariant::canConvert<T>()`**: Verifica si el valor almacenado puede convertirse al tipo `T`.
+- **`QVariant::value<T>()`**: Extrae el valor almacenado convirtiéndolo al tipo `T`.
+
+En QML, este sistema es fundamental: todas las propiedades expuestas desde C++ a QML se manejan internamente como `QVariant`, permitiendo que QML trate de forma polimórfica valores de distintos tipos.
+
+##### Ejemplo del Sistema de Meta-Tipos en Qt
+
+```cpp
+#include <QVariant>
+#include <QDebug>
+#include <QString>
+
+// Tipo personalizado
+struct Punto3D {
+    double x, y, z;
+};
+
+// Registrar el tipo para QVariant
+Q_DECLARE_METATYPE(Punto3D)
+
+void procesarValor(const QVariant& valor) {
+    // Polimorfismo dinámico: el mismo código maneja diferentes tipos
+    if (valor.canConvert<int>()) {
+        qDebug() << "Entero:" << valor.toInt();
+    } else if (valor.canConvert<double>()) {
+        qDebug() << "Doble:" << valor.toDouble();
+    } else if (valor.canConvert<QString>()) {
+        qDebug() << "Cadena:" << valor.toString();
+    } else if (valor.canConvert<Punto3D>()) {
+        Punto3D p = valor.value<Punto3D>();
+        qDebug() << "Punto3D:" << p.x << p.y << p.z;
+    } else {
+        qDebug() << "Tipo desconocido:" << valor.typeName();
+    }
+}
+
+int main() {
+    // QVariant almacena diferentes tipos de forma polimórfica
+    QVariant v1 = 42;
+    QVariant v2 = 3.14;
+    QVariant v3 = QString("Hola Qt");
+    QVariant v4 = QVariant::fromValue(Punto3D{1.0, 2.0, 3.0});
+
+    procesarValor(v1); // Entero: 42
+    procesarValor(v2); // Doble: 3.14
+    procesarValor(v3); // Cadena: "Hola Qt"
+    procesarValor(v4); // Punto3D: 1 2 3
+
+    // Verificar tipo en tiempo de ejecución
+    qDebug() << "v1 es int:" << (v1.typeId() == QMetaType::Int);
+    qDebug() << "v4 tipo:" << v4.typeName();
+
+    return 0;
+}
+```
+
 ### Conclusión
 
 El polimorfismo es una característica poderosa de la programación orientada a objetos que permite a las funciones operar de manera uniforme en objetos de diferentes tipos. En C++, el polimorfismo se logra principalmente a través de funciones virtuales y herencia. Este mecanismo permite diseñar sistemas flexibles y reutilizables, facilitando la implementación de interfaces comunes y comportamientos específicos según el tipo de objeto. Comprender y utilizar correctamente el polimorfismo es esencial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
@@ -173,6 +308,10 @@ Ejemplo de Clase Abstracta
 Ejemplo de Clase Abstracta Result
 Ejemplo con Colección Polimórfica
 Ejemplo con Colección Polimórfica Result
+Ejemplo de Polimorfismo con std::variant
+Ejemplo de Polimorfismo con std::variant Result
+Ejemplo del Sistema de Meta-Tipos en Qt
+Ejemplo del Sistema de Meta-Tipos en Qt Result
 <---Tipos de Polimorfismo en C++--->
 <---Tipos de Polimorfismo en C++ Result--->
 <---Ejemplo de Polimorfismo de Inclusión--->
@@ -299,3 +438,108 @@ int main() {
     return 0;
 }
 <---Ejemplo con Colección Polimórfica Result--->
+<---Ejemplo de Polimorfismo con std::variant--->
+```cpp
+#include <iostream>
+#include <variant>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+// Estructuras simples sin herencia
+struct Circulo {
+    double radio;
+    double area() const { return M_PI * radio * radio; }
+};
+
+struct Rectangulo {
+    double ancho, alto;
+    double area() const { return ancho * alto; }
+};
+
+struct Triangulo {
+    double base, altura;
+    double area() const { return 0.5 * base * altura; }
+};
+
+// Tipo variant que puede contener cualquiera de las tres formas
+using Forma = variant<Circulo, Rectangulo, Triangulo>;
+
+// Visitante que calcula el área de cualquier forma
+struct CalcularArea {
+    double operator()(const Circulo& c) const { return c.area(); }
+    double operator()(const Rectangulo& r) const { return r.area(); }
+    double operator()(const Triangulo& t) const { return t.area(); }
+};
+
+int main() {
+    // Colección polimórfica sin punteros ni herencia
+    vector<Forma> formas;
+    formas.push_back(Circulo{5.0});
+    formas.push_back(Rectangulo{4.0, 6.0});
+    formas.push_back(Triangulo{3.0, 8.0});
+
+    for (const auto& forma : formas) {
+        double area = visit(CalcularArea{}, forma);
+        cout << "Área: " << area << endl;
+    }
+
+    // También se puede usar con una lambda genérica
+    for (const auto& forma : formas) {
+        visit([](const auto& f) {
+            cout << "Área (lambda): " << f.area() << endl;
+        }, forma);
+    }
+
+    return 0;
+}
+<---Ejemplo de Polimorfismo con std::variant Result--->
+<---Ejemplo del Sistema de Meta-Tipos en Qt--->
+```cpp
+#include <QVariant>
+#include <QDebug>
+#include <QString>
+
+// Tipo personalizado
+struct Punto3D {
+    double x, y, z;
+};
+
+// Registrar el tipo para QVariant
+Q_DECLARE_METATYPE(Punto3D)
+
+void procesarValor(const QVariant& valor) {
+    // Polimorfismo dinámico: el mismo código maneja diferentes tipos
+    if (valor.canConvert<int>()) {
+        qDebug() << "Entero:" << valor.toInt();
+    } else if (valor.canConvert<double>()) {
+        qDebug() << "Doble:" << valor.toDouble();
+    } else if (valor.canConvert<QString>()) {
+        qDebug() << "Cadena:" << valor.toString();
+    } else if (valor.canConvert<Punto3D>()) {
+        Punto3D p = valor.value<Punto3D>();
+        qDebug() << "Punto3D:" << p.x << p.y << p.z;
+    } else {
+        qDebug() << "Tipo desconocido:" << valor.typeName();
+    }
+}
+
+int main() {
+    // QVariant almacena diferentes tipos de forma polimórfica
+    QVariant v1 = 42;
+    QVariant v2 = 3.14;
+    QVariant v3 = QString("Hola Qt");
+    QVariant v4 = QVariant::fromValue(Punto3D{1.0, 2.0, 3.0});
+
+    procesarValor(v1); // Entero: 42
+    procesarValor(v2); // Doble: 3.14
+    procesarValor(v3); // Cadena: "Hola Qt"
+    procesarValor(v4); // Punto3D: 1 2 3
+
+    // Verificar tipo en tiempo de ejecución
+    qDebug() << "v1 es int:" << (v1.typeId() == QMetaType::Int);
+    qDebug() << "v4 tipo:" << v4.typeName();
+
+    return 0;
+}
+<---Ejemplo del Sistema de Meta-Tipos en Qt Result--->

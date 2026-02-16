@@ -204,27 +204,85 @@ int main() {
 }
 ```
 
+### Bucles con Contenedores Qt
+
+#### Range-for con `QList`, `QStringList`, `QMap`
+
+El range-for de C++11 funciona directamente con contenedores Qt:
+
+```cpp
+#include <QList>
+#include <QMap>
+#include <QDebug>
+
+QList<int> numeros = {1, 2, 3, 4, 5};
+for (int n : numeros) {
+    qDebug() << n;
+}
+
+QStringList nombres = {"Ana", "Carlos", "Lucía"};
+for (const QString &nombre : nombres) {
+    qDebug() << nombre;
+}
+```
+
+#### Cuidado con la copia implícita (detach)
+
+Los contenedores Qt usan **Copy-on-Write (COW)**. Al iterar con range-for sobre un contenedor no-const, Qt puede hacer una copia innecesaria (detach). Para evitarlo, usa `std::as_const()` o `qAsConst()`:
+
+```cpp
+QList<int> numeros = {1, 2, 3};
+
+// MAL: puede causar detach si 'numeros' no es const
+for (int n : numeros) { ... }
+
+// BIEN: fuerza iterador const, evita detach
+for (int n : std::as_const(numeros)) { ... }
+for (int n : qAsConst(numeros)) { ... }  // Equivalente Qt
+```
+
+#### Iterar sobre `QMap` / `QHash`
+
+```cpp
+QMap<QString, int> edades = {{"Ana", 25}, {"Carlos", 30}};
+
+// Iterar sobre claves
+for (const QString &nombre : edades.keys()) {
+    qDebug() << nombre << ":" << edades[nombre];
+}
+
+// Iterar con iterador (más eficiente, evita crear lista de keys)
+for (auto it = edades.cbegin(); it != edades.cend(); ++it) {
+    qDebug() << it.key() << ":" << it.value();
+}
+```
+
+#### `QListIterator` de Java-style (legacy)
+
+Qt también ofrece iteradores estilo Java, aunque el range-for es preferido en código moderno:
+
+```cpp
+QListIterator<int> it(numeros);
+while (it.hasNext()) {
+    qDebug() << it.next();
+}
+```
+
 ### Conclusión
 
 Comprender y utilizar correctamente los diferentes tipos de bucles en C++ es fundamental para controlar el flujo de ejecución de un programa y realizar tareas repetitivas de manera eficiente. Cada tipo de bucle tiene sus propias ventajas y se adapta a diferentes situaciones de programación, lo que permite escribir código más limpio, legible y eficiente.
 <---FILES--->
-Sintaxis Básica
-Sintaxis Básica Result
-Ejemplo
-Ejemplo Result
-Ejemplo de Bucles Anidados
-Ejemplo de Bucles Anidados Result
-Ejemplo de `break` y `continue`
-Ejemplo de `break` y `continue` Result
-Ejemplo de Bucle con Rango
-Ejemplo de Bucle con Rango Result
-<---Sintaxis Básica--->
-```cpp
-do {
-    // Código a ejecutar en cada iteración
-} while (condicion);
-<---Sintaxis Básica Result--->
-<---Ejemplo--->
+Bucle do-while
+Bucle do-while Result
+Bucles Anidados
+Bucles Anidados Result
+break y continue
+break y continue Result
+Bucle con Rango
+Bucle con Rango Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Bucle do-while--->
 ```cpp
 #include <iostream>
 using namespace std;
@@ -237,8 +295,9 @@ int main() {
     } while (i < 10);
     return 0;
 }
-<---Ejemplo Result--->
-<---Ejemplo de Bucles Anidados--->
+```
+<---Bucle do-while Result--->
+<---Bucles Anidados--->
 ```cpp
 #include <iostream>
 using namespace std;
@@ -252,26 +311,24 @@ int main() {
     }
     return 0;
 }
-<---Ejemplo de Bucles Anidados Result--->
-<---Ejemplo de `break` y `continue`--->
+```
+<---Bucles Anidados Result--->
+<---break y continue--->
 ```cpp
 #include <iostream>
 using namespace std;
 
 int main() {
     for (int i = 0; i < 10; ++i) {
-        if (i == 5) {
-            break; // Salir del bucle cuando i es 5
-        }
-        if (i % 2 == 0) {
-            continue; // Saltar los números pares
-        }
+        if (i == 5) break;
+        if (i % 2 == 0) continue;
         cout << "Iteración " << i << endl;
     }
     return 0;
 }
-<---Ejemplo de `break` y `continue` Result--->
-<---Ejemplo de Bucle con Rango--->
+```
+<---break y continue Result--->
+<---Bucle con Rango--->
 ```cpp
 #include <iostream>
 #include <vector>
@@ -279,52 +336,33 @@ using namespace std;
 
 int main() {
     vector<int> numeros = {1, 2, 3, 4, 5};
-
     for (int numero : numeros) {
         cout << "Número: " << numero << endl;
     }
-
     return 0;
 }
+```
+<---Bucle con Rango Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 #include <vector>
 using namespace std;
 
 int main() {
-    // Bucle for
-    for (int i = 0; i < 5; ++i) {
-        cout << "For loop, iteración: " << i << endl;
-    }
+    for (int i = 0; i < 5; ++i)
+        cout << "For: " << i << endl;
 
-    // Bucle while
     int j = 0;
-    while (j < 5) {
-        cout << "While loop, iteración: " << j << endl;
-        ++j;
-    }
+    while (j < 5) { cout << "While: " << j << endl; ++j; }
 
-    // Bucle do-while
     int k = 0;
-    do {
-        cout << "Do-While loop, iteración: " << k << endl;
-        ++k;
-    } while (k < 5);
+    do { cout << "Do-While: " << k << endl; ++k; } while (k < 5);
 
-    // Bucle for con rango
-    vector<int> numeros = {10, 20, 30, 40, 50};
-    for (int numero : numeros) {
-        cout << "Bucle con rango, número: " << numero << endl;
-    }
-
-    // Bucle anidado
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            cout << "(" << i << ", " << j << ") ";
-        }
-        cout << endl;
-    }
+    vector<int> nums = {10, 20, 30, 40, 50};
+    for (int n : nums) cout << "Rango: " << n << endl;
 
     return 0;
 }
-<---Ejemplo de Bucle con Rango Result--->
+```
+<---Ejemplo Completo Result--->

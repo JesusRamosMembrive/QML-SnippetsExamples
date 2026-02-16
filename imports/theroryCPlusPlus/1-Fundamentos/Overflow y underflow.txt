@@ -112,6 +112,66 @@ int main() {
 }
 ```
 
+#### 3. **Overflow en Aritmética de Enteros sin Signo vs Con Signo**
+
+Es importante distinguir:
+- **Enteros sin signo (`unsigned`):** El overflow está **bien definido** por el estándar C++ (módulo 2^N). Es predecible.
+- **Enteros con signo (`signed`):** El overflow es **comportamiento indefinido** (UB). El compilador puede asumir que nunca ocurre y optimizar en consecuencia.
+
+```cpp
+unsigned int u = UINT_MAX;
+u = u + 1;  // Bien definido: u == 0
+
+int s = INT_MAX;
+s = s + 1;  // Comportamiento INDEFINIDO (el compilador puede hacer cualquier cosa)
+```
+
+### Prevención de Overflow en el Contexto de Qt
+
+#### `qBound()` para acotar valores en rango
+
+Qt proporciona funciones de utilidad que previenen overflow al acotar valores:
+
+```cpp
+#include <QtGlobal>
+
+int valor = 300;
+int acotado = qBound(0, valor, 255);  // 255 (acota entre 0 y 255)
+
+// Equivalente a: qMax(min, qMin(valor, max))
+qreal opacidad = qBound(0.0, entrada, 1.0);  // Asegura rango [0.0, 1.0]
+```
+
+#### `qMin()` y `qMax()` para protección simple
+
+```cpp
+int ancho = qMin(propuesto, MAX_ANCHO);      // Nunca excede MAX_ANCHO
+int altura = qMax(propuesto, MIN_ALTURA);    // Nunca baja de MIN_ALTURA
+```
+
+#### Patrón común: protección en propiedades QML
+
+En clases C++ expuestas a QML, es frecuente proteger setters contra valores fuera de rango:
+
+```cpp
+void MiWidget::setProgreso(int valor) {
+    valor = qBound(0, valor, 100);  // Previene overflow/underflow
+    if (m_progreso == valor) return;
+    m_progreso = valor;
+    emit progresoChanged();
+}
+```
+
+#### Saturación de colores en Qt
+
+Qt acota automáticamente los componentes de color:
+
+```cpp
+QColor color;
+color.setRed(300);    // Se acota internamente a 255
+color.setAlpha(-10);  // Se acota internamente a 0
+```
+
 ### Conclusión
 
 El overflow y underflow son condiciones importantes a considerar en la programación, ya que pueden llevar a resultados inesperados y errores difíciles de detectar. Comprender cómo ocurren y cómo manejarlos es crucial para escribir programas robustos y confiables en C++.
@@ -137,6 +197,7 @@ int main() {
     std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
     return 0;
 }
+```
 <---Ejemplo de Overflow con Enteros Result--->
 <---Ejemplo de Overflow con Enteros sin Signo--->
 ```cpp
@@ -146,34 +207,37 @@ int main() {
 int main() {
     uint8_t numero = 255; // El valor máximo para un entero de 8 bits sin signo
     numero = numero + 1; // Esto causa overflow
-    std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    std::cout << "Valor después del overflow: " << static_cast<int>(numero) << std::endl;
     return 0;
 }
+```
 <---Ejemplo de Overflow con Enteros sin Signo Result--->
 <---Ejemplo de Underflow con Enteros--->
 ```cpp
 #include <iostream>
-#include <climits> // Para límites de tipos
+#include <climits>
 
 int main() {
     int8_t numero = -128; // El valor mínimo para un entero de 8 bits con signo
     numero = numero - 1; // Esto causa underflow
-    std::cout << "Valor después del underflow: " << static_cast<int>(numero) << std::endl; // Conversión a int para mostrar correctamente
+    std::cout << "Valor después del underflow: " << static_cast<int>(numero) << std::endl;
     return 0;
 }
+```
 <---Ejemplo de Underflow con Enteros Result--->
 <---Ejemplo de Underflow con Flotantes--->
 ```cpp
 #include <iostream>
-#include <cfloat> // Para límites de tipos
+#include <cfloat>
 
 int main() {
-    float numero = 1.0e-38f; // Un valor cercano al mínimo para float
+    float numero = 1.0e-38f;
     float divisor = 1.0e38f;
     float resultado = numero / divisor; // Esto causa underflow
     std::cout << "Valor después del underflow: " << resultado << std::endl;
     return 0;
 }
+```
 <---Ejemplo de Underflow con Flotantes Result--->
 <---Ejemplo de Chequeo de Rango--->
 ```cpp
@@ -192,4 +256,5 @@ int main() {
     }
     return 0;
 }
+```
 <---Ejemplo de Chequeo de Rango Result--->

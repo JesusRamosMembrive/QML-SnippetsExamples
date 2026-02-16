@@ -152,6 +152,98 @@ int main() {
 5. **Espacio de Nombres:** Accesible dentro del namespace donde se declara.
 6. **Estático:** Accesible solo dentro del bloque donde se declara, pero retiene su valor entre llamadas.
 
+### Alcance en el Contexto de Qt
+
+#### Convención de nombres para miembros privados
+
+Qt usa el prefijo `m_` para distinguir miembros privados de variables locales:
+
+```cpp
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    void setNombre(const QString &nombre) {
+        m_nombre = nombre;  // m_nombre = miembro, nombre = parámetro
+        emit nombreChanged();
+    }
+private:
+    QString m_nombre;  // Prefijo m_ = miembro de la clase
+    int m_contador = 0;
+};
+```
+
+#### Alcance del parent-child en Qt
+
+Qt tiene su propio sistema de ownership basado en el árbol parent-child. Los objetos hijos se destruyen automáticamente cuando el padre es destruido:
+
+```cpp
+void crearUI() {
+    auto *ventana = new QWidget;          // Sin padre → debemos borrar manualmente
+    auto *boton = new QPushButton(ventana); // Hijo de ventana → se destruye con ella
+    auto *label = new QLabel(ventana);      // También hijo de ventana
+
+    delete ventana;  // Destruye ventana, boton y label automáticamente
+}
+```
+
+#### Pimpl (d_ptr) — Alcance de implementación privada
+
+Qt usa extensivamente el patrón Pimpl para ocultar la implementación:
+
+```cpp
+// miwidget.h (cabecera pública)
+class MiWidgetPrivate;  // Forward declaration
+
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    explicit MiWidget(QWidget *parent = nullptr);
+    ~MiWidget();
+    void hacerAlgo();
+private:
+    QScopedPointer<MiWidgetPrivate> d_ptr;  // Puntero a implementación
+    Q_DECLARE_PRIVATE(MiWidget)
+};
+
+// miwidget.cpp (implementación)
+class MiWidgetPrivate {
+public:
+    QString nombre;     // Estos miembros son invisibles desde fuera
+    int contadorInterno = 0;
+};
+
+MiWidget::MiWidget(QWidget *parent)
+    : QWidget(parent), d_ptr(new MiWidgetPrivate) {}
+
+void MiWidget::hacerAlgo() {
+    Q_D(MiWidget);  // Macro que crea 'd' apuntando a d_ptr
+    d->contadorInterno++;
+}
+```
+
+#### Alcance en QML
+
+En QML, el scope es jerárquico (padre-hijo) y las propiedades son accesibles por `id`:
+
+```qml
+Item {
+    id: root
+    property string nombre: "Raíz"
+
+    Rectangle {
+        id: rect
+        // Puede acceder a root.nombre (scope del padre)
+        color: root.nombre === "Raíz" ? "blue" : "red"
+
+        Text {
+            // Puede acceder a root.nombre y rect.color
+            text: root.nombre
+            color: rect.color
+        }
+    }
+}
+```
+
 ### Conclusión
 
 El alcance de las variables es una parte fundamental de la programación en C++, ya que determina dónde y cuándo una variable es accesible. Comprender los diferentes tipos de alcance ayuda a escribir código más seguro y libre de errores, evitando conflictos de nombres y asegurando que las variables se utilicen de manera adecuada dentro de sus contextos específicos.

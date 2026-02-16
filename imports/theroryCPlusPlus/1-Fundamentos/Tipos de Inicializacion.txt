@@ -136,78 +136,121 @@ int main() {
 5. **Lista de Inicialización del Constructor:** `Persona(int e, float a) : edad(e), altura(a) {}` - Inicializa los miembros de la clase en el constructor.
 
 Estos métodos proporcionan flexibilidad y control sobre cómo se inicializan las variables y objetos en C++, permitiendo a los programadores elegir el método más adecuado para cada situación.
-<---FILES--->
-**Ventajas de la Inicialización de Lista**
-**Ventajas de la Inicialización de Lista** Result
-<---**Ventajas de la Inicialización de Lista**--->
+
+### Inicialización en Qt
+
+En clases Qt, la inicialización sigue las mismas reglas de C++ con algunos patrones propios:
+
+#### Inicialización de miembros en clases Q_OBJECT
+
+Qt recomienda inicializar miembros en la declaración (C++11) o en la lista de inicialización del constructor:
+
 ```cpp
-int edad = int(25);
-float altura = float(1.75);
-char inicial = char('A');
-bool esEstudiante = bool(true);
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    explicit MiWidget(QWidget *parent = nullptr)
+        : QWidget(parent)              // Inicialización del padre (obligatorio)
+        , m_contador{0}                // Lista de inicialización con llaves
+        , m_nombre{QStringLiteral("Sin nombre")}
+    {}
+
+private:
+    int m_contador;
+    QString m_nombre;
+    bool m_activo = false;             // Inicialización en la declaración
+    QList<int> m_datos = {1, 2, 3};   // Inicialización de lista con contenedor Qt
+};
+```
+
+#### Convención `explicit` en constructores Qt
+
+Qt usa `explicit` en constructores de un solo parámetro para evitar conversiones implícitas:
+
+```cpp
+class Temperatura {
+public:
+    explicit Temperatura(double celsius) : m_celsius(celsius) {}
+    // Sin explicit: Temperatura t = 36.5;  // Conversión implícita (peligrosa)
+    // Con explicit: Temperatura t(36.5);    // Solo inicialización directa (segura)
+private:
+    double m_celsius;
+};
+```
+
+#### Inicialización de contenedores Qt
+
+```cpp
+QList<int> numeros = {1, 2, 3, 4, 5};         // Inicialización de lista
+QMap<QString, int> edades = {
+    {"Ana", 25}, {"Carlos", 30}
+};
+QStringList nombres = {"Ana", "Carlos", "Lucia"};
+```
+
+<---FILES--->
+Inicializacion Directa y Lista
+Inicializacion Directa y Lista Result
+Inicializacion en Constructor
+Inicializacion en Constructor Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Inicializacion Directa y Lista--->
+```cpp
+// Inicialización directa
+int edad = 25;
+float altura = 1.75;
+
+// Inicialización de lista (uniforme, C++11)
+int edad2 {25};
+float altura2 {1.75};
+
+// La inicialización de lista previene narrowing:
+// int x {3.14};  // Error: conversión con pérdida no permitida
+int y = 3.14;     // OK pero trunca a 3 (peligroso)
+```
+<---Inicializacion Directa y Lista Result--->
+<---Inicializacion en Constructor--->
 ```cpp
 class Persona {
 public:
     int edad;
     float altura;
 
-    Persona(int e, float a) : edad(e), altura(a) {} // Lista de inicialización del constructor
+    Persona(int e, float a) : edad(e), altura(a) {}
 };
 
 Persona p(25, 1.75);
-```cpp
-class Contador {
-public:
-    static int cuenta;
-
-    Contador() {
-        cuenta++;
-    }
-};
-
-int Contador::cuenta = 0; // Definición e inicialización de la variable estática
-```cpp
-class Persona {
-public:
-    int edad = 25;
-    float altura = 1.75;
-
-    Persona() = default; // Constructor por defecto
-};
-
-Persona p;
+```
+<---Inicializacion en Constructor Result--->
+<---Ejemplo Completo--->
 ```cpp
 #include <iostream>
 using namespace std;
 
 class Persona {
 public:
-    int edad = 25;           // Inicialización en el lugar de la declaración
-    float altura {1.75};     // Inicialización de lista
+    int edad = 25;
+    float altura {1.75};
 
-    Persona(int e, float a) : edad(e), altura(a) {} // Lista de inicialización del constructor
+    Persona(int e, float a) : edad(e), altura(a) {}
 };
 
 int main() {
-    // Inicialización directa
     int numeroDirecto = 42;
-    // Inicialización de lista
     int numeroLista {42};
-    // Inicialización copiada
     int numeroCopiado = int(42);
 
-    // Inicialización de objetos
-    Persona p1; // Usa la inicialización en el lugar de la declaración
-    Persona p2(30, 1.80); // Usa la lista de inicialización del constructor
+    Persona p1;
+    Persona p2(30, 1.80);
 
-    // Salida de los valores
-    cout << "Número (inicialización directa): " << numeroDirecto << endl;
-    cout << "Número (inicialización de lista): " << numeroLista << endl;
-    cout << "Número (inicialización copiada): " << numeroCopiado << endl;
-
-    cout << "Persona 1: Edad = " << p1.edad << ", Altura = " << p1.altura << endl;
-    cout << "Persona 2: Edad = " << p2.edad << ", Altura = " << p2.altura << endl;
+    cout << "Directo: " << numeroDirecto << endl;
+    cout << "Lista: " << numeroLista << endl;
+    cout << "Copiado: " << numeroCopiado << endl;
+    cout << "P1: Edad=" << p1.edad << " Altura=" << p1.altura << endl;
+    cout << "P2: Edad=" << p2.edad << " Altura=" << p2.altura << endl;
 
     return 0;
 }
-<---**Ventajas de la Inicialización de Lista** Result--->
+```
+<---Ejemplo Completo Result--->

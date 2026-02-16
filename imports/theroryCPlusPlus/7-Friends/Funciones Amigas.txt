@@ -148,6 +148,248 @@ En este ejemplo:
 1. **Encapsulamiento:** Pueden comprometer el principio de encapsulamiento al permitir el acceso directo a los datos privados.
 2. **Mantenimiento:** El uso excesivo de funciones amigas puede hacer que el código sea más difícil de mantener y entender.
 
+#### Hidden Friends: Funciones Definidas Inline (C++11)
+
+El modismo "hidden friend" (amigo oculto) consiste en definir una función amiga directamente **dentro del cuerpo de la clase**, en lugar de solo declararla ahí y definirla fuera. Cuando una función friend se define inline dentro de la clase, esa función **no es visible mediante búsqueda normal** (unqualified lookup) sino que solo puede encontrarse a través de **ADL (Argument-Dependent Lookup)**, es decir, el compilador solo la encuentra si al menos uno de los argumentos es del tipo de la clase que la contiene.
+
+Este patrón es la **mejor práctica moderna** para sobrecargar operadores por varias razones:
+1. **Reduce el conjunto de sobrecarga:** Al no ser visible globalmente, hay menos candidatos durante la resolución de sobrecarga, lo que mejora tiempos de compilación y reduce errores ambiguos.
+2. **Previene conversiones implícitas en ambos argumentos:** A diferencia de funciones libres normales, no se pueden invocar accidentalmente con conversiones implícitas en los dos operandos.
+3. **Mantiene la función cerca de la clase:** El código queda más cohesivo y fácil de mantener.
+
+##### Ejemplo de Hidden Friends
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Temperatura {
+private:
+    double grados;
+    char escala; // 'C' para Celsius, 'F' para Fahrenheit
+
+public:
+    Temperatura(double g, char e) : grados(g), escala(e) {}
+
+    // Hidden friend: operator== definido inline dentro de la clase
+    // Solo se encuentra por ADL (necesita al menos un argumento Temperatura)
+    friend bool operator==(const Temperatura& a, const Temperatura& b) {
+        return a.grados == b.grados && a.escala == b.escala;
+    }
+
+    // Hidden friend: operator< definido inline
+    friend bool operator<(const Temperatura& a, const Temperatura& b) {
+        // Comparación solo válida si misma escala
+        if (a.escala != b.escala) {
+            cerr << "Error: No se pueden comparar escalas diferentes" << endl;
+            return false;
+        }
+        return a.grados < b.grados;
+    }
+
+    // Hidden friend: operator<< definido inline
+    friend ostream& operator<<(ostream& os, const Temperatura& t) {
+        os << t.grados << "°" << t.escala;
+        return os;
+    }
+};
+
+int main() {
+    Temperatura t1(100.0, 'C');
+    Temperatura t2(212.0, 'F');
+    Temperatura t3(100.0, 'C');
+
+    // Funciona: al menos un argumento es Temperatura (ADL lo encuentra)
+    cout << "t1: " << t1 << endl;           // 100°C
+    cout << "t3: " << t3 << endl;           // 100°C
+    cout << "t1 == t3: " << (t1 == t3) << endl; // 1 (true)
+    cout << "t1 == t2: " << (t1 == t2) << endl; // 0 (false)
+    cout << "t1 < t2: ";
+    cout << (t1 < t2) << endl; // Error: escalas diferentes
+
+    // NOTA: No se puede llamar a operator== sin un argumento Temperatura
+    // porque la función es "oculta" y solo ADL la encuentra.
+    return 0;
+}
+```
+
+En este ejemplo:
+- Los tres operadores (`==`, `<`, `<<`) están definidos **dentro** del cuerpo de `Temperatura` como `friend`.
+- Son "hidden friends" porque no son visibles como funciones libres normales; solo se encuentran cuando al menos un argumento es de tipo `Temperatura`.
+- Este patrón es el recomendado en C++ moderno para sobrecargas de operadores.
+
+#### `friend` con Funciones Template
+
+La palabra clave `friend` también puede utilizarse con funciones template, pero la sintaxis varía dependiendo de qué se quiera lograr. Existen tres escenarios principales:
+
+1. **Todas las instanciaciones son amigas:** Se declara el template completo como amigo, de modo que `funcionTemplate<int>`, `funcionTemplate<double>`, etc., todas tienen acceso a los miembros privados.
+2. **Solo una instanciación específica es amiga:** Se indica una instanciación concreta, por ejemplo `friend void funcionTemplate<int>(int)`, de modo que solo esa versión tiene acceso.
+3. **Patrón común con clases template:** Cuando una clase template necesita que su correspondiente `operator<<` sea amigo, se usa una declaración adelantada del template y se hace amiga la instanciación que coincide con el parámetro de la clase.
+
+##### Ejemplo de Friend con Templates
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Declaración adelantada de la clase template
+template<typename T>
+class Contenedor;
+
+// Declaración adelantada del operator<< template
+template<typename T>
+ostream& operator<<(ostream& os, const Contenedor<T>& c);
+
+template<typename T>
+class Contenedor {
+private:
+    T valor;
+    int id;
+
+public:
+    Contenedor(T v, int i) : valor(v), id(i) {}
+
+    // Escenario 1: TODAS las instanciaciones de imprimirInfo son amigas
+    template<typename U>
+    friend void imprimirInfo(const Contenedor<U>& c);
+
+    // Escenario 3: Solo operator<< con el MISMO tipo T es amigo
+    // Necesita la declaración adelantada y el <> después del nombre
+    friend ostream& operator<< <>(ostream& os, const Contenedor<T>& c);
+};
+
+// Definición de la función template amiga (todas las instanciaciones)
+template<typename U>
+void imprimirInfo(const Contenedor<U>& c) {
+    cout << "Contenedor[id=" << c.id << "]: " << c.valor << endl;
+}
+
+// Definición de operator<< template
+template<typename T>
+ostream& operator<<(ostream& os, const Contenedor<T>& c) {
+    os << "(" << c.valor << ")";
+    return os;
+}
+
+// Escenario 2: Ejemplo con instanciación específica
+class Secreto {
+private:
+    int clave;
+
+public:
+    Secreto(int c) : clave(c) {}
+
+    // Solo la instanciación con int es amiga
+    friend void revelar(const Secreto& s);
+};
+
+void revelar(const Secreto& s) {
+    cout << "Clave secreta: " << s.clave << endl;
+}
+
+int main() {
+    Contenedor<string> cs("Hola Mundo", 1);
+    Contenedor<double> cd(3.14159, 2);
+
+    // imprimirInfo es amiga de TODAS las instanciaciones
+    imprimirInfo(cs); // Contenedor[id=1]: Hola Mundo
+    imprimirInfo(cd); // Contenedor[id=2]: 3.14159
+
+    // operator<< funciona para cada tipo
+    cout << "cs: " << cs << endl; // cs: (Hola Mundo)
+    cout << "cd: " << cd << endl; // cd: (3.14159)
+
+    Secreto s(42);
+    revelar(s); // Clave secreta: 42
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `imprimirInfo` es una función template donde **todas** sus instanciaciones son amigas de cualquier `Contenedor<T>`.
+- `operator<<` usa la sintaxis `<>` para que solo la instanciación que coincide con el tipo `T` de la clase sea amiga (por ejemplo, `operator<< <string>` es amiga de `Contenedor<string>` pero no de `Contenedor<double>`).
+- La clase `Secreto` muestra cómo hacer amiga una función normal (no template) de forma específica.
+
+#### `friend` en Qt: Sobrecarga de `QDebug operator<<`
+
+En el framework Qt, es muy común usar funciones amigas para sobrecargar el operador `<<` con `QDebug`, lo que permite imprimir objetos personalizados directamente con `qDebug()`. El patrón estándar es:
+
+```cpp
+friend QDebug operator<<(QDebug dbg, const MiClase& obj);
+```
+
+Esto permite escribir código como `qDebug() << miObjeto;` para depuración. Además, Qt proporciona la clase `QDebugStateSaver` que guarda y restaura automáticamente el estado del flujo de depuración (espaciado, comillas, etc.), garantizando que la salida personalizada no afecte a posteriores mensajes de depuración.
+
+##### Ejemplo de Friend con QDebug
+
+```cpp
+#include <iostream>
+#include <QDebug>
+#include <QString>
+using namespace std;
+
+class Vuelo {
+private:
+    QString numero;
+    QString origen;
+    QString destino;
+
+public:
+    Vuelo(const QString& num, const QString& orig, const QString& dest)
+        : numero(num), origen(orig), destino(dest) {}
+
+    // Sobrecarga amiga para std::ostream (salida estándar de C++)
+    friend ostream& operator<<(ostream& os, const Vuelo& v) {
+        os << "Vuelo " << v.numero.toStdString()
+           << ": " << v.origen.toStdString()
+           << " -> " << v.destino.toStdString();
+        return os;
+    }
+
+    // Sobrecarga amiga para QDebug (sistema de depuración de Qt)
+    friend QDebug operator<<(QDebug dbg, const Vuelo& v) {
+        // QDebugStateSaver guarda el estado actual de dbg
+        // y lo restaura automáticamente al salir del ámbito
+        QDebugStateSaver saver(dbg);
+
+        // nospace() evita espacios extra entre elementos
+        dbg.nospace() << "Vuelo("
+                      << v.numero << ": "
+                      << v.origen << " -> "
+                      << v.destino << ")";
+        return dbg;
+    }
+};
+
+int main() {
+    Vuelo v1("IB3210", "Madrid", "Buenos Aires");
+    Vuelo v2("AA945", "New York", "London");
+
+    // Usando std::cout (operador<< con ostream)
+    cout << v1 << endl;
+    // Salida: Vuelo IB3210: Madrid -> Buenos Aires
+
+    cout << v2 << endl;
+    // Salida: Vuelo AA945: New York -> London
+
+    // Usando qDebug() (operador<< con QDebug)
+    qDebug() << v1;
+    // Salida: Vuelo(IB3210: Madrid -> Buenos Aires)
+
+    qDebug() << "Vuelos disponibles:" << v1 << v2;
+    // Salida: Vuelos disponibles: Vuelo(IB3210: ...) Vuelo(AA945: ...)
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Vuelo` tiene dos sobrecargas del operador `<<`: una para `std::ostream` (uso con `cout`) y otra para `QDebug` (uso con `qDebug()`).
+- Ambas son funciones amigas que acceden a los miembros privados `numero`, `origen` y `destino`.
+- `QDebugStateSaver` se usa para preservar el estado de depuración; al salir del ámbito de la función, el estado original de `dbg` se restaura automáticamente.
+- Este patrón es el estándar en proyectos Qt para hacer que los objetos sean "imprimibles" en la consola de depuración.
+
 ### Conclusión
 
 Las funciones amigas son una característica poderosa de C++ que permite a funciones y clases acceder a los miembros privados y protegidos de otras clases. Son especialmente útiles para la sobrecarga de operadores y para implementar operaciones que requieren acceso directo a los datos privados. Sin embargo, deben usarse con cuidado para no comprometer el encapsulamiento y la mantenibilidad del código. Comprender cuándo y cómo usar funciones amigas es crucial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
@@ -160,6 +402,12 @@ Ejemplo de Sobrecarga de Operador
 Ejemplo de Sobrecarga de Operador Result
 Ejemplo de Clases Amigas
 Ejemplo de Clases Amigas Result
+Ejemplo de Hidden Friends
+Ejemplo de Hidden Friends Result
+Ejemplo de Friend con Templates
+Ejemplo de Friend con Templates Result
+Ejemplo de Friend con QDebug
+Ejemplo de Friend con QDebug Result
 <---Sintaxis--->
 ```cpp
 class Clase {
@@ -258,3 +506,196 @@ int main() {
     return 0;
 }
 <---Ejemplo de Clases Amigas Result--->
+<---Ejemplo de Hidden Friends--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Temperatura {
+private:
+    double grados;
+    char escala; // 'C' para Celsius, 'F' para Fahrenheit
+
+public:
+    Temperatura(double g, char e) : grados(g), escala(e) {}
+
+    // Hidden friend: operator== definido inline dentro de la clase
+    // Solo se encuentra por ADL (necesita al menos un argumento Temperatura)
+    friend bool operator==(const Temperatura& a, const Temperatura& b) {
+        return a.grados == b.grados && a.escala == b.escala;
+    }
+
+    // Hidden friend: operator< definido inline
+    friend bool operator<(const Temperatura& a, const Temperatura& b) {
+        // Comparación solo válida si misma escala
+        if (a.escala != b.escala) {
+            cerr << "Error: No se pueden comparar escalas diferentes" << endl;
+            return false;
+        }
+        return a.grados < b.grados;
+    }
+
+    // Hidden friend: operator<< definido inline
+    friend ostream& operator<<(ostream& os, const Temperatura& t) {
+        os << t.grados << "°" << t.escala;
+        return os;
+    }
+};
+
+int main() {
+    Temperatura t1(100.0, 'C');
+    Temperatura t2(212.0, 'F');
+    Temperatura t3(100.0, 'C');
+
+    // Funciona: al menos un argumento es Temperatura (ADL lo encuentra)
+    cout << "t1: " << t1 << endl;           // 100°C
+    cout << "t3: " << t3 << endl;           // 100°C
+    cout << "t1 == t3: " << (t1 == t3) << endl; // 1 (true)
+    cout << "t1 == t2: " << (t1 == t2) << endl; // 0 (false)
+    cout << "t1 < t2: ";
+    cout << (t1 < t2) << endl; // Error: escalas diferentes
+
+    // NOTA: No se puede llamar a operator== sin un argumento Temperatura
+    // porque la función es "oculta" y solo ADL la encuentra.
+    return 0;
+}
+<---Ejemplo de Hidden Friends Result--->
+<---Ejemplo de Friend con Templates--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// Declaración adelantada de la clase template
+template<typename T>
+class Contenedor;
+
+// Declaración adelantada del operator<< template
+template<typename T>
+ostream& operator<<(ostream& os, const Contenedor<T>& c);
+
+template<typename T>
+class Contenedor {
+private:
+    T valor;
+    int id;
+
+public:
+    Contenedor(T v, int i) : valor(v), id(i) {}
+
+    // Escenario 1: TODAS las instanciaciones de imprimirInfo son amigas
+    template<typename U>
+    friend void imprimirInfo(const Contenedor<U>& c);
+
+    // Escenario 3: Solo operator<< con el MISMO tipo T es amigo
+    // Necesita la declaración adelantada y el <> después del nombre
+    friend ostream& operator<< <>(ostream& os, const Contenedor<T>& c);
+};
+
+// Definición de la función template amiga (todas las instanciaciones)
+template<typename U>
+void imprimirInfo(const Contenedor<U>& c) {
+    cout << "Contenedor[id=" << c.id << "]: " << c.valor << endl;
+}
+
+// Definición de operator<< template
+template<typename T>
+ostream& operator<<(ostream& os, const Contenedor<T>& c) {
+    os << "(" << c.valor << ")";
+    return os;
+}
+
+// Escenario 2: Ejemplo con instanciación específica
+class Secreto {
+private:
+    int clave;
+
+public:
+    Secreto(int c) : clave(c) {}
+
+    // Solo la instanciación con int es amiga
+    friend void revelar(const Secreto& s);
+};
+
+void revelar(const Secreto& s) {
+    cout << "Clave secreta: " << s.clave << endl;
+}
+
+int main() {
+    Contenedor<string> cs("Hola Mundo", 1);
+    Contenedor<double> cd(3.14159, 2);
+
+    // imprimirInfo es amiga de TODAS las instanciaciones
+    imprimirInfo(cs); // Contenedor[id=1]: Hola Mundo
+    imprimirInfo(cd); // Contenedor[id=2]: 3.14159
+
+    // operator<< funciona para cada tipo
+    cout << "cs: " << cs << endl; // cs: (Hola Mundo)
+    cout << "cd: " << cd << endl; // cd: (3.14159)
+
+    Secreto s(42);
+    revelar(s); // Clave secreta: 42
+
+    return 0;
+}
+<---Ejemplo de Friend con Templates Result--->
+<---Ejemplo de Friend con QDebug--->
+```cpp
+#include <iostream>
+#include <QDebug>
+#include <QString>
+using namespace std;
+
+class Vuelo {
+private:
+    QString numero;
+    QString origen;
+    QString destino;
+
+public:
+    Vuelo(const QString& num, const QString& orig, const QString& dest)
+        : numero(num), origen(orig), destino(dest) {}
+
+    // Sobrecarga amiga para std::ostream (salida estándar de C++)
+    friend ostream& operator<<(ostream& os, const Vuelo& v) {
+        os << "Vuelo " << v.numero.toStdString()
+           << ": " << v.origen.toStdString()
+           << " -> " << v.destino.toStdString();
+        return os;
+    }
+
+    // Sobrecarga amiga para QDebug (sistema de depuración de Qt)
+    friend QDebug operator<<(QDebug dbg, const Vuelo& v) {
+        // QDebugStateSaver guarda el estado actual de dbg
+        // y lo restaura automáticamente al salir del ámbito
+        QDebugStateSaver saver(dbg);
+
+        // nospace() evita espacios extra entre elementos
+        dbg.nospace() << "Vuelo("
+                      << v.numero << ": "
+                      << v.origen << " -> "
+                      << v.destino << ")";
+        return dbg;
+    }
+};
+
+int main() {
+    Vuelo v1("IB3210", "Madrid", "Buenos Aires");
+    Vuelo v2("AA945", "New York", "London");
+
+    // Usando std::cout (operador<< con ostream)
+    cout << v1 << endl;
+    // Salida: Vuelo IB3210: Madrid -> Buenos Aires
+
+    cout << v2 << endl;
+    // Salida: Vuelo AA945: New York -> London
+
+    // Usando qDebug() (operador<< con QDebug)
+    qDebug() << v1;
+    // Salida: Vuelo(IB3210: Madrid -> Buenos Aires)
+
+    qDebug() << "Vuelos disponibles:" << v1 << v2;
+    // Salida: Vuelos disponibles: Vuelo(IB3210: ...) Vuelo(AA945: ...)
+
+    return 0;
+}
+<---Ejemplo de Friend con QDebug Result--->

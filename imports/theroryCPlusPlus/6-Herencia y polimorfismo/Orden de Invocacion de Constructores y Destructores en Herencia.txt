@@ -208,6 +208,155 @@ Constructor de Derivada con valor 20
 
 En este ejemplo, `Base` se inicializa con el valor `10` antes de que `Derivada` se inicialice con el valor `20`.
 
+#### Destructores `= default` y Orden de Destrucción con Smart Pointers
+
+En C++11, se puede usar `= default` para indicarle al compilador que genere la implementación por defecto de un destructor virtual. Esto es más limpio que escribir un cuerpo vacío y deja claro la intención del programador. Cuando se trabaja con polimorfismo y `std::unique_ptr`, es **obligatorio** que la clase base tenga un destructor virtual; de lo contrario, al destruir el `unique_ptr<Base>` que apunta a un objeto derivado, solo se llamará al destructor de la base y se producirá comportamiento indefinido.
+
+##### Ejemplo de Destructores `= default` con Smart Pointers
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+class Recurso {
+protected:
+    string nombre;
+
+public:
+    Recurso(const string& n) : nombre(n) {
+        cout << "Constructor de Recurso: " << nombre << endl;
+    }
+
+    // Destructor virtual con implementación por defecto del compilador
+    virtual ~Recurso() = default;
+
+    virtual void usar() const {
+        cout << "Usando recurso: " << nombre << endl;
+    }
+};
+
+class ArchivoRecurso : public Recurso {
+private:
+    string rutaArchivo;
+
+public:
+    ArchivoRecurso(const string& n, const string& ruta)
+        : Recurso(n), rutaArchivo(ruta) {
+        cout << "Constructor de ArchivoRecurso: " << rutaArchivo << endl;
+    }
+
+    ~ArchivoRecurso() override {
+        cout << "Destructor de ArchivoRecurso: cerrando " << rutaArchivo << endl;
+    }
+
+    void usar() const override {
+        cout << "Leyendo archivo: " << rutaArchivo << endl;
+    }
+};
+
+class ConexionRecurso : public Recurso {
+private:
+    string host;
+
+public:
+    ConexionRecurso(const string& n, const string& h)
+        : Recurso(n), host(h) {
+        cout << "Constructor de ConexionRecurso: " << host << endl;
+    }
+
+    ~ConexionRecurso() override {
+        cout << "Destructor de ConexionRecurso: desconectando de " << host << endl;
+    }
+
+    void usar() const override {
+        cout << "Conectado a: " << host << endl;
+    }
+};
+
+int main() {
+    cout << "=== Creando recursos con unique_ptr ===" << endl;
+
+    // unique_ptr destruye correctamente gracias al destructor virtual en Recurso
+    unique_ptr<Recurso> r1 = make_unique<ArchivoRecurso>("Datos", "/tmp/datos.csv");
+    unique_ptr<Recurso> r2 = make_unique<ConexionRecurso>("DB", "localhost:5432");
+
+    r1->usar();
+    r2->usar();
+
+    cout << "\n=== Destruyendo recursos (orden inverso de creación en el stack) ===" << endl;
+    // Al salir del scope, unique_ptr destruye los objetos automáticamente
+    // r2 se destruye primero (último en el stack), luego r1
+    return 0;
+}
+```
+
+En este ejemplo, `Recurso` usa `virtual ~Recurso() = default;` para obtener un destructor virtual sin escribir implementación manual. Gracias a esto, `unique_ptr<Recurso>` destruye correctamente tanto `ArchivoRecurso` como `ConexionRecurso`, llamando a los destructores derivados antes que al de la base.
+
+#### Orden de Construcción y Destrucción en Qt (Parent-Child)
+
+Qt implementa un sistema de propiedad padre-hijo a través de `QObject`. Cuando un `QObject` tiene un padre, el padre se encarga de destruir a sus hijos automáticamente cuando él mismo es destruido. El orden de destrucción es el **inverso al orden de creación** de los hijos, y esta destrucción ocurre antes de que el destructor del propio padre finalice. Es importante **no usar `std::unique_ptr` para gestionar un `QObject` que ya tiene un padre**, ya que esto causaría doble liberación de memoria (double-free).
+
+##### Ejemplo de Orden de Construcción y Destrucción en Qt
+
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QCoreApplication>
+
+class MiComponente : public QObject {
+    Q_OBJECT
+public:
+    MiComponente(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent) {
+        setObjectName(nombre);
+        qDebug() << "Construido:" << objectName();
+    }
+
+    ~MiComponente() override {
+        qDebug() << "Destruido:" << objectName();
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // El padre se crea primero
+    auto* padre = new MiComponente("Padre");
+
+    // Los hijos se crean con el padre como propietario
+    new MiComponente("Hijo_1", padre);
+    new MiComponente("Hijo_2", padre);
+    new MiComponente("Hijo_3", padre);
+
+    // Verificar los hijos registrados
+    qDebug() << "\nHijos del padre:";
+    for (QObject* hijo : padre->children()) {
+        qDebug() << "  -" << hijo->objectName();
+    }
+
+    // Al destruir el padre, se destruyen los hijos en orden inverso
+    qDebug() << "\nDestruyendo el padre:";
+    delete padre;
+    // Salida esperada:
+    // Destruido: Hijo_3  (último creado, primero destruido)
+    // Destruido: Hijo_2
+    // Destruido: Hijo_1
+    // Destruido: Padre
+
+    // PELIGRO: NO hacer esto con QObjects que tienen padre
+    // auto* padre2 = new MiComponente("Padre2");
+    // std::unique_ptr<MiComponente> hijo(new MiComponente("HijoUP", padre2));
+    // delete padre2; // padre2 destruye "HijoUP", luego unique_ptr intenta
+    //                // destruirlo de nuevo -> DOUBLE FREE / CRASH
+
+    return 0;
+}
+```
+
+En este ejemplo, `MiComponente` es un `QObject` que imprime mensajes al construirse y destruirse. Los hijos se crean con un padre, y al destruir el padre, Qt destruye automáticamente los hijos en orden inverso al de creación. El comentario al final muestra el error común de combinar `unique_ptr` con el sistema padre-hijo de Qt, lo cual provoca doble liberación de memoria.
+
 ### Conclusión
 
 El orden de invocación de constructores y destructores en C++ es crucial para garantizar que los recursos se gestionen adecuadamente. Los constructores se invocan desde la clase base hasta la clase derivada, mientras que los destructores se invocan en el orden inverso. Entender este orden ayuda a diseñar jerarquías de herencia robustas y evitar problemas relacionados con la gestión de recursos y la integridad de los objetos.
@@ -220,6 +369,10 @@ Ejemplo de Destructor Virtual
 Ejemplo de Destructor Virtual Result
 Ejemplo de Lista de Inicialización del Constructor
 Ejemplo de Lista de Inicialización del Constructor Result
+Ejemplo de Destructores `= default` con Smart Pointers
+Ejemplo de Destructores `= default` con Smart Pointers Result
+Ejemplo de Orden de Construcción y Destrucción en Qt
+Ejemplo de Orden de Construcción y Destrucción en Qt Result
 <---Ejemplo de Invocación de Constructores--->
 ```cpp
 #include <iostream>
@@ -350,3 +503,136 @@ int main() {
     return 0;
 }
 <---Ejemplo de Lista de Inicialización del Constructor Result--->
+<---Ejemplo de Destructores `= default` con Smart Pointers--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+class Recurso {
+protected:
+    string nombre;
+
+public:
+    Recurso(const string& n) : nombre(n) {
+        cout << "Constructor de Recurso: " << nombre << endl;
+    }
+
+    // Destructor virtual con implementación por defecto del compilador
+    virtual ~Recurso() = default;
+
+    virtual void usar() const {
+        cout << "Usando recurso: " << nombre << endl;
+    }
+};
+
+class ArchivoRecurso : public Recurso {
+private:
+    string rutaArchivo;
+
+public:
+    ArchivoRecurso(const string& n, const string& ruta)
+        : Recurso(n), rutaArchivo(ruta) {
+        cout << "Constructor de ArchivoRecurso: " << rutaArchivo << endl;
+    }
+
+    ~ArchivoRecurso() override {
+        cout << "Destructor de ArchivoRecurso: cerrando " << rutaArchivo << endl;
+    }
+
+    void usar() const override {
+        cout << "Leyendo archivo: " << rutaArchivo << endl;
+    }
+};
+
+class ConexionRecurso : public Recurso {
+private:
+    string host;
+
+public:
+    ConexionRecurso(const string& n, const string& h)
+        : Recurso(n), host(h) {
+        cout << "Constructor de ConexionRecurso: " << host << endl;
+    }
+
+    ~ConexionRecurso() override {
+        cout << "Destructor de ConexionRecurso: desconectando de " << host << endl;
+    }
+
+    void usar() const override {
+        cout << "Conectado a: " << host << endl;
+    }
+};
+
+int main() {
+    cout << "=== Creando recursos con unique_ptr ===" << endl;
+
+    // unique_ptr destruye correctamente gracias al destructor virtual en Recurso
+    unique_ptr<Recurso> r1 = make_unique<ArchivoRecurso>("Datos", "/tmp/datos.csv");
+    unique_ptr<Recurso> r2 = make_unique<ConexionRecurso>("DB", "localhost:5432");
+
+    r1->usar();
+    r2->usar();
+
+    cout << "\n=== Destruyendo recursos (orden inverso de creación en el stack) ===" << endl;
+    // Al salir del scope, unique_ptr destruye los objetos automáticamente
+    // r2 se destruye primero (último en el stack), luego r1
+    return 0;
+}
+<---Ejemplo de Destructores `= default` con Smart Pointers Result--->
+<---Ejemplo de Orden de Construcción y Destrucción en Qt--->
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QCoreApplication>
+
+class MiComponente : public QObject {
+    Q_OBJECT
+public:
+    MiComponente(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent) {
+        setObjectName(nombre);
+        qDebug() << "Construido:" << objectName();
+    }
+
+    ~MiComponente() override {
+        qDebug() << "Destruido:" << objectName();
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // El padre se crea primero
+    auto* padre = new MiComponente("Padre");
+
+    // Los hijos se crean con el padre como propietario
+    new MiComponente("Hijo_1", padre);
+    new MiComponente("Hijo_2", padre);
+    new MiComponente("Hijo_3", padre);
+
+    // Verificar los hijos registrados
+    qDebug() << "\nHijos del padre:";
+    for (QObject* hijo : padre->children()) {
+        qDebug() << "  -" << hijo->objectName();
+    }
+
+    // Al destruir el padre, se destruyen los hijos en orden inverso
+    qDebug() << "\nDestruyendo el padre:";
+    delete padre;
+    // Salida esperada:
+    // Destruido: Hijo_3  (último creado, primero destruido)
+    // Destruido: Hijo_2
+    // Destruido: Hijo_1
+    // Destruido: Padre
+
+    // PELIGRO: NO hacer esto con QObjects que tienen padre
+    // auto* padre2 = new MiComponente("Padre2");
+    // std::unique_ptr<MiComponente> hijo(new MiComponente("HijoUP", padre2));
+    // delete padre2; // padre2 destruye "HijoUP", luego unique_ptr intenta
+    //                // destruirlo de nuevo -> DOUBLE FREE / CRASH
+
+    return 0;
+}
+<---Ejemplo de Orden de Construcción y Destrucción en Qt Result--->

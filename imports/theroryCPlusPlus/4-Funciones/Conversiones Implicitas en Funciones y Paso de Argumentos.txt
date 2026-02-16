@@ -219,6 +219,112 @@ int main() {
 }
 ```
 
+### La Palabra Clave `explicit` para Prevenir Conversiones
+
+La palabra clave `explicit` es una herramienta fundamental en C++ moderno para prevenir conversiones implícitas no deseadas. Cuando se aplica a un constructor de un solo parámetro (o a un operador de conversión), impide que el compilador utilice ese constructor para realizar conversiones automáticas. Esto es especialmente importante para evitar errores sutiles donde el compilador convierte tipos sin que el programador lo haya previsto.
+
+En C++11 y posteriores, `explicit` también puede aplicarse a operadores de conversión como `operator bool()`, lo que previene conversiones implícitas a `bool` en contextos inesperados.
+
+##### Ejemplo con `explicit`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Temperatura {
+    double celsius;
+public:
+    // Sin explicit: permite conversión implícita de double a Temperatura
+    // Temperatura(double c) : celsius(c) {}
+
+    // Con explicit: PROHÍBE conversión implícita
+    explicit Temperatura(double c) : celsius(c) {}
+
+    double getCelsius() const { return celsius; }
+};
+
+void mostrar(const Temperatura& t) {
+    cout << t.getCelsius() << "°C" << endl;
+}
+
+int main() {
+    // mostrar(36.5);              // ERROR con explicit
+    mostrar(Temperatura(36.5));    // OK: conversión explícita
+
+    // explicit también en operadores de conversión (C++11)
+    // explicit operator bool() const { return celsius > 0; }
+    return 0;
+}
+```
+
+En este ejemplo, al marcar el constructor de `Temperatura` como `explicit`, se prohíbe la conversión implícita de `double` a `Temperatura`. El programador debe realizar la conversión de forma explícita usando `Temperatura(36.5)`.
+
+### Narrowing Conversions y Inicialización con Llaves
+
+Las *narrowing conversions* (conversiones de estrechamiento) ocurren cuando un valor se convierte a un tipo que no puede representar todos los valores del tipo original, como convertir un `double` a `int`. La inicialización con llaves `{}` (brace initialization), introducida en C++11, detecta y prohíbe estas conversiones peligrosas en tiempo de compilación.
+
+Esta es una de las razones principales por las que se recomienda usar la inicialización con llaves: proporciona una capa adicional de seguridad de tipos que la inicialización tradicional con `=` no ofrece.
+
+##### Ejemplo de Narrowing Conversions
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void procesar(int valor) {
+    cout << "Valor: " << valor << endl;
+}
+
+int main() {
+    double pi = 3.14;
+
+    procesar(pi);       // OK pero PELIGROSO: trunca 3.14 a 3
+    // procesar({pi});  // ERROR de compilación: narrowing conversion
+
+    // Inicialización con llaves detecta narrowing
+    // int x{3.14};     // ERROR: narrowing de double a int
+    int x = 3.14;       // OK pero trunca (warning)
+
+    // Buena práctica: usar llaves para detectar conversiones peligrosas
+    int a{42};           // OK: no hay narrowing
+    // int b{42.0};      // ERROR: narrowing
+    return 0;
+}
+```
+
+### Conversiones en Qt: `QString` y `explicit`
+
+Qt utiliza `explicit` extensivamente en sus clases para prevenir conversiones accidentales que podrían causar errores difíciles de detectar. Un ejemplo destacado es `QString`, que no permite conversiones implícitas desde tipos numéricos. Además, Qt ofrece macros como `QT_NO_CAST_FROM_ASCII` que prohíben conversiones implícitas desde `const char*` a `QString`, lo cual es una buena práctica en proyectos grandes para garantizar el correcto manejo de codificaciones de texto.
+
+##### Ejemplo de Conversiones en Qt
+
+```cpp
+#include <QString>
+#include <QDebug>
+
+// Qt usa explicit extensivamente para prevenir conversiones accidentales
+// Ejemplo: QString NO permite conversión implícita desde int
+
+void procesarTexto(const QString& texto) {
+    qDebug() << texto;
+}
+
+int main() {
+    // procesarTexto(42);                   // ERROR: no hay conversión implícita
+    procesarTexto(QString::number(42));      // OK: conversión explícita
+    procesarTexto(QStringLiteral("Hola"));   // OK: string literal Qt
+
+    // Conversiones entre QString y std::string
+    std::string stdStr = "Hola";
+    QString qStr = QString::fromStdString(stdStr);  // Explícita
+    std::string back = qStr.toStdString();           // Explícita
+
+    // QT_NO_CAST_FROM_ASCII: macro que prohíbe conversiones implícitas
+    // desde const char* a QString (buena práctica en proyectos grandes)
+    return 0;
+}
+```
+
 ### Conclusión
 
 Las conversiones implícitas en C++ facilitan la interoperabilidad entre diferentes tipos de datos, especialmente al pasar argumentos a funciones. Sin embargo, es crucial manejarlas con cuidado para evitar la pérdida de datos y garantizar la seguridad del tipo. Comprender cómo y cuándo ocurren estas conversiones permite a los desarrolladores escribir funciones más flexibles y robustas, mejorando la eficiencia y la legibilidad del código.
@@ -231,6 +337,12 @@ Ejemplo con Herencia
 Ejemplo con Herencia Result
 Ejemplo con Constructor de Conversión
 Ejemplo con Constructor de Conversión Result
+Ejemplo con `explicit`
+Ejemplo con `explicit` Result
+Ejemplo de Narrowing Conversions
+Ejemplo de Narrowing Conversions Result
+Ejemplo de Conversiones en Qt
+Ejemplo de Conversiones en Qt Result
 <---Ejemplo de Conversión Implícita--->
 ```cpp
 #include <iostream>
@@ -403,3 +515,85 @@ int main() {
     return 0;
 }
 <---Ejemplo con Constructor de Conversión Result--->
+<---Ejemplo con `explicit`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Temperatura {
+    double celsius;
+public:
+    // Sin explicit: permite conversión implícita de double a Temperatura
+    // Temperatura(double c) : celsius(c) {}
+
+    // Con explicit: PROHÍBE conversión implícita
+    explicit Temperatura(double c) : celsius(c) {}
+
+    double getCelsius() const { return celsius; }
+};
+
+void mostrar(const Temperatura& t) {
+    cout << t.getCelsius() << "°C" << endl;
+}
+
+int main() {
+    // mostrar(36.5);              // ERROR con explicit
+    mostrar(Temperatura(36.5));    // OK: conversión explícita
+
+    // explicit también en operadores de conversión (C++11)
+    // explicit operator bool() const { return celsius > 0; }
+    return 0;
+}
+<---Ejemplo con `explicit` Result--->
+<---Ejemplo de Narrowing Conversions--->
+```cpp
+#include <iostream>
+using namespace std;
+
+void procesar(int valor) {
+    cout << "Valor: " << valor << endl;
+}
+
+int main() {
+    double pi = 3.14;
+
+    procesar(pi);       // OK pero PELIGROSO: trunca 3.14 a 3
+    // procesar({pi});  // ERROR de compilación: narrowing conversion
+
+    // Inicialización con llaves detecta narrowing
+    // int x{3.14};     // ERROR: narrowing de double a int
+    int x = 3.14;       // OK pero trunca (warning)
+
+    // Buena práctica: usar llaves para detectar conversiones peligrosas
+    int a{42};           // OK: no hay narrowing
+    // int b{42.0};      // ERROR: narrowing
+    return 0;
+}
+<---Ejemplo de Narrowing Conversions Result--->
+<---Ejemplo de Conversiones en Qt--->
+```cpp
+#include <QString>
+#include <QDebug>
+
+// Qt usa explicit extensivamente para prevenir conversiones accidentales
+// Ejemplo: QString NO permite conversión implícita desde int
+
+void procesarTexto(const QString& texto) {
+    qDebug() << texto;
+}
+
+int main() {
+    // procesarTexto(42);                   // ERROR: no hay conversión implícita
+    procesarTexto(QString::number(42));      // OK: conversión explícita
+    procesarTexto(QStringLiteral("Hola"));   // OK: string literal Qt
+
+    // Conversiones entre QString y std::string
+    std::string stdStr = "Hola";
+    QString qStr = QString::fromStdString(stdStr);  // Explícita
+    std::string back = qStr.toStdString();           // Explícita
+
+    // QT_NO_CAST_FROM_ASCII: macro que prohíbe conversiones implícitas
+    // desde const char* a QString (buena práctica en proyectos grandes)
+    return 0;
+}
+<---Ejemplo de Conversiones en Qt Result--->

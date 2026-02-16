@@ -272,6 +272,136 @@ int main() {
 
 En este ejemplo, se sobrecarga el operador `[]` para permitir el acceso a los elementos de un objeto `Array`.
 
+#### Operador Spaceship `<=>` (C++20)
+
+C++20 introduce el operador de comparación de tres vías `<=>`, también conocido como "operador spaceship". Su principal ventaja es que con una sola declaración `= default`, el compilador genera automáticamente los seis operadores de comparación (`==`, `!=`, `<`, `>`, `<=`, `>=`). Esto elimina la necesidad de sobrecargar cada operador manualmente y reduce significativamente el código repetitivo. Se requiere incluir `<compare>` para usar los tipos de retorno como `std::strong_ordering`.
+
+##### Operador Spaceship `<=>` (C++20)
+
+```cpp
+#include <iostream>
+#include <compare>
+using namespace std;
+
+class Version {
+    int major, minor, patch;
+public:
+    Version(int ma, int mi, int pa) : major(ma), minor(mi), patch(pa) {}
+
+    // Operador spaceship: genera ==, !=, <, >, <=, >= automáticamente
+    auto operator<=>(const Version&) const = default;
+
+    friend ostream& operator<<(ostream& os, const Version& v) {
+        os << v.major << "." << v.minor << "." << v.patch;
+        return os;
+    }
+};
+
+int main() {
+    Version v1(2, 1, 0);
+    Version v2(2, 3, 1);
+    Version v3(2, 1, 0);
+
+    cout << v1 << " == " << v3 << ": " << (v1 == v3) << endl; // true
+    cout << v1 << " < " << v2 << ": " << (v1 < v2) << endl;   // true
+    cout << v1 << " != " << v2 << ": " << (v1 != v2) << endl; // true
+    cout << v2 << " >= " << v1 << ": " << (v2 >= v1) << endl; // true
+    return 0;
+}
+```
+
+#### User-Defined Literals (Literales Definidos por el Usuario)
+
+Los literales definidos por el usuario permiten crear sufijos personalizados para valores numéricos y de cadena, haciendo que el código sea más expresivo y seguro en cuanto a tipos. Se definen sobrecargando el operador `""` seguido de un sufijo con guion bajo (por convención, los sufijos sin guion bajo están reservados para la biblioteca estándar). Combinados con `constexpr`, los literales se evalúan en tiempo de compilación, sin costo en rendimiento.
+
+##### User-Defined Literals (Literales Definidos por el Usuario)
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Distancia {
+    double metros;
+public:
+    constexpr explicit Distancia(double m) : metros(m) {}
+    constexpr double enMetros() const { return metros; }
+    constexpr double enKm() const { return metros / 1000.0; }
+
+    constexpr Distancia operator+(const Distancia& d) const {
+        return Distancia(metros + d.metros);
+    }
+
+    friend ostream& operator<<(ostream& os, const Distancia& d) {
+        os << d.metros << "m";
+        return os;
+    }
+};
+
+// Literales definidos por el usuario
+constexpr Distancia operator""_m(long double m) { return Distancia(m); }
+constexpr Distancia operator""_km(long double km) { return Distancia(km * 1000); }
+constexpr Distancia operator""_nm(long double nm) { return Distancia(nm * 1852); }
+
+int main() {
+    constexpr auto pista = 3500.0_m;
+    constexpr auto ruta = 1.5_km;
+    constexpr auto vuelo = 250.0_nm;
+
+    cout << "Pista: " << pista << endl;
+    cout << "Ruta: " << ruta << " (" << ruta.enKm() << " km)" << endl;
+    cout << "Vuelo: " << vuelo << " (" << vuelo.enKm() << " km)" << endl;
+
+    constexpr auto total = pista + ruta;
+    cout << "Total: " << total << endl;
+    return 0;
+}
+```
+
+#### Sobrecarga de Operadores en Qt
+
+Qt hace un uso extensivo de la sobrecarga de operadores en sus clases principales. `QPoint`, `QSize`, `QRect` y `QVector3D` soportan operadores aritméticos para cálculos geométricos. `QString` sobrecarga `+` para concatenación y los operadores de comparación. `QDebug` sobrecarga `<<` para permitir la salida de depuración encadenada. Para clases propias, se puede sobrecargar `operator<<` con `QDebug` para integrarlas en el sistema de depuración de Qt.
+
+##### Sobrecarga de Operadores en Qt
+
+```cpp
+#include <QPoint>
+#include <QDebug>
+#include <QString>
+
+// Qt sobrecarga operadores en muchas de sus clases:
+
+void ejemploOperadoresQt() {
+    // QPoint: operadores aritméticos
+    QPoint p1(10, 20);
+    QPoint p2(5, 15);
+    QPoint p3 = p1 + p2;   // (15, 35)
+    QPoint p4 = p1 * 2;    // (20, 40)
+    qDebug() << "Suma:" << p3 << "Escalar:" << p4;
+
+    // QString: operador + y comparación
+    QString s1 = "Hola";
+    QString s2 = " Mundo";
+    QString s3 = s1 + s2;         // "Hola Mundo"
+    bool igual = (s1 == "Hola");  // true
+    qDebug() << s3 << igual;
+
+    // QDebug: operador << (encadenamiento)
+    qDebug() << "Punto:" << p1 << "Texto:" << s1;
+
+    // QVariant: conversión con value<T>()
+    QVariant v = 42;
+    int n = v.toInt();             // 42
+    qDebug() << "Variante:" << n;
+}
+
+// Nota: Qt usa operator<< con QDebug para depuración
+// Para tus propias clases:
+// QDebug operator<<(QDebug debug, const MiClase& obj) {
+//     debug.nospace() << "MiClase(" << obj.valor() << ")";
+//     return debug;
+// }
+```
+
 ### Conclusión
 
 La sobrecarga de operadores en C++ permite definir cómo los operadores deben comportarse con los objetos de tipos definidos por el usuario. Esto facilita el uso intuitivo de estos objetos y mejora la legibilidad del código. Sin embargo, es importante usar la sobrecarga de operadores de manera adecuada y clara, evitando abusos que puedan llevar a un código confuso o difícil de mantener. Con una comprensión sólida de la sobrecarga de operadores, los desarrolladores pueden crear clases más poderosas y flexibles en C++.
@@ -286,6 +416,12 @@ Ejemplo de Sobrecarga del Operador `++`
 Ejemplo de Sobrecarga del Operador `++` Result
 Ejemplo de Sobrecarga del Operador `[]`
 Ejemplo de Sobrecarga del Operador `[]` Result
+Operador Spaceship `<=>` (C++20)
+Operador Spaceship `<=>` (C++20) Result
+User-Defined Literals (Literales Definidos por el Usuario)
+User-Defined Literals (Literales Definidos por el Usuario) Result
+Sobrecarga de Operadores en Qt
+Sobrecarga de Operadores en Qt Result
 <---Ejemplo de Sobrecarga de Operadores--->
 ```cpp
 #include <iostream>
@@ -511,3 +647,115 @@ int main() {
     return 0;
 }
 <---Ejemplo de Sobrecarga del Operador `[]` Result--->
+<---Operador Spaceship `<=>` (C++20)--->
+```cpp
+#include <iostream>
+#include <compare>
+using namespace std;
+
+class Version {
+    int major, minor, patch;
+public:
+    Version(int ma, int mi, int pa) : major(ma), minor(mi), patch(pa) {}
+
+    // Operador spaceship: genera ==, !=, <, >, <=, >= automáticamente
+    auto operator<=>(const Version&) const = default;
+
+    friend ostream& operator<<(ostream& os, const Version& v) {
+        os << v.major << "." << v.minor << "." << v.patch;
+        return os;
+    }
+};
+
+int main() {
+    Version v1(2, 1, 0);
+    Version v2(2, 3, 1);
+    Version v3(2, 1, 0);
+
+    cout << v1 << " == " << v3 << ": " << (v1 == v3) << endl; // true
+    cout << v1 << " < " << v2 << ": " << (v1 < v2) << endl;   // true
+    cout << v1 << " != " << v2 << ": " << (v1 != v2) << endl; // true
+    cout << v2 << " >= " << v1 << ": " << (v2 >= v1) << endl; // true
+    return 0;
+}
+<---Operador Spaceship `<=>` (C++20) Result--->
+<---User-Defined Literals (Literales Definidos por el Usuario)--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Distancia {
+    double metros;
+public:
+    constexpr explicit Distancia(double m) : metros(m) {}
+    constexpr double enMetros() const { return metros; }
+    constexpr double enKm() const { return metros / 1000.0; }
+
+    constexpr Distancia operator+(const Distancia& d) const {
+        return Distancia(metros + d.metros);
+    }
+
+    friend ostream& operator<<(ostream& os, const Distancia& d) {
+        os << d.metros << "m";
+        return os;
+    }
+};
+
+// Literales definidos por el usuario
+constexpr Distancia operator""_m(long double m) { return Distancia(m); }
+constexpr Distancia operator""_km(long double km) { return Distancia(km * 1000); }
+constexpr Distancia operator""_nm(long double nm) { return Distancia(nm * 1852); }
+
+int main() {
+    constexpr auto pista = 3500.0_m;
+    constexpr auto ruta = 1.5_km;
+    constexpr auto vuelo = 250.0_nm;
+
+    cout << "Pista: " << pista << endl;
+    cout << "Ruta: " << ruta << " (" << ruta.enKm() << " km)" << endl;
+    cout << "Vuelo: " << vuelo << " (" << vuelo.enKm() << " km)" << endl;
+
+    constexpr auto total = pista + ruta;
+    cout << "Total: " << total << endl;
+    return 0;
+}
+<---User-Defined Literals (Literales Definidos por el Usuario) Result--->
+<---Sobrecarga de Operadores en Qt--->
+```cpp
+#include <QPoint>
+#include <QDebug>
+#include <QString>
+
+// Qt sobrecarga operadores en muchas de sus clases:
+
+void ejemploOperadoresQt() {
+    // QPoint: operadores aritméticos
+    QPoint p1(10, 20);
+    QPoint p2(5, 15);
+    QPoint p3 = p1 + p2;   // (15, 35)
+    QPoint p4 = p1 * 2;    // (20, 40)
+    qDebug() << "Suma:" << p3 << "Escalar:" << p4;
+
+    // QString: operador + y comparación
+    QString s1 = "Hola";
+    QString s2 = " Mundo";
+    QString s3 = s1 + s2;         // "Hola Mundo"
+    bool igual = (s1 == "Hola");  // true
+    qDebug() << s3 << igual;
+
+    // QDebug: operador << (encadenamiento)
+    qDebug() << "Punto:" << p1 << "Texto:" << s1;
+
+    // QVariant: conversión con value<T>()
+    QVariant v = 42;
+    int n = v.toInt();             // 42
+    qDebug() << "Variante:" << n;
+}
+
+// Nota: Qt usa operator<< con QDebug para depuración
+// Para tus propias clases:
+// QDebug operator<<(QDebug debug, const MiClase& obj) {
+//     debug.nospace() << "MiClase(" << obj.valor() << ")";
+//     return debug;
+// }
+<---Sobrecarga de Operadores en Qt Result--->

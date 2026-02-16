@@ -125,9 +125,129 @@ int main() {
 }
 ```
 
+#### 4. **Operadores de Asignación**
+
+| Operador | Nombre | Ejemplo | Equivalente |
+|----------|--------|---------|-------------|
+| `=` | Asignación | `a = b` | — |
+| `+=` | Suma y asigna | `a += b` | `a = a + b` |
+| `-=` | Resta y asigna | `a -= b` | `a = a - b` |
+| `*=` | Multiplica y asigna | `a *= b` | `a = a * b` |
+| `/=` | Divide y asigna | `a /= b` | `a = a / b` |
+| `%=` | Módulo y asigna | `a %= b` | `a = a % b` |
+
+#### 5. **Operadores de Incremento y Decremento**
+
+| Operador | Nombre | Ejemplo | Descripción |
+|----------|--------|---------|-------------|
+| `++` | Incremento | `a++` o `++a` | Incrementa `a` en 1 |
+| `--` | Decremento | `a--` o `--a` | Decrementa `a` en 1 |
+
+- **Prefijo (`++a`):** Incrementa y devuelve el valor incrementado.
+- **Postfijo (`a++`):** Devuelve el valor actual y luego incrementa.
+
+```cpp
+int a = 5;
+int b = ++a; // a=6, b=6 (incrementa primero)
+int c = a++; // a=7, c=6 (devuelve primero, luego incrementa)
+```
+
+#### 6. **Operador Ternario**
+
+El operador ternario `? :` es una forma compacta de un `if-else`:
+
+```cpp
+int edad = 18;
+string resultado = (edad >= 18) ? "Mayor de edad" : "Menor de edad";
+```
+
+#### 7. **Operadores de Bits (Bitwise)**
+
+Operan sobre la representación binaria de los operandos:
+
+| Operador | Nombre | Ejemplo | Descripción |
+|----------|--------|---------|-------------|
+| `&` | AND | `a & b` | AND bit a bit |
+| `\|` | OR | `a \| b` | OR bit a bit |
+| `^` | XOR | `a ^ b` | XOR bit a bit |
+| `~` | NOT | `~a` | Complemento a uno |
+| `<<` | Shift izq. | `a << n` | Desplaza bits a la izquierda |
+| `>>` | Shift der. | `a >> n` | Desplaza bits a la derecha |
+
+```cpp
+int a = 0b1010; // 10 en binario
+int b = 0b1100; // 12 en binario
+
+int andResult = a & b;  // 0b1000 = 8
+int orResult  = a | b;  // 0b1110 = 14
+int xorResult = a ^ b;  // 0b0110 = 6
+int notResult = ~a;     // Complemento a uno
+int shiftL    = a << 1; // 0b10100 = 20
+int shiftR    = a >> 1; // 0b0101 = 5
+```
+
+#### 8. **Operador Spaceship `<=>` (C++20)**
+
+El operador de comparación triple devuelve el resultado completo de una comparación:
+
+```cpp
+#include <compare>
+
+int a = 5, b = 10;
+auto resultado = a <=> b; // std::strong_ordering::less
+
+if (resultado < 0)  cout << "a < b" << endl;
+if (resultado == 0) cout << "a == b" << endl;
+if (resultado > 0)  cout << "a > b" << endl;
+```
+
+### Operadores en el Contexto de Qt
+
+#### Operadores de flags con enums Qt
+
+Qt usa extensivamente operadores bitwise para combinar flags:
+
+```cpp
+Qt::WindowFlags flags = Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint;
+
+Qt::Alignment alineacion = Qt::AlignLeft | Qt::AlignTop;
+
+// Verificar si un flag está activo
+if (flags & Qt::FramelessWindowHint) {
+    qDebug() << "Ventana sin marco";
+}
+```
+
+#### `operator<<` para QDebug
+
+Qt sobrecarga `operator<<` para imprimir cualquier tipo registrado con `QDebug`:
+
+```cpp
+#include <QDebug>
+#include <QPoint>
+#include <QRect>
+
+QPoint punto(10, 20);
+QRect rect(0, 0, 100, 50);
+qDebug() << "Punto:" << punto;   // QPoint(10,20)
+qDebug() << "Rect:" << rect;     // QRect(0,0 100x50)
+```
+
+#### Funciones de utilidad Qt (alternativas a operadores)
+
+```cpp
+#include <QtGlobal>
+
+int valor = 150;
+int acotado = qBound(0, valor, 100);  // 100 (acota entre 0 y 100)
+int minimo = qMin(10, 20);            // 10
+int maximo = qMax(10, 20);            // 20
+qreal absoluto = qAbs(-3.14);         // 3.14
+```
+
 ### Conclusión
 
-Conocer y entender cómo utilizar los operadores aritméticos, lógicos y relacionales en C++ es fundamental para realizar operaciones básicas y tomar decisiones en el código. Estos operadores permiten construir expresiones y condiciones que son esenciales para controlar el flujo de ejecución de los programas y manipular datos de manera efectiva.
+Conocer y entender cómo utilizar los operadores en C++ es fundamental para realizar operaciones y tomar decisiones en el código. Los operadores aritméticos, lógicos, relacionales, de bits, de asignación y el operador ternario permiten construir expresiones que son esenciales para controlar el flujo de ejecución y manipular datos de manera efectiva.
 <---FILES--->
 Ejemplo de Operadores Aritméticos
 Ejemplo de Operadores Aritméticos Result
@@ -154,6 +274,7 @@ int main() {
 
     return 0;
 }
+```
 <---Ejemplo de Operadores Aritméticos Result--->
 <---Ejemplo de Operadores Lógicos--->
 ```cpp
@@ -170,6 +291,7 @@ int main() {
 
     return 0;
 }
+```
 <---Ejemplo de Operadores Lógicos Result--->
 <---Ejemplo de Operadores Relacionales--->
 ```cpp
@@ -189,6 +311,7 @@ int main() {
 
     return 0;
 }
+```
 <---Ejemplo de Operadores Relacionales Result--->
 <---Ejemplo de Uso Combinado--->
 ```cpp
@@ -211,4 +334,5 @@ int main() {
 
     return 0;
 }
+```
 <---Ejemplo de Uso Combinado Result--->

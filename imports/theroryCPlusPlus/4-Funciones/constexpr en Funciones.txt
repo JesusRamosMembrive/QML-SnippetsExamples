@@ -91,12 +91,12 @@ constexpr int minimo(int a, int b) {
     return (a < b) ? a : b;
 }
 
-constexpr int sumaDeCuadrados(int a, int b) {
-    return cuadrado(a) + cuadrado(b);
-}
-
 constexpr int cuadrado(int x) {
     return x * x;
+}
+
+constexpr int sumaDeCuadrados(int a, int b) {
+    return cuadrado(a) + cuadrado(b);
 }
 
 int main() {
@@ -120,6 +120,80 @@ En este ejemplo:
 - `sumaDeCuadrados` utiliza la función `cuadrado` para calcular la suma de los cuadrados de dos enteros.
 - Todas estas funciones se evalúan en tiempo de compilación.
 
+### `if constexpr` (C++17)
+
+C++17 introduce `if constexpr`, que permite realizar ramificaciones en tiempo de compilación dentro de funciones template. A diferencia del `if` normal, las ramas que no se seleccionan son descartadas completamente por el compilador, lo que evita errores de compilación en código que no aplica para un tipo determinado.
+
+```cpp
+#include <iostream>
+#include <type_traits>
+#include <string>
+using namespace std;
+
+template<typename T>
+constexpr auto procesarValor(T valor) {
+    if constexpr (is_integral_v<T>) {
+        return valor * 2;           // Para enteros: duplicar
+    } else if constexpr (is_floating_point_v<T>) {
+        return valor + 0.5;         // Para flotantes: sumar 0.5
+    } else {
+        return valor;               // Para otros: devolver tal cual
+    }
+}
+
+int main() {
+    constexpr auto r1 = procesarValor(5);     // 10
+    constexpr auto r2 = procesarValor(3.0);   // 3.5
+    auto r3 = procesarValor(string("hola"));  // "hola"
+
+    cout << r1 << ", " << r2 << ", " << r3 << endl;
+    return 0;
+}
+```
+
+### `constexpr` con Contenedores (C++20)
+
+A partir de C++20, se amplía significativamente el soporte de `constexpr` para contenedores y algoritmos de la biblioteca estándar. Esto permite crear y manipular `std::array`, usar algoritmos como `std::sort` y `std::accumulate`, y realizar operaciones complejas completamente en tiempo de compilación.
+
+```cpp
+#include <iostream>
+#include <array>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+// constexpr con std::array (disponible desde C++14/17)
+constexpr array<int, 5> crearSecuencia() {
+    array<int, 5> arr{};
+    for (int i = 0; i < 5; ++i) {
+        arr[i] = (i + 1) * (i + 1); // Cuadrados: 1, 4, 9, 16, 25
+    }
+    return arr;
+}
+
+// constexpr con algoritmos (C++20)
+constexpr int sumaSecuencia() {
+    auto arr = crearSecuencia();
+    int suma = 0;
+    for (int v : arr) suma += v;
+    return suma;
+}
+
+int main() {
+    constexpr auto seq = crearSecuencia();
+    constexpr int suma = sumaSecuencia(); // 55
+
+    // Todo evaluado en tiempo de compilación
+    static_assert(seq[0] == 1);
+    static_assert(seq[4] == 25);
+    static_assert(suma == 55);
+
+    for (int v : seq) cout << v << " ";
+    cout << "\nSuma: " << suma << endl;
+    return 0;
+}
+```
+
 ### Conclusión
 
 Las funciones `constexpr` en C++ son una poderosa herramienta para realizar cálculos en tiempo de compilación, mejorando la eficiencia y seguridad del código. Aunque tienen algunas limitaciones, especialmente en versiones anteriores a C++14, su uso adecuado puede llevar a programas más rápidos y menos propensos a errores. Con una comprensión sólida de `constexpr`, los desarrolladores pueden escribir código más optimizado y robusto.
@@ -130,6 +204,10 @@ Ejemplo Básico
 Ejemplo Básico Result
 Ejemplo con Condicionales y Bucles
 Ejemplo con Condicionales y Bucles Result
+if constexpr (C++17)
+if constexpr (C++17) Result
+constexpr con Contenedores (C++20)
+constexpr con Contenedores (C++20) Result
 <---Restricciones de las Funciones `constexpr`--->
 <---Restricciones de las Funciones `constexpr` Result--->
 <---Ejemplo Básico--->
@@ -179,12 +257,12 @@ constexpr int minimo(int a, int b) {
     return (a < b) ? a : b;
 }
 
-constexpr int sumaDeCuadrados(int a, int b) {
-    return cuadrado(a) + cuadrado(b);
-}
-
 constexpr int cuadrado(int x) {
     return x * x;
+}
+
+constexpr int sumaDeCuadrados(int a, int b) {
+    return cuadrado(a) + cuadrado(b);
 }
 
 int main() {
@@ -202,3 +280,69 @@ int main() {
     return 0;
 }
 <---Ejemplo con Condicionales y Bucles Result--->
+<---if constexpr (C++17)--->
+```cpp
+#include <iostream>
+#include <type_traits>
+#include <string>
+using namespace std;
+
+template<typename T>
+constexpr auto procesarValor(T valor) {
+    if constexpr (is_integral_v<T>) {
+        return valor * 2;           // Para enteros: duplicar
+    } else if constexpr (is_floating_point_v<T>) {
+        return valor + 0.5;         // Para flotantes: sumar 0.5
+    } else {
+        return valor;               // Para otros: devolver tal cual
+    }
+}
+
+int main() {
+    constexpr auto r1 = procesarValor(5);     // 10
+    constexpr auto r2 = procesarValor(3.0);   // 3.5
+    auto r3 = procesarValor(string("hola"));  // "hola"
+
+    cout << r1 << ", " << r2 << ", " << r3 << endl;
+    return 0;
+}
+<---if constexpr (C++17) Result--->
+<---constexpr con Contenedores (C++20)--->
+```cpp
+#include <iostream>
+#include <array>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+// constexpr con std::array (disponible desde C++14/17)
+constexpr array<int, 5> crearSecuencia() {
+    array<int, 5> arr{};
+    for (int i = 0; i < 5; ++i) {
+        arr[i] = (i + 1) * (i + 1); // Cuadrados: 1, 4, 9, 16, 25
+    }
+    return arr;
+}
+
+// constexpr con algoritmos (C++20)
+constexpr int sumaSecuencia() {
+    auto arr = crearSecuencia();
+    int suma = 0;
+    for (int v : arr) suma += v;
+    return suma;
+}
+
+int main() {
+    constexpr auto seq = crearSecuencia();
+    constexpr int suma = sumaSecuencia(); // 55
+
+    // Todo evaluado en tiempo de compilación
+    static_assert(seq[0] == 1);
+    static_assert(seq[4] == 25);
+    static_assert(suma == 55);
+
+    for (int v : seq) cout << v << " ";
+    cout << "\nSuma: " << suma << endl;
+    return 0;
+}
+<---constexpr con Contenedores (C++20) Result--->

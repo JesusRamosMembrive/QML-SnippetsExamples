@@ -149,6 +149,222 @@ En este ejemplo:
 2. **Implementaciones Opcionales en Clases Base:** En algunos casos, puede ser útil proporcionar una implementación predeterminada para funciones virtuales no puras en la clase base, permitiendo a las clases derivadas anularlas si es necesario.
 3. **Evitar Instanciación Directa:** Las clases abstractas no pueden ser instanciadas directamente. Solo pueden ser usadas como clases base.
 
+#### Funciones Puras Virtuales con Implementación
+
+Un aspecto poco conocido de C++ es que las funciones puras virtuales **pueden tener una implementación**. Aunque una clase con funciones puras virtuales sigue siendo abstracta y no puede ser instanciada, la implementación puede proporcionarse fuera de la declaración de la clase. Las clases derivadas siguen estando **obligadas a anular** la función pura virtual, pero pueden llamar a la implementación de la clase base usando `Base::funcion()`.
+
+Este patrón es útil cuando se quiere:
+- Proporcionar un comportamiento predeterminado que las clases derivadas puedan reutilizar.
+- Obligar a las clases derivadas a tomar una decisión explícita sobre si usar el comportamiento base o no.
+- Definir código común que se ejecuta como parte de la implementación derivada.
+
+##### Ejemplo de Función Pura Virtual con Implementación
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Registro {
+public:
+    virtual ~Registro() = default;
+
+    // Función pura virtual: la clase sigue siendo abstracta
+    virtual void escribir(const string& mensaje) = 0;
+};
+
+// Implementación de la función pura virtual (fuera de la clase)
+void Registro::escribir(const string& mensaje) {
+    // Comportamiento base: formato estándar con prefijo
+    cout << "[LOG] " << mensaje << endl;
+}
+
+class RegistroConsola : public Registro {
+public:
+    // Obligatoria la anulación, pero puede reutilizar la implementación base
+    void escribir(const string& mensaje) override {
+        cout << "[CONSOLA] ";
+        Registro::escribir(mensaje); // Reutiliza la implementación base
+    }
+};
+
+class RegistroArchivo : public Registro {
+    string archivo;
+public:
+    RegistroArchivo(const string& archivo) : archivo(archivo) {}
+
+    // Implementación completamente propia
+    void escribir(const string& mensaje) override {
+        cout << "[ARCHIVO:" << archivo << "] " << mensaje << endl;
+    }
+};
+
+class RegistroDoble : public Registro {
+public:
+    // Combina la implementación base con lógica adicional
+    void escribir(const string& mensaje) override {
+        Registro::escribir(mensaje);          // Usa la implementación base
+        cout << "[COPIA] " << mensaje << endl; // Añade comportamiento extra
+    }
+};
+
+int main() {
+    // Registro r; // Error: no se puede instanciar una clase abstracta
+
+    RegistroConsola consola;
+    RegistroArchivo archivo("datos.log");
+    RegistroDoble doble;
+
+    cout << "=== Registro en Consola ===" << endl;
+    consola.escribir("Aplicación iniciada");
+
+    cout << "\n=== Registro en Archivo ===" << endl;
+    archivo.escribir("Datos guardados");
+
+    cout << "\n=== Registro Doble ===" << endl;
+    doble.escribir("Evento importante");
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Registro::escribir()` es pura virtual (`= 0`) pero tiene una implementación definida fuera de la clase.
+- `Registro` sigue siendo una clase abstracta y no puede ser instanciada.
+- `RegistroConsola` reutiliza la implementación base llamando a `Registro::escribir()`.
+- `RegistroArchivo` proporciona una implementación completamente diferente.
+- `RegistroDoble` combina la implementación base con lógica adicional.
+
+#### Interfaces Definidas con Concepts (C++20)
+
+C++20 introdujo los **Concepts**, un mecanismo para definir restricciones sobre tipos de plantilla en tiempo de compilación. Los Concepts pueden actuar como una alternativa a las clases abstractas para definir "interfaces", pero con diferencias fundamentales:
+
+| Característica | Clases Abstractas | Concepts (C++20) |
+|---|---|---|
+| Resolución | Tiempo de ejecución (vtable) | Tiempo de compilación |
+| Overhead | Indirección virtual | Ninguno (zero-cost) |
+| Polimorfismo | Dinámico (punteros/referencias) | Estático (plantillas) |
+| Herencia | Requerida | No requerida |
+| Mensajes de error | Errores en enlace/ejecución | Errores claros en compilación |
+
+Un Concept se define usando `concept` y expresiones `requires` que especifican qué operaciones debe soportar un tipo.
+
+##### Ejemplo de Interfaces con Concepts
+
+```cpp
+#include <iostream>
+#include <string>
+#include <cmath>
+using namespace std;
+
+// ===== Enfoque con Concepts (C++20) =====
+
+// Definir un "interfaz" como Concept
+template<typename T>
+concept Dibujable = requires(const T& obj) {
+    { obj.dibujar() } -> same_as<void>;          // Debe tener dibujar()
+    { obj.area() } -> convertible_to<double>;     // Debe tener area() que devuelva algo convertible a double
+    { obj.nombre() } -> convertible_to<string>;   // Debe tener nombre()
+};
+
+// Función restringida por el Concept
+void mostrarFigura(const Dibujable auto& figura) {
+    cout << "Figura: " << figura.nombre() << endl;
+    figura.dibujar();
+    cout << "Área: " << figura.area() << endl;
+}
+
+// Las clases NO necesitan heredar de nada
+class CirculoC {
+    double radio;
+public:
+    CirculoC(double r) : radio(r) {}
+
+    void dibujar() const {
+        cout << "  Dibujando círculo con radio " << radio << endl;
+    }
+
+    double area() const {
+        return 3.14159 * radio * radio;
+    }
+
+    string nombre() const {
+        return "Círculo (r=" + to_string(radio) + ")";
+    }
+};
+
+class RectanguloC {
+    double ancho, alto;
+public:
+    RectanguloC(double a, double h) : ancho(a), alto(h) {}
+
+    void dibujar() const {
+        cout << "  Dibujando rectángulo " << ancho << "x" << alto << endl;
+    }
+
+    double area() const {
+        return ancho * alto;
+    }
+
+    string nombre() const {
+        return "Rectángulo (" + to_string(ancho) + "x" + to_string(alto) + ")";
+    }
+};
+
+// ===== Enfoque tradicional con Clase Abstracta =====
+
+class FiguraAbstracta {
+public:
+    virtual ~FiguraAbstracta() = default;
+    virtual void dibujar() const = 0;
+    virtual double area() const = 0;
+    virtual string nombre() const = 0;
+};
+
+class CirculoA : public FiguraAbstracta {
+    double radio;
+public:
+    CirculoA(double r) : radio(r) {}
+    void dibujar() const override {
+        cout << "  Dibujando círculo con radio " << radio << endl;
+    }
+    double area() const override {
+        return 3.14159 * radio * radio;
+    }
+    string nombre() const override {
+        return "Círculo (r=" + to_string(radio) + ")";
+    }
+};
+
+int main() {
+    // Usando Concepts (polimorfismo estático, sin overhead)
+    cout << "=== Con Concepts (C++20) ===" << endl;
+    CirculoC c1(5.0);
+    RectanguloC r1(3.0, 4.0);
+
+    mostrarFigura(c1);  // Resuelto en compilación
+    cout << endl;
+    mostrarFigura(r1);  // Resuelto en compilación
+
+    // Usando clase abstracta (polimorfismo dinámico)
+    cout << "\n=== Con Clase Abstracta ===" << endl;
+    CirculoA c2(5.0);
+    FiguraAbstracta* ptr = &c2;
+    cout << "Figura: " << ptr->nombre() << endl;
+    ptr->dibujar();     // Resuelto en ejecución (vtable)
+    cout << "Área: " << ptr->area() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- El concept `Dibujable` define que cualquier tipo debe tener `dibujar()`, `area()` y `nombre()` con las firmas correctas.
+- `CirculoC` y `RectanguloC` satisfacen el concept sin heredar de ninguna clase base.
+- `mostrarFigura` acepta cualquier tipo que cumpla con `Dibujable`, resuelto en tiempo de compilación.
+- Se compara con el enfoque tradicional de `FiguraAbstracta` que usa herencia y vtable.
+- **Limitación de los Concepts:** No permiten almacenar diferentes tipos en una misma colección (como un `vector<Dibujable*>`) ya que no hay un tipo base común. Para eso, se sigue necesitando polimorfismo dinámico con clases abstractas.
+
 ### Conclusión
 
 Las funciones puras virtuales son un componente esencial de las clases abstractas en C++. Permiten definir interfaces que deben ser implementadas por las clases derivadas, promoviendo una estructura común y facilitando el polimorfismo. Usar funciones puras virtuales permite diseñar sistemas orientados a objetos que son flexibles, extensibles y fáciles de mantener. Comprender cómo y cuándo usar funciones puras virtuales es crucial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
@@ -159,6 +375,10 @@ Ejemplo de Implementación
 Ejemplo de Implementación Result
 Ejemplo con Múltiples Clases Derivadas
 Ejemplo con Múltiples Clases Derivadas Result
+Ejemplo de Función Pura Virtual con Implementación
+Ejemplo de Función Pura Virtual con Implementación Result
+Ejemplo de Interfaces con Concepts
+Ejemplo de Interfaces con Concepts Result
 <---Sintaxis--->
 ```cpp
 class NombreClaseAbstracta {
@@ -264,3 +484,178 @@ int main() {
     return 0;
 }
 <---Ejemplo con Múltiples Clases Derivadas Result--->
+<---Ejemplo de Función Pura Virtual con Implementación--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Registro {
+public:
+    virtual ~Registro() = default;
+
+    // Función pura virtual: la clase sigue siendo abstracta
+    virtual void escribir(const string& mensaje) = 0;
+};
+
+// Implementación de la función pura virtual (fuera de la clase)
+void Registro::escribir(const string& mensaje) {
+    // Comportamiento base: formato estándar con prefijo
+    cout << "[LOG] " << mensaje << endl;
+}
+
+class RegistroConsola : public Registro {
+public:
+    // Obligatoria la anulación, pero puede reutilizar la implementación base
+    void escribir(const string& mensaje) override {
+        cout << "[CONSOLA] ";
+        Registro::escribir(mensaje); // Reutiliza la implementación base
+    }
+};
+
+class RegistroArchivo : public Registro {
+    string archivo;
+public:
+    RegistroArchivo(const string& archivo) : archivo(archivo) {}
+
+    // Implementación completamente propia
+    void escribir(const string& mensaje) override {
+        cout << "[ARCHIVO:" << archivo << "] " << mensaje << endl;
+    }
+};
+
+class RegistroDoble : public Registro {
+public:
+    // Combina la implementación base con lógica adicional
+    void escribir(const string& mensaje) override {
+        Registro::escribir(mensaje);          // Usa la implementación base
+        cout << "[COPIA] " << mensaje << endl; // Añade comportamiento extra
+    }
+};
+
+int main() {
+    // Registro r; // Error: no se puede instanciar una clase abstracta
+
+    RegistroConsola consola;
+    RegistroArchivo archivo("datos.log");
+    RegistroDoble doble;
+
+    cout << "=== Registro en Consola ===" << endl;
+    consola.escribir("Aplicación iniciada");
+
+    cout << "\n=== Registro en Archivo ===" << endl;
+    archivo.escribir("Datos guardados");
+
+    cout << "\n=== Registro Doble ===" << endl;
+    doble.escribir("Evento importante");
+
+    return 0;
+}
+<---Ejemplo de Función Pura Virtual con Implementación Result--->
+<---Ejemplo de Interfaces con Concepts--->
+```cpp
+#include <iostream>
+#include <string>
+#include <cmath>
+using namespace std;
+
+// ===== Enfoque con Concepts (C++20) =====
+
+// Definir un "interfaz" como Concept
+template<typename T>
+concept Dibujable = requires(const T& obj) {
+    { obj.dibujar() } -> same_as<void>;          // Debe tener dibujar()
+    { obj.area() } -> convertible_to<double>;     // Debe tener area() que devuelva algo convertible a double
+    { obj.nombre() } -> convertible_to<string>;   // Debe tener nombre()
+};
+
+// Función restringida por el Concept
+void mostrarFigura(const Dibujable auto& figura) {
+    cout << "Figura: " << figura.nombre() << endl;
+    figura.dibujar();
+    cout << "Área: " << figura.area() << endl;
+}
+
+// Las clases NO necesitan heredar de nada
+class CirculoC {
+    double radio;
+public:
+    CirculoC(double r) : radio(r) {}
+
+    void dibujar() const {
+        cout << "  Dibujando círculo con radio " << radio << endl;
+    }
+
+    double area() const {
+        return 3.14159 * radio * radio;
+    }
+
+    string nombre() const {
+        return "Círculo (r=" + to_string(radio) + ")";
+    }
+};
+
+class RectanguloC {
+    double ancho, alto;
+public:
+    RectanguloC(double a, double h) : ancho(a), alto(h) {}
+
+    void dibujar() const {
+        cout << "  Dibujando rectángulo " << ancho << "x" << alto << endl;
+    }
+
+    double area() const {
+        return ancho * alto;
+    }
+
+    string nombre() const {
+        return "Rectángulo (" + to_string(ancho) + "x" + to_string(alto) + ")";
+    }
+};
+
+// ===== Enfoque tradicional con Clase Abstracta =====
+
+class FiguraAbstracta {
+public:
+    virtual ~FiguraAbstracta() = default;
+    virtual void dibujar() const = 0;
+    virtual double area() const = 0;
+    virtual string nombre() const = 0;
+};
+
+class CirculoA : public FiguraAbstracta {
+    double radio;
+public:
+    CirculoA(double r) : radio(r) {}
+    void dibujar() const override {
+        cout << "  Dibujando círculo con radio " << radio << endl;
+    }
+    double area() const override {
+        return 3.14159 * radio * radio;
+    }
+    string nombre() const override {
+        return "Círculo (r=" + to_string(radio) + ")";
+    }
+};
+
+int main() {
+    // Usando Concepts (polimorfismo estático, sin overhead)
+    cout << "=== Con Concepts (C++20) ===" << endl;
+    CirculoC c1(5.0);
+    RectanguloC r1(3.0, 4.0);
+
+    mostrarFigura(c1);  // Resuelto en compilación
+    cout << endl;
+    mostrarFigura(r1);  // Resuelto en compilación
+
+    // Usando clase abstracta (polimorfismo dinámico)
+    cout << "\n=== Con Clase Abstracta ===" << endl;
+    CirculoA c2(5.0);
+    FiguraAbstracta* ptr = &c2;
+    cout << "Figura: " << ptr->nombre() << endl;
+    ptr->dibujar();     // Resuelto en ejecución (vtable)
+    cout << "Área: " << ptr->area() << endl;
+
+    return 0;
+}
+<---Ejemplo de Interfaces con Concepts Result--->

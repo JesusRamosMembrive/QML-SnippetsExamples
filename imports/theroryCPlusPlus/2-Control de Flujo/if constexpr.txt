@@ -138,6 +138,63 @@ int main() {
 }
 ```
 
+### `if constexpr` y Optimización en Qt
+
+#### `Q_LIKELY` y `Q_UNLIKELY` (branch hints)
+
+Aunque no son `if constexpr`, Qt proporciona macros para hints de predicción de ramas al compilador:
+
+```cpp
+if (Q_LIKELY(ptr != nullptr)) {
+    // Rama que se espera que se tome casi siempre
+    ptr->procesar();
+}
+
+if (Q_UNLIKELY(error)) {
+    // Rama que raramente se toma (manejo de errores)
+    qCritical() << "Error inesperado";
+}
+```
+
+#### `if constexpr` con `Q_OS_*` y plataforma
+
+Qt define macros de plataforma que se pueden combinar con `if constexpr` usando constantes:
+
+```cpp
+#include <QtGlobal>
+
+void configurarRuta() {
+    // Las macros Q_OS_* son #define, no constexpr,
+    // así que se usan con #if, no con if constexpr
+    #if defined(Q_OS_WIN)
+        QString ruta = "C:/datos";
+    #elif defined(Q_OS_LINUX)
+        QString ruta = "/home/datos";
+    #elif defined(Q_OS_MACOS)
+        QString ruta = "/Users/datos";
+    #endif
+}
+```
+
+#### `if constexpr` para serialización genérica
+
+```cpp
+template<typename T>
+QJsonValue toJson(const T &valor) {
+    if constexpr (std::is_same_v<T, QString>) {
+        return QJsonValue(valor);
+    } else if constexpr (std::is_integral_v<T>) {
+        return QJsonValue(static_cast<qint64>(valor));
+    } else if constexpr (std::is_floating_point_v<T>) {
+        return QJsonValue(static_cast<double>(valor));
+    } else if constexpr (std::is_same_v<T, bool>) {
+        return QJsonValue(valor);
+    } else {
+        static_assert(false, "Tipo no soportado para JSON");
+    }
+}
+```
+
 ### Conclusión
 
 `if constexpr` es una poderosa característica de C++ que permite la evaluación condicional en tiempo de compilación. Esto es especialmente útil en la metaprogramación y la escritura de código genérico, proporcionando eficiencia y seguridad adicional en el código. Su uso adecuado puede simplificar el manejo de diferentes tipos y mejorar el rendimiento al eliminar ramas de código innecesarias.

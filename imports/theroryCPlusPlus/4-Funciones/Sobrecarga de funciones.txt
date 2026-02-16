@@ -159,9 +159,102 @@ int main() {
 
 En este ejemplo, la función `procesar` está sobrecargada para manejar diferentes tipos y combinaciones de parámetros.
 
+### `qOverload` en Qt para Señales Sobrecargadas
+
+En Qt, muchas clases tienen señales sobrecargadas (misma señal con diferentes tipos de parámetros). Esto genera un problema al intentar conectar una señal específica usando la sintaxis moderna de `QObject::connect`, ya que el compilador no puede determinar cuál versión de la señal se desea conectar.
+
+**`qOverload`** (disponible desde Qt 5.7) resuelve este problema de forma limpia y legible, especificando explícitamente los tipos de parámetros de la señal deseada.
+
+##### Ejemplo de `qOverload`
+
+```cpp
+#include <QObject>
+#include <QSpinBox>
+#include <QComboBox>
+
+// Problema: QSpinBox tiene valueChanged(int) y valueChanged(const QString&)
+// Solución con qOverload (Qt 5.7+):
+
+QObject::connect(spinBox, qOverload<int>(&QSpinBox::valueChanged),
+                 this, &MiClase::manejarValor);
+
+// Equivalente sin qOverload (más verboso):
+QObject::connect(spinBox,
+    static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+    this, &MiClase::manejarValor);
+```
+
+En este ejemplo, `qOverload<int>` indica que se desea conectar la versión de `valueChanged` que acepta un `int`. Sin `qOverload`, se necesitaría un `static_cast` extenso y menos legible.
+
+### Alternativas Modernas a la Sobrecarga
+
+C++ moderno ofrece alternativas a la sobrecarga tradicional que pueden ser más expresivas y mantenibles en ciertos escenarios.
+
+#### `if constexpr` (C++17)
+
+`if constexpr` permite escribir una sola función plantilla que se comporta de forma diferente según el tipo del argumento. Las ramas que no aplican al tipo son descartadas en tiempo de compilación, sin generar código innecesario.
+
+##### Ejemplo de `if constexpr`
+
+```cpp
+#include <iostream>
+#include <type_traits>
+using namespace std;
+
+template<typename T>
+void procesar(T valor) {
+    if constexpr (is_integral_v<T>) {
+        cout << "Entero: " << valor << endl;
+    } else if constexpr (is_floating_point_v<T>) {
+        cout << "Flotante: " << valor << endl;
+    } else {
+        cout << "Otro tipo: " << valor << endl;
+    }
+}
+
+int main() {
+    procesar(42);       // "Entero: 42"
+    procesar(3.14);     // "Flotante: 3.14"
+    procesar("texto");  // "Otro tipo: texto"
+    return 0;
+}
+```
+
+La ventaja de `if constexpr` es que centraliza la lógica en una sola función en lugar de dispersarla en múltiples sobrecargas, facilitando el mantenimiento.
+
+#### Concepts (C++20)
+
+Los **Concepts** de C++20 permiten restringir los tipos que acepta una plantilla de forma declarativa y legible. Funcionan de manera similar a la sobrecarga, pero con restricciones explícitas sobre los tipos, proporcionando mejores mensajes de error del compilador.
+
+##### Ejemplo de Concepts
+
+```cpp
+#include <iostream>
+#include <concepts>
+using namespace std;
+
+template<integral T>
+void mostrar(T valor) {
+    cout << "Entero: " << valor << endl;
+}
+
+template<floating_point T>
+void mostrar(T valor) {
+    cout << "Flotante: " << valor << endl;
+}
+
+int main() {
+    mostrar(42);    // "Entero: 42"
+    mostrar(3.14);  // "Flotante: 3.14"
+    return 0;
+}
+```
+
+Los Concepts son más expresivos que la sobrecarga tradicional porque declaran explícitamente qué tipos son aceptados, y si se pasa un tipo no soportado, el compilador proporciona un mensaje de error claro indicando qué restricción no se cumplió.
+
 ### Conclusión
 
-La sobrecarga de funciones es una característica poderosa de C++ que permite definir múltiples funciones con el mismo nombre pero con diferentes listas de parámetros. Esto mejora la claridad, flexibilidad y mantenibilidad del código. Comprender cómo y cuándo usar la sobrecarga de funciones es esencial para escribir código C++ limpio y eficiente, permitiendo a los desarrolladores crear interfaces más intuitivas y versátiles para sus programas.
+La sobrecarga de funciones es una característica poderosa de C++ que permite definir múltiples funciones con el mismo nombre pero con diferentes listas de parámetros. Esto mejora la claridad, flexibilidad y mantenibilidad del código. En Qt, `qOverload` resuelve elegantemente el problema de conectar señales sobrecargadas. Con C++17, `if constexpr` ofrece una alternativa basada en plantillas que centraliza la lógica, y con C++20, los Concepts proporcionan restricciones de tipo declarativas y legibles. Comprender cómo y cuándo usar la sobrecarga de funciones y sus alternativas modernas es esencial para escribir código C++ limpio y eficiente, permitiendo a los desarrolladores crear interfaces más intuitivas y versátiles para sus programas.
 <---FILES--->
 Reglas para la Sobrecarga de Funciones
 Reglas para la Sobrecarga de Funciones Result
@@ -169,6 +262,12 @@ Ejemplo de Sobrecarga con Diferente Número de Parámetros
 Ejemplo de Sobrecarga con Diferente Número de Parámetros Result
 Ejemplo de Sobrecarga con Constantes
 Ejemplo de Sobrecarga con Constantes Result
+Ejemplo de qOverload
+Ejemplo de qOverload Result
+Ejemplo de if constexpr
+Ejemplo de if constexpr Result
+Ejemplo de Concepts
+Ejemplo de Concepts Result
 <---Reglas para la Sobrecarga de Funciones--->
 ```cpp
 #include <iostream>
@@ -279,3 +378,66 @@ int main() {
     return 0;
 }
 <---Ejemplo de Sobrecarga con Constantes Result--->
+<---Ejemplo de qOverload--->
+```cpp
+#include <QObject>
+#include <QSpinBox>
+#include <QComboBox>
+
+// Problema: QSpinBox tiene valueChanged(int) y valueChanged(const QString&)
+// Solución con qOverload (Qt 5.7+):
+
+QObject::connect(spinBox, qOverload<int>(&QSpinBox::valueChanged),
+                 this, &MiClase::manejarValor);
+
+// Equivalente sin qOverload (más verboso):
+QObject::connect(spinBox,
+    static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+    this, &MiClase::manejarValor);
+<---Ejemplo de qOverload Result--->
+<---Ejemplo de if constexpr--->
+```cpp
+#include <iostream>
+#include <type_traits>
+using namespace std;
+
+template<typename T>
+void procesar(T valor) {
+    if constexpr (is_integral_v<T>) {
+        cout << "Entero: " << valor << endl;
+    } else if constexpr (is_floating_point_v<T>) {
+        cout << "Flotante: " << valor << endl;
+    } else {
+        cout << "Otro tipo: " << valor << endl;
+    }
+}
+
+int main() {
+    procesar(42);       // "Entero: 42"
+    procesar(3.14);     // "Flotante: 3.14"
+    procesar("texto");  // "Otro tipo: texto"
+    return 0;
+}
+<---Ejemplo de if constexpr Result--->
+<---Ejemplo de Concepts--->
+```cpp
+#include <iostream>
+#include <concepts>
+using namespace std;
+
+template<integral T>
+void mostrar(T valor) {
+    cout << "Entero: " << valor << endl;
+}
+
+template<floating_point T>
+void mostrar(T valor) {
+    cout << "Flotante: " << valor << endl;
+}
+
+int main() {
+    mostrar(42);    // "Entero: 42"
+    mostrar(3.14);  // "Flotante: 3.14"
+    return 0;
+}
+<---Ejemplo de Concepts Result--->

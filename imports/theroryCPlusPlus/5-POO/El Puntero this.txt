@@ -210,6 +210,146 @@ int main() {
 
 En este ejemplo, `this` se utiliza para comprobar la auto-asignación en el operador de asignación sobrecargado (`operator=`).
 
+#### Deducing `this` (C++23)
+
+C++23 introduce la posibilidad de declarar un **parámetro de objeto explícito** (explicit object parameter), lo que permite que `this` sea deducible como un parámetro de template. En lugar de depender del puntero `this` implícito, el método recibe el objeto como primer parámetro con la sintaxis `this Self&& self`. Esto ofrece mayor flexibilidad, ya que el mismo método puede funcionar tanto con lvalues como con rvalues sin necesidad de duplicar código.
+
+##### Ejemplo de Deducing `this`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Builder {
+    int ancho = 0;
+    int alto = 0;
+    string nombre;
+public:
+    // C++23: Deducing this - el parámetro self reemplaza el this implícito
+    // Permite que el método funcione tanto en lvalue como rvalue
+    template<typename Self>
+    auto&& setAncho(this Self&& self, int a) {
+        self.ancho = a;
+        return std::forward<Self>(self);
+    }
+
+    template<typename Self>
+    auto&& setAlto(this Self&& self, int a) {
+        self.alto = a;
+        return std::forward<Self>(self);
+    }
+
+    void mostrar() const {
+        cout << "Builder(" << ancho << "x" << alto << ")" << endl;
+    }
+};
+
+int main() {
+    // Encadenamiento funciona como antes, pero ahora es más flexible
+    Builder b;
+    b.setAncho(800).setAlto(600).mostrar();
+
+    // También funciona con rvalues:
+    Builder{}.setAncho(1920).setAlto(1080).mostrar();
+    return 0;
+}
+```
+
+Con deducing `this`, el compilador deduce automáticamente el tipo del objeto (`Self`) incluyendo sus calificadores (`const`, `&`, `&&`), eliminando la necesidad de sobrecargar métodos para cada combinación de calificadores.
+
+#### CRTP: Curiously Recurring Template Pattern
+
+El CRTP (Patrón de Template Curiosamente Recurrente) es un patrón donde una clase deriva de una plantilla que se instancia con la propia clase derivada. El puntero `this` juega un papel clave aquí: la clase base puede hacer `static_cast` de `this` al tipo derivado, permitiendo polimorfismo estático sin el coste de funciones virtuales.
+
+##### Ejemplo de CRTP
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// CRTP: la clase base usa la clase derivada como parámetro de template
+template<typename Derivada>
+class Clonable {
+public:
+    Derivada clonar() const {
+        // this apunta al objeto Derivada real
+        return Derivada(static_cast<const Derivada&>(*this));
+    }
+};
+
+class Documento : public Clonable<Documento> {
+    string titulo;
+public:
+    Documento(const string& t) : titulo(t) {}
+    void mostrar() const { cout << "Documento: " << titulo << endl; }
+};
+
+class Imagen : public Clonable<Imagen> {
+    int ancho, alto;
+public:
+    Imagen(int a, int h) : ancho(a), alto(h) {}
+    void mostrar() const { cout << "Imagen: " << ancho << "x" << alto << endl; }
+};
+
+int main() {
+    Documento d("Reporte");
+    auto d2 = d.clonar();  // Tipo: Documento (no Base*)
+    d2.mostrar();
+
+    Imagen img(1920, 1080);
+    auto img2 = img.clonar(); // Tipo: Imagen
+    img2.mostrar();
+    return 0;
+}
+```
+
+En este ejemplo, `Clonable` usa CRTP para ofrecer un método `clonar()` que devuelve el tipo derivado exacto, no un puntero a la base. Esto es posible porque `this` en la clase base realmente apunta a un objeto de la clase derivada.
+
+#### `this` en Qt: Contexto de Conexiones y Lifetime
+
+En Qt, el puntero `this` tiene un rol especial más allá del C++ estándar. Se utiliza como **contexto** en las conexiones de señales y slots, y como **padre** en el sistema de ownership de `QObject`. Pasar `this` como tercer argumento en `connect()` garantiza que la conexión se desconecte automáticamente cuando el objeto se destruya, evitando accesos a memoria inválida.
+
+##### Ejemplo de `this` en Qt
+
+```cpp
+#include <QObject>
+#include <QTimer>
+#include <QPushButton>
+#include <QDebug>
+
+class Panel : public QObject {
+    Q_OBJECT
+public:
+    explicit Panel(QObject *parent = nullptr) : QObject(parent) {}
+
+    void configurar() {
+        auto* boton = new QPushButton("Test");
+
+        // 'this' como contexto: la conexión se desconecta si Panel se destruye
+        connect(boton, &QPushButton::clicked, this, [this]() {
+            qDebug() << "Panel:" << objectName() << "procesando click";
+            actualizar();
+        });
+
+        // SIN contexto (peligroso si Panel se destruye antes):
+        // connect(boton, &QPushButton::clicked, [this]() { ... });
+
+        // this como parent: boton se destruye con Panel
+        boton->setParent(this);
+
+        // QTimer con this como contexto
+        QTimer::singleShot(1000, this, [this]() {
+            qDebug() << "Timer seguro: Panel aún existe";
+        });
+    }
+
+private:
+    void actualizar() { /* ... */ }
+};
+```
+
+Los tres usos clave de `this` en Qt son: (1) como contexto en `connect()` para desconexión automática, (2) como padre (`parent`) para gestión automática de memoria, y (3) en lambdas capturadas para acceder a los miembros del objeto de forma segura.
+
 ### Conclusión
 
 El puntero `this` en C++ es una herramienta poderosa que permite a los programadores acceder y manipular los miembros del objeto actual dentro de las funciones miembro. Es fundamental para la implementación de técnicas como el encadenamiento de métodos, la prevención de auto-asignación y la diferenciación entre miembros de la clase y parámetros con el mismo nombre. Entender y utilizar correctamente `this` puede mejorar la claridad y la eficiencia del código orientado a objetos en C++.
@@ -222,6 +362,12 @@ Ejemplo con Función Constante
 Ejemplo con Función Constante Result
 Ejemplo de Prevención de Auto-Asignación
 Ejemplo de Prevención de Auto-Asignación Result
+Ejemplo de Deducing this
+Ejemplo de Deducing this Result
+Ejemplo de CRTP
+Ejemplo de CRTP Result
+Ejemplo de this en Qt
+Ejemplo de this en Qt Result
 <---Ejemplo Básico--->
 ```cpp
 #include <iostream>
@@ -391,3 +537,119 @@ int main() {
     return 0;
 }
 <---Ejemplo de Prevención de Auto-Asignación Result--->
+<---Ejemplo de Deducing this--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Builder {
+    int ancho = 0;
+    int alto = 0;
+    string nombre;
+public:
+    // C++23: Deducing this - el parámetro self reemplaza el this implícito
+    // Permite que el método funcione tanto en lvalue como rvalue
+    template<typename Self>
+    auto&& setAncho(this Self&& self, int a) {
+        self.ancho = a;
+        return std::forward<Self>(self);
+    }
+
+    template<typename Self>
+    auto&& setAlto(this Self&& self, int a) {
+        self.alto = a;
+        return std::forward<Self>(self);
+    }
+
+    void mostrar() const {
+        cout << "Builder(" << ancho << "x" << alto << ")" << endl;
+    }
+};
+
+int main() {
+    // Encadenamiento funciona como antes, pero ahora es más flexible
+    Builder b;
+    b.setAncho(800).setAlto(600).mostrar();
+
+    // También funciona con rvalues:
+    Builder{}.setAncho(1920).setAlto(1080).mostrar();
+    return 0;
+}
+<---Ejemplo de Deducing this Result--->
+<---Ejemplo de CRTP--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// CRTP: la clase base usa la clase derivada como parámetro de template
+template<typename Derivada>
+class Clonable {
+public:
+    Derivada clonar() const {
+        // this apunta al objeto Derivada real
+        return Derivada(static_cast<const Derivada&>(*this));
+    }
+};
+
+class Documento : public Clonable<Documento> {
+    string titulo;
+public:
+    Documento(const string& t) : titulo(t) {}
+    void mostrar() const { cout << "Documento: " << titulo << endl; }
+};
+
+class Imagen : public Clonable<Imagen> {
+    int ancho, alto;
+public:
+    Imagen(int a, int h) : ancho(a), alto(h) {}
+    void mostrar() const { cout << "Imagen: " << ancho << "x" << alto << endl; }
+};
+
+int main() {
+    Documento d("Reporte");
+    auto d2 = d.clonar();  // Tipo: Documento (no Base*)
+    d2.mostrar();
+
+    Imagen img(1920, 1080);
+    auto img2 = img.clonar(); // Tipo: Imagen
+    img2.mostrar();
+    return 0;
+}
+<---Ejemplo de CRTP Result--->
+<---Ejemplo de this en Qt--->
+```cpp
+#include <QObject>
+#include <QTimer>
+#include <QPushButton>
+#include <QDebug>
+
+class Panel : public QObject {
+    Q_OBJECT
+public:
+    explicit Panel(QObject *parent = nullptr) : QObject(parent) {}
+
+    void configurar() {
+        auto* boton = new QPushButton("Test");
+
+        // 'this' como contexto: la conexión se desconecta si Panel se destruye
+        connect(boton, &QPushButton::clicked, this, [this]() {
+            qDebug() << "Panel:" << objectName() << "procesando click";
+            actualizar();
+        });
+
+        // SIN contexto (peligroso si Panel se destruye antes):
+        // connect(boton, &QPushButton::clicked, [this]() { ... });
+
+        // this como parent: boton se destruye con Panel
+        boton->setParent(this);
+
+        // QTimer con this como contexto
+        QTimer::singleShot(1000, this, [this]() {
+            qDebug() << "Timer seguro: Panel aún existe";
+        });
+    }
+
+private:
+    void actualizar() { /* ... */ }
+};
+<---Ejemplo de this en Qt Result--->
