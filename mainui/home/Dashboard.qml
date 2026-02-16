@@ -8,6 +8,7 @@ import switches as Switches
 import textinputs as TextInputs
 import indicators as Indicators
 import animations as Animations
+import popups as Popups
 
 Item {
     id: root
@@ -42,5 +43,10 @@ Item {
     Animations.Main {
         visible: fullSize
         fullSize: (root.state === "Animations")
+    }
+
+    Popups.Main {
+        visible: fullSize
+        fullSize: (root.state === "Popups")
     }
 }

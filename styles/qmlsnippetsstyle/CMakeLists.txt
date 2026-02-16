@@ -8,7 +8,10 @@ qt_add_qml_module(qmlsnippetsstyle
         CheckBox.qml
         ComboBox.qml
         Dial.qml
+        Dialog.qml
         Label.qml
+        Menu.qml
+        MenuItem.qml
         Popup.qml
         ProgressBar.qml
         RadioButton.qml
@@ -18,6 +21,7 @@ qt_add_qml_module(qmlsnippetsstyle
         TextArea.qml
         TextField.qml
         ToolButton.qml
+        ToolTip.qml
         # Componentes especializados - Buttons
         buttons/GlowButton.qml
         buttons/GradientButton.qml

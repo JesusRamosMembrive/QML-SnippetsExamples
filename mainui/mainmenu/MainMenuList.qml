@@ -8,7 +8,7 @@ import controls
 Item {
     id: root
     width: parent.width
-    height: Style.resize(402)
+    height: Style.resize(47) * menuModel.count + Style.resize(20) * (menuModel.count - 1)
 
     property string currentItemName: menuModel.get(listView.currentIndex).text
     signal menuItemClicked(var name)
@@ -22,6 +22,7 @@ Item {
         ListElement { text: "TextInputs" }
         ListElement { text: "Indicators" }
         ListElement { text: "Animations" }
+        ListElement { text: "Popups" }
     }
 
     ListView {
