@@ -15,6 +15,7 @@ import layouts as LayoutsPage
 import transforms as Transforms
 import particles as Particles
 import graphs as GraphsPage
+import pfd as PfdPage
 
 Item {
     id: root
@@ -84,5 +85,10 @@ Item {
     GraphsPage.Main {
         visible: fullSize
         fullSize: (root.state === "Graphs")
+    }
+
+    PfdPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "PFD")
     }
 }

@@ -29,6 +29,7 @@ Item {
         ListElement { text: "Transforms" }
         ListElement { text: "Particles" }
         ListElement { text: "Graphs" }
+        ListElement { text: "PFD" }
     }
 
     ListView {

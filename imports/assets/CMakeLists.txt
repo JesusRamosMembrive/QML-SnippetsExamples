@@ -38,6 +38,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/transforms.png
         icons/particles.png
         icons/graphs.png
+        icons/pfd.png
         images/particle.png
         images/card.png
         images/dark-texture-background.png
