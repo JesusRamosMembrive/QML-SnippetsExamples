@@ -28,6 +28,7 @@ Item {
         ListElement { text: "Layouts" }
         ListElement { text: "Transforms" }
         ListElement { text: "Particles" }
+        ListElement { text: "Graphs" }
     }
 
     ListView {

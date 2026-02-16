@@ -27,4 +27,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     layoutspluginplugin
     transformspluginplugin
     particlespluginplugin
+    graphspluginplugin
 )

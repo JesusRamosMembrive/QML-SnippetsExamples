@@ -14,6 +14,7 @@ import canvas as CanvasPage
 import layouts as LayoutsPage
 import transforms as Transforms
 import particles as Particles
+import graphs as GraphsPage
 
 Item {
     id: root
@@ -78,5 +79,10 @@ Item {
     Particles.Main {
         visible: fullSize
         fullSize: (root.state === "Particles")
+    }
+
+    GraphsPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Graphs")
     }
 }
