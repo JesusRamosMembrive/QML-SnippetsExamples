@@ -16,7 +16,9 @@ Item {
 
         MainMenuList {
             id: mainMenuList
-            anchors.centerIn: parent
+            anchors.fill: parent
+            anchors.topMargin: Style.resize(20)
+            anchors.bottomMargin: Style.resize(20)
             onMenuItemClicked: function(name) {
                 root.menuItemClicked(name);
             }

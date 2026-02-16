@@ -8,7 +8,7 @@ import controls
 Item {
     id: root
     width: parent.width
-    height: Style.resize(47) * menuModel.count + Style.resize(20) * (menuModel.count - 1)
+    height: parent.height
 
     property string currentItemName: menuModel.get(listView.currentIndex).text
     signal menuItemClicked(var name)
@@ -30,11 +30,14 @@ Item {
         ListElement { text: "Particles" }
         ListElement { text: "Graphs" }
         ListElement { text: "PFD" }
+        ListElement { text: "HUD" }
+        ListElement { text: "WebSocket" }
     }
 
     ListView {
         id: listView
         anchors.fill: parent
+        clip: true
         highlight: Item {
             width: parent.width
             height: Style.resize(47)
