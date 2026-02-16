@@ -22,4 +22,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     indicatorspluginplugin
     animationspluginplugin
     popupspluginplugin
+    listspluginplugin
+    canvaspluginplugin
+    layoutspluginplugin
 )

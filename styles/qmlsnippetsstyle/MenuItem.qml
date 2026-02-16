@@ -7,9 +7,9 @@ T.MenuItem {
     id: root
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
-                            contentWidth + leftPadding + rightPadding)
+                            implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
-                             contentHeight + topPadding + bottomPadding,
+                             implicitContentHeight + topPadding + bottomPadding,
                              indicator ? indicator.implicitHeight + topPadding + bottomPadding : 0)
 
     padding: Style.resize(8)

@@ -23,6 +23,9 @@ Item {
         ListElement { text: "Indicators" }
         ListElement { text: "Animations" }
         ListElement { text: "Popups" }
+        ListElement { text: "Lists" }
+        ListElement { text: "Canvas" }
+        ListElement { text: "Layouts" }
     }
 
     ListView {

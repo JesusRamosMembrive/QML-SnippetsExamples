@@ -9,6 +9,9 @@ import textinputs as TextInputs
 import indicators as Indicators
 import animations as Animations
 import popups as Popups
+import lists as Lists
+import canvas as CanvasPage
+import layouts as LayoutsPage
 
 Item {
     id: root
@@ -48,5 +51,20 @@ Item {
     Popups.Main {
         visible: fullSize
         fullSize: (root.state === "Popups")
+    }
+
+    Lists.Main {
+        visible: fullSize
+        fullSize: (root.state === "Lists")
+    }
+
+    CanvasPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Canvas")
+    }
+
+    LayoutsPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Layouts")
     }
 }
