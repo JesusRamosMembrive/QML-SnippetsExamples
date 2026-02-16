@@ -21,6 +21,7 @@ Item {
         ListElement { text: "Switches" }
         ListElement { text: "TextInputs" }
         ListElement { text: "Indicators" }
+        ListElement { text: "Animations" }
     }
 
     ListView {
