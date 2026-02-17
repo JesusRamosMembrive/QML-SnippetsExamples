@@ -4,7 +4,7 @@ project(QMLSnippetsExamples VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Graphs WebSockets)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Graphs WebSockets Location Positioning)
 
 # Set Qt policies
 if(POLICY CMP0071)
@@ -39,6 +39,8 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     Qt6::QuickControls2
     Qt6::Graphs
     Qt6::WebSockets
+    Qt6::Location
+    Qt6::Positioning
 )
 
 install(TARGETS QMLSnippetsExamples

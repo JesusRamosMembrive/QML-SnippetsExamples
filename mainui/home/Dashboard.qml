@@ -27,6 +27,7 @@ import theorycpp as TheoryCppPage
 import date as DatePage
 import aircraftmap as AircraftMapPage
 import shapes as ShapesPage
+import maps as MapsPage
 
 Item {
     id: root
@@ -120,7 +121,7 @@ Item {
                         }
 
                         Label {
-                            text: "22 pages"
+                            text: "23 pages"
                             font.pixelSize: Style.resize(14)
                             color: "#999"
                         }
@@ -157,6 +158,7 @@ Item {
                             ListElement { name: "Date";       desc: "Tumbler date picker, MonthGrid calendar" }
                             ListElement { name: "AircraftMap"; desc: "Interactive blueprint with zoomable markers" }
                             ListElement { name: "Shapes";      desc: "Bezier curves, arcs, SVG paths, gradients, morphing" }
+                            ListElement { name: "Maps";        desc: "OSM map, compass overlay, animated GPS route" }
                         }
 
                         ColumnLayout {
@@ -339,5 +341,10 @@ Item {
     ShapesPage.Main {
         visible: fullSize
         fullSize: (root.state === "Shapes")
+    }
+
+    MapsPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Maps")
     }
 }

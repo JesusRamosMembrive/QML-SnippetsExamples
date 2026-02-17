@@ -39,4 +39,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     datepluginplugin
     aircraftmappluginplugin
     shapespluginplugin
+    mapspluginplugin
 )
