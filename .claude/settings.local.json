@@ -19,7 +19,9 @@
       "WebSearch",
       "Bash(cmd /c dir \"C:\\\\Qt\\\\Examples\\\\Qt-6.10.1\")",
       "Bash(cd:*)",
-      "WebFetch(domain:doc.qt.io)"
+      "WebFetch(domain:doc.qt.io)",
+      "Bash(canvas)",
+      "Bash(shapes \")"
     ]
   }
 }

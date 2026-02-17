@@ -37,6 +37,7 @@ Item {
         ListElement { text: "Teoria" }
         ListElement { text: "Date" }
         ListElement { text: "AircraftMap" }
+        ListElement { text: "Shapes" }
     }
 
     ListView {

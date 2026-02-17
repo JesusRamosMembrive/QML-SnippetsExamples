@@ -47,6 +47,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/date.png
         icons/aircraftmap.png
         images/planeBluePrint.png
+        icons/shapes.png
         images/particle.png
         images/card.png
         images/dark-texture-background.png
