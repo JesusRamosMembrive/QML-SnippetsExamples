@@ -1063,6 +1063,756 @@ Item {
                         }
                     }
                 }
+
+                // ========================================
+                // Card 7: Custom Shape Creations
+                // ========================================
+                Rectangle {
+                    id: card7Shapes
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Style.resize(3000)
+                    color: Style.cardColor
+                    radius: Style.resize(8)
+
+                    property bool gearsActive: false
+                    property bool dnaActive: false
+                    property bool scopeActive: false
+                    property bool blobActive: false
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Style.resize(20)
+                        spacing: Style.resize(15)
+
+                        Label {
+                            text: "Custom Shape Creations"
+                            font.pixelSize: Style.resize(20)
+                            font.bold: true
+                            color: Style.mainColor
+                        }
+
+                        Label {
+                            text: "Advanced techniques: gear systems, mathematical curves, scientific visualizations"
+                            font.pixelSize: Style.resize(12)
+                            color: Style.fontSecondaryColor
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+
+                        // --- Section 1: Gear Train ---
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Style.resize(8)
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: "1. Gear Train"
+                                    font.pixelSize: Style.resize(16)
+                                    font.bold: true
+                                    color: Style.fontPrimaryColor
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    text: card7Shapes.gearsActive ? "Pause" : "Start"
+                                    onClicked: card7Shapes.gearsActive = !card7Shapes.gearsActive
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Style.resize(250)
+                                color: Style.surfaceColor
+                                radius: Style.resize(6)
+                                clip: true
+
+                                Canvas {
+                                    id: gearCanvas
+                                    anchors.fill: parent
+                                    anchors.margins: Style.resize(4)
+
+                                    property real gearAngle: 0
+
+                                    Timer {
+                                        interval: 40
+                                        repeat: true
+                                        running: root.fullSize && card7Shapes.gearsActive
+                                        onTriggered: {
+                                            gearCanvas.gearAngle = (gearCanvas.gearAngle + 1.5) % 360
+                                            gearCanvas.requestPaint()
+                                        }
+                                    }
+
+                                    function drawGear(ctx, gx, gy, pitchR, teeth, angleDeg, fillCol, strokeCol) {
+                                        var toothH = pitchR * 0.18
+                                        var outerR = pitchR + toothH
+                                        var innerR = pitchR - toothH
+                                        ctx.save()
+                                        ctx.translate(gx, gy)
+                                        ctx.rotate(angleDeg * Math.PI / 180)
+
+                                        ctx.beginPath()
+                                        for (var i = 0; i < teeth; i++) {
+                                            var a = i * 2 * Math.PI / teeth
+                                            var hw = Math.PI / teeth * 0.65
+                                            var a0 = a - hw, a1 = a - hw * 0.45
+                                            var a2 = a + hw * 0.45, a3 = a + hw
+                                            if (i === 0) ctx.moveTo(innerR * Math.cos(a0), innerR * Math.sin(a0))
+                                            else ctx.lineTo(innerR * Math.cos(a0), innerR * Math.sin(a0))
+                                            ctx.lineTo(outerR * Math.cos(a1), outerR * Math.sin(a1))
+                                            ctx.lineTo(outerR * Math.cos(a2), outerR * Math.sin(a2))
+                                            ctx.lineTo(innerR * Math.cos(a3), innerR * Math.sin(a3))
+                                        }
+                                        ctx.closePath()
+                                        ctx.fillStyle = fillCol
+                                        ctx.fill()
+                                        ctx.strokeStyle = strokeCol
+                                        ctx.lineWidth = 1.5
+                                        ctx.stroke()
+
+                                        // Hub
+                                        ctx.beginPath()
+                                        ctx.arc(0, 0, pitchR * 0.22, 0, 2 * Math.PI)
+                                        ctx.fillStyle = Style.surfaceColor
+                                        ctx.fill()
+                                        ctx.strokeStyle = strokeCol
+                                        ctx.stroke()
+
+                                        // Spokes
+                                        ctx.beginPath()
+                                        for (var s = 0; s < 4; s++) {
+                                            var sa = s * Math.PI / 2
+                                            ctx.moveTo(pitchR * 0.22 * Math.cos(sa), pitchR * 0.22 * Math.sin(sa))
+                                            ctx.lineTo(innerR * 0.78 * Math.cos(sa), innerR * 0.78 * Math.sin(sa))
+                                        }
+                                        ctx.lineWidth = 2
+                                        ctx.stroke()
+                                        ctx.restore()
+                                    }
+
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        ctx.clearRect(0, 0, width, height)
+                                        var cy = height / 2
+                                        var r1 = height * 0.3, teeth1 = 16
+                                        var r2 = r1 * 10 / 16, teeth2 = 10
+                                        var r3 = r1 * 8 / 16, teeth3 = 8
+
+                                        var x1 = width / 2 - r2 - r3
+                                        var x2 = x1 + r1 + r2
+                                        var x3 = x2 + r2 + r3
+
+                                        var a1 = gearAngle
+                                        var a2 = -gearAngle * teeth1 / teeth2 + 180 / teeth2
+                                        var a3 = gearAngle * teeth1 / teeth3 + 180 / teeth3
+
+                                        drawGear(ctx, x1, cy, r1, teeth1, a1, "rgba(0,209,169,0.2)", "#00D1A9")
+                                        drawGear(ctx, x2, cy, r2, teeth2, a2, "rgba(255,89,0,0.2)", "#FF5900")
+                                        drawGear(ctx, x3, cy, r3, teeth3, a3, "rgba(74,144,217,0.2)", "#4A90D9")
+                                    }
+                                }
+                            }
+                        }
+
+                        // Separator
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Style.inactiveColor; opacity: 0.3 }
+
+                        // --- Section 2: Rose Curve ---
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Style.resize(8)
+
+                            Label {
+                                text: "2. Rose Curve (Rhodonea)"
+                                font.pixelSize: Style.resize(16)
+                                font.bold: true
+                                color: Style.fontPrimaryColor
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(15)
+                                Label { text: "Petals (k): " + Math.round(roseK.value); font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
+                                Slider { id: roseK; from: 2; to: 12; value: 5; stepSize: 1; Layout.preferredWidth: Style.resize(200); onValueChanged: roseCanvas.requestPaint() }
+                                Item { Layout.fillWidth: true }
+                                Label {
+                                    text: {
+                                        var k = Math.round(roseK.value)
+                                        return (k % 2 === 0 ? (2*k) : k) + " petals"
+                                    }
+                                    font.pixelSize: Style.resize(11)
+                                    color: Style.mainColor
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Style.resize(260)
+                                color: Style.surfaceColor
+                                radius: Style.resize(6)
+                                clip: true
+
+                                Canvas {
+                                    id: roseCanvas
+                                    anchors.fill: parent
+                                    anchors.margins: Style.resize(4)
+
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        var w = width, h = height
+                                        ctx.clearRect(0, 0, w, h)
+
+                                        var cx = w / 2, cy = h / 2
+                                        var maxR = Math.min(cx, cy) - 10
+                                        var k = Math.round(roseK.value)
+                                        var steps = 1000
+
+                                        ctx.beginPath()
+                                        for (var i = 0; i <= steps; i++) {
+                                            var t = i / steps * 2 * Math.PI
+                                            var r = maxR * Math.cos(k * t)
+                                            var x = cx + r * Math.cos(t)
+                                            var y = cy + r * Math.sin(t)
+                                            if (i === 0) ctx.moveTo(x, y)
+                                            else ctx.lineTo(x, y)
+                                        }
+
+                                        var grad = ctx.createLinearGradient(0, 0, w, h)
+                                        grad.addColorStop(0, "#00D1A9")
+                                        grad.addColorStop(0.5, "#9B59B6")
+                                        grad.addColorStop(1, "#E74C3C")
+                                        ctx.strokeStyle = grad
+                                        ctx.lineWidth = 2
+                                        ctx.stroke()
+
+                                        // Fill with semi-transparent
+                                        ctx.fillStyle = "rgba(0,209,169,0.06)"
+                                        ctx.fill()
+                                    }
+                                }
+                            }
+                        }
+
+                        // Separator
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Style.inactiveColor; opacity: 0.3 }
+
+                        // --- Section 3: DNA Double Helix ---
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Style.resize(8)
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: "3. DNA Double Helix"
+                                    font.pixelSize: Style.resize(16)
+                                    font.bold: true
+                                    color: Style.fontPrimaryColor
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    text: card7Shapes.dnaActive ? "Pause" : "Start"
+                                    onClicked: card7Shapes.dnaActive = !card7Shapes.dnaActive
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Style.resize(200)
+                                color: "#0A0E14"
+                                radius: Style.resize(6)
+                                clip: true
+
+                                Canvas {
+                                    id: dnaCanvas
+                                    anchors.fill: parent
+                                    anchors.margins: Style.resize(4)
+
+                                    property real phase: 0
+                                    property var basePairColors: ["#E74C3C", "#4A90D9", "#27AE60", "#FEA601"]
+
+                                    Timer {
+                                        interval: 40
+                                        repeat: true
+                                        running: root.fullSize && card7Shapes.dnaActive
+                                        onTriggered: {
+                                            dnaCanvas.phase += 0.06
+                                            dnaCanvas.requestPaint()
+                                        }
+                                    }
+
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        var w = width, h = height
+                                        ctx.clearRect(0, 0, w, h)
+
+                                        var cy = h / 2
+                                        var amp = h * 0.35
+                                        var freq = 0.035
+                                        var pairSpacing = 22
+
+                                        // Draw base pairs first (behind strands)
+                                        for (var px = 0; px < w; px += pairSpacing) {
+                                            var py1 = cy + amp * Math.sin(freq * px + phase)
+                                            var py2 = cy - amp * Math.sin(freq * px + phase)
+                                            var colorIdx = Math.floor(px / pairSpacing) % 4
+                                            ctx.beginPath()
+                                            ctx.moveTo(px, py1)
+                                            ctx.lineTo(px, py2)
+                                            ctx.strokeStyle = basePairColors[colorIdx]
+                                            ctx.lineWidth = 2.5
+                                            ctx.stroke()
+
+                                            // Base pair dots
+                                            ctx.beginPath()
+                                            ctx.arc(px, (py1 + py2) / 2 - 3, 3, 0, 2 * Math.PI)
+                                            ctx.fillStyle = basePairColors[colorIdx]
+                                            ctx.fill()
+                                            ctx.beginPath()
+                                            ctx.arc(px, (py1 + py2) / 2 + 3, 3, 0, 2 * Math.PI)
+                                            ctx.fillStyle = basePairColors[(colorIdx + 2) % 4]
+                                            ctx.fill()
+                                        }
+
+                                        // Strand 1
+                                        ctx.beginPath()
+                                        for (var x1 = 0; x1 < w; x1 += 2) {
+                                            var y1 = cy + amp * Math.sin(freq * x1 + phase)
+                                            if (x1 === 0) ctx.moveTo(x1, y1)
+                                            else ctx.lineTo(x1, y1)
+                                        }
+                                        ctx.strokeStyle = "#00D1A9"
+                                        ctx.lineWidth = 3
+                                        ctx.stroke()
+
+                                        // Strand 2
+                                        ctx.beginPath()
+                                        for (var x2 = 0; x2 < w; x2 += 2) {
+                                            var y2 = cy - amp * Math.sin(freq * x2 + phase)
+                                            if (x2 === 0) ctx.moveTo(x2, y2)
+                                            else ctx.lineTo(x2, y2)
+                                        }
+                                        ctx.strokeStyle = "#FF5900"
+                                        ctx.lineWidth = 3
+                                        ctx.stroke()
+
+                                        // Labels
+                                        ctx.font = "bold 10px monospace"
+                                        ctx.textAlign = "left"
+                                        ctx.fillStyle = "#555"
+                                        ctx.fillText("5'", 5, cy + amp + 15)
+                                        ctx.fillText("3'", w - 18, cy + amp + 15)
+                                        ctx.fillText("3'", 5, cy - amp - 8)
+                                        ctx.fillText("5'", w - 18, cy - amp - 8)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Separator
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Style.inactiveColor; opacity: 0.3 }
+
+                        // --- Section 4: Oscilloscope ---
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Style.resize(8)
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: "4. Oscilloscope"
+                                    font.pixelSize: Style.resize(16)
+                                    font.bold: true
+                                    color: Style.fontPrimaryColor
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    text: card7Shapes.scopeActive ? "Pause" : "Start"
+                                    onClicked: card7Shapes.scopeActive = !card7Shapes.scopeActive
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(15)
+                                ColumnLayout {
+                                    spacing: Style.resize(2)
+                                    Label { text: "Freq: " + scopeFreq.value.toFixed(1); font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
+                                    Slider { id: scopeFreq; from: 0.5; to: 4; value: 1.5; stepSize: 0.1; Layout.preferredWidth: Style.resize(130) }
+                                }
+                                ColumnLayout {
+                                    spacing: Style.resize(2)
+                                    Label { text: "Amp: " + scopeAmp.value.toFixed(1); font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
+                                    Slider { id: scopeAmp; from: 0.2; to: 1.0; value: 0.7; stepSize: 0.05; Layout.preferredWidth: Style.resize(130) }
+                                }
+                                Item { Layout.fillWidth: true }
+                                // Legend
+                                Row {
+                                    spacing: Style.resize(12)
+                                    Row {
+                                        spacing: Style.resize(4)
+                                        Rectangle { width: Style.resize(12); height: Style.resize(3); color: "#00FF41"; anchors.verticalCenter: parent.verticalCenter }
+                                        Label { text: "Sine"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
+                                    }
+                                    Row {
+                                        spacing: Style.resize(4)
+                                        Rectangle { width: Style.resize(12); height: Style.resize(3); color: "#FFB800"; anchors.verticalCenter: parent.verticalCenter }
+                                        Label { text: "Square"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
+                                    }
+                                    Row {
+                                        spacing: Style.resize(4)
+                                        Rectangle { width: Style.resize(12); height: Style.resize(3); color: "#00BFFF"; anchors.verticalCenter: parent.verticalCenter }
+                                        Label { text: "Triangle"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Style.resize(220)
+                                color: "#0A100A"
+                                radius: Style.resize(6)
+                                clip: true
+
+                                Canvas {
+                                    id: scopeCanvas
+                                    anchors.fill: parent
+                                    anchors.margins: Style.resize(4)
+
+                                    property real scopePhase: 0
+
+                                    Timer {
+                                        interval: 40
+                                        repeat: true
+                                        running: root.fullSize && card7Shapes.scopeActive
+                                        onTriggered: {
+                                            scopeCanvas.scopePhase += 0.08
+                                            scopeCanvas.requestPaint()
+                                        }
+                                    }
+
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        var w = width, h = height
+                                        ctx.clearRect(0, 0, w, h)
+
+                                        var cy = h / 2
+                                        var freq = scopeFreq.value
+                                        var amp = scopeAmp.value * (h * 0.4)
+                                        var gridSize = 30
+
+                                        // Grid
+                                        ctx.strokeStyle = "#0A3A0A"
+                                        ctx.lineWidth = 0.5
+                                        for (var gx = 0; gx < w; gx += gridSize) {
+                                            ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke()
+                                        }
+                                        for (var gy = 0; gy < h; gy += gridSize) {
+                                            ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke()
+                                        }
+                                        // Center line (brighter)
+                                        ctx.strokeStyle = "#0A5A0A"
+                                        ctx.lineWidth = 1
+                                        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke()
+
+                                        // Sine wave (green phosphor)
+                                        ctx.beginPath()
+                                        for (var sx = 0; sx < w; sx++) {
+                                            var sy = cy - amp * Math.sin(freq * sx * 0.04 + scopePhase)
+                                            if (sx === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy)
+                                        }
+                                        ctx.strokeStyle = "#00FF41"
+                                        ctx.lineWidth = 2
+                                        ctx.stroke()
+
+                                        // Square wave (amber)
+                                        ctx.beginPath()
+                                        for (var qx = 0; qx < w; qx++) {
+                                            var qPhase = freq * qx * 0.04 + scopePhase + 1.0
+                                            var qy = cy - amp * 0.6 * (Math.sin(qPhase) > 0 ? 1 : -1)
+                                            if (qx === 0) ctx.moveTo(qx, qy); else ctx.lineTo(qx, qy)
+                                        }
+                                        ctx.strokeStyle = "#FFB800"
+                                        ctx.lineWidth = 1.5
+                                        ctx.stroke()
+
+                                        // Triangle wave (cyan)
+                                        ctx.beginPath()
+                                        for (var tx = 0; tx < w; tx++) {
+                                            var tPhase = freq * tx * 0.04 + scopePhase + 2.0
+                                            var tNorm = (tPhase / Math.PI) % 2
+                                            if (tNorm < 0) tNorm += 2
+                                            var tVal = tNorm < 1 ? (2 * tNorm - 1) : (3 - 2 * tNorm)
+                                            var ty = cy - amp * 0.5 * tVal
+                                            if (tx === 0) ctx.moveTo(tx, ty); else ctx.lineTo(tx, ty)
+                                        }
+                                        ctx.strokeStyle = "#00BFFF"
+                                        ctx.lineWidth = 1.5
+                                        ctx.stroke()
+                                    }
+                                }
+                            }
+                        }
+
+                        // Separator
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Style.inactiveColor; opacity: 0.3 }
+
+                        // --- Section 5: Geometric Mandala ---
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Style.resize(8)
+
+                            Label {
+                                text: "5. Geometric Mandala"
+                                font.pixelSize: Style.resize(16)
+                                font.bold: true
+                                color: Style.fontPrimaryColor
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(15)
+                                ColumnLayout {
+                                    spacing: Style.resize(2)
+                                    Label { text: "Axes: " + Math.round(mandalaAxes.value); font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
+                                    Slider { id: mandalaAxes; from: 4; to: 16; value: 8; stepSize: 1; Layout.preferredWidth: Style.resize(130); onValueChanged: mandalaCanvas.requestPaint() }
+                                }
+                                ColumnLayout {
+                                    spacing: Style.resize(2)
+                                    Label { text: "Layers: " + Math.round(mandalaLayers.value); font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
+                                    Slider { id: mandalaLayers; from: 3; to: 8; value: 5; stepSize: 1; Layout.preferredWidth: Style.resize(130); onValueChanged: mandalaCanvas.requestPaint() }
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Style.resize(300)
+                                color: Style.surfaceColor
+                                radius: Style.resize(6)
+                                clip: true
+
+                                Canvas {
+                                    id: mandalaCanvas
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - Style.resize(20), Style.resize(290))
+                                    height: width
+
+                                    property var palette: ["#00D1A9", "#FF5900", "#9B59B6", "#4A90D9", "#E74C3C", "#FEA601", "#27AE60", "#F39C12"]
+
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        var w = width, h = height
+                                        ctx.clearRect(0, 0, w, h)
+
+                                        var cx = w / 2, cy = h / 2
+                                        var maxR = Math.min(cx, cy) - 8
+                                        var N = Math.round(mandalaAxes.value)
+                                        var layers = Math.round(mandalaLayers.value)
+
+                                        // Spoke lines
+                                        ctx.strokeStyle = "#333"
+                                        ctx.lineWidth = 0.5
+                                        for (var s = 0; s < N; s++) {
+                                            var sa = s * 2 * Math.PI / N
+                                            ctx.beginPath()
+                                            ctx.moveTo(cx, cy)
+                                            ctx.lineTo(cx + maxR * Math.cos(sa), cy + maxR * Math.sin(sa))
+                                            ctx.stroke()
+                                        }
+
+                                        // Layers
+                                        for (var layer = 0; layer < layers; layer++) {
+                                            var r = (layer + 1) / (layers + 1) * maxR
+                                            var color = palette[layer % palette.length]
+
+                                            // Concentric ring
+                                            ctx.beginPath()
+                                            ctx.arc(cx, cy, r, 0, 2 * Math.PI)
+                                            ctx.strokeStyle = color
+                                            ctx.lineWidth = 0.8
+                                            ctx.stroke()
+
+                                            // Decorations at each axis point
+                                            var dotR = 3 + layer * 1.2
+                                            for (var p = 0; p < N; p++) {
+                                                var pa = p * 2 * Math.PI / N
+                                                var ppx = cx + r * Math.cos(pa)
+                                                var ppy = cy + r * Math.sin(pa)
+
+                                                if (layer % 3 === 0) {
+                                                    // Filled circles
+                                                    ctx.beginPath()
+                                                    ctx.arc(ppx, ppy, dotR, 0, 2 * Math.PI)
+                                                    ctx.fillStyle = color
+                                                    ctx.fill()
+                                                } else if (layer % 3 === 1) {
+                                                    // Diamonds
+                                                    ctx.beginPath()
+                                                    ctx.moveTo(ppx, ppy - dotR)
+                                                    ctx.lineTo(ppx + dotR, ppy)
+                                                    ctx.lineTo(ppx, ppy + dotR)
+                                                    ctx.lineTo(ppx - dotR, ppy)
+                                                    ctx.closePath()
+                                                    ctx.fillStyle = color
+                                                    ctx.fill()
+                                                } else {
+                                                    // Rings
+                                                    ctx.beginPath()
+                                                    ctx.arc(ppx, ppy, dotR, 0, 2 * Math.PI)
+                                                    ctx.strokeStyle = color
+                                                    ctx.lineWidth = 2
+                                                    ctx.stroke()
+                                                }
+                                            }
+
+                                            // Petal arcs on odd layers
+                                            if (layer % 2 === 1) {
+                                                var bulge = r * 0.12
+                                                for (var p2 = 0; p2 < N; p2++) {
+                                                    var startA = p2 * 2 * Math.PI / N
+                                                    var endA = (p2 + 1) * 2 * Math.PI / N
+                                                    ctx.beginPath()
+                                                    ctx.arc(cx, cy, r + bulge, startA, endA)
+                                                    ctx.arc(cx, cy, r - bulge, endA, startA, true)
+                                                    ctx.closePath()
+                                                    ctx.fillStyle = color.substring(0, 7) + "20"
+                                                    ctx.fill()
+                                                    ctx.strokeStyle = color
+                                                    ctx.lineWidth = 0.5
+                                                    ctx.stroke()
+                                                }
+                                            }
+                                        }
+
+                                        // Outer border
+                                        ctx.beginPath()
+                                        ctx.arc(cx, cy, maxR, 0, 2 * Math.PI)
+                                        ctx.strokeStyle = "#444"
+                                        ctx.lineWidth = 1.5
+                                        ctx.stroke()
+
+                                        // Center dot
+                                        ctx.beginPath()
+                                        ctx.arc(cx, cy, maxR * 0.06, 0, 2 * Math.PI)
+                                        ctx.fillStyle = "#00D1A9"
+                                        ctx.fill()
+                                    }
+                                }
+                            }
+                        }
+
+                        // Separator
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Style.inactiveColor; opacity: 0.3 }
+
+                        // --- Section 6: Liquid Blob ---
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: Style.resize(8)
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Label {
+                                    text: "6. Liquid Blob"
+                                    font.pixelSize: Style.resize(16)
+                                    font.bold: true
+                                    color: Style.fontPrimaryColor
+                                }
+                                Item { Layout.fillWidth: true }
+                                Button {
+                                    text: card7Shapes.blobActive ? "Pause" : "Start"
+                                    onClicked: card7Shapes.blobActive = !card7Shapes.blobActive
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: Style.resize(280)
+                                color: "#0A0A14"
+                                radius: Style.resize(6)
+                                clip: true
+
+                                Canvas {
+                                    id: blobCanvas
+                                    anchors.centerIn: parent
+                                    width: Math.min(parent.width - Style.resize(20), Style.resize(270))
+                                    height: width
+
+                                    property real time: 0
+
+                                    Timer {
+                                        interval: 40
+                                        repeat: true
+                                        running: root.fullSize && card7Shapes.blobActive
+                                        onTriggered: {
+                                            blobCanvas.time += 0.04
+                                            blobCanvas.requestPaint()
+                                        }
+                                    }
+
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        var w = width, h = height
+                                        ctx.clearRect(0, 0, w, h)
+
+                                        var cx = w / 2, cy = h / 2
+                                        var baseR = Math.min(cx, cy) * 0.55
+                                        var points = 120
+
+                                        // Main blob
+                                        ctx.beginPath()
+                                        for (var i = 0; i <= points; i++) {
+                                            var theta = i / points * 2 * Math.PI
+                                            var r = baseR
+                                                + baseR * 0.15 * Math.sin(3 * theta + time * 1.2)
+                                                + baseR * 0.10 * Math.sin(5 * theta - time * 0.8)
+                                                + baseR * 0.08 * Math.sin(7 * theta + time * 1.5)
+                                                + baseR * 0.12 * Math.sin(2 * theta - time * 0.6)
+                                            var bx = cx + r * Math.cos(theta)
+                                            var by = cy + r * Math.sin(theta)
+                                            if (i === 0) ctx.moveTo(bx, by)
+                                            else ctx.lineTo(bx, by)
+                                        }
+                                        ctx.closePath()
+
+                                        // Gradient fill
+                                        var grad = ctx.createRadialGradient(cx - baseR * 0.3, cy - baseR * 0.3, 0, cx, cy, baseR * 1.4)
+                                        grad.addColorStop(0, "rgba(0,209,169,0.6)")
+                                        grad.addColorStop(0.5, "rgba(74,144,217,0.4)")
+                                        grad.addColorStop(1, "rgba(155,89,182,0.2)")
+                                        ctx.fillStyle = grad
+                                        ctx.fill()
+                                        ctx.strokeStyle = "#00D1A9"
+                                        ctx.lineWidth = 2
+                                        ctx.stroke()
+
+                                        // Inner highlight blob (smaller, offset, brighter)
+                                        ctx.beginPath()
+                                        var innerR = baseR * 0.4
+                                        for (var j = 0; j <= points; j++) {
+                                            var t2 = j / points * 2 * Math.PI
+                                            var r2 = innerR
+                                                + innerR * 0.2 * Math.sin(4 * t2 - time * 1.4)
+                                                + innerR * 0.15 * Math.sin(6 * t2 + time * 0.9)
+                                            var ix = cx - baseR * 0.12 + r2 * Math.cos(t2)
+                                            var iy = cy - baseR * 0.12 + r2 * Math.sin(t2)
+                                            if (j === 0) ctx.moveTo(ix, iy)
+                                            else ctx.lineTo(ix, iy)
+                                        }
+                                        ctx.closePath()
+                                        ctx.fillStyle = "rgba(0,209,169,0.15)"
+                                        ctx.fill()
+
+                                        // Specular highlight
+                                        ctx.beginPath()
+                                        ctx.arc(cx - baseR * 0.25, cy - baseR * 0.25, baseR * 0.12, 0, 2 * Math.PI)
+                                        ctx.fillStyle = "rgba(255,255,255,0.15)"
+                                        ctx.fill()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
