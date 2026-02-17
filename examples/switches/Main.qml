@@ -791,8 +791,9 @@ Item {
                                         model: 8
 
                                         Rectangle {
+                                            id: sunRay
                                             required property int index
-                                            property real angle: index * 45
+                                            property real rayAngle: index * 45
 
                                             width: Style.resize(3)
                                             height: Style.resize(8)
@@ -803,9 +804,9 @@ Item {
                                             anchors.verticalCenterOffset: -parent.width * 0.55
 
                                             transform: Rotation {
-                                                origin.x: width / 2
-                                                origin.y: parent.width * 0.55
-                                                angle: parent.angle
+                                                origin.x: sunRay.width / 2
+                                                origin.y: dayNightKnob.width * 0.55
+                                                angle: sunRay.rayAngle
                                             }
 
                                             Behavior on opacity { NumberAnimation { duration: 300 } }
