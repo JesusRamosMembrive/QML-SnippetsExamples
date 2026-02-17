@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -96,7 +96,7 @@ Item {
                                     Label {
                                         text: "Basic (0-100)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -121,7 +121,7 @@ Item {
                                     Label {
                                         text: "Stepped (10)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -147,7 +147,7 @@ Item {
                                     Label {
                                         text: "Temp (0-40°C)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -156,7 +156,7 @@ Item {
                             Label {
                                 text: "Dial provides a rotary control for selecting values within a range"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -170,7 +170,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -189,7 +189,7 @@ Item {
                             Label {
                                 text: "Determinate: " + (progressSlider.value * 100).toFixed(0) + "%"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             ProgressBar {
@@ -230,7 +230,7 @@ Item {
                                 Label {
                                     text: "Indeterminate:"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                     Layout.fillWidth: true
                                 }
 
@@ -252,7 +252,7 @@ Item {
                             Label {
                                 text: "ProgressBar shows task completion. Indeterminate mode indicates unknown duration"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -266,7 +266,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -306,7 +306,7 @@ Item {
                                     Label {
                                         text: "Default (40px)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -326,7 +326,7 @@ Item {
                                     Label {
                                         text: "Large (80px)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -393,7 +393,7 @@ Item {
                                     Label {
                                         text: "Custom (Canvas)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -409,7 +409,7 @@ Item {
                             Label {
                                 text: "BusyIndicator shows that an operation is in progress"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -426,7 +426,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         property real cpuValue: 25
@@ -483,7 +483,7 @@ Item {
                                     Label {
                                         text: "CPU Usage"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -507,7 +507,7 @@ Item {
                                         text: monitorCard.cpuValue > 80 ? "High Load!" : "Normal"
                                         font.pixelSize: Style.resize(12)
                                         font.bold: monitorCard.cpuValue > 80
-                                        color: monitorCard.cpuValue > 80 ? "#FF5900" : "#666"
+                                        color: monitorCard.cpuValue > 80 ? "#FF5900" : Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -521,7 +521,7 @@ Item {
                                 Label {
                                     text: "Memory: " + (memorySlider.value * 100).toFixed(0) + "%"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 ProgressBar {
@@ -555,7 +555,7 @@ Item {
                                 Label {
                                     text: "Disk: 78%"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 ProgressBar {
@@ -576,7 +576,7 @@ Item {
                                       + "  |  Memory: " + (memorySlider.value * 100).toFixed(0) + "%"
                                       + "  |  Disk: 78%"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

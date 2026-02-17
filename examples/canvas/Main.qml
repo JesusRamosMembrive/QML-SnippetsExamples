@@ -59,7 +59,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -141,7 +141,7 @@ Item {
                                         ctx.shadowOffsetX = 2
                                         ctx.shadowOffsetY = 2
                                         ctx.font = "bold 22px sans-serif"
-                                        ctx.fillStyle = "#333"
+                                        ctx.fillStyle = "#E0E0E0"
                                         ctx.fillText("Canvas!", 10, 170)
                                         ctx.shadowBlur = 0
                                         ctx.shadowOffsetX = 0
@@ -161,7 +161,7 @@ Item {
                             Label {
                                 text: "Imperative drawing with context2D: gradients, arcs, text, bezier curves"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -175,7 +175,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -234,7 +234,7 @@ Item {
                                         Label {
                                             text: "Triangle"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                             Layout.alignment: Qt.AlignHCenter
                                         }
                                     }
@@ -279,7 +279,7 @@ Item {
                                         Label {
                                             text: "Star"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                             Layout.alignment: Qt.AlignHCenter
                                         }
                                     }
@@ -321,7 +321,7 @@ Item {
                                         Label {
                                             text: "Rounded Rect"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                             Layout.alignment: Qt.AlignHCenter
                                         }
                                     }
@@ -359,7 +359,7 @@ Item {
                                         Label {
                                             text: "Heart"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                             Layout.alignment: Qt.AlignHCenter
                                         }
                                     }
@@ -369,7 +369,7 @@ Item {
                             Label {
                                 text: "Declarative Shape with PathLine, PathArc, and PathQuad elements"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -383,7 +383,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -419,7 +419,7 @@ Item {
 
                                             ShapePath {
                                                 strokeWidth: 1
-                                                strokeColor: "#CCC"
+                                                strokeColor: "#3A3D45"
                                                 startX: 0; startY: 0
                                                 PathLine { x: 100; y: 0 }
                                                 PathLine { x: 100; y: 70 }
@@ -440,7 +440,7 @@ Item {
                                     Label {
                                         text: "Linear Gradient"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -491,7 +491,7 @@ Item {
                                     Label {
                                         text: "Radial Gradient"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -537,7 +537,7 @@ Item {
                                             ctx.closePath()
                                             ctx.fillStyle = slices[j].color
                                             ctx.fill()
-                                            ctx.strokeStyle = "white"
+                                            ctx.strokeStyle = Style.cardColor
                                             ctx.lineWidth = 2
                                             ctx.stroke()
                                             startAngle += sliceAngle
@@ -565,7 +565,7 @@ Item {
                                             Label {
                                                 text: pieCanvas.slices[index].label
                                                 font.pixelSize: Style.resize(10)
-                                                color: "#666"
+                                                color: Style.fontSecondaryColor
                                             }
                                         }
                                     }
@@ -575,7 +575,7 @@ Item {
                             Label {
                                 text: "Shape gradients (Linear, Radial) and Canvas pie chart with arcs"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -589,7 +589,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -611,7 +611,7 @@ Item {
 
                                 // Color buttons
                                 Repeater {
-                                    model: ["#333333", "#00D1A9", "#4A90D9", "#E74C3C", "#FEA601"]
+                                    model: ["#FFFFFF", "#00D1A9", "#4A90D9", "#E74C3C", "#FEA601"]
 
                                     Rectangle {
                                         width: Style.resize(24)
@@ -619,7 +619,7 @@ Item {
                                         radius: width / 2
                                         color: modelData
                                         border.width: drawCanvas.strokeColor === modelData ? 3 : 1
-                                        border.color: drawCanvas.strokeColor === modelData ? "#333" : "#CCC"
+                                        border.color: drawCanvas.strokeColor === modelData ? Style.fontPrimaryColor : "#3A3D45"
 
                                         MouseArea {
                                             anchors.fill: parent
@@ -633,7 +633,7 @@ Item {
                                 Label {
                                     text: "Size:"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 Item {
@@ -663,7 +663,7 @@ Item {
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                color: "white"
+                                color: Style.surfaceColor
                                 radius: Style.resize(6)
                                 border.color: Style.inactiveColor
                                 border.width: 1
@@ -675,7 +675,7 @@ Item {
                                     anchors.margins: 1
 
                                     property var paths: []
-                                    property string strokeColor: "#333333"
+                                    property string strokeColor: "#FFFFFF"
                                     property bool isDrawing: false
 
                                     onPaint: {
@@ -746,7 +746,7 @@ Item {
                             Label {
                                 text: "Interactive canvas: pick color, adjust brush size, draw with mouse"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

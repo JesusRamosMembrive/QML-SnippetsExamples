@@ -28,9 +28,9 @@ T.Menu {
 
     background: Rectangle {
         implicitWidth: Style.resize(180)
-        color: "white"
+        color: Style.cardColor
         radius: Style.resize(8)
-        border.color: Style.bgColor
+        border.color: Style.surfaceColor
         border.width: 1
 
         layer.enabled: true

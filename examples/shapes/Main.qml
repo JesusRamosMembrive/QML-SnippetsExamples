@@ -55,7 +55,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(340)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         clip: true
 
@@ -92,9 +92,9 @@ Item {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            color: "#f8f8f8"
+                                            color: Style.surfaceColor
                                             radius: Style.resize(6)
-                                            border.color: "#e0e0e0"
+                                            border.color: "#3A3D45"
                                             border.width: 1
                                         }
 
@@ -178,7 +178,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "PathQuad — drag the point"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
@@ -198,9 +198,9 @@ Item {
 
                                         Rectangle {
                                             anchors.fill: parent
-                                            color: "#f8f8f8"
+                                            color: Style.surfaceColor
                                             radius: Style.resize(6)
-                                            border.color: "#e0e0e0"
+                                            border.color: "#3A3D45"
                                             border.width: 1
                                         }
 
@@ -300,7 +300,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "PathCubic — 2 control points"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }
@@ -313,7 +313,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(340)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         clip: true
 
@@ -337,7 +337,7 @@ Item {
                                 Label {
                                     text: "Sweep: " + Math.round(sweepSlider.value) + "°"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(90)
                                 }
                                 Slider {
@@ -388,7 +388,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "PathAngleArc"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
@@ -443,7 +443,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "PathArc variants"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }
@@ -456,7 +456,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(340)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         clip: true
 
@@ -505,7 +505,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "Airplane"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
@@ -534,7 +534,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "Gear (with hole)"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
@@ -563,7 +563,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "Lightning"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }
@@ -571,7 +571,7 @@ Item {
                             Label {
                                 text: "PathSvg renders standard SVG path data strings"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                             }
                         }
                     }
@@ -582,7 +582,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(340)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         clip: true
 
@@ -640,7 +640,7 @@ Item {
                                         text: "OddEvenFill"
                                         font.pixelSize: Style.resize(13)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
@@ -649,7 +649,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "Center is hollow"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
@@ -690,7 +690,7 @@ Item {
                                         text: "WindingFill"
                                         font.pixelSize: Style.resize(13)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
@@ -699,7 +699,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "Fully solid"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#999"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }
@@ -712,7 +712,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(340)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         clip: true
 
@@ -745,7 +745,7 @@ Item {
 
                                         ShapePath {
                                             strokeWidth: Style.resize(2)
-                                            strokeColor: "#333"
+                                            strokeColor: "#666666"
                                             startX: 60; startY: 0
                                             fillGradient: LinearGradient {
                                                 x1: 0; y1: 0
@@ -769,7 +769,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "LinearGradient"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
@@ -785,7 +785,7 @@ Item {
 
                                         ShapePath {
                                             strokeWidth: Style.resize(2)
-                                            strokeColor: "#333"
+                                            strokeColor: "#666666"
                                             fillGradient: RadialGradient {
                                                 centerX: 60; centerY: 60
                                                 centerRadius: 60
@@ -813,12 +813,13 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "RadialGradient"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
 
                                 // Conical Gradient (animated)
                                 Item {
+                                    id: conicalItem
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
 
@@ -835,10 +836,10 @@ Item {
 
                                         ShapePath {
                                             strokeWidth: Style.resize(2)
-                                            strokeColor: "#333"
+                                            strokeColor: "#666666"
                                             fillGradient: ConicalGradient {
                                                 centerX: 60; centerY: 60
-                                                angle: parent.parent.conicalAngle
+                                                angle: conicalItem.conicalAngle
                                                 GradientStop { position: 0;    color: "#FF5900" }
                                                 GradientStop { position: 0.33; color: "#FFE361" }
                                                 GradientStop { position: 0.66; color: Style.mainColor }
@@ -862,7 +863,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "ConicalGradient (animated)"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }
@@ -875,7 +876,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(340)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         clip: true
 
@@ -898,6 +899,7 @@ Item {
 
                                 // Morphing shape
                                 Item {
+                                    id: morphItem
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
 
@@ -928,7 +930,7 @@ Item {
                                                                Style.mainColor.g,
                                                                Style.mainColor.b, 0.2)
 
-                                            property real m: parent.parent.morph
+                                            property real m: morphItem.morph
                                             property real cx: 80
                                             property real cy: 80
                                             property real r: 65
@@ -1054,7 +1056,7 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "Rotation + Scale"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }

@@ -54,7 +54,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(180)
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -104,7 +104,7 @@ Item {
                         Label {
                             text: "flat: no background · highlighted: brighter + bold · disabled: grayed out"
                             font.pixelSize: Style.resize(12)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                             Layout.topMargin: Style.resize(10)
                         }
                     }
@@ -114,7 +114,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(180)
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -157,7 +157,7 @@ Item {
                         Label {
                             text: "ToolButtons are typically used in toolbars and for icon-only actions"
                             font.pixelSize: Style.resize(12)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                         }
                     }
                 }
@@ -166,7 +166,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(240)
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -229,7 +229,7 @@ Item {
                         Label {
                             text: "• down: Button is being pressed\n• hovered: Mouse is over the button\n• checkable: Button can be toggled on/off"
                             font.pixelSize: Style.resize(12)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                         }
                     }
                 }
@@ -238,7 +238,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(240)
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -314,7 +314,7 @@ Item {
                         Label {
                             text: "palette.button changes color for both solid and flat variants"
                             font.pixelSize: Style.resize(12)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                         }
                     }
                 }
@@ -323,7 +323,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(200)
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -375,7 +375,7 @@ Item {
                         Label {
                             text: "These specialized components are reusable across all examples"
                             font.pixelSize: Style.resize(12)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                         }
                     }
                 }
@@ -384,7 +384,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(200)
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -461,7 +461,7 @@ Item {
                         Label {
                             text: "Click each ToolButton to open its dropdown Menu"
                             font.pixelSize: Style.resize(12)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                         }
                     }
                 }

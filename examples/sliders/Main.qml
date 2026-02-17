@@ -56,7 +56,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(320)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -80,7 +80,7 @@ Item {
                                 Label {
                                     text: "Horizontal Slider: " + horizontalSlider.value.toFixed(2)
                                     font.pixelSize: Style.resize(14)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 Item {
@@ -109,7 +109,7 @@ Item {
                                 Label {
                                     text: "Stepped Slider (step: 10): " + steppedSlider.value.toFixed(0)
                                     font.pixelSize: Style.resize(14)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 Item {
@@ -165,7 +165,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(80)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -202,7 +202,7 @@ Item {
                                     Label {
                                         text: verticalSlider1.value.toFixed(0)
                                         font.pixelSize: Style.resize(14)
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -224,7 +224,7 @@ Item {
                                     Label {
                                         text: verticalSlider2.value.toFixed(0)
                                         font.pixelSize: Style.resize(14)
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -246,7 +246,7 @@ Item {
                                     Label {
                                         text: verticalSlider3.value.toFixed(0)
                                         font.pixelSize: Style.resize(14)
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -254,7 +254,7 @@ Item {
                                 Label {
                                     text: "Vertical sliders can be created using orientation: Qt.Vertical"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                     wrapMode: Text.WordWrap
                                     Layout.fillWidth: true
                                 }
@@ -267,7 +267,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(320)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -285,7 +285,7 @@ Item {
                             Label {
                                 text: "Control the GlowButton intensity with the slider below"
                                 font.pixelSize: Style.resize(14)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                             }
 
                             // Interactive GlowButton
@@ -309,7 +309,7 @@ Item {
                                 Label {
                                     text: "Glow Intensity: " + glowIntensitySlider.value.toFixed(2)
                                     font.pixelSize: Style.resize(14)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 Item {
@@ -338,7 +338,7 @@ Item {
                                 Label {
                                     text: "Glow Radius: " + glowRadiusSlider.value.toFixed(0)
                                     font.pixelSize: Style.resize(14)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 Item {
@@ -372,7 +372,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(220)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -395,7 +395,7 @@ Item {
                                 Label {
                                     text: "Volume: " + volumeSlider.value.toFixed(0) + "%"
                                     font.pixelSize: Style.resize(14)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 Item {
@@ -447,7 +447,7 @@ Item {
                             Label {
                                 text: "Using GradientButton, PulseButton, and GlowButton - all reusable components!"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                             }
                         }
                     }
@@ -456,7 +456,7 @@ Item {
                         Layout.columnSpan: 2
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -503,7 +503,7 @@ Item {
                                     Label {
                                         text: "Temperature"
                                         font.pixelSize: Style.resize(14)
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -529,7 +529,7 @@ Item {
                                     Label {
                                         text: "Volume"
                                         font.pixelSize: Style.resize(14)
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -556,7 +556,7 @@ Item {
                                     Label {
                                         text: "Speed"
                                         font.pixelSize: Style.resize(14)
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -571,13 +571,13 @@ Item {
                                         text: "Custom Properties"
                                         font.pixelSize: Style.resize(16)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
                                         text: "• progressColor — arc color\n• trackWidth — arc thickness\n• showTicks / tickCount\n• suffix — unit label\n• valueDecimals — precision\n• showValue — center display"
                                         font.pixelSize: Style.resize(12)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         lineHeight: 1.4
                                     }
 

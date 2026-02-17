@@ -129,7 +129,7 @@ Item {
                 Rectangle {
                     Layout.preferredWidth: Style.resize(230)
                     Layout.fillHeight: true
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
 
                     ColumnLayout {
@@ -188,7 +188,7 @@ Item {
                                 radius: Style.resize(4)
                                 visible: root.isCategoryVisible(model.category)
                                 color: index === root.selectedMarker
-                                       ? Qt.rgba(0, 0, 0, 0.06) : "transparent"
+                                       ? Qt.rgba(255, 255, 255, 0.06) : "transparent"
 
                                 // Keep height 0 when hidden so ListView doesn't leave gaps
                                 // (ListView doesn't collapse invisible delegates)
@@ -233,7 +233,7 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: "white"
+                    color: Style.cardColor
                     radius: Style.resize(8)
                     clip: true
 
@@ -435,7 +435,7 @@ Item {
                         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
                         background: Rectangle {
-                            color: "white"
+                            color: Style.cardColor
                             radius: Style.resize(10)
                             border.color: infoPopup.markerIndex >= 0
                                           ? markerModel.get(infoPopup.markerIndex).color

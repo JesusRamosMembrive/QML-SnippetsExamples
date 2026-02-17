@@ -25,7 +25,7 @@ Item {
         width: parent.width
         height: parent.height
         anchors.right: parent.right
-        color: "#fff"
+        color: Style.cardColor
     }
 
     Label {

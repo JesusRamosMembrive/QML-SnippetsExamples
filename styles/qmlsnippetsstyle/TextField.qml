@@ -22,7 +22,7 @@ T.TextField {
 
     background: Rectangle {
         radius: Style.resize(8)
-        color: "white"
+        color: Style.surfaceColor
         border.width: Style.resize(2)
         border.color: root.activeFocus ? Style.mainColor
                       : root.hovered ? Qt.lighter(Style.inactiveColor, 1.2)

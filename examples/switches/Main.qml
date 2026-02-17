@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(320)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -106,7 +106,7 @@ Item {
                                       + "  |  Bluetooth: " + (bluetoothSwitch.checked ? "ON" : "OFF")
                                       + "  |  Airplane: " + (airplaneSwitch.checked ? "ON" : "OFF")
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -114,7 +114,7 @@ Item {
                             Label {
                                 text: "Switch provides a toggleable on/off control with animated indicator"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -130,7 +130,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(320)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -203,13 +203,13 @@ Item {
                                     return "Selected: " + (selected.length > 0 ? selected.join(", ") : "none");
                                 }
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                             }
 
                             Label {
                                 text: "CheckBox supports checked, unchecked, and partially checked (tristate) states"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -225,7 +225,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(320)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -300,13 +300,13 @@ Item {
                             Label {
                                 text: "Selected size: " + (radioSmall.checked ? "Small" : radioMedium.checked ? "Medium" : "Large")
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                             }
 
                             Label {
                                 text: "RadioButtons in a ButtonGroup ensure exclusive selection"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -323,7 +323,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(320)
-                        color: darkModeSwitch.checked ? "#2D2D2D" : "white"
+                        color: darkModeSwitch.checked ? "#1E2028" : Style.cardColor
                         radius: Style.resize(8)
 
                         Behavior on color {
@@ -351,7 +351,7 @@ Item {
                             Rectangle {
                                 Layout.fillWidth: true
                                 height: Style.resize(1)
-                                color: darkModeSwitch.checked ? "#555" : Style.bgColor
+                                color: darkModeSwitch.checked ? "#3A3D45" : Style.bgColor
                             }
 
                             Switch {
@@ -363,7 +363,7 @@ Item {
                             Label {
                                 text: "Temperature:"
                                 font.pixelSize: Style.resize(14)
-                                color: darkModeSwitch.checked ? "#CCC" : "#333"
+                                color: darkModeSwitch.checked ? "#CCC" : Style.fontSecondaryColor
                                 font.bold: true
                             }
 
@@ -400,7 +400,7 @@ Item {
                             Rectangle {
                                 Layout.fillWidth: true
                                 height: Style.resize(1)
-                                color: darkModeSwitch.checked ? "#555" : Style.bgColor
+                                color: darkModeSwitch.checked ? "#3A3D45" : Style.bgColor
                             }
 
                             Label {
@@ -408,7 +408,7 @@ Item {
                                       + "  |  Mode: " + (darkModeSwitch.checked ? "Dark" : "Light")
                                       + "  |  Temp: " + (tempLow.checked ? "Low" : tempMedium.checked ? "Medium" : "High")
                                 font.pixelSize: Style.resize(13)
-                                color: darkModeSwitch.checked ? "#CCC" : "#333"
+                                color: darkModeSwitch.checked ? "#CCC" : Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -416,7 +416,7 @@ Item {
                             Label {
                                 text: "Controls interact: CheckBox enables the zone, Switch toggles theme, RadioButtons select temperature"
                                 font.pixelSize: Style.resize(12)
-                                color: darkModeSwitch.checked ? "#999" : "#666"
+                                color: darkModeSwitch.checked ? "#999" : Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

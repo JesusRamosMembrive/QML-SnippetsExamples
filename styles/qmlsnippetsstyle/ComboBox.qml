@@ -34,7 +34,7 @@ T.ComboBox {
 
     background: Rectangle {
         radius: Style.resize(8)
-        color: "white"
+        color: Style.surfaceColor
         border.width: Style.resize(2)
         border.color: root.pressed || root.popup.visible ? Style.mainColor : Style.inactiveColor
 
@@ -56,7 +56,7 @@ T.ComboBox {
         }
         highlighted: root.highlightedIndex === index
         background: Rectangle {
-            color: highlighted ? Style.bgColor : "white"
+            color: highlighted ? Style.bgColor : Style.cardColor
         }
     }
 
@@ -74,7 +74,7 @@ T.ComboBox {
 
         background: Rectangle {
             radius: Style.resize(8)
-            color: "white"
+            color: Style.cardColor
             border.width: Style.resize(1)
             border.color: Style.inactiveColor
 

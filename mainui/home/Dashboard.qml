@@ -70,7 +70,7 @@ Item {
                     Label {
                         text: "A collection of QML / Qt Quick patterns and components for learning and reference."
                         font.pixelSize: Style.resize(16)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                         wrapMode: Text.WordWrap
                         Layout.fillWidth: true
                     }
@@ -100,7 +100,7 @@ Item {
                                 required property string modelData
                                 text: "\u2022  " + modelData
                                 font.pixelSize: Style.resize(14)
-                                color: "#555"
+                                color: Style.fontSecondaryColor
                                 Layout.fillWidth: true
                             }
                         }
@@ -123,14 +123,14 @@ Item {
                         Label {
                             text: "23 pages"
                             font.pixelSize: Style.resize(14)
-                            color: "#999"
+                            color: Style.inactiveColor
                         }
                     }
 
                     // Examples list
                     Rectangle {
                         Layout.fillWidth: true
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
                         implicitHeight: examplesList.implicitHeight + Style.resize(20)
 
@@ -193,7 +193,7 @@ Item {
                                         Label {
                                             text: model.desc
                                             font.pixelSize: Style.resize(13)
-                                            color: "#777"
+                                            color: Style.fontSecondaryColor
                                             Layout.fillWidth: true
                                             elide: Text.ElideRight
                                         }
@@ -207,7 +207,7 @@ Item {
                                         anchors.leftMargin: Style.resize(10)
                                         anchors.rightMargin: Style.resize(10)
                                         height: 1
-                                        color: "#E8E8E8"
+                                        color: "#3A3D45"
                                         visible: index < examplesModel.count - 1
                                     }
                                 }
@@ -222,7 +222,7 @@ Item {
                         text: "Select a page from the menu to explore examples."
                         font.pixelSize: Style.resize(14)
                         font.italic: true
-                        color: "#999"
+                        color: Style.inactiveColor
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                     }

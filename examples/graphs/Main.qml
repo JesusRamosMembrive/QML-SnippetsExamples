@@ -59,7 +59,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -77,7 +77,7 @@ Item {
                             // Amplitude slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Amplitude: " + vibAmpSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(100) }
+                                Label { text: "Amplitude: " + vibAmpSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: vibAmpSlider; anchors.fill: parent; from: 0.0; to: 1.0; value: 0.5; stepSize: 0.05 }
@@ -87,7 +87,7 @@ Item {
                             // Frequency slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Frequency: " + vibFreqSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(100) }
+                                Label { text: "Frequency: " + vibFreqSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: vibFreqSlider; anchors.fill: parent; from: 0.0; to: 1.0; value: 0.5; stepSize: 0.05 }
@@ -97,7 +97,7 @@ Item {
                             // Resolution slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Points: " + vibResSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(100) }
+                                Label { text: "Points: " + vibResSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: vibResSlider; anchors.fill: parent; from: 10; to: 500; value: 500; stepSize: 10;
@@ -189,7 +189,7 @@ Item {
                             Label {
                                 text: "FrameAnimation + LineSeries.replace() for 60fps fluid updates"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -203,7 +203,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -221,7 +221,7 @@ Item {
                             // Speed slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Speed: " + scrollSpeedSlider.value.toFixed(1) + "x"; font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Speed: " + scrollSpeedSlider.value.toFixed(1) + "x"; font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: scrollSpeedSlider; anchors.fill: parent; from: 0.2; to: 5.0; value: 1.0; stepSize: 0.1 }
@@ -347,7 +347,7 @@ Item {
                             Label {
                                 text: "Real-time scrolling line chart, updated every frame"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -361,7 +361,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -391,7 +391,7 @@ Item {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: "#f8f9fa"
+                                    color: "#1a1a2e"
                                     radius: Style.resize(6)
                                 }
 
@@ -434,7 +434,7 @@ Item {
                             Label {
                                 text: "BarSeries with BarCategoryAxis. Click Randomize to update values"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -448,7 +448,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -466,7 +466,7 @@ Item {
                             // Frequency slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Freq: " + multiFreqSlider.value.toFixed(1); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(60) }
+                                Label { text: "Freq: " + multiFreqSlider.value.toFixed(1); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(60) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: multiFreqSlider; anchors.fill: parent; from: 0.5; to: 5.0; value: 2.0; stepSize: 0.1 }
@@ -476,7 +476,7 @@ Item {
                             // Phase slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Phase: " + multiPhaseSlider.value.toFixed(1); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(60) }
+                                Label { text: "Phase: " + multiPhaseSlider.value.toFixed(1); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(60) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: multiPhaseSlider; anchors.fill: parent; from: 0.0; to: 6.28; value: 1.0; stepSize: 0.1 }
@@ -496,7 +496,7 @@ Item {
                                     RowLayout {
                                         spacing: Style.resize(4)
                                         Rectangle { width: Style.resize(12); height: Style.resize(3); color: modelData.clr; radius: 1 }
-                                        Label { text: modelData.label; font.pixelSize: Style.resize(11); color: "#666" }
+                                        Label { text: modelData.label; font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
                                     }
                                 }
                             }
@@ -608,7 +608,7 @@ Item {
                             Label {
                                 text: "3 LineSeries overlaid with real-time FrameAnimation updates"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

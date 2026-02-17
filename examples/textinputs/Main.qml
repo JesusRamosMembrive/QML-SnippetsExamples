@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -81,7 +81,7 @@ Item {
                                 Label {
                                     text: "Basic text input:"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 TextField {
@@ -99,7 +99,7 @@ Item {
                                 Label {
                                     text: "Password (echoMode: Password):"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 TextField {
@@ -118,7 +118,7 @@ Item {
                                 Label {
                                     text: "Numbers only (with validator):"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 TextField {
@@ -141,7 +141,7 @@ Item {
                                       + "  |  Password: " + (passwordField.text.length > 0 ? passwordField.text.length + " chars" : "-")
                                       + "  |  Number: " + (numberField.text || "-")
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -149,7 +149,7 @@ Item {
                             Label {
                                 text: "TextField provides single-line text input with validation and echo modes"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -165,7 +165,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -183,7 +183,7 @@ Item {
                             Label {
                                 text: "Multi-line text input with word wrap:"
                                 font.pixelSize: Style.resize(13)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                             }
 
                             TextArea {
@@ -200,7 +200,7 @@ Item {
                                 Label {
                                     text: "Characters: " + messageArea.text.length + " / 200"
                                     font.pixelSize: Style.resize(13)
-                                    color: messageArea.text.length > 200 ? "#FF5900" : "#333"
+                                    color: messageArea.text.length > 200 ? "#FF5900" : Style.fontSecondaryColor
                                     Layout.fillWidth: true
                                 }
 
@@ -223,7 +223,7 @@ Item {
                             Label {
                                 text: "TextArea provides multi-line text editing with word wrap and scrolling"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -239,7 +239,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -262,7 +262,7 @@ Item {
                                 Label {
                                     text: "Color (ComboBox):"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 ComboBox {
@@ -284,7 +284,7 @@ Item {
                                     Label {
                                         text: "Radius (SpinBox):"
                                         font.pixelSize: Style.resize(13)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     SpinBox {
@@ -303,7 +303,7 @@ Item {
                                     Label {
                                         text: "Size (SpinBox):"
                                         font.pixelSize: Style.resize(13)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     SpinBox {
@@ -358,7 +358,7 @@ Item {
                             Label {
                                 text: "ComboBox provides dropdown selection, SpinBox provides bounded numeric input"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -373,7 +373,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         property bool submitted: false
@@ -399,7 +399,7 @@ Item {
                                 Label {
                                     text: "Full Name:"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 TextField {
@@ -417,7 +417,7 @@ Item {
                                 Label {
                                     text: "Department:"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 ComboBox {
@@ -435,7 +435,7 @@ Item {
                                 Label {
                                     text: "Years of Experience:"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 SpinBox {
@@ -455,7 +455,7 @@ Item {
                                 Label {
                                     text: "Bio:"
                                     font.pixelSize: Style.resize(13)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 TextArea {
@@ -515,7 +515,7 @@ Item {
                             Label {
                                 text: "Combining all input controls into a practical form"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

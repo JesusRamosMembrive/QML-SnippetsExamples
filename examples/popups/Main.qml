@@ -33,7 +33,7 @@ Item {
         Label {
             text: "This is a simple informational dialog.\nIt displays a message to the user."
             font.pixelSize: Style.resize(14)
-            color: "#333"
+            color: Style.fontSecondaryColor
             wrapMode: Text.WordWrap
         }
     }
@@ -47,7 +47,7 @@ Item {
         Label {
             text: "Are you sure you want to proceed?\nThis action can be reversed."
             font.pixelSize: Style.resize(14)
-            color: "#333"
+            color: Style.fontSecondaryColor
             wrapMode: Text.WordWrap
         }
 
@@ -68,7 +68,7 @@ Item {
             Label {
                 text: "Please enter your name:"
                 font.pixelSize: Style.resize(14)
-                color: "#333"
+                color: Style.fontSecondaryColor
             }
 
             TextField {
@@ -97,7 +97,7 @@ Item {
         modal: false
 
         background: Rectangle {
-            color: "white"
+            color: Style.cardColor
             radius: Style.resize(8)
             border.color: Style.mainColor
             border.width: 2
@@ -116,7 +116,7 @@ Item {
             Label {
                 text: "Click outside or press Esc to close"
                 font.pixelSize: Style.resize(12)
-                color: "#666"
+                color: Style.fontSecondaryColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -154,7 +154,7 @@ Item {
         }
 
         background: Rectangle {
-            color: "white"
+            color: Style.cardColor
             radius: Style.resize(12)
         }
 
@@ -171,7 +171,7 @@ Item {
             Label {
                 text: "The background is dimmed.\nInteraction is blocked until this is closed."
                 font.pixelSize: Style.resize(13)
-                color: "#333"
+                color: Style.fontSecondaryColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
@@ -286,7 +286,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -319,7 +319,7 @@ Item {
                                 id: confirmResultLabel
                                 text: "Result: —"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                             }
 
                             // Input Dialog button + result
@@ -333,7 +333,7 @@ Item {
                                 id: inputResultLabel
                                 text: "Entered: —"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                             }
 
                             Item { Layout.fillHeight: true }
@@ -341,7 +341,7 @@ Item {
                             Label {
                                 text: "Dialog provides modal windows for user interaction with standard buttons"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -355,7 +355,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -401,20 +401,20 @@ Item {
                                         text: "Basic vs Modal:"
                                         font.pixelSize: Style.resize(13)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
                                         text: "• Basic: no overlay, click outside to close"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.fillWidth: true
                                     }
 
                                     Label {
                                         text: "• Modal: dims background, blocks interaction"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.fillWidth: true
                                     }
                                 }
@@ -423,7 +423,7 @@ Item {
                             Label {
                                 text: "Popup shows overlay content with enter/exit transitions"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -437,7 +437,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -497,7 +497,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: "Hover over this area"
                                     font.pixelSize: Style.resize(14)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 MouseArea {
@@ -518,7 +518,7 @@ Item {
                             Label {
                                 text: "ToolTip shows contextual help on hover with configurable delay and timeout"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -532,7 +532,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -568,7 +568,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: "Right-click here"
                                     font.pixelSize: Style.resize(14)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
 
                                 MouseArea {
@@ -608,25 +608,25 @@ Item {
                                         text: "Menu supports:"
                                         font.pixelSize: Style.resize(12)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
                                         text: "• Regular items, separators"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
                                         text: "• Checkable items (Bold, Italic)"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
 
                                     Label {
                                         text: "• Context menu (right-click)"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                     }
                                 }
                             }
@@ -634,7 +634,7 @@ Item {
                             Label {
                                 text: "Menu provides dropdown and context menus with rich item types"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

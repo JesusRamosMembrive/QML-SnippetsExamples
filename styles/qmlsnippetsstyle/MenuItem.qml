@@ -20,7 +20,7 @@ T.MenuItem {
         leftPadding: root.checkable ? root.indicator.width + root.spacing : 0
         text: root.text
         font.pixelSize: Style.resize(14)
-        color: root.enabled ? (root.highlighted ? Style.mainColor : "#333") : Style.inactiveColor
+        color: root.enabled ? (root.highlighted ? Style.mainColor : Style.fontPrimaryColor) : Style.inactiveColor
         verticalAlignment: Text.AlignVCenter
     }
 

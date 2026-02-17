@@ -22,9 +22,9 @@ T.Dialog {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     background: Rectangle {
-        color: "white"
+        color: Style.cardColor
         radius: Style.resize(12)
-        border.color: Style.bgColor
+        border.color: Style.surfaceColor
         border.width: 1
     }
 
@@ -47,7 +47,7 @@ T.Dialog {
             anchors.bottom: parent.bottom
             width: parent.width
             height: 1
-            color: Style.bgColor
+            color: Style.surfaceColor
         }
     }
 

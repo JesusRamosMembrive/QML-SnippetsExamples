@@ -59,7 +59,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -77,7 +77,7 @@ Item {
                             // Rate slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Rate: " + rateSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Rate: " + rateSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: rateSlider; anchors.fill: parent; from: 5; to: 200; value: 50; stepSize: 5 }
@@ -87,7 +87,7 @@ Item {
                             // Lifespan slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Life: " + lifeSlider.value.toFixed(0) + "ms"; font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Life: " + lifeSlider.value.toFixed(0) + "ms"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: lifeSlider; anchors.fill: parent; from: 500; to: 5000; value: 2000; stepSize: 100 }
@@ -97,7 +97,7 @@ Item {
                             // Size slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Size: " + sizeSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Size: " + sizeSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: sizeSlider; anchors.fill: parent; from: 4; to: 40; value: 16; stepSize: 2 }
@@ -149,7 +149,7 @@ Item {
                             Label {
                                 text: "ParticleSystem + Emitter + ImageParticle for basic effects"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -163,7 +163,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -208,7 +208,7 @@ Item {
                             // Strength slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Strength: " + strengthSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Strength: " + strengthSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: strengthSlider; anchors.fill: parent; from: 10; to: 200; value: 80; stepSize: 5 }
@@ -281,7 +281,7 @@ Item {
                             Label {
                                 text: "Gravity, Turbulence, and Wander modify particle behavior"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -295,7 +295,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -312,7 +312,7 @@ Item {
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Trail rate: " + trailRateSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Trail rate: " + trailRateSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: trailRateSlider; anchors.fill: parent; from: 5; to: 80; value: 30; stepSize: 5 }
@@ -400,7 +400,7 @@ Item {
                             Label {
                                 text: "TrailEmitter creates particles that follow other particles"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -414,7 +414,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -432,7 +432,7 @@ Item {
                             Label {
                                 text: "Move mouse to emit. Click to burst."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                             }
 
                             // Particle area
@@ -522,7 +522,7 @@ Item {
                             Label {
                                 text: "Mouse-driven Emitter position and burst() for click effects"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

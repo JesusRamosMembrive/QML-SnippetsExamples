@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -100,7 +100,7 @@ Item {
                                         Label {
                                             text: "Linear"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                         }
 
                                         Item {
@@ -143,7 +143,7 @@ Item {
                                         Label {
                                             text: "InOutQuad"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                         }
 
                                         Item {
@@ -186,7 +186,7 @@ Item {
                                         Label {
                                             text: "OutBounce"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                         }
 
                                         Item {
@@ -229,7 +229,7 @@ Item {
                                         Label {
                                             text: "InElastic"
                                             font.pixelSize: Style.resize(11)
-                                            color: "#666"
+                                            color: Style.fontSecondaryColor
                                         }
 
                                         Item {
@@ -269,7 +269,7 @@ Item {
                             Label {
                                 text: "Compare how different easing curves affect animation feel"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -283,7 +283,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -329,7 +329,7 @@ Item {
                                         text: "Sequential"
                                         font.pixelSize: Style.resize(13)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontPrimaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
 
@@ -387,7 +387,7 @@ Item {
                                     Label {
                                         text: "Move → Color → Scale"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -402,7 +402,7 @@ Item {
                                         text: "Parallel"
                                         font.pixelSize: Style.resize(13)
                                         font.bold: true
-                                        color: "#333"
+                                        color: Style.fontPrimaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
 
@@ -457,7 +457,7 @@ Item {
                                     Label {
                                         text: "Move + Color + Scale"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -466,7 +466,7 @@ Item {
                             Label {
                                 text: "Sequential runs animations one after another. Parallel runs them simultaneously"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -480,7 +480,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -503,7 +503,7 @@ Item {
                                 Label {
                                     text: "Spring: " + springSlider.value.toFixed(1)
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 Item {
@@ -528,7 +528,7 @@ Item {
                                 Label {
                                     text: "Damping: " + dampingSlider.value.toFixed(2)
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 Item {
@@ -604,7 +604,7 @@ Item {
                             Label {
                                 text: "Click to move. Adjust spring (stiffness) and damping (settling speed)"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -618,7 +618,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(380)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -637,7 +637,7 @@ Item {
                                 text: "Current: " + morphRect.state
                                 font.pixelSize: Style.resize(14)
                                 font.bold: true
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             // Morph area
@@ -736,7 +736,7 @@ Item {
                             Label {
                                 text: "States define property sets. Transitions animate between them automatically"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

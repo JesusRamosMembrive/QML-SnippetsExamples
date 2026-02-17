@@ -74,7 +74,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -325,7 +325,7 @@ Item {
                                 Label {
                                     text: "HDG"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: headingSlider
@@ -336,7 +336,7 @@ Item {
                                 Label {
                                     text: Math.round(headingSlider.value) + "\u00B0"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(35)
                                 }
                             }
@@ -344,7 +344,7 @@ Item {
                             Label {
                                 text: "Canvas moving map with heading-up rotation. Magenta route, green waypoints. PLAN mode shows north-up."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -358,7 +358,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -471,7 +471,7 @@ Item {
                             Label {
                                 text: "Click a waypoint to highlight it on the map (cyan). Shows bearing, distance, altitude, and ETA."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -485,7 +485,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -637,7 +637,7 @@ Item {
                             Label {
                                 text: "Full 360\u00B0 rotating compass card. Yellow lubber line at top, red north arrow. Heading slider drives rotation."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -651,7 +651,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -804,7 +804,7 @@ Item {
                             Label {
                                 text: "Switch ND mode (ROSE/ARC/PLAN/VOR) and range. PLAN mode is north-up, others heading-up."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

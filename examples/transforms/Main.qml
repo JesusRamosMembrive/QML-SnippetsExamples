@@ -59,7 +59,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -77,7 +77,7 @@ Item {
                             // Rotation slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Rotation: " + rotSlider.value.toFixed(0) + "°"; font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(100) }
+                                Label { text: "Rotation: " + rotSlider.value.toFixed(0) + "°"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(100) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: rotSlider; anchors.fill: parent; from: 0; to: 360; value: 0; stepSize: 1 }
@@ -87,7 +87,7 @@ Item {
                             // Scale slider
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Scale: " + scaleSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(100) }
+                                Label { text: "Scale: " + scaleSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(100) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: scaleSlider; anchors.fill: parent; from: 0.3; to: 2.0; value: 1.0; stepSize: 0.05 }
@@ -101,7 +101,7 @@ Item {
 
                                 property int originMode: 0 // 0=Center, 1=TopLeft, 2=BottomRight
 
-                                Label { text: "Origin:"; font.pixelSize: Style.resize(12); color: "#333" }
+                                Label { text: "Origin:"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor }
 
                                 Button {
                                     text: "Center"
@@ -181,7 +181,7 @@ Item {
                             Label {
                                 text: "rotation, scale, and transformOrigin control 2D transforms"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -195,7 +195,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -298,7 +298,7 @@ Item {
                             Label {
                                 text: "Rotation with axis { x; y; z } creates 3D perspective effects"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -312,7 +312,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -330,7 +330,7 @@ Item {
                             // DropShadow
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Shadow: " + shadowSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Shadow: " + shadowSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: shadowSlider; anchors.fill: parent; from: 0; to: 30; value: 12; stepSize: 1 }
@@ -340,7 +340,7 @@ Item {
                             // Blur
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Blur: " + blurSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Blur: " + blurSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: blurSlider; anchors.fill: parent; from: 0; to: 20; value: 0; stepSize: 1 }
@@ -350,7 +350,7 @@ Item {
                             // Hue
                             RowLayout {
                                 Layout.fillWidth: true
-                                Label { text: "Hue: " + hueSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: "#333"; Layout.preferredWidth: Style.resize(80) }
+                                Label { text: "Hue: " + hueSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
                                 Item {
                                     Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                                     Slider { id: hueSlider; anchors.fill: parent; from: 0; to: 1.0; value: 0; stepSize: 0.01 }
@@ -411,7 +411,7 @@ Item {
                                     Label {
                                         text: "DropShadow"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -461,7 +461,7 @@ Item {
                                     Label {
                                         text: "GaussianBlur"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -512,7 +512,7 @@ Item {
                                     Label {
                                         text: "Colorize"
                                         font.pixelSize: Style.resize(11)
-                                        color: "#666"
+                                        color: Style.fontSecondaryColor
                                         Layout.alignment: Qt.AlignHCenter
                                     }
                                 }
@@ -521,7 +521,7 @@ Item {
                             Label {
                                 text: "Qt5Compat.GraphicalEffects: shadow, blur, and color manipulation"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -535,7 +535,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -554,7 +554,7 @@ Item {
                                 text: flipCard.flipped ? "Showing: Back" : "Showing: Front"
                                 font.pixelSize: Style.resize(14)
                                 font.bold: true
-                                color: "#333"
+                                color: Style.fontSecondaryColor
                             }
 
                             // Flip area
@@ -698,7 +698,7 @@ Item {
                             Label {
                                 text: "3D Y-axis Rotation to create a card flip. Click to toggle front/back"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

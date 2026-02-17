@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -240,7 +240,7 @@ Item {
                                 Label {
                                     text: "Pitch"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: pitchSlider
@@ -252,7 +252,7 @@ Item {
                                 Label {
                                     text: pitchSlider.value.toFixed(0) + "°"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(35)
                                 }
                             }
@@ -264,7 +264,7 @@ Item {
                                 Label {
                                     text: "Roll"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: rollSlider
@@ -276,7 +276,7 @@ Item {
                                 Label {
                                     text: rollSlider.value.toFixed(0) + "°"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(35)
                                 }
                             }
@@ -284,7 +284,7 @@ Item {
                             Label {
                                 text: "Canvas-drawn sky/ground, pitch ladder, roll arc. Airbus PFD core instrument."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -298,7 +298,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -533,7 +533,7 @@ Item {
                                 Label {
                                     text: "Speed"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: speedSlider
@@ -545,7 +545,7 @@ Item {
                                 Label {
                                     text: speedSlider.value.toFixed(0) + " kt"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(50)
                                 }
                             }
@@ -557,7 +557,7 @@ Item {
                                 Label {
                                     text: "Altitude"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: altSlider
@@ -569,7 +569,7 @@ Item {
                                 Label {
                                     text: altSlider.value.toFixed(0) + " ft"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(60)
                                 }
                             }
@@ -577,7 +577,7 @@ Item {
                             Label {
                                 text: "Vertical scrolling tapes with clipped content, color bands (green/amber/red), current value box."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -591,7 +591,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -756,7 +756,7 @@ Item {
                                 Label {
                                     text: "Heading"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: headingSlider
@@ -768,7 +768,7 @@ Item {
                                 Label {
                                     text: headingSlider.value.toFixed(0) + "°"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(35)
                                 }
                             }
@@ -780,7 +780,7 @@ Item {
                                 Label {
                                     text: "HDG Bug"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: bugSlider
@@ -800,7 +800,7 @@ Item {
                             Label {
                                 text: "Rotating compass card with N/E/S/W, heading bug (cyan), lubber line. Classic ND pattern."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -814,7 +814,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -1116,7 +1116,7 @@ Item {
                                 Label {
                                     text: "V/S"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: vsiSlider
@@ -1128,7 +1128,7 @@ Item {
                                 Label {
                                     text: (vsiSlider.value >= 0 ? "+" : "") + vsiSlider.value.toFixed(0) + " fpm"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(65)
                                 }
                             }
@@ -1140,7 +1140,7 @@ Item {
                                 Label {
                                     text: "Turn"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: turnSlider
@@ -1152,7 +1152,7 @@ Item {
                                 Label {
                                     text: "Slip"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: slipSlider
@@ -1166,7 +1166,7 @@ Item {
                             Label {
                                 text: "VSI needle gauge with arc scale. Turn coordinator with banking aircraft and slip ball."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

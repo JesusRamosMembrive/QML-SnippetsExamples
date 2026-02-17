@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -77,7 +77,7 @@ Item {
                                 id: contactInfoLabel
                                 text: "Select a contact"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             // ListView
@@ -150,14 +150,14 @@ Item {
                                                     text: model.name
                                                     font.pixelSize: Style.resize(14)
                                                     font.bold: true
-                                                    color: "#333"
+                                                    color: Style.fontPrimaryColor
                                                     Layout.fillWidth: true
                                                 }
 
                                                 Label {
                                                     text: model.role
                                                     font.pixelSize: Style.resize(11)
-                                                    color: "#888"
+                                                    color: Style.fontSecondaryColor
                                                     Layout.fillWidth: true
                                                 }
                                             }
@@ -177,7 +177,7 @@ Item {
                             Label {
                                 text: "ListView with custom delegates showing avatar, name, and role"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -191,7 +191,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -210,7 +210,7 @@ Item {
                                 id: gridInfoLabel
                                 text: "Tap a color to select"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             // GridView
@@ -261,7 +261,7 @@ Item {
                                                 radius: Style.resize(8)
                                                 color: model.colorHex
                                                 border.width: GridView.isCurrentItem ? 3 : 0
-                                                border.color: "#333"
+                                                border.color: Style.fontPrimaryColor
                                                 Layout.alignment: Qt.AlignHCenter
 
                                                 scale: GridView.isCurrentItem ? 1.1 : 1.0
@@ -273,7 +273,7 @@ Item {
                                             Label {
                                                 text: model.colorName
                                                 font.pixelSize: Style.resize(10)
-                                                color: "#666"
+                                                color: Style.fontSecondaryColor
                                                 Layout.alignment: Qt.AlignHCenter
                                             }
                                         }
@@ -292,7 +292,7 @@ Item {
                             Label {
                                 text: "GridView arranges delegates in a grid with cellWidth and cellHeight"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -306,7 +306,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -353,7 +353,7 @@ Item {
                             Label {
                                 text: "Items: " + dynamicModel.count
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             // Dynamic ListView
@@ -399,7 +399,7 @@ Item {
                                         width: dynamicListView.width
                                         height: Style.resize(40)
                                         radius: Style.resize(6)
-                                        color: "white"
+                                        color: Style.surfaceColor
 
                                         RowLayout {
                                             anchors.fill: parent
@@ -417,7 +417,7 @@ Item {
                                             Label {
                                                 text: model.itemText
                                                 font.pixelSize: Style.resize(13)
-                                                color: "#333"
+                                                color: Style.fontPrimaryColor
                                                 Layout.fillWidth: true
                                                 elide: Text.ElideRight
                                             }
@@ -426,13 +426,13 @@ Item {
                                                 width: Style.resize(24)
                                                 height: Style.resize(24)
                                                 radius: Style.resize(4)
-                                                color: removeMouseArea.containsMouse ? "#FFE0E0" : "transparent"
+                                                color: removeMouseArea.containsMouse ? "#3D2020" : "transparent"
 
                                                 Label {
                                                     anchors.centerIn: parent
                                                     text: "\u2715"
                                                     font.pixelSize: Style.resize(12)
-                                                    color: removeMouseArea.containsMouse ? "#E74C3C" : "#AAA"
+                                                    color: removeMouseArea.containsMouse ? "#E74C3C" : Style.inactiveColor
                                                 }
 
                                                 MouseArea {
@@ -459,7 +459,7 @@ Item {
                             Label {
                                 text: "Add and remove items with animated transitions"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -473,7 +473,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -491,7 +491,7 @@ Item {
                             Label {
                                 text: "Items grouped by category with section headers"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             // Sectioned ListView
@@ -550,7 +550,7 @@ Item {
                                         width: sectionListView.width
                                         height: Style.resize(34)
                                         radius: Style.resize(4)
-                                        color: "white"
+                                        color: Style.surfaceColor
 
                                         RowLayout {
                                             anchors.fill: parent
@@ -576,7 +576,7 @@ Item {
                                             Label {
                                                 text: model.name
                                                 font.pixelSize: Style.resize(13)
-                                                color: "#333"
+                                                color: Style.fontPrimaryColor
                                                 Layout.fillWidth: true
                                             }
                                         }
@@ -587,7 +587,7 @@ Item {
                             Label {
                                 text: "section.property groups items and section.delegate styles the headers"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

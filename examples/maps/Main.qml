@@ -135,7 +135,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: "white"
+                color: Style.cardColor
                 radius: Style.resize(8)
                 clip: true
 

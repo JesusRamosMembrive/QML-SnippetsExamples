@@ -70,7 +70,7 @@ Item {
                     Rectangle {
                         Layout.preferredWidth: Style.resize(400)
                         Layout.preferredHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -222,7 +222,7 @@ Item {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -315,7 +315,7 @@ Item {
                             // Month grid
                             MonthGrid {
                                 id: monthGrid
-                                month: root.selectedMonth
+                                month: Math.max(0, root.selectedMonth)
                                 year: root.selectedYear
                                 locale: Qt.locale("en_US")
                                 Layout.fillWidth: true
@@ -395,7 +395,7 @@ Item {
                     text: "The Tumbler picker and MonthGrid calendar stay in sync — "
                           + "change either one and the other updates automatically."
                     font.pixelSize: Style.resize(12)
-                    color: "#666"
+                    color: Style.fontSecondaryColor
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                 }

@@ -58,7 +58,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -81,7 +81,7 @@ Item {
                                 Label {
                                     text: "Spacing: " + spacingSlider.value.toFixed(0) + "px"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 Item {
@@ -104,7 +104,7 @@ Item {
                                 text: "RowLayout"
                                 font.pixelSize: Style.resize(13)
                                 font.bold: true
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             Rectangle {
@@ -157,7 +157,7 @@ Item {
                                 text: "ColumnLayout"
                                 font.pixelSize: Style.resize(13)
                                 font.bold: true
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             Rectangle {
@@ -200,7 +200,7 @@ Item {
                             Label {
                                 text: "RowLayout arranges horizontally, ColumnLayout vertically. fillWidth/fillHeight expand to fill"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -214,7 +214,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -237,7 +237,7 @@ Item {
                                 Label {
                                     text: "Columns: " + colSlider.value.toFixed(0)
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 Item {
@@ -343,7 +343,7 @@ Item {
                             Label {
                                 text: "GridLayout with columnSpan and rowSpan for complex arrangements"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -357,7 +357,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -396,7 +396,7 @@ Item {
                                 Label {
                                     text: "Items: " + flowModel.count
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
                             }
 
@@ -408,7 +408,7 @@ Item {
                                 Label {
                                     text: "Width: " + flowWidthSlider.value.toFixed(0) + "px"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#333"
+                                    color: Style.fontPrimaryColor
                                 }
 
                                 Item {
@@ -492,7 +492,7 @@ Item {
                             Label {
                                 text: "Flow wraps items to the next line. Red line shows width boundary"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -506,7 +506,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(420)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -555,7 +555,7 @@ Item {
                             Label {
                                 text: "Current page: " + (stackLayout.currentIndex + 1) + " of 3"
                                 font.pixelSize: Style.resize(13)
-                                color: "#333"
+                                color: Style.fontPrimaryColor
                             }
 
                             // StackLayout
@@ -602,7 +602,7 @@ Item {
                                             Label {
                                                 text: "StackLayout shows one child at a time"
                                                 font.pixelSize: Style.resize(13)
-                                                color: "#666"
+                                                color: Style.fontSecondaryColor
                                                 Layout.alignment: Qt.AlignHCenter
                                             }
                                         }
@@ -652,7 +652,7 @@ Item {
                                             Label {
                                                 text: "Only the current page is visible and laid out"
                                                 font.pixelSize: Style.resize(13)
-                                                color: "#666"
+                                                color: Style.fontSecondaryColor
                                                 Layout.alignment: Qt.AlignHCenter
                                             }
                                         }
@@ -696,7 +696,7 @@ Item {
                                             Label {
                                                 text: "Use currentIndex to switch between pages"
                                                 font.pixelSize: Style.resize(13)
-                                                color: "#666"
+                                                color: Style.fontSecondaryColor
                                                 Layout.alignment: Qt.AlignHCenter
                                             }
                                         }
@@ -707,7 +707,7 @@ Item {
                             Label {
                                 text: "StackLayout stacks children, only the current page is visible"
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

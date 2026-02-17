@@ -503,7 +503,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(110)
-                color: "white"
+                color: Style.cardColor
                 radius: Style.resize(8)
 
                 GridLayout {
@@ -517,7 +517,7 @@ Item {
                     Label {
                         text: "Pitch"
                         font.pixelSize: Style.resize(12)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -529,7 +529,7 @@ Item {
                         Label {
                             text: pitchSlider.value.toFixed(0) + "\u00B0"
                             font.pixelSize: Style.resize(12)
-                            color: "#333"
+                            color: Style.fontSecondaryColor
                             Layout.preferredWidth: Style.resize(30)
                         }
                     }
@@ -537,7 +537,7 @@ Item {
                     Label {
                         text: "Roll"
                         font.pixelSize: Style.resize(12)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -549,7 +549,7 @@ Item {
                         Label {
                             text: rollSlider.value.toFixed(0) + "\u00B0"
                             font.pixelSize: Style.resize(12)
-                            color: "#333"
+                            color: Style.fontSecondaryColor
                             Layout.preferredWidth: Style.resize(30)
                         }
                     }
@@ -557,7 +557,7 @@ Item {
                     Label {
                         text: "Heading"
                         font.pixelSize: Style.resize(12)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -569,7 +569,7 @@ Item {
                         Label {
                             text: headingSlider.value.toFixed(0) + "\u00B0"
                             font.pixelSize: Style.resize(12)
-                            color: "#333"
+                            color: Style.fontSecondaryColor
                             Layout.preferredWidth: Style.resize(30)
                         }
                     }
@@ -578,7 +578,7 @@ Item {
                     Label {
                         text: "Speed"
                         font.pixelSize: Style.resize(12)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -590,7 +590,7 @@ Item {
                         Label {
                             text: speedSlider.value.toFixed(0) + " kt"
                             font.pixelSize: Style.resize(12)
-                            color: "#333"
+                            color: Style.fontSecondaryColor
                             Layout.preferredWidth: Style.resize(45)
                         }
                     }
@@ -598,7 +598,7 @@ Item {
                     Label {
                         text: "Altitude"
                         font.pixelSize: Style.resize(12)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -610,7 +610,7 @@ Item {
                         Label {
                             text: altSlider.value.toFixed(0) + " ft"
                             font.pixelSize: Style.resize(12)
-                            color: "#333"
+                            color: Style.fontSecondaryColor
                             Layout.preferredWidth: Style.resize(55)
                         }
                     }
@@ -618,7 +618,7 @@ Item {
                     Label {
                         text: "FPA"
                         font.pixelSize: Style.resize(12)
-                        color: "#666"
+                        color: Style.fontSecondaryColor
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -630,7 +630,7 @@ Item {
                         Label {
                             text: fpaSlider.value.toFixed(0) + "\u00B0"
                             font.pixelSize: Style.resize(12)
-                            color: "#333"
+                            color: Style.fontSecondaryColor
                             Layout.preferredWidth: Style.resize(30)
                         }
                     }
@@ -641,7 +641,7 @@ Item {
             Label {
                 text: "Canvas-drawn fighter HUD: pitch ladder (solid above, dashed below horizon), flight path vector, heading tape, speed/altitude readouts. All green phosphor monochrome."
                 font.pixelSize: Style.resize(12)
-                color: "#666"
+                color: Style.fontSecondaryColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 Layout.leftMargin: Style.resize(20)

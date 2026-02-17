@@ -77,7 +77,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(120)
-                color: "white"
+                color: Style.cardColor
                 radius: Style.resize(8)
 
                 ColumnLayout {
@@ -99,7 +99,7 @@ Item {
                         Label {
                             text: "URL:"
                             font.pixelSize: Style.resize(14)
-                            color: "#666"
+                            color: Style.fontSecondaryColor
                         }
 
                         TextField {
@@ -134,7 +134,7 @@ Item {
                         Label {
                             text: wsClient.statusText
                             font.pixelSize: Style.resize(13)
-                            color: wsClient.connected ? "#4CAF50" : "#666"
+                            color: wsClient.connected ? "#4CAF50" : Style.fontSecondaryColor
                             Layout.fillWidth: true
                         }
 
@@ -157,7 +157,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(75)
-                color: "white"
+                color: Style.cardColor
                 radius: Style.resize(8)
 
                 ColumnLayout {
@@ -208,7 +208,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: "white"
+                color: Style.cardColor
                 radius: Style.resize(8)
 
                 ColumnLayout {
@@ -230,7 +230,7 @@ Item {
                         Label {
                             text: logModel.count + " messages"
                             font.pixelSize: Style.resize(12)
-                            color: "#999"
+                            color: Style.fontSecondaryColor
                         }
 
                         Button {
@@ -252,7 +252,7 @@ Item {
                         delegate: Rectangle {
                             width: logView.width
                             height: Style.resize(32)
-                            color: index % 2 === 0 ? "#f8f8f8" : "white"
+                            color: index % 2 === 0 ? Style.surfaceColor : Style.cardColor
                             radius: Style.resize(4)
 
                             RowLayout {
@@ -266,7 +266,7 @@ Item {
                                     text: model.time
                                     font.pixelSize: Style.resize(12)
                                     font.family: "Courier New"
-                                    color: "#999"
+                                    color: Style.fontSecondaryColor
                                     Layout.preferredWidth: Style.resize(65)
                                 }
 
@@ -285,7 +285,7 @@ Item {
                                 Label {
                                     text: model.text
                                     font.pixelSize: Style.resize(13)
-                                    color: model.direction === "error" ? "#F44336" : "#333"
+                                    color: model.direction === "error" ? "#F44336" : Style.fontPrimaryColor
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                 }
@@ -295,16 +295,16 @@ Item {
                                     Layout.preferredWidth: Style.resize(55)
                                     Layout.preferredHeight: Style.resize(20)
                                     radius: Style.resize(3)
-                                    color: model.direction === "sent" ? "#E0F7E9" :
-                                           model.direction === "received" ? "#E3F2FD" : "#FFEBEE"
+                                    color: model.direction === "sent" ? "#1B3A2A" :
+                                           model.direction === "received" ? "#1A2A3A" : "#3A1A1A"
 
                                     Label {
                                         anchors.centerIn: parent
                                         text: model.direction === "sent" ? "sent" :
                                               model.direction === "received" ? "echo" : "error"
                                         font.pixelSize: Style.resize(10)
-                                        color: model.direction === "sent" ? "#2E7D32" :
-                                               model.direction === "received" ? "#1565C0" : "#C62828"
+                                        color: model.direction === "sent" ? "#4CAF50" :
+                                               model.direction === "received" ? "#42A5F5" : "#EF5350"
                                     }
                                 }
                             }
@@ -315,7 +315,7 @@ Item {
                             anchors.centerIn: parent
                             text: "No messages yet.\nConnect and send a message to see the echo response."
                             font.pixelSize: Style.resize(14)
-                            color: "#CCC"
+                            color: Style.inactiveColor
                             horizontalAlignment: Text.AlignHCenter
                             visible: logModel.count === 0
                         }
@@ -327,7 +327,7 @@ Item {
             Label {
                 text: "C++ WebSocketClient class exposed to QML via QML_ELEMENT. Uses Q_PROPERTY for data binding, Q_INVOKABLE for methods, and signals for events."
                 font.pixelSize: Style.resize(12)
-                color: "#666"
+                color: Style.fontSecondaryColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }

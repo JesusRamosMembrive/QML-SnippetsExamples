@@ -9,9 +9,12 @@ QtObject {
 
     property string theme: "green"
 
-    property string bgColor: "#D1DBE1"
+    property string bgColor: "#1A1D23"
     property string mainColor: (theme === "green") ? "#00D1A9" : "#FEA601"
-    property string inactiveColor: "#A8A8A8"
+    property string inactiveColor: "#999999"
+
+    property color cardColor: "#252830"
+    property color surfaceColor: "#2A2D35"
 
     property string iconPath: "/assets/icons/"
     property string imagePath: "/assets/images/"
@@ -33,14 +36,14 @@ QtObject {
         return (value);
     }
 
-    property color grey: "#ECF0F2"
+    property color grey: "#2A2D35"
     property color fontContrastColor: "#FFFFFF"
-    property color fontPrimaryColor: "#1E272E"
-    property color fontSecondaryColor: "#AAAAAA"
+    property color fontPrimaryColor: "#FFFFFF"
+    property color fontSecondaryColor: "#CCCCCC"
 
-    property int fontSizeS: root.resize(14)
-    property int fontSizeM: root.resize(18)
-    property int fontSizeL: root.resize(24)
+    property int fontSizeS: root.resize(15)
+    property int fontSizeM: root.resize(19)
+    property int fontSizeL: root.resize(26)
 
     property string fontFamilyRegular: quicksandBook.name
     property string fontFamilyBold: quicksandBold.name

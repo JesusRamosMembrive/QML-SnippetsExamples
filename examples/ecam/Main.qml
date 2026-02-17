@@ -57,7 +57,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -228,7 +228,7 @@ Item {
                                 Label {
                                     text: "ENG 1"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: n1Slider
@@ -238,7 +238,7 @@ Item {
                                 Label {
                                     text: "ENG 2"
                                     font.pixelSize: Style.resize(12)
-                                    color: "#666"
+                                    color: Style.fontSecondaryColor
                                 }
                                 Slider {
                                     id: n2Slider
@@ -250,7 +250,7 @@ Item {
                             Label {
                                 text: "Canvas arc gauges with green/amber/red zones, rotating needle, digital N1 readout."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -264,7 +264,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -435,7 +435,7 @@ Item {
                             Label {
                                 text: "Master WARNING (red) / CAUTION (amber) with blinking. Click master buttons or Clear to dismiss."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -449,7 +449,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -706,19 +706,19 @@ Item {
                                 Layout.fillWidth: true
                                 spacing: Style.resize(8)
 
-                                Label { text: "L"; font.pixelSize: Style.resize(12); color: "#666" }
+                                Label { text: "L"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor }
                                 Slider {
                                     id: leftFuelSlider
                                     Layout.fillWidth: true
                                     from: 0; to: 100; value: 75
                                 }
-                                Label { text: "C"; font.pixelSize: Style.resize(12); color: "#666" }
+                                Label { text: "C"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor }
                                 Slider {
                                     id: centerFuelSlider
                                     Layout.fillWidth: true
                                     from: 0; to: 100; value: 50
                                 }
-                                Label { text: "R"; font.pixelSize: Style.resize(12); color: "#666" }
+                                Label { text: "R"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor }
                                 Slider {
                                     id: rightFuelSlider
                                     Layout.fillWidth: true
@@ -729,7 +729,7 @@ Item {
                             Label {
                                 text: "Canvas fuel schematic: tanks with fill levels, pipes, clickable valves (circle=open, bar=closed). Click valves to toggle."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }
@@ -743,7 +743,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.minimumHeight: Style.resize(500)
-                        color: "white"
+                        color: Style.cardColor
                         radius: Style.resize(8)
 
                         ColumnLayout {
@@ -928,20 +928,20 @@ Item {
                                 columnSpacing: Style.resize(8)
                                 rowSpacing: Style.resize(4)
 
-                                Label { text: "HYD G"; font.pixelSize: Style.resize(11); color: "#666" }
+                                Label { text: "HYD G"; font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
                                 Slider {
                                     id: hydGreenSlider
                                     Layout.fillWidth: true
                                     from: 0; to: 100; value: 95
                                 }
-                                Label { text: "HYD B"; font.pixelSize: Style.resize(11); color: "#666" }
+                                Label { text: "HYD B"; font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
                                 Slider {
                                     id: hydBlueSlider
                                     Layout.fillWidth: true
                                     from: 0; to: 100; value: 90
                                 }
 
-                                Label { text: "HYD Y"; font.pixelSize: Style.resize(11); color: "#666" }
+                                Label { text: "HYD Y"; font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }
                                 Slider {
                                     id: hydYellowSlider
                                     Layout.fillWidth: true
@@ -953,20 +953,20 @@ Item {
                                     Layout.fillWidth: true
                                     spacing: Style.resize(4)
                                     Switch { id: acBus1Switch; checked: true; scale: 0.6 }
-                                    Label { text: "AC1"; font.pixelSize: Style.resize(10); color: "#666" }
+                                    Label { text: "AC1"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
                                     Switch { id: acBus2Switch; checked: true; scale: 0.6 }
-                                    Label { text: "AC2"; font.pixelSize: Style.resize(10); color: "#666" }
+                                    Label { text: "AC2"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
                                     Switch { id: bleed1Switch; checked: true; scale: 0.6 }
-                                    Label { text: "BL1"; font.pixelSize: Style.resize(10); color: "#666" }
+                                    Label { text: "BL1"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
                                     Switch { id: bleed2Switch; checked: true; scale: 0.6 }
-                                    Label { text: "BL2"; font.pixelSize: Style.resize(10); color: "#666" }
+                                    Label { text: "BL2"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor }
                                 }
                             }
 
                             Label {
                                 text: "HYD pressure bars (Green/Blue/Yellow), ELEC bus status, BLEED/PACK indicators. Toggle switches to simulate faults."
                                 font.pixelSize: Style.resize(12)
-                                color: "#666"
+                                color: Style.fontSecondaryColor
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                             }

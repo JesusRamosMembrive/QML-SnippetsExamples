@@ -52,7 +52,7 @@ Item {
             Rectangle {
                 Layout.preferredWidth: 1
                 Layout.fillHeight: true
-                color: "#CCC"
+                color: "#3A3D45"
             }
 
             ContentPanel {

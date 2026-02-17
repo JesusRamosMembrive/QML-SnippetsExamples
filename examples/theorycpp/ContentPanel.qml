@@ -41,7 +41,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(50)
-                color: "white"
+                color: Style.cardColor
 
                 RowLayout {
                     anchors.fill: parent
@@ -55,7 +55,7 @@ Item {
                               : "Selecciona un tema del panel izquierdo"
                         font.pixelSize: Style.resize(14)
                         font.bold: root.chapterDir !== ""
-                        color: root.chapterDir !== "" ? Style.fontPrimaryColor : "#999"
+                        color: root.chapterDir !== "" ? Style.fontPrimaryColor : Style.inactiveColor
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                     }
@@ -66,7 +66,7 @@ Item {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     height: 1
-                    color: "#E0E0E0"
+                    color: "#3A3D45"
                 }
             }
 
@@ -110,7 +110,7 @@ Item {
                             Label {
                                 text: "Selecciona un capitulo y tema del panel izquierdo\npara ver la teoria y ejemplos de codigo."
                                 font.pixelSize: Style.resize(14)
-                                color: "#999"
+                                color: Style.inactiveColor
                                 horizontalAlignment: Text.AlignHCenter
                                 Layout.alignment: Qt.AlignHCenter
                             }
@@ -124,7 +124,7 @@ Item {
                         Layout.rightMargin: Style.resize(20)
                         Layout.topMargin: Style.resize(16)
                         radius: Style.resize(8)
-                        color: "white"
+                        color: Style.cardColor
                         visible: root.chapterDir !== ""
                         implicitHeight: explanationEdit.implicitHeight + Style.resize(40)
 

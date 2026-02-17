@@ -76,7 +76,7 @@ T.Dial {
                         ctx.beginPath()
                         ctx.moveTo(cx + ri * Math.cos(ta), cy + ri * Math.sin(ta))
                         ctx.lineTo(cx + ro * Math.cos(ta), cy + ro * Math.sin(ta))
-                        ctx.strokeStyle = Qt.rgba(0, 0, 0, maj ? 0.3 : 0.12)
+                        ctx.strokeStyle = Qt.rgba(1, 1, 1, maj ? 0.3 : 0.12)
                         ctx.lineWidth = maj ? Math.max(1.5, s * 0.01) : 1
                         ctx.stroke()
                     }
@@ -153,7 +153,7 @@ T.Dial {
             width: parent.width
             height: width
             radius: width / 2
-            color: "white"
+            color: Style.cardColor
             border.color: root.progressColor
             border.width: Math.max(2, root._dialSize * 0.015)
             scale: root.pressed ? 1.15 : 1.0

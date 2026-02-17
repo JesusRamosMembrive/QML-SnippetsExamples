@@ -46,7 +46,7 @@ Item {
         anchors.fill: parent
         clip: true
         highlight: Item {
-            width: parent.width
+            width: listView.width
             height: Style.resize(47)
             Rectangle {
                 anchors.fill: parent
@@ -63,7 +63,7 @@ Item {
         model: menuModel
 
         delegate: ItemDelegate {
-            width: parent.width
+            width: listView.width
             height: Style.resize(47)
             background: null
             contentItem: Item {
