@@ -198,6 +198,126 @@ int main() {
 - **Seguridad y facilidad de uso**: Proporciona métodos y operadores que facilitan el manejo de datos.
 - **Compatibilidad con algoritmos STL**: `std::vector` funciona perfectamente con los algoritmos de la biblioteca estándar.
 
+### Características Modernas de C++ para Arreglos
+
+#### `std::array` — Arreglo de Tamaño Fijo en el Stack (C++11)
+
+`std::array` es un contenedor que encapsula arreglos de tamaño fijo, con las ventajas de la STL (iteradores, `.size()`, `.at()` con bounds checking).
+
+```cpp
+#include <iostream>
+#include <array>
+#include <algorithm>
+#include <numeric>
+
+int main() {
+    // Tamaño fijo conocido en compilación — vive en el stack
+    std::array<int, 5> arr = {50, 20, 40, 10, 30};
+
+    // Algoritmos STL funcionan directamente
+    std::sort(arr.begin(), arr.end());
+
+    // Acceso seguro con .at() (lanza excepción si está fuera de rango)
+    std::cout << "Primero: " << arr.at(0) << std::endl; // Salida: 10
+    std::cout << "Último: " << arr.at(4) << std::endl;  // Salida: 50
+
+    // Suma con accumulate
+    int suma = std::accumulate(arr.begin(), arr.end(), 0);
+    std::cout << "Suma: " << suma << std::endl; // Salida: 150
+
+    // constexpr array (C++17)
+    constexpr std::array<int, 3> constArr = {1, 2, 3};
+    static_assert(constArr[0] == 1);
+
+    return 0;
+}
+```
+
+#### `std::span` — Vista No Propietaria de Datos Contiguos (C++20)
+
+`std::span` proporciona una vista ligera sobre datos contiguos (arreglos C, `std::array`, `std::vector`) sin poseerlos ni copiarlos.
+
+```cpp
+#include <iostream>
+#include <span>
+#include <array>
+#include <vector>
+#include <numeric>
+
+// Función que acepta cualquier secuencia contigua
+void procesarDatos(std::span<const int> datos) {
+    std::cout << "Elementos: " << datos.size() << std::endl;
+    int suma = 0;
+    for (int val : datos) {
+        suma += val;
+    }
+    std::cout << "Suma: " << suma << std::endl;
+
+    // Subspan: primeros 3 elementos
+    if (datos.size() >= 3) {
+        auto primeros = datos.first(3);
+        std::cout << "Primeros 3:";
+        for (int val : primeros) std::cout << " " << val;
+        std::cout << std::endl;
+    }
+}
+
+int main() {
+    // Funciona con arreglos C
+    int arrC[] = {1, 2, 3, 4, 5};
+    procesarDatos(arrC);
+
+    // Funciona con std::array
+    std::array<int, 4> arrStd = {10, 20, 30, 40};
+    procesarDatos(arrStd);
+
+    // Funciona con std::vector
+    std::vector<int> vec = {100, 200, 300};
+    procesarDatos(vec);
+
+    return 0;
+}
+```
+
+#### Equivalentes en Qt 6: `QList`
+
+En Qt 6, `QList` y `QVector` se unificaron en un solo tipo. `QList` ahora es el contenedor dinámico principal y es equivalente a `std::vector`.
+
+```cpp
+#include <QList>
+#include <QDebug>
+#include <algorithm>
+
+void ejemploQList() {
+    // QList en Qt 6 = QVector en Qt 5 (contenedor contiguo en memoria)
+    QList<int> numeros = {5, 3, 1, 4, 2};
+
+    // Ordenar
+    std::sort(numeros.begin(), numeros.end());
+
+    // Agregar elementos
+    numeros.append(6);
+    numeros << 7 << 8; // Operador << de Qt
+
+    // Iterar
+    for (int n : numeros) {
+        qDebug() << n;
+    }
+
+    // QList con tipos Qt
+    QList<QString> nombres = {"Ana", "Carlos", "Beatriz"};
+    std::sort(nombres.begin(), nombres.end());
+
+    qDebug() << "Ordenados:" << nombres;
+    // Salida: ("Ana", "Beatriz", "Carlos")
+
+    // Capacity y reserva (igual que std::vector)
+    QList<double> datos;
+    datos.reserve(1000); // Reservar sin inicializar
+    qDebug() << "Capacidad:" << datos.capacity(); // 1000
+}
+```
+
 ### Conclusión
 
 El manejo de arreglos dinámicos en C++ permite una mayor flexibilidad en la gestión de la memoria. Aunque es crucial comprender cómo funcionan `new[]` y `delete[]` para la asignación y liberación manual de memoria, el uso de `std::vector` es generalmente preferible por su simplicidad y eficiencia. Encapsular la lógica de manejo de arreglos dinámicos dentro de clases puede mejorar la estructura y mantenibilidad del código.
@@ -366,3 +486,107 @@ int main() {
     return 0;
 }
 <---Función Principal Result--->
+Ejemplo Básico de `std::vector`
+Ejemplo Básico de `std::vector` Result
+std::array — Arreglo en el Stack (C++11)
+std::array — Arreglo en el Stack (C++11) Result
+std::span — Vista No Propietaria (C++20)
+std::span — Vista No Propietaria (C++20) Result
+QList en Qt 6
+QList en Qt 6 Result
+<---Ejemplo Básico de `std::vector`--->
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+    vec.push_back(6);
+    vec.push_back(7);
+
+    for (const auto& val : vec) {
+        std::cout << val << " ";
+    }
+    std::cout << std::endl;
+    return 0;
+}
+<---Ejemplo Básico de `std::vector` Result--->
+<---std::array — Arreglo en el Stack (C++11)--->
+```cpp
+#include <iostream>
+#include <array>
+#include <algorithm>
+#include <numeric>
+
+int main() {
+    std::array<int, 5> arr = {50, 20, 40, 10, 30};
+    std::sort(arr.begin(), arr.end());
+
+    std::cout << "Primero: " << arr.at(0) << std::endl;
+    std::cout << "Último: " << arr.at(4) << std::endl;
+
+    int suma = std::accumulate(arr.begin(), arr.end(), 0);
+    std::cout << "Suma: " << suma << std::endl;
+
+    constexpr std::array<int, 3> constArr = {1, 2, 3};
+    static_assert(constArr[0] == 1);
+    return 0;
+}
+<---std::array — Arreglo en el Stack (C++11) Result--->
+<---std::span — Vista No Propietaria (C++20)--->
+```cpp
+#include <iostream>
+#include <span>
+#include <array>
+#include <vector>
+
+void procesarDatos(std::span<const int> datos) {
+    std::cout << "Elementos: " << datos.size() << std::endl;
+    int suma = 0;
+    for (int val : datos) suma += val;
+    std::cout << "Suma: " << suma << std::endl;
+
+    if (datos.size() >= 3) {
+        auto primeros = datos.first(3);
+        std::cout << "Primeros 3:";
+        for (int val : primeros) std::cout << " " << val;
+        std::cout << std::endl;
+    }
+}
+
+int main() {
+    int arrC[] = {1, 2, 3, 4, 5};
+    procesarDatos(arrC);
+
+    std::array<int, 4> arrStd = {10, 20, 30, 40};
+    procesarDatos(arrStd);
+
+    std::vector<int> vec = {100, 200, 300};
+    procesarDatos(vec);
+    return 0;
+}
+<---std::span — Vista No Propietaria (C++20) Result--->
+<---QList en Qt 6--->
+```cpp
+#include <QList>
+#include <QDebug>
+#include <algorithm>
+
+void ejemploQList() {
+    QList<int> numeros = {5, 3, 1, 4, 2};
+    std::sort(numeros.begin(), numeros.end());
+
+    numeros.append(6);
+    numeros << 7 << 8;
+
+    for (int n : numeros) qDebug() << n;
+
+    QList<QString> nombres = {"Ana", "Carlos", "Beatriz"};
+    std::sort(nombres.begin(), nombres.end());
+    qDebug() << "Ordenados:" << nombres;
+
+    QList<double> datos;
+    datos.reserve(1000);
+    qDebug() << "Capacidad:" << datos.capacity();
+}
+<---QList en Qt 6 Result--->

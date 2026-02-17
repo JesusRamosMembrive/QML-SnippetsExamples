@@ -194,6 +194,157 @@ int main() {
 }
 ```
 
+### Características Modernas de C++ para Gestión de Memoria
+
+#### Regla de Cero, Tres y Cinco
+
+En C++ moderno, la gestión correcta de recursos se resume en estas reglas:
+
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+#include <vector>
+
+// REGLA DE CERO: Preferir tipos RAII y no definir nada manualmente
+class PersonaModerna {
+    std::string nombre_;        // Se gestiona solo
+    std::vector<int> datos_;    // Se gestiona solo
+    std::unique_ptr<int> extra_; // Se gestiona solo
+public:
+    PersonaModerna(std::string nombre, int extra)
+        : nombre_(std::move(nombre))
+        , extra_(std::make_unique<int>(extra)) {}
+
+    // NO necesitamos definir destructor, copy, move — el compilador lo hace bien
+    // Porque TODOS los miembros se gestionan solos (RAII)
+};
+
+// REGLA DE CINCO: Si defines uno, define los cinco
+class BufferManual {
+    int* datos_;
+    size_t tam_;
+public:
+    // 1. Constructor
+    BufferManual(size_t tam) : tam_(tam), datos_(new int[tam]{}) {}
+
+    // 2. Destructor
+    ~BufferManual() { delete[] datos_; }
+
+    // 3. Constructor de copia
+    BufferManual(const BufferManual& otro) : tam_(otro.tam_), datos_(new int[otro.tam_]) {
+        std::copy(otro.datos_, otro.datos_ + tam_, datos_);
+    }
+
+    // 4. Operador de asignación por copia
+    BufferManual& operator=(const BufferManual& otro) {
+        if (this != &otro) {
+            BufferManual tmp(otro); // Copy-and-swap
+            std::swap(datos_, tmp.datos_);
+            std::swap(tam_, tmp.tam_);
+        }
+        return *this;
+    }
+
+    // 5. Constructor de movimiento
+    BufferManual(BufferManual&& otro) noexcept
+        : datos_(otro.datos_), tam_(otro.tam_) {
+        otro.datos_ = nullptr;
+        otro.tam_ = 0;
+    }
+
+    // 5b. Operador de asignación por movimiento
+    BufferManual& operator=(BufferManual&& otro) noexcept {
+        if (this != &otro) {
+            delete[] datos_;
+            datos_ = otro.datos_;
+            tam_ = otro.tam_;
+            otro.datos_ = nullptr;
+            otro.tam_ = 0;
+        }
+        return *this;
+    }
+};
+
+int main() {
+    // Regla de Cero — la mejor opción
+    PersonaModerna p("Ana", 42);
+
+    // Regla de Cinco — solo cuando se gestiona memoria cruda
+    BufferManual b1(100);
+    BufferManual b2 = b1;           // Copia
+    BufferManual b3 = std::move(b1); // Movimiento
+
+    return 0;
+}
+```
+
+#### `[[nodiscard]]` para Prevenir Fugas (C++17)
+
+```cpp
+#include <memory>
+#include <iostream>
+
+// [[nodiscard]] advierte si se ignora el valor de retorno
+class Fabrica {
+public:
+    [[nodiscard]] static std::unique_ptr<int> crear(int valor) {
+        return std::make_unique<int>(valor);
+    }
+};
+
+int main() {
+    auto ptr = Fabrica::crear(42); // Correcto: se captura el resultado
+    // Fabrica::crear(42);         // Warning del compilador: resultado ignorado
+    std::cout << *ptr << std::endl;
+    return 0;
+}
+```
+
+#### Equivalentes en Qt: Gestión de Memoria con QObject
+
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QScopedPointer>
+#include <QSharedPointer>
+
+class Servicio : public QObject {
+    Q_OBJECT
+public:
+    explicit Servicio(QObject* parent = nullptr)
+        : QObject(parent) {
+        qDebug() << "Servicio creado";
+    }
+    ~Servicio() override {
+        qDebug() << "Servicio destruido";
+    }
+};
+
+void gestionMemoriaQt() {
+    // 1. Modelo padre-hijo (el más común en Qt)
+    {
+        auto* padre = new QObject();
+        auto* hijo1 = new Servicio(padre);
+        auto* hijo2 = new Servicio(padre);
+        delete padre; // Destruye hijo1 e hijo2 automáticamente
+    }
+
+    // 2. QScopedPointer (equivalente Qt de unique_ptr)
+    {
+        QScopedPointer<Servicio> servicio(new Servicio());
+        // Se destruye al salir del ámbito
+    }
+
+    // 3. QSharedPointer (equivalente Qt de shared_ptr)
+    {
+        QSharedPointer<int> ptr1 = QSharedPointer<int>::create(42);
+        QSharedPointer<int> ptr2 = ptr1; // Compartido
+        qDebug() << "Valor compartido:" << *ptr1;
+    }
+}
+```
+
 ### Conclusión
 
 La gestión de memoria en C++ es un tema crítico que requiere atención cuidadosa para evitar errores como fugas de memoria y accesos inválidos. El uso de buenas prácticas como liberar memoria correctamente, usar punteros inteligentes y manejar adecuadamente la memoria en clases asegura que las aplicaciones sean eficientes y robustas. Al entender y aplicar estos conceptos, los desarrolladores pueden escribir código más seguro y mantenible.
@@ -340,3 +491,122 @@ int main() {
     return 0;
 }
 <---Ejemplo con `std::unique_ptr` Result--->
+Regla de Cero, Tres y Cinco
+Regla de Cero, Tres y Cinco Result
+[[nodiscard]] para Prevenir Fugas (C++17)
+[[nodiscard]] para Prevenir Fugas (C++17) Result
+Gestión de Memoria con QObject en Qt
+Gestión de Memoria con QObject en Qt Result
+<---Regla de Cero, Tres y Cinco--->
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+#include <vector>
+
+// REGLA DE CERO: Preferir tipos RAII
+class PersonaModerna {
+    std::string nombre_;
+    std::vector<int> datos_;
+    std::unique_ptr<int> extra_;
+public:
+    PersonaModerna(std::string nombre, int extra)
+        : nombre_(std::move(nombre))
+        , extra_(std::make_unique<int>(extra)) {}
+    // NO necesitamos definir destructor, copy, move
+};
+
+// REGLA DE CINCO: Si defines uno, define los cinco
+class BufferManual {
+    int* datos_;
+    size_t tam_;
+public:
+    BufferManual(size_t tam) : tam_(tam), datos_(new int[tam]{}) {}
+    ~BufferManual() { delete[] datos_; }
+    BufferManual(const BufferManual& otro) : tam_(otro.tam_), datos_(new int[otro.tam_]) {
+        std::copy(otro.datos_, otro.datos_ + tam_, datos_);
+    }
+    BufferManual& operator=(const BufferManual& otro) {
+        if (this != &otro) {
+            BufferManual tmp(otro);
+            std::swap(datos_, tmp.datos_);
+            std::swap(tam_, tmp.tam_);
+        }
+        return *this;
+    }
+    BufferManual(BufferManual&& otro) noexcept
+        : datos_(otro.datos_), tam_(otro.tam_) {
+        otro.datos_ = nullptr; otro.tam_ = 0;
+    }
+    BufferManual& operator=(BufferManual&& otro) noexcept {
+        if (this != &otro) {
+            delete[] datos_;
+            datos_ = otro.datos_; tam_ = otro.tam_;
+            otro.datos_ = nullptr; otro.tam_ = 0;
+        }
+        return *this;
+    }
+};
+
+int main() {
+    PersonaModerna p("Ana", 42);
+    BufferManual b1(100);
+    BufferManual b2 = b1;
+    BufferManual b3 = std::move(b1);
+    return 0;
+}
+<---Regla de Cero, Tres y Cinco Result--->
+<---[[nodiscard]] para Prevenir Fugas (C++17)--->
+```cpp
+#include <memory>
+#include <iostream>
+
+class Fabrica {
+public:
+    [[nodiscard]] static std::unique_ptr<int> crear(int valor) {
+        return std::make_unique<int>(valor);
+    }
+};
+
+int main() {
+    auto ptr = Fabrica::crear(42);
+    // Fabrica::crear(42); // Warning: resultado ignorado
+    std::cout << *ptr << std::endl;
+    return 0;
+}
+<---[[nodiscard]] para Prevenir Fugas (C++17) Result--->
+<---Gestión de Memoria con QObject en Qt--->
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QScopedPointer>
+#include <QSharedPointer>
+
+class Servicio : public QObject {
+    Q_OBJECT
+public:
+    explicit Servicio(QObject* parent = nullptr) : QObject(parent) {
+        qDebug() << "Servicio creado";
+    }
+    ~Servicio() override { qDebug() << "Servicio destruido"; }
+};
+
+void gestionMemoriaQt() {
+    // Modelo padre-hijo
+    {
+        auto* padre = new QObject();
+        new Servicio(padre);
+        delete padre; // Destruye hijos automáticamente
+    }
+    // QScopedPointer (equivalente de unique_ptr)
+    {
+        QScopedPointer<Servicio> servicio(new Servicio());
+    }
+    // QSharedPointer (equivalente de shared_ptr)
+    {
+        QSharedPointer<int> ptr1 = QSharedPointer<int>::create(42);
+        QSharedPointer<int> ptr2 = ptr1;
+        qDebug() << "Valor compartido:" << *ptr1;
+    }
+}
+<---Gestión de Memoria con QObject en Qt Result--->

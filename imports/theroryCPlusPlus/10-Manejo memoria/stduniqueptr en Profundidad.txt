@@ -214,6 +214,165 @@ int main() {
 }
 ```
 
+### Características Avanzadas de `std::unique_ptr`
+
+#### Custom Deleters Avanzados
+
+Los deleters personalizados permiten usar `std::unique_ptr` con cualquier tipo de recurso, no solo memoria.
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <cstdio>
+
+// Deleter como functor (sin overhead de tamaño en unique_ptr)
+struct CierraArchivo {
+    void operator()(FILE* f) const {
+        if (f) {
+            std::cout << "Cerrando archivo" << std::endl;
+            std::fclose(f);
+        }
+    }
+};
+
+// Deleter para recursos del SO (handles, sockets, etc.)
+struct CierraHandle {
+    void operator()(void* handle) const {
+        if (handle) {
+            // CloseHandle(handle); // Windows
+            std::cout << "Handle cerrado" << std::endl;
+        }
+    }
+};
+
+int main() {
+    // Con functor — sizeof(unique_ptr) == sizeof(FILE*)
+    std::unique_ptr<FILE, CierraArchivo> archivo(std::fopen("datos.txt", "w"));
+
+    // Con lambda — sizeof puede ser mayor
+    auto deleter = [](int* p) {
+        std::cout << "Liberando " << *p << std::endl;
+        delete p;
+    };
+    std::unique_ptr<int, decltype(deleter)> ptr(new int(42), deleter);
+
+    // unique_ptr para arreglos con deleter
+    std::unique_ptr<int[]> arr(new int[10]);
+    arr[0] = 100;
+
+    return 0;
+}
+```
+
+#### Patrón Pimpl (Pointer to Implementation)
+
+El patrón Pimpl oculta los detalles de implementación en el archivo .cpp, reduciendo dependencias de compilación.
+
+```cpp
+// === Widget.h ===
+#ifndef WIDGET_H
+#define WIDGET_H
+
+#include <memory>
+#include <string>
+
+class Widget {
+public:
+    Widget(const std::string& nombre);
+    ~Widget(); // Debe declararse — definir en .cpp donde Impl es completo
+
+    // Move operations (declarar en .h, definir en .cpp)
+    Widget(Widget&& otro) noexcept;
+    Widget& operator=(Widget&& otro) noexcept;
+
+    // Prohibir copia
+    Widget(const Widget&) = delete;
+    Widget& operator=(const Widget&) = delete;
+
+    void mostrar() const;
+
+private:
+    struct Impl; // Forward declaration — los detalles están ocultos
+    std::unique_ptr<Impl> pImpl_;
+};
+
+#endif
+
+// === Widget.cpp ===
+// #include "Widget.h"
+#include <iostream>
+
+struct Widget::Impl {
+    std::string nombre;
+    int dato_interno = 0;
+    // Otros miembros pesados que no queremos exponer en el .h
+};
+
+Widget::Widget(const std::string& nombre)
+    : pImpl_(std::make_unique<Impl>()) {
+    pImpl_->nombre = nombre;
+}
+
+Widget::~Widget() = default; // Aquí Impl es tipo completo
+
+Widget::Widget(Widget&& otro) noexcept = default;
+Widget& Widget::operator=(Widget&& otro) noexcept = default;
+
+void Widget::mostrar() const {
+    std::cout << "Widget: " << pImpl_->nombre << std::endl;
+}
+```
+
+#### Equivalentes en Qt: `QScopedPointer` y d-pointer
+
+```cpp
+#include <QObject>
+#include <QScopedPointer>
+#include <QDebug>
+
+// Qt usa el patrón d-pointer (Pimpl) extensivamente
+// Macro Q_DECLARE_PRIVATE lo facilita
+
+// === MiClaseQt.h ===
+class MiClaseQtPrivate; // Forward declaration
+
+class MiClaseQt : public QObject {
+    Q_OBJECT
+public:
+    explicit MiClaseQt(const QString& nombre, QObject* parent = nullptr);
+    ~MiClaseQt() override;
+
+    QString nombre() const;
+    void setNombre(const QString& nombre);
+
+private:
+    QScopedPointer<MiClaseQtPrivate> d_ptr;
+    // En Qt real se usa: Q_DECLARE_PRIVATE(MiClaseQt)
+};
+
+// === MiClaseQt.cpp ===
+class MiClaseQtPrivate {
+public:
+    QString nombre;
+    int datoInterno = 0;
+};
+
+MiClaseQt::MiClaseQt(const QString& nombre, QObject* parent)
+    : QObject(parent), d_ptr(new MiClaseQtPrivate) {
+    d_ptr->nombre = nombre;
+}
+
+MiClaseQt::~MiClaseQt() = default;
+
+QString MiClaseQt::nombre() const {
+    return d_ptr->nombre;
+}
+
+void MiClaseQt::setNombre(const QString& nombre) {
+    d_ptr->nombre = nombre;
+}
+```
+
 ### Conclusión
 
 `std::unique_ptr` es una herramienta esencial en C++ para la gestión segura y eficiente de recursos. Su uso adecuado en clases, funciones y contenedores permite evitar muchos errores comunes relacionados con la gestión de memoria, como fugas de memoria y accesos a memoria inválida. Al seguir las mejores prácticas y entender cómo transferir la propiedad de recursos, se puede escribir código más robusto y mantenible.
@@ -407,3 +566,112 @@ int main() {
     return 0;
 }
 <---Función Principal Result--->
+Custom Deleters Avanzados
+Custom Deleters Avanzados Result
+Patrón Pimpl con unique_ptr
+Patrón Pimpl con unique_ptr Result
+QScopedPointer y d-pointer en Qt
+QScopedPointer y d-pointer en Qt Result
+<---Custom Deleters Avanzados--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <cstdio>
+
+struct CierraArchivo {
+    void operator()(FILE* f) const {
+        if (f) {
+            std::cout << "Cerrando archivo" << std::endl;
+            std::fclose(f);
+        }
+    }
+};
+
+int main() {
+    // Con functor — sizeof(unique_ptr) == sizeof(FILE*)
+    std::unique_ptr<FILE, CierraArchivo> archivo(std::fopen("datos.txt", "w"));
+
+    // Con lambda
+    auto deleter = [](int* p) {
+        std::cout << "Liberando " << *p << std::endl;
+        delete p;
+    };
+    std::unique_ptr<int, decltype(deleter)> ptr(new int(42), deleter);
+
+    // unique_ptr para arreglos
+    std::unique_ptr<int[]> arr(new int[10]);
+    arr[0] = 100;
+    return 0;
+}
+<---Custom Deleters Avanzados Result--->
+<---Patrón Pimpl con unique_ptr--->
+```cpp
+// === Widget.h ===
+#include <memory>
+#include <string>
+
+class Widget {
+public:
+    Widget(const std::string& nombre);
+    ~Widget();
+    Widget(Widget&& otro) noexcept;
+    Widget& operator=(Widget&& otro) noexcept;
+    Widget(const Widget&) = delete;
+    Widget& operator=(const Widget&) = delete;
+    void mostrar() const;
+private:
+    struct Impl;
+    std::unique_ptr<Impl> pImpl_;
+};
+
+// === Widget.cpp ===
+#include <iostream>
+
+struct Widget::Impl {
+    std::string nombre;
+    int dato_interno = 0;
+};
+
+Widget::Widget(const std::string& nombre) : pImpl_(std::make_unique<Impl>()) {
+    pImpl_->nombre = nombre;
+}
+Widget::~Widget() = default;
+Widget::Widget(Widget&&) noexcept = default;
+Widget& Widget::operator=(Widget&&) noexcept = default;
+
+void Widget::mostrar() const {
+    std::cout << "Widget: " << pImpl_->nombre << std::endl;
+}
+<---Patrón Pimpl con unique_ptr Result--->
+<---QScopedPointer y d-pointer en Qt--->
+```cpp
+#include <QObject>
+#include <QScopedPointer>
+#include <QDebug>
+
+class MiClaseQtPrivate;
+
+class MiClaseQt : public QObject {
+    Q_OBJECT
+public:
+    explicit MiClaseQt(const QString& nombre, QObject* parent = nullptr);
+    ~MiClaseQt() override;
+    QString nombre() const;
+private:
+    QScopedPointer<MiClaseQtPrivate> d_ptr;
+};
+
+class MiClaseQtPrivate {
+public:
+    QString nombre;
+    int datoInterno = 0;
+};
+
+MiClaseQt::MiClaseQt(const QString& nombre, QObject* parent)
+    : QObject(parent), d_ptr(new MiClaseQtPrivate) {
+    d_ptr->nombre = nombre;
+}
+MiClaseQt::~MiClaseQt() = default;
+
+QString MiClaseQt::nombre() const { return d_ptr->nombre; }
+<---QScopedPointer y d-pointer en Qt Result--->

@@ -148,6 +148,113 @@ int main() {
 }
 ```
 
+### Características Modernas de C++ para Punteros
+
+#### `nullptr` (C++11)
+
+Desde C++11, se debe usar `nullptr` en lugar de `NULL` o `0` para punteros nulos. `nullptr` tiene tipo `std::nullptr_t`, lo que evita ambigüedades en la resolución de sobrecargas.
+
+```cpp
+#include <iostream>
+
+void procesar(int valor) {
+    std::cout << "Entero: " << valor << std::endl;
+}
+
+void procesar(int* ptr) {
+    std::cout << "Puntero: " << ptr << std::endl;
+}
+
+int main() {
+    // procesar(NULL);    // Ambiguo: ¿int o int*?
+    procesar(nullptr);    // Siempre llama a procesar(int*)
+    procesar(0);          // Llama a procesar(int)
+
+    // Comparación segura
+    int* ptr = nullptr;
+    if (ptr == nullptr) {
+        std::cout << "Puntero nulo" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+#### Punteros Inteligentes como Alternativa Moderna
+
+En C++ moderno, se prefieren los punteros inteligentes (`std::unique_ptr`, `std::shared_ptr`) sobre los punteros crudos para gestionar memoria dinámica. Los punteros crudos se reservan para referencias no propietarias (observación sin ownership).
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Recurso {
+public:
+    Recurso(int id) : id_(id) {
+        std::cout << "Creando recurso " << id_ << std::endl;
+    }
+    ~Recurso() {
+        std::cout << "Destruyendo recurso " << id_ << std::endl;
+    }
+    int id() const { return id_; }
+private:
+    int id_;
+};
+
+// Puntero crudo como observador (no propietario)
+void mostrarRecurso(const Recurso* ptr) {
+    if (ptr) {
+        std::cout << "Recurso ID: " << ptr->id() << std::endl;
+    }
+}
+
+int main() {
+    // El dueño es unique_ptr
+    auto recurso = std::make_unique<Recurso>(42);
+
+    // Pasar puntero crudo como observador
+    mostrarRecurso(recurso.get());
+
+    // Vector de punteros inteligentes
+    std::vector<std::unique_ptr<Recurso>> recursos;
+    recursos.push_back(std::make_unique<Recurso>(1));
+    recursos.push_back(std::make_unique<Recurso>(2));
+
+    return 0;
+    // Todos los recursos se liberan automáticamente
+}
+```
+
+#### Equivalentes en Qt: `QPointer`
+
+Qt proporciona `QPointer<T>`, un puntero inteligente observador para objetos que heredan de `QObject`. Se pone automáticamente a `nullptr` cuando el objeto apuntado es destruido.
+
+```cpp
+#include <QObject>
+#include <QPointer>
+#include <QDebug>
+#include <QPushButton>
+
+void ejemploQPointer() {
+    // QPointer observa un QObject — se auto-invalida al destruirse
+    auto* boton = new QPushButton("Hola");
+    QPointer<QPushButton> ptrSeguro = boton;
+
+    if (ptrSeguro) {
+        qDebug() << "Botón existe:" << ptrSeguro->text();
+    }
+
+    delete boton; // El objeto es destruido
+
+    // QPointer detecta que el objeto ya no existe
+    if (!ptrSeguro) {
+        qDebug() << "Botón ya fue destruido (puntero es nullptr)";
+    }
+    // Con un puntero crudo, esto sería un dangling pointer
+}
+```
+
 ### Conclusión
 
 Los punteros en C++ son una herramienta poderosa que permite un control fino sobre la memoria y la gestión de recursos. Sin embargo, también requieren una comprensión cuidadosa y atención a los detalles para evitar errores comunes como fugas de memoria, punteros colgantes y accesos inválidos. Con una buena práctica y el uso de punteros inteligentes, se puede escribir código eficiente y seguro que aproveche al máximo las capacidades del lenguaje C++.
@@ -241,3 +348,94 @@ int main() {
     return 0;
 }
 <---Ejemplo de Puntero a Función Result--->
+nullptr y Resolución de Sobrecargas
+nullptr y Resolución de Sobrecargas Result
+Punteros Inteligentes como Alternativa Moderna
+Punteros Inteligentes como Alternativa Moderna Result
+QPointer en Qt
+QPointer en Qt Result
+<---nullptr y Resolución de Sobrecargas--->
+```cpp
+#include <iostream>
+
+void procesar(int valor) {
+    std::cout << "Entero: " << valor << std::endl;
+}
+
+void procesar(int* ptr) {
+    std::cout << "Puntero: " << ptr << std::endl;
+}
+
+int main() {
+    // procesar(NULL);    // Ambiguo: ¿int o int*?
+    procesar(nullptr);    // Siempre llama a procesar(int*)
+    procesar(0);          // Llama a procesar(int)
+
+    // Comparación segura
+    int* ptr = nullptr;
+    if (ptr == nullptr) {
+        std::cout << "Puntero nulo" << std::endl;
+    }
+
+    return 0;
+}
+<---nullptr y Resolución de Sobrecargas Result--->
+<---Punteros Inteligentes como Alternativa Moderna--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Recurso {
+public:
+    Recurso(int id) : id_(id) {
+        std::cout << "Creando recurso " << id_ << std::endl;
+    }
+    ~Recurso() {
+        std::cout << "Destruyendo recurso " << id_ << std::endl;
+    }
+    int id() const { return id_; }
+private:
+    int id_;
+};
+
+// Puntero crudo como observador (no propietario)
+void mostrarRecurso(const Recurso* ptr) {
+    if (ptr) {
+        std::cout << "Recurso ID: " << ptr->id() << std::endl;
+    }
+}
+
+int main() {
+    auto recurso = std::make_unique<Recurso>(42);
+    mostrarRecurso(recurso.get());
+
+    std::vector<std::unique_ptr<Recurso>> recursos;
+    recursos.push_back(std::make_unique<Recurso>(1));
+    recursos.push_back(std::make_unique<Recurso>(2));
+
+    return 0;
+}
+<---Punteros Inteligentes como Alternativa Moderna Result--->
+<---QPointer en Qt--->
+```cpp
+#include <QObject>
+#include <QPointer>
+#include <QDebug>
+#include <QPushButton>
+
+void ejemploQPointer() {
+    auto* boton = new QPushButton("Hola");
+    QPointer<QPushButton> ptrSeguro = boton;
+
+    if (ptrSeguro) {
+        qDebug() << "Botón existe:" << ptrSeguro->text();
+    }
+
+    delete boton;
+
+    if (!ptrSeguro) {
+        qDebug() << "Botón ya fue destruido (puntero es nullptr)";
+    }
+}
+<---QPointer en Qt Result--->

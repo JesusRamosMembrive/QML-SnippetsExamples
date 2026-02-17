@@ -204,6 +204,122 @@ int main() {
 4. **Revisiones y Pruebas de Código**: Realice revisiones de código y pruebas exhaustivas para detectar y corregir fugas de memoria.
 5. **Herramientas de Análisis**: Use herramientas como Valgrind y AddressSanitizer para detectar fugas de memoria y otros errores de memoria en su código.
 
+### Características Modernas para Prevenir Fugas de Memoria
+
+#### RAII como Prevención Fundamental
+
+El patrón RAII es la principal defensa contra fugas de memoria. Si todos los recursos se encapsulan en objetos con destructores, las fugas son imposibles.
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <fstream>
+
+// MAL: gestión manual propensa a fugas
+void funcionInsegura() {
+    int* datos = new int[1000];
+    // Si se lanza una excepción aquí, la memoria se pierde
+    throw std::runtime_error("Error!");
+    delete[] datos; // Nunca se ejecuta
+}
+
+// BIEN: RAII previene fugas incluso con excepciones
+void funcionSegura() {
+    auto datos = std::make_unique<int[]>(1000);
+    // Si se lanza una excepción, datos se destruye automáticamente
+    throw std::runtime_error("Error!");
+    // No necesitamos delete — el destructor de unique_ptr lo hace
+}
+
+// BIEN: usar contenedores RAII
+void funcionConVectorSeguro() {
+    std::vector<int> datos(1000); // RAII: se limpia solo
+    // No importa cómo salgamos de la función
+}
+
+int main() {
+    try {
+        funcionSegura();
+    } catch (const std::exception& e) {
+        std::cout << "Excepción capturada: " << e.what() << std::endl;
+        std::cout << "Pero no hubo fuga de memoria" << std::endl;
+    }
+    return 0;
+}
+```
+
+#### Herramientas de Detección: ASan, LSan y Valgrind
+
+```cpp
+// Compilar con AddressSanitizer (ASan) — detecta fugas en tiempo de ejecución
+// g++ -fsanitize=address -g programa.cpp -o programa
+// clang++ -fsanitize=address -g programa.cpp -o programa
+// MSVC: /fsanitize=address
+
+// Compilar con LeakSanitizer (LSan) — solo detección de fugas
+// g++ -fsanitize=leak -g programa.cpp -o programa
+
+#include <iostream>
+
+// Este programa tiene una fuga deliberada para demostrar ASan
+int main() {
+    int* fuga = new int(42);
+    std::cout << *fuga << std::endl;
+    // delete fuga; // Comentado para demostrar la detección
+
+    // ASan reportará:
+    // ==12345==ERROR: LeakSanitizer: detected memory leaks
+    // Direct leak of 4 byte(s) in 1 object(s) allocated from:
+    //     #0 ... in operator new(unsigned long)
+    //     #1 ... in main programa.cpp:8
+
+    return 0;
+}
+```
+
+#### Equivalentes en Qt: Depuración de Fugas
+
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QCoreApplication>
+
+class MiObjeto : public QObject {
+    Q_OBJECT
+public:
+    explicit MiObjeto(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent) {
+        setObjectName(nombre);
+    }
+};
+
+void depurarFugasQt() {
+    auto* raiz = new QObject();
+    raiz->setObjectName("Raíz");
+
+    new MiObjeto("Hijo1", raiz);
+    new MiObjeto("Hijo2", raiz);
+    auto* nieto = new MiObjeto("Nieto", raiz->children().first());
+
+    // dumpObjectTree() muestra la jerarquía de objetos — útil para detectar huérfanos
+    raiz->dumpObjectTree();
+    // Salida:
+    // QObject::Raíz
+    //   MiObjeto::Hijo1
+    //     MiObjeto::Nieto
+    //   MiObjeto::Hijo2
+
+    // dumpObjectInfo() muestra conexiones de señales
+    raiz->dumpObjectInfo();
+
+    delete raiz; // Limpia todo el árbol
+
+    // En Qt Creator: usar el profiler de memoria integrado
+    // Tools → QML Profiler o Analyze → Valgrind Memory Analyzer
+}
+```
+
 ### Conclusión
 
 Las fugas de memoria pueden tener efectos severos en el rendimiento y la estabilidad de un programa. Es crucial entender cómo se producen y adoptar buenas prácticas para prevenirlas. El uso de punteros inteligentes, la liberación manual de memoria y el uso de herramientas de análisis son estrategias efectivas para gestionar la memoria de manera eficiente y segura en C++. Al seguir estas prácticas, se puede escribir código más robusto y mantenible.
@@ -362,3 +478,83 @@ int main() {
     return 0;
 }
 <---Solución con Destructor Correcto Result--->
+RAII como Prevención de Fugas
+RAII como Prevención de Fugas Result
+Detección con ASan y LSan
+Detección con ASan y LSan Result
+Depuración de Fugas en Qt
+Depuración de Fugas en Qt Result
+<---RAII como Prevención de Fugas--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+
+// MAL: gestión manual propensa a fugas
+void funcionInsegura() {
+    int* datos = new int[1000];
+    throw std::runtime_error("Error!");
+    delete[] datos; // Nunca se ejecuta
+}
+
+// BIEN: RAII previene fugas incluso con excepciones
+void funcionSegura() {
+    auto datos = std::make_unique<int[]>(1000);
+    throw std::runtime_error("Error!");
+    // unique_ptr destruye automáticamente
+}
+
+int main() {
+    try {
+        funcionSegura();
+    } catch (const std::exception& e) {
+        std::cout << "Excepción: " << e.what() << std::endl;
+        std::cout << "Sin fuga de memoria" << std::endl;
+    }
+    return 0;
+}
+<---RAII como Prevención de Fugas Result--->
+<---Detección con ASan y LSan--->
+```cpp
+// Compilar con AddressSanitizer:
+// g++ -fsanitize=address -g programa.cpp -o programa
+// MSVC: /fsanitize=address
+
+#include <iostream>
+
+int main() {
+    int* fuga = new int(42);
+    std::cout << *fuga << std::endl;
+    // delete fuga; // Fuga deliberada — ASan la detectará
+    // ASan reportará: detected memory leaks
+    return 0;
+}
+<---Detección con ASan y LSan Result--->
+<---Depuración de Fugas en Qt--->
+```cpp
+#include <QObject>
+#include <QDebug>
+
+class MiObjeto : public QObject {
+    Q_OBJECT
+public:
+    explicit MiObjeto(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent) { setObjectName(nombre); }
+};
+
+void depurarFugasQt() {
+    auto* raiz = new QObject();
+    raiz->setObjectName("Raíz");
+    new MiObjeto("Hijo1", raiz);
+    new MiObjeto("Hijo2", raiz);
+
+    // dumpObjectTree() muestra la jerarquía — útil para detectar huérfanos
+    raiz->dumpObjectTree();
+    // Salida:
+    // QObject::Raíz
+    //   MiObjeto::Hijo1
+    //   MiObjeto::Hijo2
+
+    delete raiz; // Limpia todo el árbol
+}
+<---Depuración de Fugas en Qt Result--->

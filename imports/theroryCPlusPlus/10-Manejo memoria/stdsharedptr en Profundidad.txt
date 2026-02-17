@@ -283,6 +283,140 @@ int main() {
 }
 ```
 
+### Características Avanzadas de `std::shared_ptr`
+
+#### `std::enable_shared_from_this`
+
+Permite que un objeto gestionado por `shared_ptr` obtenga un `shared_ptr` a sí mismo de forma segura.
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Tarea : public std::enable_shared_from_this<Tarea> {
+public:
+    Tarea(const std::string& nombre) : nombre_(nombre) {}
+
+    // Obtener shared_ptr a sí mismo — solo funciona si ya existe un shared_ptr
+    std::shared_ptr<Tarea> obtenerPtr() {
+        return shared_from_this();
+    }
+
+    // Registrarse en una cola usando shared_from_this
+    void registrar(std::vector<std::shared_ptr<Tarea>>& cola) {
+        cola.push_back(shared_from_this());
+        std::cout << "Tarea '" << nombre_ << "' registrada (refs: "
+                  << shared_from_this().use_count() << ")" << std::endl;
+    }
+
+    const std::string& nombre() const { return nombre_; }
+
+private:
+    std::string nombre_;
+};
+
+int main() {
+    auto tarea = std::make_shared<Tarea>("Compilar");
+    std::vector<std::shared_ptr<Tarea>> cola;
+
+    tarea->registrar(cola);
+
+    std::cout << "Cola tiene: " << cola[0]->nombre() << std::endl;
+    std::cout << "Referencias: " << tarea.use_count() << std::endl; // 2
+
+    return 0;
+}
+```
+
+#### Constructor de Aliasing (Aliasing Constructor)
+
+Permite crear un `shared_ptr` que comparte la propiedad de un objeto pero apunta a un subobjeto.
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+struct Persona {
+    std::string nombre;
+    int edad;
+
+    Persona(std::string n, int e) : nombre(std::move(n)), edad(e) {}
+};
+
+int main() {
+    auto persona = std::make_shared<Persona>("Ana", 30);
+
+    // Aliasing: compartir ownership de Persona, pero apuntar a un miembro
+    std::shared_ptr<std::string> nombrePtr(persona, &persona->nombre);
+    std::shared_ptr<int> edadPtr(persona, &persona->edad);
+
+    // nombrePtr y edadPtr mantienen viva a Persona
+    persona.reset(); // Libera nuestra referencia, pero Persona sigue viva
+
+    std::cout << "Nombre: " << *nombrePtr << std::endl; // Ana
+    std::cout << "Edad: " << *edadPtr << std::endl;      // 30
+    std::cout << "Refs nombre: " << nombrePtr.use_count() << std::endl; // 2
+
+    return 0;
+}
+```
+
+#### Equivalentes en Qt: `QSharedPointer`
+
+```cpp
+#include <QSharedPointer>
+#include <QWeakPointer>
+#include <QEnableSharedFromThis>
+#include <QDebug>
+
+// QSharedPointer con QEnableSharedFromThis (equivalente de enable_shared_from_this)
+class Servicio : public QEnableSharedFromThis<Servicio> {
+public:
+    Servicio(const QString& nombre) : nombre_(nombre) {
+        qDebug() << "Creando servicio:" << nombre_;
+    }
+    ~Servicio() {
+        qDebug() << "Destruyendo servicio:" << nombre_;
+    }
+
+    QSharedPointer<Servicio> obtenerPtr() {
+        return sharedFromThis();
+    }
+
+    QString nombre() const { return nombre_; }
+
+private:
+    QString nombre_;
+};
+
+void ejemploQSharedPointer() {
+    // Crear con QSharedPointer::create (equivalente de make_shared)
+    auto servicio = QSharedPointer<Servicio>::create("Base de Datos");
+
+    // Compartir propiedad
+    QSharedPointer<Servicio> copia = servicio;
+    qDebug() << "Servicio:" << servicio->nombre();
+
+    // QWeakPointer para evitar ciclos
+    QWeakPointer<Servicio> observador = servicio;
+
+    if (auto ptr = observador.toStrongRef()) {
+        qDebug() << "Servicio vivo:" << ptr->nombre();
+    }
+
+    // Conversión entre QSharedPointer y std::shared_ptr (Qt 6)
+    // No hay conversión directa — usar raw pointer con precaución
+
+    // Custom deleter en QSharedPointer
+    QSharedPointer<int> conDeleter(new int(42), [](int* p) {
+        qDebug() << "Deleter personalizado para:" << *p;
+        delete p;
+    });
+}
+```
+
 ### Conclusión
 
 `std::shared_ptr` es una herramienta esencial en C++ para la gestión segura y eficiente de recursos compartidos. Su uso adecuado en clases, funciones y estructuras de datos complejas permite evitar muchos errores comunes relacionados con la gestión de memoria, como fugas de memoria y accesos a memoria inválida. Al seguir las mejores prácticas y entender cómo utilizar `std::shared_ptr` junto con `std::weak_ptr` para evitar ciclos de referencia, se puede escribir código más robusto y mantenible.
@@ -551,3 +685,102 @@ int main() {
     return 0;
 }
 <---Función Principal Result--->
+enable_shared_from_this
+enable_shared_from_this Result
+Constructor de Aliasing
+Constructor de Aliasing Result
+QSharedPointer en Qt
+QSharedPointer en Qt Result
+<---enable_shared_from_this--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Tarea : public std::enable_shared_from_this<Tarea> {
+public:
+    Tarea(const std::string& nombre) : nombre_(nombre) {}
+
+    void registrar(std::vector<std::shared_ptr<Tarea>>& cola) {
+        cola.push_back(shared_from_this());
+        std::cout << "Tarea '" << nombre_ << "' registrada (refs: "
+                  << shared_from_this().use_count() << ")" << std::endl;
+    }
+
+    const std::string& nombre() const { return nombre_; }
+private:
+    std::string nombre_;
+};
+
+int main() {
+    auto tarea = std::make_shared<Tarea>("Compilar");
+    std::vector<std::shared_ptr<Tarea>> cola;
+    tarea->registrar(cola);
+
+    std::cout << "Cola tiene: " << cola[0]->nombre() << std::endl;
+    std::cout << "Referencias: " << tarea.use_count() << std::endl; // 2
+    return 0;
+}
+<---enable_shared_from_this Result--->
+<---Constructor de Aliasing--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+struct Persona {
+    std::string nombre;
+    int edad;
+    Persona(std::string n, int e) : nombre(std::move(n)), edad(e) {}
+};
+
+int main() {
+    auto persona = std::make_shared<Persona>("Ana", 30);
+
+    // Aliasing: compartir ownership de Persona, apuntar a miembro
+    std::shared_ptr<std::string> nombrePtr(persona, &persona->nombre);
+    std::shared_ptr<int> edadPtr(persona, &persona->edad);
+
+    persona.reset(); // Persona sigue viva por los alias
+
+    std::cout << "Nombre: " << *nombrePtr << std::endl; // Ana
+    std::cout << "Edad: " << *edadPtr << std::endl;      // 30
+    return 0;
+}
+<---Constructor de Aliasing Result--->
+<---QSharedPointer en Qt--->
+```cpp
+#include <QSharedPointer>
+#include <QWeakPointer>
+#include <QEnableSharedFromThis>
+#include <QDebug>
+
+class Servicio : public QEnableSharedFromThis<Servicio> {
+public:
+    Servicio(const QString& nombre) : nombre_(nombre) {
+        qDebug() << "Creando servicio:" << nombre_;
+    }
+    ~Servicio() { qDebug() << "Destruyendo servicio:" << nombre_; }
+
+    QSharedPointer<Servicio> obtenerPtr() { return sharedFromThis(); }
+    QString nombre() const { return nombre_; }
+private:
+    QString nombre_;
+};
+
+void ejemploQSharedPointer() {
+    auto servicio = QSharedPointer<Servicio>::create("Base de Datos");
+    QSharedPointer<Servicio> copia = servicio;
+    qDebug() << "Servicio:" << servicio->nombre();
+
+    QWeakPointer<Servicio> observador = servicio;
+    if (auto ptr = observador.toStrongRef()) {
+        qDebug() << "Servicio vivo:" << ptr->nombre();
+    }
+
+    QSharedPointer<int> conDeleter(new int(42), [](int* p) {
+        qDebug() << "Deleter personalizado:" << *p;
+        delete p;
+    });
+}
+<---QSharedPointer en Qt Result--->

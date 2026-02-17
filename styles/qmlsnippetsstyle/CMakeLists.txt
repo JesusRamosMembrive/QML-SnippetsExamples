@@ -12,6 +12,7 @@ qt_add_qml_module(qmlsnippetsstyle
         Label.qml
         Menu.qml
         MenuItem.qml
+        MenuSeparator.qml
         Popup.qml
         ProgressBar.qml
         RadioButton.qml

@@ -8,6 +8,7 @@ Dialog 1.0 Dialog.qml
 Label 1.0 Label.qml
 Menu 1.0 Menu.qml
 MenuItem 1.0 MenuItem.qml
+MenuSeparator 1.0 MenuSeparator.qml
 Popup 1.0 Popup.qml
 ProgressBar 1.0 ProgressBar.qml
 RadioButton 1.0 RadioButton.qml
