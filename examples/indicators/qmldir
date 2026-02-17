@@ -1,2 +1,14 @@
 module indicators
 Main 1.0 Main.qml
+DialCard 1.0 DialCard.qml
+ProgressBarCard 1.0 ProgressBarCard.qml
+BusyIndicatorCard 1.0 BusyIndicatorCard.qml
+SystemMonitorCard 1.0 SystemMonitorCard.qml
+SpeedometerGauge 1.0 SpeedometerGauge.qml
+CircularProgressRings 1.0 CircularProgressRings.qml
+BatteryIndicator 1.0 BatteryIndicator.qml
+SignalStrength 1.0 SignalStrength.qml
+Thermometer 1.0 Thermometer.qml
+VuLevelMeter 1.0 VuLevelMeter.qml
+RpmTachometer 1.0 RpmTachometer.qml
+StepProgress 1.0 StepProgress.qml
