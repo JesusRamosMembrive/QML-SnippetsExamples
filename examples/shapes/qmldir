@@ -1,2 +1,14 @@
 module shapes
 Main 1.0 Main.qml
+BezierCurvesCard 1.0 BezierCurvesCard.qml
+ArcsAnglesCard 1.0 ArcsAnglesCard.qml
+SvgPathsCard 1.0 SvgPathsCard.qml
+FillRulesCard 1.0 FillRulesCard.qml
+GradientTypesCard 1.0 GradientTypesCard.qml
+AnimatedShapesCard 1.0 AnimatedShapesCard.qml
+GearTrain 1.0 GearTrain.qml
+RoseCurve 1.0 RoseCurve.qml
+DnaDoubleHelix 1.0 DnaDoubleHelix.qml
+Oscilloscope 1.0 Oscilloscope.qml
+GeometricMandala 1.0 GeometricMandala.qml
+LiquidBlob 1.0 LiquidBlob.qml

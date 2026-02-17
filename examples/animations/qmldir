@@ -1,2 +1,15 @@
 module animations
 Main 1.0 Main.qml
+EasingCurvesCard 1.0 EasingCurvesCard.qml
+SequentialParallelCard 1.0 SequentialParallelCard.qml
+BehaviorSpringCard 1.0 BehaviorSpringCard.qml
+StatesTransitionsCard 1.0 StatesTransitionsCard.qml
+ParticleFountain 1.0 ParticleFountain.qml
+OrbitalSystem 1.0 OrbitalSystem.qml
+SineWaveBars 1.0 SineWaveBars.qml
+LissajousCurve 1.0 LissajousCurve.qml
+NewtonsCradle 1.0 NewtonsCradle.qml
+FlipCards3D 1.0 FlipCards3D.qml
+StaggeredList 1.0 StaggeredList.qml
+BreathingCircles 1.0 BreathingCircles.qml
+MatrixRain 1.0 MatrixRain.qml

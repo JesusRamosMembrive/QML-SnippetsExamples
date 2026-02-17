@@ -1,2 +1,12 @@
 module canvas
 Main 1.0 Main.qml
+Canvas2DCard 1.0 Canvas2DCard.qml
+ShapePathsCard 1.0 ShapePathsCard.qml
+GradientsPieCard 1.0 GradientsPieCard.qml
+DrawingPadCard 1.0 DrawingPadCard.qml
+AnalogClock 1.0 AnalogClock.qml
+SpirographGenerator 1.0 SpirographGenerator.qml
+AudioVisualizer 1.0 AudioVisualizer.qml
+RadarSweep 1.0 RadarSweep.qml
+FractalTree 1.0 FractalTree.qml
+Kaleidoscope 1.0 Kaleidoscope.qml
