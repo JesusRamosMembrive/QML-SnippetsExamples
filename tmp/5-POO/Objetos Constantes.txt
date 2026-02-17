@@ -1,0 +1,581 @@
+<---EXPLANATION--->
+### Objetos Constantes en C++
+
+En C++, un objeto constante es una instancia de una clase que se declara con la palabra clave `const`. Una vez que un objeto se declara como constante, no se pueden modificar sus atributos directamente, ni se pueden llamar métodos no constantes sobre él. Los objetos constantes son útiles para asegurar que ciertos datos permanezcan inmutables una vez inicializados.
+
+#### Declaración de Objetos Constantes
+
+Para declarar un objeto constante, se coloca la palabra clave `const` antes del tipo de objeto.
+
+##### Ejemplo de Declaración de Objetos Constantes
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+private:
+    int x, y;
+
+public:
+    // Constructor
+    Punto(int x = 0, int y = 0) : x(x), y(y) {}
+
+    // Métodos para obtener los valores de los atributos
+    int getX() const {
+        return x;
+    }
+
+    int getY() const {
+        return y;
+    }
+
+    // Método para establecer los valores de los atributos
+    void setXY(int x, int y) {
+        this->x = x;
+        this->y = y;
+    }
+
+    // Método para mostrar los valores
+    void mostrar() const {
+        cout << "Punto(" << x << ", " << y << ")" << endl;
+    }
+};
+
+int main() {
+    const Punto p(10, 20);
+    p.mostrar();
+
+    // p.setXY(30, 40); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "X: " << p.getX() << ", Y: " << p.getY() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `p` es un objeto constante de la clase `Punto`. No se pueden modificar sus atributos, ni llamar a métodos no constantes como `setXY`.
+
+#### Acceso a Miembros de Objetos Constantes
+
+Para que un método pueda ser llamado en un objeto constante, debe estar declarado como constante. Esto se hace añadiendo la palabra clave `const` al final de la declaración del método.
+
+##### Ejemplo de Métodos Constantes en Objetos Constantes
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Circulo {
+private:
+    double radio;
+
+public:
+    // Constructor
+    Circulo(double r) : radio(r) {}
+
+    // Método constante para obtener el radio
+    double getRadio() const {
+        return radio;
+    }
+
+    // Método constante para calcular el área
+    double area() const {
+        return 3.14159 * radio * radio;
+    }
+
+    // Método constante para mostrar el radio
+    void mostrar() const {
+        cout << "Circulo con radio: " << radio << " y área: " << area() << endl;
+    }
+};
+
+int main() {
+    const Circulo c(5.0);
+    c.mostrar();
+
+    // c.setRadio(10.0); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "Radio: " << c.getRadio() << endl;
+    cout << "Área: " << c.area() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `c` es un objeto constante de la clase `Circulo`. Solo se pueden llamar métodos constantes como `getRadio`, `area`, y `mostrar` en este objeto.
+
+#### Inicialización de Objetos Constantes
+
+Los objetos constantes deben ser inicializados en el momento de su declaración. Esto se puede hacer directamente en la declaración o utilizando el constructor de la clase.
+
+##### Ejemplo de Inicialización de Objetos Constantes
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Rectangulo {
+private:
+    double ancho, alto;
+
+public:
+    // Constructor
+    Rectangulo(double a, double h) : ancho(a), alto(h) {}
+
+    // Método constante para obtener el ancho
+    double getAncho() const {
+        return ancho;
+    }
+
+    // Método constante para obtener el alto
+    double getAlto() const {
+        return alto;
+    }
+
+    // Método constante para calcular el área
+    double area() const {
+        return ancho * alto;
+    }
+
+    // Método constante para mostrar el rectángulo
+    void mostrar() const {
+        cout << "Rectangulo de ancho: " << ancho << ", alto: " << alto << ", área: " << area() << endl;
+    }
+};
+
+int main() {
+    const Rectangulo r(10.0, 5.0);
+    r.mostrar();
+
+    // r.cambiarTamano(15.0, 7.5); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "Ancho: " << r.getAncho() << endl;
+    cout << "Alto: " << r.getAlto() << endl;
+    cout << "Área: " << r.area() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `r` es un objeto constante de la clase `Rectangulo`. Los atributos `ancho` y `alto` se inicializan mediante el constructor y no se pueden modificar después.
+
+#### Punteros a Objetos Constantes
+
+Se pueden usar punteros para apuntar a objetos constantes. Un puntero a un objeto constante solo puede llamar métodos constantes de ese objeto.
+
+##### Ejemplo de Puntero a Objeto Constante
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Triangulo {
+private:
+    double base, altura;
+
+public:
+    // Constructor
+    Triangulo(double b, double h) : base(b), altura(h) {}
+
+    // Método constante para obtener la base
+    double getBase() const {
+        return base;
+    }
+
+    // Método constante para obtener la altura
+    double getAltura() const {
+        return altura;
+    }
+
+    // Método constante para calcular el área
+    double area() const {
+        return 0.5 * base * altura;
+    }
+
+    // Método constante para mostrar el triángulo
+    void mostrar() const {
+        cout << "Triangulo de base: " << base << ", altura: " << altura << ", área: " << area() << endl;
+    }
+};
+
+int main() {
+    const Triangulo t(10.0, 5.0);
+    const Triangulo* pt = &t;
+
+    pt->mostrar();
+
+    // pt->setBase(15.0); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "Base: " << pt->getBase() << endl;
+    cout << "Altura: " << pt->getAltura() << endl;
+    cout << "Área: " << pt->area() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `pt` es un puntero a un objeto constante `t` de la clase `Triangulo`. Solo se pueden llamar métodos constantes como `getBase`, `getAltura`, `area`, y `mostrar` a través de `pt`.
+
+#### Objetos `constexpr`: Evaluados en Compilación (C++11/14)
+
+Los objetos `constexpr` van un paso más allá de `const`: no solo son inmutables, sino que son **evaluados completamente en tiempo de compilación**. Para que un objeto sea `constexpr`, su clase debe tener un constructor `constexpr` y los métodos que se invoquen deben ser también `constexpr`. Esto permite que el compilador resuelva cálculos antes de ejecutar el programa, mejorando el rendimiento.
+
+##### Ejemplo de Objetos `constexpr`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector3D {
+    double x, y, z;
+public:
+    constexpr Vector3D(double x, double y, double z) : x(x), y(y), z(z) {}
+    constexpr double magnitud2() const { return x*x + y*y + z*z; }
+    constexpr Vector3D operator+(const Vector3D& v) const {
+        return Vector3D(x + v.x, y + v.y, z + v.z);
+    }
+    constexpr double getX() const { return x; }
+    constexpr double getY() const { return y; }
+    constexpr double getZ() const { return z; }
+};
+
+int main() {
+    // Objeto constexpr: completamente evaluado en compilación
+    constexpr Vector3D v1(1.0, 2.0, 3.0);
+    constexpr Vector3D v2(4.0, 5.0, 6.0);
+    constexpr Vector3D v3 = v1 + v2;
+    constexpr double mag = v3.magnitud2();
+
+    static_assert(v3.getX() == 5.0);
+    static_assert(v3.getY() == 7.0);
+    static_assert(mag == 110.0);
+
+    cout << "v3 = (" << v3.getX() << ", " << v3.getY() << ", " << v3.getZ() << ")" << endl;
+    return 0;
+}
+```
+
+La diferencia clave entre `const` y `constexpr` es que `const` solo garantiza que el valor no cambiará después de la inicialización (que puede ocurrir en tiempo de ejecución), mientras que `constexpr` garantiza que el valor se conoce y se calcula en tiempo de compilación. Los `static_assert` del ejemplo demuestran que los resultados ya están disponibles durante la compilación.
+
+#### `std::as_const` (C++17)
+
+`std::as_const` es una utilidad de C++17 que convierte una referencia a su versión `const` sin crear una copia. Es especialmente útil para forzar la llamada a la sobrecarga `const` de un método cuando se tiene una referencia no-const, evitando modificaciones accidentales y copias innecesarias en bucles range-for.
+
+##### Ejemplo de `std::as_const`
+
+```cpp
+#include <iostream>
+#include <utility>
+#include <vector>
+using namespace std;
+
+class Contenedor {
+    vector<int> datos;
+public:
+    Contenedor(initializer_list<int> init) : datos(init) {}
+
+    // Versión no-const: permite modificar
+    vector<int>& getDatos() { return datos; }
+    // Versión const: solo lectura
+    const vector<int>& getDatos() const { return datos; }
+};
+
+int main() {
+    Contenedor c{1, 2, 3, 4, 5};
+
+    // std::as_const fuerza la versión const del método
+    for (int v : std::as_const(c).getDatos()) {
+        cout << v << " ";
+    }
+    cout << endl;
+
+    // Útil en range-for para evitar copias no deseadas
+    auto& datos = std::as_const(c).getDatos(); // const vector<int>&
+    // datos.push_back(6); // ERROR: es const
+
+    // También útil con lambdas que capturan por referencia
+    auto imprimir = [&c]() {
+        for (int v : std::as_const(c).getDatos()) {
+            cout << v << " ";
+        }
+    };
+    imprimir();
+    return 0;
+}
+```
+
+`std::as_const` es preferible a hacer un cast manual a `const` porque es más legible y expresa claramente la intención: obtener una vista de solo lectura del objeto sin modificar su tipo subyacente.
+
+### Conclusión
+
+Los objetos constantes en C++ son una herramienta importante para asegurar la inmutabilidad de los datos después de su inicialización. Declarar un objeto como `const` garantiza que no se pueden modificar sus atributos ni llamar a métodos no constantes sobre él. Utilizar objetos constantes ayuda a proteger la integridad del estado del objeto, mejorar la seguridad del código y proporcionar una clara documentación de la intención del código. Para trabajar efectivamente con objetos constantes, es crucial entender cómo declarar y utilizar métodos constantes y asegurarse de que los atributos necesarios se inicialicen adecuadamente.
+<---FILES--->
+Ejemplo de Declaración de Objetos Constantes
+Ejemplo de Declaración de Objetos Constantes Result
+Ejemplo de Métodos Constantes en Objetos Constantes
+Ejemplo de Métodos Constantes en Objetos Constantes Result
+Ejemplo de Inicialización de Objetos Constantes
+Ejemplo de Inicialización de Objetos Constantes Result
+Ejemplo de Puntero a Objeto Constante
+Ejemplo de Puntero a Objeto Constante Result
+Ejemplo de Objetos constexpr
+Ejemplo de Objetos constexpr Result
+Ejemplo de std::as_const
+Ejemplo de std::as_const Result
+<---Ejemplo de Declaración de Objetos Constantes--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+private:
+    int x, y;
+
+public:
+    // Constructor
+    Punto(int x = 0, int y = 0) : x(x), y(y) {}
+
+    // Métodos para obtener los valores de los atributos
+    int getX() const {
+        return x;
+    }
+
+    int getY() const {
+        return y;
+    }
+
+    // Método para establecer los valores de los atributos
+    void setXY(int x, int y) {
+        this->x = x;
+        this->y = y;
+    }
+
+    // Método para mostrar los valores
+    void mostrar() const {
+        cout << "Punto(" << x << ", " << y << ")" << endl;
+    }
+};
+
+int main() {
+    const Punto p(10, 20);
+    p.mostrar();
+
+    // p.setXY(30, 40); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "X: " << p.getX() << ", Y: " << p.getY() << endl;
+
+    return 0;
+}
+<---Ejemplo de Declaración de Objetos Constantes Result--->
+<---Ejemplo de Métodos Constantes en Objetos Constantes--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Circulo {
+private:
+    double radio;
+
+public:
+    // Constructor
+    Circulo(double r) : radio(r) {}
+
+    // Método constante para obtener el radio
+    double getRadio() const {
+        return radio;
+    }
+
+    // Método constante para calcular el área
+    double area() const {
+        return 3.14159 * radio * radio;
+    }
+
+    // Método constante para mostrar el radio
+    void mostrar() const {
+        cout << "Circulo con radio: " << radio << " y área: " << area() << endl;
+    }
+};
+
+int main() {
+    const Circulo c(5.0);
+    c.mostrar();
+
+    // c.setRadio(10.0); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "Radio: " << c.getRadio() << endl;
+    cout << "Área: " << c.area() << endl;
+
+    return 0;
+}
+<---Ejemplo de Métodos Constantes en Objetos Constantes Result--->
+<---Ejemplo de Inicialización de Objetos Constantes--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Rectangulo {
+private:
+    double ancho, alto;
+
+public:
+    // Constructor
+    Rectangulo(double a, double h) : ancho(a), alto(h) {}
+
+    // Método constante para obtener el ancho
+    double getAncho() const {
+        return ancho;
+    }
+
+    // Método constante para obtener el alto
+    double getAlto() const {
+        return alto;
+    }
+
+    // Método constante para calcular el área
+    double area() const {
+        return ancho * alto;
+    }
+
+    // Método constante para mostrar el rectángulo
+    void mostrar() const {
+        cout << "Rectangulo de ancho: " << ancho << ", alto: " << alto << ", área: " << area() << endl;
+    }
+};
+
+int main() {
+    const Rectangulo r(10.0, 5.0);
+    r.mostrar();
+
+    // r.cambiarTamano(15.0, 7.5); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "Ancho: " << r.getAncho() << endl;
+    cout << "Alto: " << r.getAlto() << endl;
+    cout << "Área: " << r.area() << endl;
+
+    return 0;
+}
+<---Ejemplo de Inicialización de Objetos Constantes Result--->
+<---Ejemplo de Puntero a Objeto Constante--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Triangulo {
+private:
+    double base, altura;
+
+public:
+    // Constructor
+    Triangulo(double b, double h) : base(b), altura(h) {}
+
+    // Método constante para obtener la base
+    double getBase() const {
+        return base;
+    }
+
+    // Método constante para obtener la altura
+    double getAltura() const {
+        return altura;
+    }
+
+    // Método constante para calcular el área
+    double area() const {
+        return 0.5 * base * altura;
+    }
+
+    // Método constante para mostrar el triángulo
+    void mostrar() const {
+        cout << "Triangulo de base: " << base << ", altura: " << altura << ", área: " << area() << endl;
+    }
+};
+
+int main() {
+    const Triangulo t(10.0, 5.0);
+    const Triangulo* pt = &t;
+
+    pt->mostrar();
+
+    // pt->setBase(15.0); // Error: no se puede llamar a un método no constante en un objeto constante
+
+    cout << "Base: " << pt->getBase() << endl;
+    cout << "Altura: " << pt->getAltura() << endl;
+    cout << "Área: " << pt->area() << endl;
+
+    return 0;
+}
+<---Ejemplo de Puntero a Objeto Constante Result--->
+<---Ejemplo de Objetos constexpr--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector3D {
+    double x, y, z;
+public:
+    constexpr Vector3D(double x, double y, double z) : x(x), y(y), z(z) {}
+    constexpr double magnitud2() const { return x*x + y*y + z*z; }
+    constexpr Vector3D operator+(const Vector3D& v) const {
+        return Vector3D(x + v.x, y + v.y, z + v.z);
+    }
+    constexpr double getX() const { return x; }
+    constexpr double getY() const { return y; }
+    constexpr double getZ() const { return z; }
+};
+
+int main() {
+    // Objeto constexpr: completamente evaluado en compilación
+    constexpr Vector3D v1(1.0, 2.0, 3.0);
+    constexpr Vector3D v2(4.0, 5.0, 6.0);
+    constexpr Vector3D v3 = v1 + v2;
+    constexpr double mag = v3.magnitud2();
+
+    static_assert(v3.getX() == 5.0);
+    static_assert(v3.getY() == 7.0);
+    static_assert(mag == 110.0);
+
+    cout << "v3 = (" << v3.getX() << ", " << v3.getY() << ", " << v3.getZ() << ")" << endl;
+    return 0;
+}
+<---Ejemplo de Objetos constexpr Result--->
+<---Ejemplo de std::as_const--->
+```cpp
+#include <iostream>
+#include <utility>
+#include <vector>
+using namespace std;
+
+class Contenedor {
+    vector<int> datos;
+public:
+    Contenedor(initializer_list<int> init) : datos(init) {}
+
+    // Versión no-const: permite modificar
+    vector<int>& getDatos() { return datos; }
+    // Versión const: solo lectura
+    const vector<int>& getDatos() const { return datos; }
+};
+
+int main() {
+    Contenedor c{1, 2, 3, 4, 5};
+
+    // std::as_const fuerza la versión const del método
+    for (int v : std::as_const(c).getDatos()) {
+        cout << v << " ";
+    }
+    cout << endl;
+
+    // Útil en range-for para evitar copias no deseadas
+    auto& datos = std::as_const(c).getDatos(); // const vector<int>&
+    // datos.push_back(6); // ERROR: es const
+
+    // También útil con lambdas que capturan por referencia
+    auto imprimir = [&c]() {
+        for (int v : std::as_const(c).getDatos()) {
+            cout << v << " ";
+        }
+    };
+    imprimir();
+    return 0;
+}
+<---Ejemplo de std::as_const Result--->

@@ -1,0 +1,657 @@
+<---EXPLANATION--->
+### Programación Orientada a Objetos en C++: Clases y Objetos
+
+La programación orientada a objetos (POO) es un paradigma de programación que utiliza "objetos" y sus interacciones para diseñar aplicaciones y programas. En C++, la POO es una característica central que permite organizar y estructurar el código de manera modular y reutilizable. Los dos conceptos fundamentales en la POO son las clases y los objetos.
+
+#### Clases
+
+Una clase en C++ es una plantilla o un molde que define los atributos y comportamientos de los objetos que se crean a partir de ella. Los atributos son variables que mantienen el estado del objeto, mientras que los comportamientos son funciones o métodos que definen lo que el objeto puede hacer.
+
+##### Definición de una Clase
+
+La sintaxis básica para definir una clase en C++ es la siguiente:
+
+```cpp
+class NombreClase {
+public:
+    // Atributos
+    tipo_atributo nombre_atributo;
+
+    // Métodos
+    tipo_retorno nombre_metodo(parametros);
+
+    // Otros componentes, como constructores, destructores, etc.
+};
+```
+
+##### Ejemplo Básico de una Clase
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    // Atributos
+    string nombre;
+    int edad;
+
+    // Métodos
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan;
+    juan.nombre = "Juan";
+    juan.edad = 30;
+
+    // Llamar al método saludar
+    juan.saludar();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Persona` es una clase que tiene dos atributos (`nombre` y `edad`) y un método (`saludar`).
+- `juan` es un objeto de la clase `Persona`.
+
+#### Objetos
+
+Un objeto es una instancia de una clase. Cada objeto tiene su propio estado (valores de los atributos) y puede usar los métodos definidos en la clase.
+
+##### Creación de Objetos
+
+Los objetos se crean declarando una variable del tipo de la clase:
+
+```cpp
+NombreClase nombre_objeto;
+```
+
+##### Ejemplo de Creación y Uso de Objetos
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Coche {
+public:
+    // Atributos
+    string marca;
+    string modelo;
+    int anio;
+
+    // Métodos
+    void mostrarInformacion() {
+        cout << "Marca: " << marca << ", Modelo: " << modelo << ", Año: " << anio << endl;
+    }
+};
+
+int main() {
+    // Crear objetos de la clase Coche
+    Coche coche1;
+    coche1.marca = "Toyota";
+    coche1.modelo = "Corolla";
+    coche1.anio = 2020;
+
+    Coche coche2;
+    coche2.marca = "Honda";
+    coche2.modelo = "Civic";
+    coche2.anio = 2019;
+
+    // Llamar a los métodos de los objetos
+    coche1.mostrarInformacion();
+    coche2.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, `Coche` es una clase que define tres atributos y un método. Se crean dos objetos (`coche1` y `coche2`) y se llama al método `mostrarInformacion` para cada objeto.
+
+#### Constructores y Destructores
+
+Los constructores y destructores son funciones especiales que se utilizan para inicializar y limpiar objetos, respectivamente.
+
+##### Constructores
+
+Un constructor es una función que se llama automáticamente cuando se crea un objeto. Se utiliza para inicializar los atributos del objeto.
+
+```cpp
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona utilizando el constructor
+    Persona juan("Juan", 30);
+    juan.saludar();
+
+    return 0;
+}
+```
+
+##### Destructores
+
+Un destructor es una función que se llama automáticamente cuando un objeto es destruido. Se utiliza para liberar recursos que el objeto haya adquirido durante su vida.
+
+```cpp
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    // Destructor
+    ~Persona() {
+        cout << "Destructor llamado para " << nombre << endl;
+    }
+
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan("Juan", 30);
+    juan.saludar();
+
+    // El destructor se llamará automáticamente al final del alcance
+    return 0;
+}
+```
+
+#### Encapsulación
+
+La encapsulación es un principio de la POO que restringe el acceso directo a los atributos de una clase. En lugar de eso, se proporcionan métodos públicos para acceder y modificar estos atributos.
+
+##### Modificadores de Acceso
+
+- **`public`:** Los miembros son accesibles desde cualquier parte del programa.
+- **`private`:** Los miembros solo son accesibles desde dentro de la propia clase.
+- **`protected`:** Los miembros son accesibles desde dentro de la clase y las clases derivadas.
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Métodos para acceder y modificar los atributos
+    string getNombre() {
+        return nombre;
+    }
+
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    int getEdad() {
+        return edad;
+    }
+
+    void setEdad(int e) {
+        edad = e;
+    }
+
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    Persona juan("Juan", 30);
+    juan.saludar();
+
+    juan.setEdad(31);
+    cout << "Nueva edad de " << juan.getNombre() << ": " << juan.getEdad() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, los atributos `nombre` y `edad` son privados, y se proporcionan métodos públicos para acceder y modificarlos.
+
+### `struct` vs `class` en C++
+
+En C++, la única diferencia real entre `struct` y `class` es el **nivel de acceso por defecto**: en un `struct`, los miembros son `public` por defecto, mientras que en un `class` son `private` por defecto. Aparte de esto, ambos pueden tener constructores, métodos, herencia, funciones virtuales y todo lo que ofrece la POO.
+
+Por convención, se suele usar `struct` para tipos simples que agrupan datos (POD - Plain Old Data) y `class` cuando se necesita encapsulamiento con lógica interna. Sin embargo, técnicamente son intercambiables.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// struct: miembros públicos por defecto
+struct Coordenada {
+    double x;
+    double y;
+
+    double distancia() const {
+        return sqrt(x * x + y * y);
+    }
+};
+
+// class: miembros privados por defecto
+class Punto {
+    double x; // private por defecto
+    double y;
+public:
+    Punto(double x, double y) : x(x), y(y) {}
+    double getX() const { return x; }
+    double getY() const { return y; }
+};
+
+int main() {
+    Coordenada c{3.0, 4.0}; // Acceso directo (public)
+    cout << "Distancia: " << c.distancia() << endl;
+
+    Punto p(3.0, 4.0);
+    cout << "X: " << p.getX() << endl;
+    return 0;
+}
+```
+
+### Inicialización Agregada y Designated Initializers (C++20)
+
+La **inicialización agregada** (desde C++11) permite inicializar los miembros de un `struct` o `class` (con miembros públicos) directamente con llaves `{}`. En C++20 se introdujeron los **designated initializers**, que permiten nombrar explícitamente los campos que se están inicializando, mejorando la legibilidad y permitiendo omitir campos que tienen valores por defecto.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Configuracion {
+    int ancho = 800;
+    int alto = 600;
+    bool fullscreen = false;
+    string titulo = "Mi App";
+};
+
+int main() {
+    // Inicialización agregada (C++11)
+    Configuracion c1{1920, 1080, true, "Juego"};
+
+    // Designated initializers (C++20) - nombrar campos explícitamente
+    Configuracion c2{.ancho = 1280, .alto = 720, .titulo = "Editor"};
+
+    cout << c2.ancho << "x" << c2.alto << " - " << c2.titulo << endl;
+    // fullscreen usa el valor por defecto: false
+    return 0;
+}
+```
+
+### Clases en Qt: `QObject` y el Macro `Q_OBJECT`
+
+En Qt, `QObject` es la clase base de todos los objetos del framework. Proporciona el sistema de **señales y slots**, **propiedades dinámicas**, el **sistema de metaobjetos** y la **gestión automática de memoria** mediante el modelo padre-hijo (el padre elimina automáticamente a sus hijos al destruirse).
+
+El macro `Q_OBJECT` debe incluirse en la sección `private` de cualquier clase que herede de `QObject` y desee usar señales, slots o propiedades. Este macro habilita la introspección en tiempo de ejecución a través del Meta-Object Compiler (MOC).
+
+**Importante:** `QObject` no es copiable ni movible por diseño, ya que cada objeto tiene una identidad única en el sistema de metaobjetos.
+
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+class Motor : public QObject {
+    Q_OBJECT  // Habilita señales, slots, propiedades y metaobjeto
+
+public:
+    explicit Motor(QObject *parent = nullptr)
+        : QObject(parent), m_rpm(0) {}
+
+    int rpm() const { return m_rpm; }
+
+public slots:
+    void encender() {
+        m_rpm = 800;
+        emit rpmCambiado(m_rpm);
+        qDebug() << "Motor encendido a" << m_rpm << "RPM";
+    }
+
+    void apagar() {
+        m_rpm = 0;
+        emit rpmCambiado(m_rpm);
+        qDebug() << "Motor apagado";
+    }
+
+signals:
+    void rpmCambiado(int nuevoRpm);
+
+private:
+    int m_rpm;
+};
+
+// Nota: QObject NO permite copia ni movimiento
+// Motor m2 = m1;  // ERROR: QObject no es copiable
+```
+
+### Conclusión
+
+Las clases y objetos son los pilares de la programación orientada a objetos en C++. Las clases permiten definir plantillas para crear objetos, encapsulando datos y comportamientos relacionados. Los objetos son instancias de estas clases, y mediante el uso de constructores, destructores y modificadores de acceso, podemos gestionar y proteger eficazmente los datos dentro de nuestros programas. Con un entendimiento sólido de estos conceptos, los desarrolladores pueden crear aplicaciones más organizadas, modulares y mantenibles.
+<---FILES--->
+Definición de una Clase
+Definición de una Clase Result
+Ejemplo Básico de una Clase
+Ejemplo Básico de una Clase Result
+Creación de Objetos
+Creación de Objetos Result
+Ejemplo de Creación y Uso de Objetos
+Ejemplo de Creación y Uso de Objetos Result
+Constructores
+Constructores Result
+Destructores
+Destructores Result
+Modificadores de Acceso
+Modificadores de Acceso Result
+struct vs class en C++
+struct vs class en C++ Result
+Designated Initializers (C++20)
+Designated Initializers (C++20) Result
+Clases en Qt QObject
+Clases en Qt QObject Result
+<---Definición de una Clase--->
+```cpp
+class NombreClase {
+public:
+    // Atributos
+    tipo_atributo nombre_atributo;
+
+    // Métodos
+    tipo_retorno nombre_metodo(parametros);
+
+    // Otros componentes, como constructores, destructores, etc.
+};
+<---Definición de una Clase Result--->
+<---Ejemplo Básico de una Clase--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    // Atributos
+    string nombre;
+    int edad;
+
+    // Métodos
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan;
+    juan.nombre = "Juan";
+    juan.edad = 30;
+
+    // Llamar al método saludar
+    juan.saludar();
+
+    return 0;
+}
+<---Ejemplo Básico de una Clase Result--->
+<---Creación de Objetos--->
+```cpp
+NombreClase nombre_objeto;
+<---Creación de Objetos Result--->
+<---Ejemplo de Creación y Uso de Objetos--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Coche {
+public:
+    // Atributos
+    string marca;
+    string modelo;
+    int anio;
+
+    // Métodos
+    void mostrarInformacion() {
+        cout << "Marca: " << marca << ", Modelo: " << modelo << ", Año: " << anio << endl;
+    }
+};
+
+int main() {
+    // Crear objetos de la clase Coche
+    Coche coche1;
+    coche1.marca = "Toyota";
+    coche1.modelo = "Corolla";
+    coche1.anio = 2020;
+
+    Coche coche2;
+    coche2.marca = "Honda";
+    coche2.modelo = "Civic";
+    coche2.anio = 2019;
+
+    // Llamar a los métodos de los objetos
+    coche1.mostrarInformacion();
+    coche2.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo de Creación y Uso de Objetos Result--->
+<---Constructores--->
+```cpp
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona utilizando el constructor
+    Persona juan("Juan", 30);
+    juan.saludar();
+
+    return 0;
+}
+<---Constructores Result--->
+<---Destructores--->
+```cpp
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    // Destructor
+    ~Persona() {
+        cout << "Destructor llamado para " << nombre << endl;
+    }
+
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan("Juan", 30);
+    juan.saludar();
+
+    // El destructor se llamará automáticamente al final del alcance
+    return 0;
+}
+<---Destructores Result--->
+<---Modificadores de Acceso--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Métodos para acceder y modificar los atributos
+    string getNombre() {
+        return nombre;
+    }
+
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    int getEdad() {
+        return edad;
+    }
+
+    void setEdad(int e) {
+        edad = e;
+    }
+
+    void saludar() {
+        cout << "Hola, mi nombre es " << nombre << " y tengo " << edad << " años." << endl;
+    }
+};
+
+int main() {
+    Persona juan("Juan", 30);
+    juan.saludar();
+
+    juan.setEdad(31);
+    cout << "Nueva edad de " << juan.getNombre() << ": " << juan.getEdad() << endl;
+
+    return 0;
+}
+<---Modificadores de Acceso Result--->
+<---struct vs class en C++--->
+```cpp
+#include <iostream>
+using namespace std;
+
+// struct: miembros públicos por defecto
+struct Coordenada {
+    double x;
+    double y;
+
+    double distancia() const {
+        return sqrt(x * x + y * y);
+    }
+};
+
+// class: miembros privados por defecto
+class Punto {
+    double x; // private por defecto
+    double y;
+public:
+    Punto(double x, double y) : x(x), y(y) {}
+    double getX() const { return x; }
+    double getY() const { return y; }
+};
+
+int main() {
+    Coordenada c{3.0, 4.0}; // Acceso directo (public)
+    cout << "Distancia: " << c.distancia() << endl;
+
+    Punto p(3.0, 4.0);
+    cout << "X: " << p.getX() << endl;
+    return 0;
+}
+<---struct vs class en C++ Result--->
+<---Designated Initializers (C++20)--->
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Configuracion {
+    int ancho = 800;
+    int alto = 600;
+    bool fullscreen = false;
+    string titulo = "Mi App";
+};
+
+int main() {
+    // Inicialización agregada (C++11)
+    Configuracion c1{1920, 1080, true, "Juego"};
+
+    // Designated initializers (C++20) - nombrar campos explícitamente
+    Configuracion c2{.ancho = 1280, .alto = 720, .titulo = "Editor"};
+
+    cout << c2.ancho << "x" << c2.alto << " - " << c2.titulo << endl;
+    // fullscreen usa el valor por defecto: false
+    return 0;
+}
+<---Designated Initializers (C++20) Result--->
+<---Clases en Qt QObject--->
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+class Motor : public QObject {
+    Q_OBJECT  // Habilita señales, slots, propiedades y metaobjeto
+
+public:
+    explicit Motor(QObject *parent = nullptr)
+        : QObject(parent), m_rpm(0) {}
+
+    int rpm() const { return m_rpm; }
+
+public slots:
+    void encender() {
+        m_rpm = 800;
+        emit rpmCambiado(m_rpm);
+        qDebug() << "Motor encendido a" << m_rpm << "RPM";
+    }
+
+    void apagar() {
+        m_rpm = 0;
+        emit rpmCambiado(m_rpm);
+        qDebug() << "Motor apagado";
+    }
+
+signals:
+    void rpmCambiado(int nuevoRpm);
+
+private:
+    int m_rpm;
+};
+
+// Nota: QObject NO permite copia ni movimiento
+// Motor m2 = m1;  // ERROR: QObject no es copiable
+<---Clases en Qt QObject Result--->

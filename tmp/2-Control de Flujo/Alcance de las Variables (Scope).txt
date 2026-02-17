@@ -1,0 +1,251 @@
+<---EXPLANATION--->
+### Alcance de las Variables (Scope) en C++
+
+El alcance de una variable (scope) se refiere a la región del código donde la variable está definida y accesible. En C++, el alcance de las variables determina su visibilidad y su tiempo de vida. Entender el alcance es crucial para evitar errores de programación, como conflictos de nombres y uso de variables no inicializadas.
+
+#### Tipos de Alcance
+
+1. **Alcance de Bloque (Local)**
+2. **Alcance de Función (Local a la Función)**
+3. **Alcance de Clase (Variables Miembro)**
+4. **Alcance de Archivo (Global)**
+5. **Alcance de Espacio de Nombres (Namespace)**
+
+### 1. Alcance de Bloque
+
+Las variables declaradas dentro de un bloque de código, delimitado por llaves `{}`, tienen alcance de bloque. Estas variables son accesibles solo dentro del bloque donde se declaran.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    {
+        int x = 10; // Variable con alcance de bloque
+        cout << "Dentro del bloque: " << x << endl;
+    }
+    // cout << x; // Error: x no está definida fuera del bloque
+    return 0;
+}
+```
+
+### 2. Alcance de Función
+
+Las variables locales declaradas dentro de una función tienen alcance local a esa función. No son accesibles fuera de la función.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void miFuncion() {
+    int y = 20; // Variable con alcance local a la función
+    cout << "Dentro de la función: " << y << endl;
+}
+
+int main() {
+    miFuncion();
+    // cout << y; // Error: y no está definida en main
+    return 0;
+}
+```
+
+### 3. Alcance de Clase (Variables Miembro)
+
+Las variables miembro de una clase tienen alcance dentro de la clase. Pueden ser accedidas mediante instancias de la clase.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class MiClase {
+public:
+    int miembroPublico;
+private:
+    int miembroPrivado;
+public:
+    MiClase(int pub, int priv) : miembroPublico(pub), miembroPrivado(priv) {}
+
+    void mostrar() {
+        cout << "Publico: " << miembroPublico << ", Privado: " << miembroPrivado << endl;
+    }
+};
+
+int main() {
+    MiClase obj(10, 20);
+    cout << "Acceso a miembro publico: " << obj.miembroPublico << endl;
+    // cout << obj.miembroPrivado; // Error: miembroPrivado no es accesible
+    obj.mostrar();
+    return 0;
+}
+```
+
+### 4. Alcance de Archivo (Global)
+
+Las variables globales tienen alcance de archivo. Se declaran fuera de todas las funciones y son accesibles desde cualquier función dentro del mismo archivo.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int global = 30; // Variable global
+
+void otraFuncion() {
+    cout << "En otraFuncion, global: " << global << endl;
+}
+
+int main() {
+    cout << "En main, global: " << global << endl;
+    otraFuncion();
+    return 0;
+}
+```
+
+### 5. Alcance de Espacio de Nombres (Namespace)
+
+Las variables y funciones declaradas dentro de un espacio de nombres (namespace) tienen alcance dentro de ese espacio de nombres.
+
+```cpp
+#include <iostream>
+namespace MiEspacio {
+    int valor = 40;
+
+    void mostrar() {
+        std::cout << "Valor en MiEspacio: " << valor << std::endl;
+    }
+}
+
+int main() {
+    MiEspacio::mostrar();
+    std::cout << "Acceso a valor en MiEspacio: " << MiEspacio::valor << std::endl;
+    return 0;
+}
+```
+
+### Alcance Estático
+
+Las variables declaradas con la palabra clave `static` dentro de una función o un bloque tienen alcance de bloque, pero su tiempo de vida es el de todo el programa. Esto significa que retienen su valor entre llamadas a la función.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void contar() {
+    static int contador = 0; // Variable estática
+    contador++;
+    cout << "Contador: " << contador << endl;
+}
+
+int main() {
+    contar(); // Contador: 1
+    contar(); // Contador: 2
+    contar(); // Contador: 3
+    return 0;
+}
+```
+
+### Resumen del Alcance de Variables
+
+1. **Bloque:** Accesible solo dentro del bloque `{}` donde se declara.
+2. **Función:** Accesible solo dentro de la función donde se declara.
+3. **Clase:** Variables miembro accesibles mediante instancias de la clase.
+4. **Archivo (Global):** Accesible en todo el archivo donde se declara.
+5. **Espacio de Nombres:** Accesible dentro del namespace donde se declara.
+6. **Estático:** Accesible solo dentro del bloque donde se declara, pero retiene su valor entre llamadas.
+
+### Alcance en el Contexto de Qt
+
+#### Convención de nombres para miembros privados
+
+Qt usa el prefijo `m_` para distinguir miembros privados de variables locales:
+
+```cpp
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    void setNombre(const QString &nombre) {
+        m_nombre = nombre;  // m_nombre = miembro, nombre = parámetro
+        emit nombreChanged();
+    }
+private:
+    QString m_nombre;  // Prefijo m_ = miembro de la clase
+    int m_contador = 0;
+};
+```
+
+#### Alcance del parent-child en Qt
+
+Qt tiene su propio sistema de ownership basado en el árbol parent-child. Los objetos hijos se destruyen automáticamente cuando el padre es destruido:
+
+```cpp
+void crearUI() {
+    auto *ventana = new QWidget;          // Sin padre → debemos borrar manualmente
+    auto *boton = new QPushButton(ventana); // Hijo de ventana → se destruye con ella
+    auto *label = new QLabel(ventana);      // También hijo de ventana
+
+    delete ventana;  // Destruye ventana, boton y label automáticamente
+}
+```
+
+#### Pimpl (d_ptr) — Alcance de implementación privada
+
+Qt usa extensivamente el patrón Pimpl para ocultar la implementación:
+
+```cpp
+// miwidget.h (cabecera pública)
+class MiWidgetPrivate;  // Forward declaration
+
+class MiWidget : public QWidget {
+    Q_OBJECT
+public:
+    explicit MiWidget(QWidget *parent = nullptr);
+    ~MiWidget();
+    void hacerAlgo();
+private:
+    QScopedPointer<MiWidgetPrivate> d_ptr;  // Puntero a implementación
+    Q_DECLARE_PRIVATE(MiWidget)
+};
+
+// miwidget.cpp (implementación)
+class MiWidgetPrivate {
+public:
+    QString nombre;     // Estos miembros son invisibles desde fuera
+    int contadorInterno = 0;
+};
+
+MiWidget::MiWidget(QWidget *parent)
+    : QWidget(parent), d_ptr(new MiWidgetPrivate) {}
+
+void MiWidget::hacerAlgo() {
+    Q_D(MiWidget);  // Macro que crea 'd' apuntando a d_ptr
+    d->contadorInterno++;
+}
+```
+
+#### Alcance en QML
+
+En QML, el scope es jerárquico (padre-hijo) y las propiedades son accesibles por `id`:
+
+```qml
+Item {
+    id: root
+    property string nombre: "Raíz"
+
+    Rectangle {
+        id: rect
+        // Puede acceder a root.nombre (scope del padre)
+        color: root.nombre === "Raíz" ? "blue" : "red"
+
+        Text {
+            // Puede acceder a root.nombre y rect.color
+            text: root.nombre
+            color: rect.color
+        }
+    }
+}
+```
+
+### Conclusión
+
+El alcance de las variables es una parte fundamental de la programación en C++, ya que determina dónde y cuándo una variable es accesible. Comprender los diferentes tipos de alcance ayuda a escribir código más seguro y libre de errores, evitando conflictos de nombres y asegurando que las variables se utilicen de manera adecuada dentro de sus contextos específicos.
+<---FILES--->
+NA.

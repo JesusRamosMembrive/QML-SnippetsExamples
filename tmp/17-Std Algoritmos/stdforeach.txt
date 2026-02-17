@@ -1,0 +1,228 @@
+<---EXPLANATION--->
+### Algoritmo de la Biblioteca Estándar: `std::for_each`
+
+El algoritmo `std::for_each` de la biblioteca estándar de C++ se utiliza para aplicar una función a cada elemento de un rango. Es una herramienta útil para realizar operaciones repetitivas en cada elemento de un contenedor.
+
+#### Sintaxis de `std::for_each`
+
+```cpp
+#include <algorithm>
+
+template <class InputIt, class UnaryFunction>
+UnaryFunction for_each(InputIt first, InputIt last, UnaryFunction f);
+```
+
+- **`InputIt first`**: Iterador al primer elemento del rango.
+- **`InputIt last`**: Iterador al elemento después del último en el rango.
+- **`UnaryFunction f`**: Una función o función objeto que se aplicará a cada elemento en el rango.
+
+#### Descripción
+
+`std::for_each` aplica la función `f` a cada elemento en el rango `[first, last)`. La función `f` puede ser una función regular, un objeto de función (functor) o una lambda.
+
+#### Ejemplo de Uso de `std::for_each`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+void imprimir(int n) {
+    std::cout << n << " ";
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar std::for_each para imprimir cada elemento del vector
+    std::for_each(vec.begin(), vec.end(), imprimir);
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `imprimir` es una función que toma un entero y lo imprime.
+- `std::for_each(vec.begin(), vec.end(), imprimir)` aplica la función `imprimir` a cada elemento del vector.
+
+##### Ejemplo con Lambda
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar una lambda para imprimir cada elemento del vector
+    std::for_each(vec.begin(), vec.end(), [](int n) {
+        std::cout << n << " ";
+    });
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- Se usa una expresión lambda para definir la operación de impresión en línea.
+
+### Más Ejemplos
+
+#### Incrementar Cada Elemento de un Contenedor
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar una lambda para incrementar cada elemento del vector
+    std::for_each(vec.begin(), vec.end(), [](int& n) {
+        n += 1;
+    });
+
+    // Imprimir los elementos incrementados
+    std::for_each(vec.begin(), vec.end(), [](int n) {
+        std::cout << n << " ";
+    });
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La lambda incrementa cada elemento del vector en 1.
+- Luego, se imprime cada elemento del vector utilizando `std::for_each`.
+
+#### Acumular Valores Usando un Functor
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct Acumulador {
+    int suma = 0;
+
+    void operator()(int n) {
+        suma += n;
+    }
+};
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    Acumulador acumulador = std::for_each(vec.begin(), vec.end(), Acumulador());
+
+    std::cout << "Suma de los elementos: " << acumulador.suma << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Acumulador` es un functor que acumula la suma de los elementos.
+- `std::for_each` aplica el functor a cada elemento del vector y devuelve el functor actualizado.
+
+### Consideraciones
+
+- **Rendimiento:** `std::for_each` es eficiente y generalmente se compila a código similar al de un bucle `for` explícito.
+- **Modificabilidad:** La función o lambda pasada a `std::for_each` puede modificar los elementos del contenedor si se pasan por referencia.
+
+### Conclusión
+
+`std::for_each` es un algoritmo de la biblioteca estándar de C++ que proporciona una forma conveniente y expresiva de aplicar una operación a cada elemento de un rango. Su uso con funciones, funtores y lambdas ofrece gran flexibilidad, y es una herramienta valiosa para escribir código conciso y claro en C++.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con Lambda
+Ejemplo con Lambda Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+void imprimir(int n) {
+    std::cout << n << " ";
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar std::for_each para imprimir cada elemento del vector
+    std::for_each(vec.begin(), vec.end(), imprimir);
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con Lambda--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar una lambda para imprimir cada elemento del vector
+    std::for_each(vec.begin(), vec.end(), [](int n) {
+        std::cout << n << " ";
+    });
+    std::cout << std::endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    // Usar una lambda para incrementar cada elemento del vector
+    std::for_each(vec.begin(), vec.end(), [](int& n) {
+        n += 1;
+    });
+
+    // Imprimir los elementos incrementados
+    std::for_each(vec.begin(), vec.end(), [](int n) {
+        std::cout << n << " ";
+    });
+    std::cout << std::endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct Acumulador {
+    int suma = 0;
+
+    void operator()(int n) {
+        suma += n;
+    }
+};
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5};
+
+    Acumulador acumulador = std::for_each(vec.begin(), vec.end(), Acumulador());
+
+    std::cout << "Suma de los elementos: " << acumulador.suma << std::endl;
+
+    return 0;
+}
+<---Ejemplo con Lambda Result--->

@@ -1,0 +1,583 @@
+<---EXPLANATION--->
+### Setters y Getters en una Clase
+
+Los setters y getters son métodos en una clase que se utilizan para controlar el acceso y la modificación de los atributos privados. Estos métodos ayudan a mantener el principio de encapsulación, permitiendo el acceso controlado a los datos de la clase y protegiendo la integridad de los atributos.
+
+#### Encapsulación
+
+La encapsulación es uno de los pilares de la programación orientada a objetos. Consiste en ocultar los detalles internos de una clase y proporcionar métodos públicos para acceder y modificar los datos. Esto mejora la seguridad y la integridad del estado del objeto.
+
+##### Definición de Atributos Privados
+
+En C++, los atributos de una clase se pueden declarar como privados utilizando el modificador de acceso `private`. Esto significa que estos atributos solo pueden ser accedidos y modificados desde dentro de la propia clase.
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Métodos públicos
+};
+```
+
+#### Métodos Getters
+
+Los métodos getters se utilizan para acceder a los valores de los atributos privados. Generalmente, los getters son funciones constantes (`const`) porque no modifican el estado del objeto.
+
+##### Ejemplo de Getters
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Getter para el nombre
+    string getNombre() const {
+        return nombre;
+    }
+
+    // Getter para la edad
+    int getEdad() const {
+        return edad;
+    }
+};
+```
+
+En este ejemplo, `getNombre` y `getEdad` son métodos getters que devuelven los valores de `nombre` y `edad`, respectivamente.
+
+#### Métodos Setters
+
+Los métodos setters se utilizan para modificar los valores de los atributos privados. Los setters permiten validar y controlar los datos antes de asignarlos a los atributos.
+
+##### Ejemplo de Setters
+
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setter para el nombre
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    // Setter para la edad
+    void setEdad(int e) {
+        if (e > 0) {  // Validación simple
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+};
+```
+
+En este ejemplo, `setNombre` y `setEdad` son métodos setters que permiten modificar los valores de `nombre` y `edad`, respectivamente. El setter `setEdad` incluye una validación para asegurarse de que la edad sea positiva.
+
+#### Uso de Setters y Getters
+
+Los setters y getters se utilizan en el programa principal para interactuar con los atributos privados de la clase.
+
+##### Ejemplo Completo
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setters
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    void setEdad(int e) {
+        if (e > 0) {
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan("Juan", 30);
+    juan.mostrarInformacion();
+
+    // Modificar los atributos usando setters
+    juan.setNombre("Juan Perez");
+    juan.setEdad(31);
+    juan.mostrarInformacion();
+
+    // Intentar establecer una edad no válida
+    juan.setEdad(-5);
+    juan.mostrarInformacion();
+
+    // Acceder a los atributos usando getters
+    cout << "Nombre: " << juan.getNombre() << endl;
+    cout << "Edad: " << juan.getEdad() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, se crea un objeto `juan` de la clase `Persona`, se utilizan los setters para modificar sus atributos y los getters para acceder a ellos. La validación en el setter `setEdad` asegura que la edad no pueda establecerse en un valor no válido.
+
+#### Q_PROPERTY en Qt: Getters y Setters para QML
+
+En Qt, el sistema de propiedades `Q_PROPERTY` es el equivalente a los getters y setters tradicionales de C++, pero integrado con el sistema de meta-objetos de Qt. Esto permite que las propiedades sean accesibles desde QML, desde el sistema de animaciones de Qt, y desde el editor de propiedades de Qt Designer. El patrón estándar en Qt incluye verificar si el valor realmente cambió antes de emitir la señal `NOTIFY`, evitando bucles infinitos en los bindings de QML.
+
+##### Q_PROPERTY en Qt: Getters y Setters para QML
+
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+class Piloto : public QObject {
+    Q_OBJECT
+    // Q_PROPERTY define propiedades accesibles desde QML
+    Q_PROPERTY(QString nombre READ nombre WRITE setNombre NOTIFY nombreChanged)
+    Q_PROPERTY(int horasVuelo READ horasVuelo WRITE setHorasVuelo NOTIFY horasVueloChanged)
+    Q_PROPERTY(bool certificado READ certificado NOTIFY certificadoChanged)
+
+public:
+    explicit Piloto(QObject *parent = nullptr) : QObject(parent) {}
+
+    // Getters (convención Qt: mismo nombre que la propiedad)
+    QString nombre() const { return m_nombre; }
+    int horasVuelo() const { return m_horasVuelo; }
+    bool certificado() const { return m_horasVuelo >= 1500; }
+
+    // Setters con patrón Qt: verificar cambio antes de emitir señal
+    void setNombre(const QString& nombre) {
+        if (m_nombre == nombre) return;  // Sin cambio, no emitir
+        m_nombre = nombre;
+        emit nombreChanged();
+    }
+
+    void setHorasVuelo(int horas) {
+        if (m_horasVuelo == horas) return;
+        bool certAnterior = certificado();
+        m_horasVuelo = horas;
+        emit horasVueloChanged();
+        if (certificado() != certAnterior)
+            emit certificadoChanged();
+    }
+
+signals:
+    void nombreChanged();
+    void horasVueloChanged();
+    void certificadoChanged();
+
+private:
+    QString m_nombre;
+    int m_horasVuelo = 0;
+};
+
+// En QML se usa directamente:
+// Text { text: piloto.nombre }
+// piloto.nombre = "Carlos"    // Llama al setter automáticamente
+// Text { text: piloto.certificado ? "Certificado" : "En formación" }
+```
+
+#### Property Binding en Qt 6 (QProperty)
+
+Qt 6 introduce `QProperty`, un sistema de binding reactivo que permite crear propiedades con dependencias automáticas. A diferencia de `Q_PROPERTY` que requiere señales manuales, `QProperty` detecta las dependencias y reevalúa los valores automáticamente cuando cambian sus inputs. Esto simplifica el código y reduce errores por olvidar emitir señales.
+
+##### Property Binding en Qt 6 (QProperty)
+
+```cpp
+#include <QObject>
+#include <QProperty>
+#include <QDebug>
+
+// Qt 6 introduce QProperty: binding automático sin signals manuales
+class Sensor {
+    Q_GADGET  // Q_GADGET para clases sin QObject con propiedades
+public:
+    QProperty<double> temperatura;
+    QProperty<double> presion;
+
+    // Binding: humedad se recalcula automáticamente cuando cambian los inputs
+    QProperty<QString> estado;
+
+    void actualizar(double temp, double pres) {
+        temperatura = temp;
+        presion = pres;
+
+        // El binding se reevalúa automáticamente
+        if (temp > 100.0)
+            estado = "ALERTA";
+        else
+            estado = "Normal";
+    }
+};
+
+// Nota: QProperty es parte del sistema de propiedades bindable de Qt 6
+// Permite crear cadenas de dependencias reactivas sin señales manuales
+```
+
+#### Retorno por Referencia Constante en Getters
+
+Una práctica importante en C++ moderno es elegir correctamente el tipo de retorno en los getters. Para tipos pequeños como `int`, `bool` o `double`, se retorna por valor (copia). Para tipos más grandes como `string`, `vector` o cualquier contenedor, se retorna por referencia constante (`const&`) para evitar copias innecesarias y mejorar el rendimiento. Esto es especialmente relevante en aplicaciones de alto rendimiento.
+
+##### Retorno por Referencia Constante en Getters
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Empleado {
+    string nombre;              // Tipo grande: retornar por const&
+    int id;                     // Tipo pequeño: retornar por valor
+    vector<string> proyectos;   // Tipo grande: retornar por const&
+public:
+    Empleado(string n, int i) : nombre(n), id(i) {}
+
+    // Getter por const reference (eficiente para tipos grandes)
+    const string& getNombre() const { return nombre; }
+
+    // Getter por valor (eficiente para tipos pequeños)
+    int getId() const { return id; }
+
+    // Getter por const reference para contenedores
+    const vector<string>& getProyectos() const { return proyectos; }
+
+    void agregarProyecto(const string& p) { proyectos.push_back(p); }
+};
+
+int main() {
+    Empleado e("María", 42);
+    e.agregarProyecto("Avión A350");
+    e.agregarProyecto("Motor Trent");
+
+    // const& evita copias innecesarias
+    const string& nom = e.getNombre(); // Sin copia
+    cout << nom << " (ID: " << e.getId() << ")" << endl;
+
+    for (const auto& p : e.getProyectos()) {
+        cout << "  - " << p << endl;
+    }
+    return 0;
+}
+```
+
+### Conclusión
+
+Los setters y getters son herramientas esenciales en la programación orientada a objetos para implementar la encapsulación. Permiten controlar el acceso y la modificación de los atributos privados de una clase, asegurando que los datos se manejen de manera segura y consistente. Con el uso adecuado de setters y getters, se puede mejorar la robustez y mantenibilidad del código.
+<---FILES--->
+Definición de Atributos Privados
+Definición de Atributos Privados Result
+Ejemplo de Getters
+Ejemplo de Getters Result
+Ejemplo de Setters
+Ejemplo de Setters Result
+Ejemplo Completo
+Ejemplo Completo Result
+Q_PROPERTY en Qt: Getters y Setters para QML
+Q_PROPERTY en Qt: Getters y Setters para QML Result
+Property Binding en Qt 6 (QProperty)
+Property Binding en Qt 6 (QProperty) Result
+Retorno por Referencia Constante en Getters
+Retorno por Referencia Constante en Getters Result
+<---Definición de Atributos Privados--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Métodos públicos
+};
+<---Definición de Atributos Privados Result--->
+<---Ejemplo de Getters--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Getter para el nombre
+    string getNombre() const {
+        return nombre;
+    }
+
+    // Getter para la edad
+    int getEdad() const {
+        return edad;
+    }
+};
+<---Ejemplo de Getters Result--->
+<---Ejemplo de Setters--->
+```cpp
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setter para el nombre
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    // Setter para la edad
+    void setEdad(int e) {
+        if (e > 0) {  // Validación simple
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+};
+<---Ejemplo de Setters Result--->
+<---Ejemplo Completo--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Setters
+    void setNombre(string n) {
+        nombre = n;
+    }
+
+    void setEdad(int e) {
+        if (e > 0) {
+            edad = e;
+        } else {
+            cout << "Edad no válida." << endl;
+        }
+    }
+
+    // Getters
+    string getNombre() const {
+        return nombre;
+    }
+
+    int getEdad() const {
+        return edad;
+    }
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    // Crear un objeto de la clase Persona
+    Persona juan("Juan", 30);
+    juan.mostrarInformacion();
+
+    // Modificar los atributos usando setters
+    juan.setNombre("Juan Perez");
+    juan.setEdad(31);
+    juan.mostrarInformacion();
+
+    // Intentar establecer una edad no válida
+    juan.setEdad(-5);
+    juan.mostrarInformacion();
+
+    // Acceder a los atributos usando getters
+    cout << "Nombre: " << juan.getNombre() << endl;
+    cout << "Edad: " << juan.getEdad() << endl;
+
+    return 0;
+}
+<---Ejemplo Completo Result--->
+<---Q_PROPERTY en Qt: Getters y Setters para QML--->
+```cpp
+#include <QObject>
+#include <QString>
+#include <QDebug>
+
+class Piloto : public QObject {
+    Q_OBJECT
+    // Q_PROPERTY define propiedades accesibles desde QML
+    Q_PROPERTY(QString nombre READ nombre WRITE setNombre NOTIFY nombreChanged)
+    Q_PROPERTY(int horasVuelo READ horasVuelo WRITE setHorasVuelo NOTIFY horasVueloChanged)
+    Q_PROPERTY(bool certificado READ certificado NOTIFY certificadoChanged)
+
+public:
+    explicit Piloto(QObject *parent = nullptr) : QObject(parent) {}
+
+    // Getters (convención Qt: mismo nombre que la propiedad)
+    QString nombre() const { return m_nombre; }
+    int horasVuelo() const { return m_horasVuelo; }
+    bool certificado() const { return m_horasVuelo >= 1500; }
+
+    // Setters con patrón Qt: verificar cambio antes de emitir señal
+    void setNombre(const QString& nombre) {
+        if (m_nombre == nombre) return;  // Sin cambio, no emitir
+        m_nombre = nombre;
+        emit nombreChanged();
+    }
+
+    void setHorasVuelo(int horas) {
+        if (m_horasVuelo == horas) return;
+        bool certAnterior = certificado();
+        m_horasVuelo = horas;
+        emit horasVueloChanged();
+        if (certificado() != certAnterior)
+            emit certificadoChanged();
+    }
+
+signals:
+    void nombreChanged();
+    void horasVueloChanged();
+    void certificadoChanged();
+
+private:
+    QString m_nombre;
+    int m_horasVuelo = 0;
+};
+
+// En QML se usa directamente:
+// Text { text: piloto.nombre }
+// piloto.nombre = "Carlos"    // Llama al setter automáticamente
+// Text { text: piloto.certificado ? "Certificado" : "En formación" }
+<---Q_PROPERTY en Qt: Getters y Setters para QML Result--->
+<---Property Binding en Qt 6 (QProperty)--->
+```cpp
+#include <QObject>
+#include <QProperty>
+#include <QDebug>
+
+// Qt 6 introduce QProperty: binding automático sin signals manuales
+class Sensor {
+    Q_GADGET  // Q_GADGET para clases sin QObject con propiedades
+public:
+    QProperty<double> temperatura;
+    QProperty<double> presion;
+
+    // Binding: humedad se recalcula automáticamente cuando cambian los inputs
+    QProperty<QString> estado;
+
+    void actualizar(double temp, double pres) {
+        temperatura = temp;
+        presion = pres;
+
+        // El binding se reevalúa automáticamente
+        if (temp > 100.0)
+            estado = "ALERTA";
+        else
+            estado = "Normal";
+    }
+};
+
+// Nota: QProperty es parte del sistema de propiedades bindable de Qt 6
+// Permite crear cadenas de dependencias reactivas sin señales manuales
+<---Property Binding en Qt 6 (QProperty) Result--->
+<---Retorno por Referencia Constante en Getters--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Empleado {
+    string nombre;              // Tipo grande: retornar por const&
+    int id;                     // Tipo pequeño: retornar por valor
+    vector<string> proyectos;   // Tipo grande: retornar por const&
+public:
+    Empleado(string n, int i) : nombre(n), id(i) {}
+
+    // Getter por const reference (eficiente para tipos grandes)
+    const string& getNombre() const { return nombre; }
+
+    // Getter por valor (eficiente para tipos pequeños)
+    int getId() const { return id; }
+
+    // Getter por const reference para contenedores
+    const vector<string>& getProyectos() const { return proyectos; }
+
+    void agregarProyecto(const string& p) { proyectos.push_back(p); }
+};
+
+int main() {
+    Empleado e("María", 42);
+    e.agregarProyecto("Avión A350");
+    e.agregarProyecto("Motor Trent");
+
+    // const& evita copias innecesarias
+    const string& nom = e.getNombre(); // Sin copia
+    cout << nom << " (ID: " << e.getId() << ")" << endl;
+
+    for (const auto& p : e.getProyectos()) {
+        cout << "  - " << p << endl;
+    }
+    return 0;
+}
+<---Retorno por Referencia Constante en Getters Result--->

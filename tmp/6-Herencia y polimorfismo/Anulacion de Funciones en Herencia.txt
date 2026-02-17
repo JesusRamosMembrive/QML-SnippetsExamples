@@ -1,0 +1,791 @@
+<---EXPLANATION--->
+### Anulación de Funciones en Herencia en C++
+
+La anulación de funciones (también conocida como "sobrescritura" de funciones) es un concepto clave en la programación orientada a objetos en C++. Permite a las clases derivadas proporcionar una implementación específica de una función que ya está definida en su clase base. Este mecanismo es fundamental para el polimorfismo, ya que permite que las funciones se comporten de manera diferente según el tipo de objeto que las invoca.
+
+#### Definición de Anulación de Funciones
+
+La anulación de funciones ocurre cuando una clase derivada redefine una función miembro de su clase base. Para que una función pueda ser anulada, debe ser declarada como `virtual` en la clase base. La función en la clase derivada debe tener la misma firma (nombre, parámetros y tipo de retorno) que en la clase base.
+
+##### Sintaxis Básica
+
+```cpp
+class Base {
+public:
+    virtual void funcion() {
+        // Implementación de la clase base
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion() override {
+        // Implementación de la clase derivada
+    }
+};
+```
+
+- **`virtual`**: Indica que la función puede ser anulada en una clase derivada.
+- **`override`**: Es opcional pero recomendable, ya que proporciona una verificación en tiempo de compilación de que la función está realmente anulando una función virtual de la clase base.
+
+#### Ejemplo Básico de Anulación de Funciones
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal a;
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- La clase `Animal` define una función virtual `hacerSonido`.
+- Las clases `Perro` y `Gato` anulan la función `hacerSonido` para proporcionar implementaciones específicas.
+
+#### Importancia del Polimorfismo
+
+La anulación de funciones permite el polimorfismo, donde la función que se invoca depende del tipo real del objeto, no del tipo de referencia o puntero. Esto es especialmente útil cuando se trabaja con colecciones de objetos de diferentes tipos derivados de una misma clase base.
+
+##### Ejemplo de Polimorfismo
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+int main() {
+    vector<Animal*> animales;
+    animales.push_back(new Animal());
+    animales.push_back(new Perro());
+    animales.push_back(new Gato());
+
+    for (const auto& animal : animales) {
+        animal->hacerSonido(); // Llama a la versión apropiada de hacerSonido()
+    }
+
+    // Liberar memoria
+    for (const auto& animal : animales) {
+        delete animal;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo, un vector de punteros a `Animal` contiene objetos de diferentes tipos derivados. Cuando se llama a `hacerSonido`, se invoca la versión correcta de la función según el tipo real del objeto.
+
+#### Uso de `final` para Prevenir Anulación
+
+C++11 introdujo la palabra clave `final`, que se puede usar para prevenir la anulación de una función virtual en clases derivadas.
+
+##### Ejemplo de `final`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void mostrar() const final {
+        cout << "Mostrar en la clase Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    // void mostrar() const override { // Error: no se puede anular una función final
+    //     cout << "Mostrar en la clase Derivada" << endl;
+    // }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar(); // Llama a Base::mostrar()
+
+    return 0;
+}
+```
+
+En este ejemplo, `Base::mostrar` se declara como `final`, lo que impide que cualquier clase derivada anule esta función.
+
+#### Sobrecarga vs. Anulación
+
+Es importante no confundir la sobrecarga de funciones con la anulación de funciones. La sobrecarga de funciones se refiere a definir múltiples funciones con el mismo nombre pero con diferentes listas de parámetros en la misma clase, mientras que la anulación de funciones se refiere a redefinir una función virtual de la clase base en una clase derivada.
+
+##### Ejemplo de Sobrecarga y Anulación
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void funcion(int x) {
+        cout << "Base::funcion(int): " << x << endl;
+    }
+
+    void funcion(double y) {
+        cout << "Base::funcion(double): " << y << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion(int x) override {
+        cout << "Derivada::funcion(int): " << x << endl;
+    }
+
+    // Sobrecarga, no anulación
+    void funcion(string s) {
+        cout << "Derivada::funcion(string): " << s << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.funcion(10);        // Llama a Derivada::funcion(int)
+    d.funcion(3.14);      // Llama a Base::funcion(double)
+    d.funcion("Hola");    // Llama a Derivada::funcion(string)
+
+    return 0;
+}
+```
+
+En este ejemplo, `Derivada` anula `funcion(int)` de `Base` y también sobrecarga `funcion` con un nuevo parámetro de tipo `string`.
+
+#### Tipos de Retorno Covariantes
+
+En C++, cuando una clase derivada anula una función virtual de la clase base, normalmente debe mantener exactamente la misma firma, incluyendo el tipo de retorno. Sin embargo, existe una excepción importante conocida como **tipos de retorno covariantes**: si la función virtual de la clase base devuelve un puntero o referencia a una clase, la función anulada en la clase derivada puede devolver un puntero o referencia a una clase más derivada.
+
+Esta característica es especialmente útil en el **patrón Prototype (Clon)**, donde se desea que el método `clonar()` devuelva el tipo más específico posible.
+
+Las reglas para los tipos de retorno covariantes son:
+- El tipo de retorno original debe ser un puntero (`Base*`) o referencia (`Base&`).
+- El tipo de retorno en la clase derivada debe ser un puntero (`Derivada*`) o referencia (`Derivada&`) a una clase que herede de la clase del tipo de retorno original.
+- Las calificaciones `const` y `volatile` deben ser compatibles.
+
+##### Ejemplo de Tipos de Retorno Covariantes
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Figura {
+public:
+    virtual ~Figura() = default;
+
+    // Función virtual que devuelve Figura*
+    virtual Figura* clonar() const {
+        cout << "Clonando figura genérica" << endl;
+        return new Figura(*this);
+    }
+
+    virtual void describir() const {
+        cout << "Soy una figura genérica" << endl;
+    }
+};
+
+class Circulo : public Figura {
+    double radio;
+public:
+    Circulo(double r) : radio(r) {}
+
+    // Tipo de retorno covariante: devuelve Circulo* en vez de Figura*
+    Circulo* clonar() const override {
+        cout << "Clonando círculo con radio " << radio << endl;
+        return new Circulo(*this);
+    }
+
+    void describir() const override {
+        cout << "Soy un círculo con radio " << radio << endl;
+    }
+};
+
+class Rectangulo : public Figura {
+    double ancho, alto;
+public:
+    Rectangulo(double a, double h) : ancho(a), alto(h) {}
+
+    // Tipo de retorno covariante
+    Rectangulo* clonar() const override {
+        cout << "Clonando rectángulo " << ancho << "x" << alto << endl;
+        return new Rectangulo(*this);
+    }
+
+    void describir() const override {
+        cout << "Soy un rectángulo de " << ancho << "x" << alto << endl;
+    }
+};
+
+int main() {
+    Circulo c(5.0);
+    Rectangulo r(3.0, 4.0);
+
+    // Usando el tipo covariante directamente (sin necesidad de cast)
+    Circulo* copiaCirculo = c.clonar();  // Devuelve Circulo*, no Figura*
+    copiaCirculo->describir();
+
+    // A través de puntero base, el polimorfismo sigue funcionando
+    Figura* figuraBase = &r;
+    Figura* copiaFigura = figuraBase->clonar(); // Devuelve Figura* (pero es Rectangulo*)
+    copiaFigura->describir();
+
+    delete copiaCirculo;
+    delete copiaFigura;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `Circulo::clonar()` devuelve `Circulo*` en lugar de `Figura*`, lo que es un tipo de retorno covariante válido.
+- Cuando se llama a `clonar()` directamente sobre un objeto `Circulo`, se obtiene un `Circulo*` sin necesidad de hacer un cast.
+- Cuando se llama a través de un puntero `Figura*`, se obtiene un `Figura*` pero el objeto real sigue siendo un `Circulo` o `Rectangulo`.
+
+#### Patrón NVI (Non-Virtual Interface)
+
+El patrón NVI (Non-Virtual Interface) es una técnica de diseño en C++ que propone que las funciones públicas de una clase base sean **no virtuales**, y que estas deleguen el trabajo a funciones virtuales **privadas o protegidas**. De esta manera, la clase base mantiene el control sobre las precondiciones, postcondiciones y el flujo general de la operación, mientras que las clases derivadas solo personalizan la parte específica del comportamiento.
+
+Las ventajas del patrón NVI son:
+1. **Control centralizado:** La clase base puede ejecutar código antes y después de la operación virtual (logging, validación, bloqueos, etc.).
+2. **Interfaz estable:** La interfaz pública no cambia aunque cambien los detalles de implementación.
+3. **Separación de responsabilidades:** La interfaz pública (qué se puede hacer) se separa de la implementación personalizable (cómo se hace).
+
+##### Ejemplo de Patrón NVI
+
+```cpp
+#include <iostream>
+#include <string>
+#include <chrono>
+using namespace std;
+
+class Documento {
+    string nombre;
+
+public:
+    Documento(const string& nombre) : nombre(nombre) {}
+    virtual ~Documento() = default;
+
+    // Interfaz pública NO virtual - controla el flujo completo
+    void guardar(const string& ruta) {
+        cout << "Validando documento '" << nombre << "'..." << endl;
+        if (!validar()) {
+            cout << "Error: El documento no es válido. No se puede guardar." << endl;
+            return;
+        }
+
+        cout << "Preparando para guardar..." << endl;
+        hacerGuardado(ruta);  // Delegamos a la función virtual protegida
+        cout << "Documento guardado exitosamente en: " << ruta << endl;
+    }
+
+    // Interfaz pública NO virtual
+    string obtenerResumen() const {
+        return "Documento: " + nombre + " | " + hacerResumen();
+    }
+
+protected:
+    // Funciones virtuales protegidas - personalizables por clases derivadas
+    virtual void hacerGuardado(const string& ruta) {
+        cout << "  [Base] Guardando datos genéricos en " << ruta << endl;
+    }
+
+    virtual string hacerResumen() const {
+        return "Sin contenido específico";
+    }
+
+    virtual bool validar() const {
+        return !nombre.empty();
+    }
+};
+
+class DocumentoTexto : public Documento {
+    string contenido;
+
+public:
+    DocumentoTexto(const string& nombre, const string& contenido)
+        : Documento(nombre), contenido(contenido) {}
+
+protected:
+    void hacerGuardado(const string& ruta) override {
+        cout << "  [Texto] Guardando " << contenido.size()
+             << " caracteres en " << ruta << endl;
+    }
+
+    string hacerResumen() const override {
+        return "Texto con " + to_string(contenido.size()) + " caracteres";
+    }
+
+    bool validar() const override {
+        return Documento::validar() && !contenido.empty();
+    }
+};
+
+class DocumentoImagen : public Documento {
+    int ancho, alto;
+
+public:
+    DocumentoImagen(const string& nombre, int ancho, int alto)
+        : Documento(nombre), ancho(ancho), alto(alto) {}
+
+protected:
+    void hacerGuardado(const string& ruta) override {
+        cout << "  [Imagen] Guardando imagen " << ancho << "x" << alto
+             << " en " << ruta << endl;
+    }
+
+    string hacerResumen() const override {
+        return "Imagen " + to_string(ancho) + "x" + to_string(alto);
+    }
+
+    bool validar() const override {
+        return Documento::validar() && ancho > 0 && alto > 0;
+    }
+};
+
+int main() {
+    DocumentoTexto texto("informe.txt", "Este es el contenido del informe...");
+    DocumentoImagen imagen("foto.png", 1920, 1080);
+    DocumentoTexto vacio("", ""); // Documento inválido
+
+    cout << "=== Guardar documento de texto ===" << endl;
+    texto.guardar("/documentos/informe.txt");
+
+    cout << "\n=== Guardar documento de imagen ===" << endl;
+    imagen.guardar("/imagenes/foto.png");
+
+    cout << "\n=== Intentar guardar documento vacío ===" << endl;
+    vacio.guardar("/documentos/vacio.txt");
+
+    cout << "\n=== Resúmenes ===" << endl;
+    cout << texto.obtenerResumen() << endl;
+    cout << imagen.obtenerResumen() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `guardar()` y `obtenerResumen()` son funciones públicas **no virtuales** que definen el flujo general.
+- `hacerGuardado()`, `hacerResumen()` y `validar()` son funciones virtuales **protegidas** que las clases derivadas personalizan.
+- La clase base `Documento` mantiene el control de la validación y el mensaje de éxito/error, mientras que las clases derivadas solo definen cómo se guarda realmente y qué información incluye el resumen.
+- Este patrón garantiza que la validación siempre se ejecute antes de guardar, independientemente de la clase derivada.
+
+### Conclusión
+
+La anulación de funciones es una característica esencial en C++ que permite a las clases derivadas proporcionar implementaciones específicas de funciones definidas en la clase base. Esto es crucial para el polimorfismo, permitiendo que el comportamiento de las funciones dependa del tipo real del objeto. La palabra clave `virtual` se utiliza para indicar que una función puede ser anulada, y `override` proporciona una verificación en tiempo de compilación para asegurar que la anulación es correcta. Entender la diferencia entre sobrecarga y anulación es fundamental para diseñar jerarquías de clases efectivas y utilizar el polimorfismo de manera eficiente.
+<---FILES--->
+Sintaxis Básica
+Sintaxis Básica Result
+Ejemplo de Polimorfismo
+Ejemplo de Polimorfismo Result
+Ejemplo de `final`
+Ejemplo de `final` Result
+Ejemplo de Sobrecarga y Anulación
+Ejemplo de Sobrecarga y Anulación Result
+Ejemplo de Tipos de Retorno Covariantes
+Ejemplo de Tipos de Retorno Covariantes Result
+Ejemplo de Patrón NVI
+Ejemplo de Patrón NVI Result
+<---Sintaxis Básica--->
+```cpp
+class Base {
+public:
+    virtual void funcion() {
+        // Implementación de la clase base
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion() override {
+        // Implementación de la clase derivada
+    }
+};
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+void hacerSonidoAnimal(const Animal& animal) {
+    animal.hacerSonido();
+}
+
+int main() {
+    Animal a;
+    Perro p;
+    Gato g;
+
+    hacerSonidoAnimal(a); // Llama a Animal::hacerSonido()
+    hacerSonidoAnimal(p); // Llama a Perro::hacerSonido()
+    hacerSonidoAnimal(g); // Llama a Gato::hacerSonido()
+
+    return 0;
+}
+<---Sintaxis Básica Result--->
+<---Ejemplo de Polimorfismo--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const {
+        cout << "El animal hace un sonido" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+};
+
+int main() {
+    vector<Animal*> animales;
+    animales.push_back(new Animal());
+    animales.push_back(new Perro());
+    animales.push_back(new Gato());
+
+    for (const auto& animal : animales) {
+        animal->hacerSonido(); // Llama a la versión apropiada de hacerSonido()
+    }
+
+    // Liberar memoria
+    for (const auto& animal : animales) {
+        delete animal;
+    }
+
+    return 0;
+}
+<---Ejemplo de Polimorfismo Result--->
+<---Ejemplo de `final`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void mostrar() const final {
+        cout << "Mostrar en la clase Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    // void mostrar() const override { // Error: no se puede anular una función final
+    //     cout << "Mostrar en la clase Derivada" << endl;
+    // }
+};
+
+int main() {
+    Derivada d;
+    d.mostrar(); // Llama a Base::mostrar()
+
+    return 0;
+}
+<---Ejemplo de `final` Result--->
+<---Ejemplo de Sobrecarga y Anulación--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void funcion(int x) {
+        cout << "Base::funcion(int): " << x << endl;
+    }
+
+    void funcion(double y) {
+        cout << "Base::funcion(double): " << y << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    void funcion(int x) override {
+        cout << "Derivada::funcion(int): " << x << endl;
+    }
+
+    // Sobrecarga, no anulación
+    void funcion(string s) {
+        cout << "Derivada::funcion(string): " << s << endl;
+    }
+};
+
+int main() {
+    Derivada d;
+    d.funcion(10);        // Llama a Derivada::funcion(int)
+    d.funcion(3.14);      // Llama a Base::funcion(double)
+    d.funcion("Hola");    // Llama a Derivada::funcion(string)
+
+    return 0;
+}
+<---Ejemplo de Sobrecarga y Anulación Result--->
+<---Ejemplo de Tipos de Retorno Covariantes--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Figura {
+public:
+    virtual ~Figura() = default;
+
+    // Función virtual que devuelve Figura*
+    virtual Figura* clonar() const {
+        cout << "Clonando figura genérica" << endl;
+        return new Figura(*this);
+    }
+
+    virtual void describir() const {
+        cout << "Soy una figura genérica" << endl;
+    }
+};
+
+class Circulo : public Figura {
+    double radio;
+public:
+    Circulo(double r) : radio(r) {}
+
+    // Tipo de retorno covariante: devuelve Circulo* en vez de Figura*
+    Circulo* clonar() const override {
+        cout << "Clonando círculo con radio " << radio << endl;
+        return new Circulo(*this);
+    }
+
+    void describir() const override {
+        cout << "Soy un círculo con radio " << radio << endl;
+    }
+};
+
+class Rectangulo : public Figura {
+    double ancho, alto;
+public:
+    Rectangulo(double a, double h) : ancho(a), alto(h) {}
+
+    // Tipo de retorno covariante
+    Rectangulo* clonar() const override {
+        cout << "Clonando rectángulo " << ancho << "x" << alto << endl;
+        return new Rectangulo(*this);
+    }
+
+    void describir() const override {
+        cout << "Soy un rectángulo de " << ancho << "x" << alto << endl;
+    }
+};
+
+int main() {
+    Circulo c(5.0);
+    Rectangulo r(3.0, 4.0);
+
+    // Usando el tipo covariante directamente (sin necesidad de cast)
+    Circulo* copiaCirculo = c.clonar();  // Devuelve Circulo*, no Figura*
+    copiaCirculo->describir();
+
+    // A través de puntero base, el polimorfismo sigue funcionando
+    Figura* figuraBase = &r;
+    Figura* copiaFigura = figuraBase->clonar(); // Devuelve Figura* (pero es Rectangulo*)
+    copiaFigura->describir();
+
+    delete copiaCirculo;
+    delete copiaFigura;
+
+    return 0;
+}
+<---Ejemplo de Tipos de Retorno Covariantes Result--->
+<---Ejemplo de Patrón NVI--->
+```cpp
+#include <iostream>
+#include <string>
+#include <chrono>
+using namespace std;
+
+class Documento {
+    string nombre;
+
+public:
+    Documento(const string& nombre) : nombre(nombre) {}
+    virtual ~Documento() = default;
+
+    // Interfaz pública NO virtual - controla el flujo completo
+    void guardar(const string& ruta) {
+        cout << "Validando documento '" << nombre << "'..." << endl;
+        if (!validar()) {
+            cout << "Error: El documento no es válido. No se puede guardar." << endl;
+            return;
+        }
+
+        cout << "Preparando para guardar..." << endl;
+        hacerGuardado(ruta);  // Delegamos a la función virtual protegida
+        cout << "Documento guardado exitosamente en: " << ruta << endl;
+    }
+
+    // Interfaz pública NO virtual
+    string obtenerResumen() const {
+        return "Documento: " + nombre + " | " + hacerResumen();
+    }
+
+protected:
+    // Funciones virtuales protegidas - personalizables por clases derivadas
+    virtual void hacerGuardado(const string& ruta) {
+        cout << "  [Base] Guardando datos genéricos en " << ruta << endl;
+    }
+
+    virtual string hacerResumen() const {
+        return "Sin contenido específico";
+    }
+
+    virtual bool validar() const {
+        return !nombre.empty();
+    }
+};
+
+class DocumentoTexto : public Documento {
+    string contenido;
+
+public:
+    DocumentoTexto(const string& nombre, const string& contenido)
+        : Documento(nombre), contenido(contenido) {}
+
+protected:
+    void hacerGuardado(const string& ruta) override {
+        cout << "  [Texto] Guardando " << contenido.size()
+             << " caracteres en " << ruta << endl;
+    }
+
+    string hacerResumen() const override {
+        return "Texto con " + to_string(contenido.size()) + " caracteres";
+    }
+
+    bool validar() const override {
+        return Documento::validar() && !contenido.empty();
+    }
+};
+
+class DocumentoImagen : public Documento {
+    int ancho, alto;
+
+public:
+    DocumentoImagen(const string& nombre, int ancho, int alto)
+        : Documento(nombre), ancho(ancho), alto(alto) {}
+
+protected:
+    void hacerGuardado(const string& ruta) override {
+        cout << "  [Imagen] Guardando imagen " << ancho << "x" << alto
+             << " en " << ruta << endl;
+    }
+
+    string hacerResumen() const override {
+        return "Imagen " + to_string(ancho) + "x" + to_string(alto);
+    }
+
+    bool validar() const override {
+        return Documento::validar() && ancho > 0 && alto > 0;
+    }
+};
+
+int main() {
+    DocumentoTexto texto("informe.txt", "Este es el contenido del informe...");
+    DocumentoImagen imagen("foto.png", 1920, 1080);
+    DocumentoTexto vacio("", ""); // Documento inválido
+
+    cout << "=== Guardar documento de texto ===" << endl;
+    texto.guardar("/documentos/informe.txt");
+
+    cout << "\n=== Guardar documento de imagen ===" << endl;
+    imagen.guardar("/imagenes/foto.png");
+
+    cout << "\n=== Intentar guardar documento vacío ===" << endl;
+    vacio.guardar("/documentos/vacio.txt");
+
+    cout << "\n=== Resúmenes ===" << endl;
+    cout << texto.obtenerResumen() << endl;
+    cout << imagen.obtenerResumen() << endl;
+
+    return 0;
+}
+<---Ejemplo de Patrón NVI Result--->

@@ -1,0 +1,729 @@
+<---EXPLANATION--->
+### Uso de la Palabra Clave `virtual` en Destructores
+
+En C++, el uso de la palabra clave `virtual` en destructores es fundamental para asegurar que los destructores de las clases derivadas se llamen correctamente cuando se destruye un objeto a través de un puntero a la clase base. Esto es crucial para evitar fugas de memoria y asegurar una correcta liberación de recursos en jerarquías de herencia.
+
+#### ¿Por Qué Usar `virtual` en Destructores?
+
+Cuando se utilizan punteros a la clase base para manipular objetos de clases derivadas, no tener un destructor virtual en la clase base puede resultar en que el destructor de la clase derivada nunca sea llamado. Esto puede llevar a recursos no liberados y otros comportamientos inesperados.
+
+##### Ejemplo Sin Destructor Virtual
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Solo llama a ~Base(), no a ~Derivada()
+    return 0;
+}
+```
+
+Salida:
+```
+Constructor de Base
+Constructor de Derivada
+Destructor de Base
+```
+
+En este ejemplo, el destructor de `Derivada` no se llama porque el destructor de `Base` no es virtual. Esto puede llevar a que los recursos de `Derivada` no se liberen adecuadamente.
+
+#### Ejemplo Con Destructor Virtual
+
+Para asegurar que el destructor de la clase derivada sea llamado, se debe declarar el destructor de la clase base como `virtual`.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    virtual ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Llama a ~Derivada() y luego a ~Base()
+    return 0;
+}
+```
+
+Salida:
+```
+Constructor de Base
+Constructor de Derivada
+Destructor de Derivada
+Destructor de Base
+```
+
+En este ejemplo, el destructor de `Derivada` se llama correctamente antes de que el destructor de `Base` sea llamado, asegurando una limpieza adecuada de los recursos.
+
+#### Cuando Usar `virtual` en Destructores
+
+- **Siempre que haya Polimorfismo:** Si una clase está destinada a ser una clase base de una jerarquía polimórfica (es decir, se espera que las funciones miembro se llamen de manera polimórfica), su destructor debe ser virtual.
+- **Clases Abstractas:** Las clases abstractas que contienen funciones virtuales puras generalmente deben tener destructores virtuales para asegurar que cualquier clase derivada se destruya correctamente.
+
+#### Ejemplo con Clase Abstracta
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función virtual pura
+    virtual ~Animal() {
+        cout << "Destructor de Animal" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+    ~Perro() {
+        cout << "Destructor de Perro" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+    ~Gato() {
+        cout << "Destructor de Gato" << endl;
+    }
+};
+
+int main() {
+    Animal* p = new Perro();
+    Animal* g = new Gato();
+    delete p; // Llama a ~Perro() y luego a ~Animal()
+    delete g; // Llama a ~Gato() y luego a ~Animal()
+    return 0;
+}
+```
+
+Salida:
+```
+Destructor de Perro
+Destructor de Animal
+Destructor de Gato
+Destructor de Animal
+```
+
+En este ejemplo, ambos destructores de las clases derivadas (`Perro` y `Gato`) se llaman correctamente antes del destructor de la clase base `Animal`.
+
+#### Destructores Virtuales `= default` (C++11)
+
+A partir de C++11, es posible declarar un destructor virtual usando `= default`, lo que indica al compilador que genere la implementación por defecto mientras mantiene el destructor como virtual. Esta es la **práctica recomendada en C++ moderno** para clases base polimórficas, ya que es más limpia que escribir un destructor con cuerpo vacío y comunica claramente la intención del programador: "esta clase necesita un destructor virtual, pero no requiere lógica de limpieza especial".
+
+##### Ejemplo de Destructores Virtuales `= default`
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Patron moderno recomendado: virtual ~Clase() = default;
+class Forma {
+protected:
+    string nombre;
+
+public:
+    Forma(const string& n) : nombre(n) {
+        cout << "Constructor de Forma: " << nombre << endl;
+    }
+
+    // Destructor virtual con implementación por defecto - PATRON RECOMENDADO
+    virtual ~Forma() = default;
+
+    virtual double area() const = 0;
+
+    string getNombre() const { return nombre; }
+};
+
+class Circulo : public Forma {
+private:
+    double radio;
+
+public:
+    Circulo(double r) : Forma("Circulo"), radio(r) {
+        cout << "Constructor de Circulo, radio: " << radio << endl;
+    }
+
+    ~Circulo() override {
+        cout << "Destructor de Circulo" << endl;
+    }
+
+    double area() const override {
+        return 3.14159 * radio * radio;
+    }
+};
+
+class Rectangulo : public Forma {
+private:
+    double ancho, alto;
+
+public:
+    Rectangulo(double a, double h) : Forma("Rectangulo"), ancho(a), alto(h) {
+        cout << "Constructor de Rectangulo, " << ancho << "x" << alto << endl;
+    }
+
+    // También puede usar = default si no necesita limpieza especial
+    ~Rectangulo() override = default;
+
+    double area() const override {
+        return ancho * alto;
+    }
+};
+
+int main() {
+    Forma* f1 = new Circulo(5.0);
+    Forma* f2 = new Rectangulo(4.0, 3.0);
+
+    cout << f1->getNombre() << " - Area: " << f1->area() << endl;
+    cout << f2->getNombre() << " - Area: " << f2->area() << endl;
+
+    cout << "\n--- Destruyendo formas ---" << endl;
+    delete f1; // Llama a ~Circulo() gracias al destructor virtual
+    delete f2; // Llama a ~Rectangulo() = default
+
+    return 0;
+}
+```
+
+En este ejemplo, `Forma` declara `virtual ~Forma() = default;`, lo que permite destrucción polimórfica sin necesidad de escribir un cuerpo vacío. `Circulo` define un destructor explícito con lógica de limpieza, mientras que `Rectangulo` también usa `= default` en su destructor. Ambos se destruyen correctamente a través de punteros a `Forma`.
+
+#### `std::unique_ptr` y Destructores Virtuales
+
+Cuando se usa `std::unique_ptr<Base>` para gestionar objetos polimórficos, es **absolutamente necesario** que la clase base tenga un destructor virtual. Sin él, `unique_ptr` solo llamará al destructor de la base al liberar la memoria, produciendo comportamiento indefinido y posibles fugas de recursos. A diferencia de `shared_ptr` (que almacena el destructor correcto mediante type-erasure), `unique_ptr` depende directamente de la invocación virtual del destructor.
+
+##### Ejemplo de `std::unique_ptr` con Destructores Virtuales
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <string>
+using namespace std;
+
+class Sensor {
+protected:
+    string id;
+
+public:
+    Sensor(const string& identificador) : id(identificador) {
+        cout << "Sensor creado: " << id << endl;
+    }
+
+    // OBLIGATORIO para uso correcto con unique_ptr polimórfico
+    virtual ~Sensor() {
+        cout << "Sensor destruido: " << id << endl;
+    }
+
+    virtual string leer() const = 0;
+    string getId() const { return id; }
+};
+
+class SensorTemperatura : public Sensor {
+private:
+    double* buffer; // Recurso dinámico para demostrar la importancia del destructor
+
+public:
+    SensorTemperatura(const string& id, int tamBuffer)
+        : Sensor(id), buffer(new double[tamBuffer]) {
+        cout << "  Buffer de temperatura asignado para " << id << endl;
+    }
+
+    ~SensorTemperatura() override {
+        delete[] buffer;
+        cout << "  Buffer de temperatura liberado para " << id << endl;
+    }
+
+    string leer() const override {
+        return id + ": 23.5 °C";
+    }
+};
+
+class SensorHumedad : public Sensor {
+private:
+    string* registro; // Otro recurso dinámico
+
+public:
+    SensorHumedad(const string& id)
+        : Sensor(id), registro(new string("registro_" + id)) {
+        cout << "  Registro de humedad creado para " << id << endl;
+    }
+
+    ~SensorHumedad() override {
+        delete registro;
+        cout << "  Registro de humedad liberado para " << id << endl;
+    }
+
+    string leer() const override {
+        return id + ": 65%";
+    }
+};
+
+int main() {
+    // Vector de unique_ptr a la clase base
+    vector<unique_ptr<Sensor>> sensores;
+
+    sensores.push_back(make_unique<SensorTemperatura>("TEMP-01", 100));
+    sensores.push_back(make_unique<SensorHumedad>("HUM-01"));
+    sensores.push_back(make_unique<SensorTemperatura>("TEMP-02", 50));
+
+    cout << "\n--- Lecturas ---" << endl;
+    for (const auto& s : sensores) {
+        cout << s->leer() << endl;
+    }
+
+    // Al salir del scope, cada unique_ptr destruye su objeto correctamente
+    // gracias al destructor virtual en Sensor
+    cout << "\n--- Destruyendo sensores ---" << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `Sensor` tiene un destructor virtual, lo que permite que `unique_ptr<Sensor>` destruya correctamente tanto `SensorTemperatura` (liberando su buffer dinámico) como `SensorHumedad` (liberando su registro). Sin el destructor virtual, los recursos de las clases derivadas quedarían sin liberar.
+
+#### Destructores en Qt: `deleteLater()` y Parent Ownership
+
+En Qt, la clase `QObject` ya tiene un destructor virtual, lo que permite la destrucción polimórfica correcta de cualquier clase derivada. Además, Qt ofrece mecanismos adicionales de gestión de memoria: el sistema **parent-child** (el padre destruye automáticamente a sus hijos) y `deleteLater()` (que difiere la destrucción al siguiente ciclo del event loop). `deleteLater()` es especialmente útil cuando se necesita destruir un objeto durante la ejecución de un slot conectado a una señal del propio objeto, ya que destruirlo inmediatamente causaría un crash.
+
+##### Ejemplo de Destructores en Qt con `deleteLater()`
+
+```cpp
+#include <QCoreApplication>
+#include <QObject>
+#include <QTimer>
+#include <QDebug>
+
+class Trabajador : public QObject {
+    Q_OBJECT
+public:
+    Trabajador(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent) {
+        setObjectName(nombre);
+        qDebug() << "Trabajador creado:" << objectName();
+    }
+
+    ~Trabajador() override {
+        qDebug() << "Trabajador destruido:" << objectName();
+    }
+
+public slots:
+    void ejecutarTarea() {
+        qDebug() << objectName() << "ejecutando tarea...";
+        qDebug() << objectName() << "tarea completada, solicitando auto-destruccion";
+
+        // deleteLater() difiere la destrucción al event loop
+        // Seguro incluso dentro de un slot del propio objeto
+        this->deleteLater();
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // --- Ejemplo 1: Parent-Child ownership ---
+    qDebug() << "=== Parent-Child Ownership ===";
+    auto* gestor = new QObject();
+    gestor->setObjectName("Gestor");
+
+    // Los hijos se destruirán automáticamente con el padre
+    new Trabajador("Obrero_1", gestor);
+    new Trabajador("Obrero_2", gestor);
+
+    // --- Ejemplo 2: deleteLater() con QTimer ---
+    qDebug() << "\n=== deleteLater() con QTimer ===";
+    auto* trabajadorTemporal = new Trabajador("Temporal");
+
+    // Ejecutar tarea después de 100ms (el trabajador se auto-destruirá)
+    QTimer::singleShot(100, trabajadorTemporal, &Trabajador::ejecutarTarea);
+
+    // Destruir el gestor (y sus hijos) después de 500ms
+    QTimer::singleShot(500, [gestor]() {
+        qDebug() << "\nDestruyendo gestor y sus hijos:";
+        delete gestor;
+    });
+
+    // Salir de la aplicación después de 1 segundo
+    QTimer::singleShot(1000, &app, &QCoreApplication::quit);
+
+    return app.exec();
+}
+```
+
+En este ejemplo se muestran dos mecanismos de gestión de memoria en Qt. Primero, el sistema parent-child: `Obrero_1` y `Obrero_2` son hijos de `gestor`, y al destruir `gestor` con `delete`, ambos hijos se destruyen automáticamente. Segundo, `deleteLater()`: el `trabajadorTemporal` llama a `this->deleteLater()` dentro de su propio slot, lo que difiere la destrucción al siguiente ciclo del event loop de forma segura. `QTimer::singleShot` se usa para programar las acciones en el event loop.
+
+### Conclusión
+
+El uso de destructores virtuales en C++ es crucial para la correcta gestión de la memoria y otros recursos en jerarquías de herencia. Declarar el destructor de la clase base como `virtual` asegura que los destructores de las clases derivadas se llamen correctamente, previniendo fugas de memoria y garantizando una limpieza adecuada de los recursos. Esta práctica es especialmente importante en aplicaciones que utilizan polimorfismo, donde los objetos son manipulados a través de punteros o referencias a la clase base.
+<---FILES--->
+Ejemplo Sin Destructor Virtual
+Ejemplo Sin Destructor Virtual Result
+Ejemplo de Destructores Virtuales `= default`
+Ejemplo de Destructores Virtuales `= default` Result
+Ejemplo de `std::unique_ptr` con Destructores Virtuales
+Ejemplo de `std::unique_ptr` con Destructores Virtuales Result
+Ejemplo de Destructores en Qt con `deleteLater()`
+Ejemplo de Destructores en Qt con `deleteLater()` Result
+<---Ejemplo Sin Destructor Virtual--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Solo llama a ~Base(), no a ~Derivada()
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base() {
+        cout << "Constructor de Base" << endl;
+    }
+    virtual ~Base() {
+        cout << "Destructor de Base" << endl;
+    }
+};
+
+class Derivada : public Base {
+public:
+    Derivada() {
+        cout << "Constructor de Derivada" << endl;
+    }
+    ~Derivada() {
+        cout << "Destructor de Derivada" << endl;
+    }
+};
+
+int main() {
+    Base* obj = new Derivada();
+    delete obj; // Llama a ~Derivada() y luego a ~Base()
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+    virtual void hacerSonido() const = 0; // Función virtual pura
+    virtual ~Animal() {
+        cout << "Destructor de Animal" << endl;
+    }
+};
+
+class Perro : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El perro ladra" << endl;
+    }
+    ~Perro() {
+        cout << "Destructor de Perro" << endl;
+    }
+};
+
+class Gato : public Animal {
+public:
+    void hacerSonido() const override {
+        cout << "El gato maúlla" << endl;
+    }
+    ~Gato() {
+        cout << "Destructor de Gato" << endl;
+    }
+};
+
+int main() {
+    Animal* p = new Perro();
+    Animal* g = new Gato();
+    delete p; // Llama a ~Perro() y luego a ~Animal()
+    delete g; // Llama a ~Gato() y luego a ~Animal()
+    return 0;
+}
+<---Ejemplo Sin Destructor Virtual Result--->
+<---Ejemplo de Destructores Virtuales `= default`--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Patron moderno recomendado: virtual ~Clase() = default;
+class Forma {
+protected:
+    string nombre;
+
+public:
+    Forma(const string& n) : nombre(n) {
+        cout << "Constructor de Forma: " << nombre << endl;
+    }
+
+    // Destructor virtual con implementación por defecto - PATRON RECOMENDADO
+    virtual ~Forma() = default;
+
+    virtual double area() const = 0;
+
+    string getNombre() const { return nombre; }
+};
+
+class Circulo : public Forma {
+private:
+    double radio;
+
+public:
+    Circulo(double r) : Forma("Circulo"), radio(r) {
+        cout << "Constructor de Circulo, radio: " << radio << endl;
+    }
+
+    ~Circulo() override {
+        cout << "Destructor de Circulo" << endl;
+    }
+
+    double area() const override {
+        return 3.14159 * radio * radio;
+    }
+};
+
+class Rectangulo : public Forma {
+private:
+    double ancho, alto;
+
+public:
+    Rectangulo(double a, double h) : Forma("Rectangulo"), ancho(a), alto(h) {
+        cout << "Constructor de Rectangulo, " << ancho << "x" << alto << endl;
+    }
+
+    // También puede usar = default si no necesita limpieza especial
+    ~Rectangulo() override = default;
+
+    double area() const override {
+        return ancho * alto;
+    }
+};
+
+int main() {
+    Forma* f1 = new Circulo(5.0);
+    Forma* f2 = new Rectangulo(4.0, 3.0);
+
+    cout << f1->getNombre() << " - Area: " << f1->area() << endl;
+    cout << f2->getNombre() << " - Area: " << f2->area() << endl;
+
+    cout << "\n--- Destruyendo formas ---" << endl;
+    delete f1; // Llama a ~Circulo() gracias al destructor virtual
+    delete f2; // Llama a ~Rectangulo() = default
+
+    return 0;
+}
+<---Ejemplo de Destructores Virtuales `= default` Result--->
+<---Ejemplo de `std::unique_ptr` con Destructores Virtuales--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <string>
+using namespace std;
+
+class Sensor {
+protected:
+    string id;
+
+public:
+    Sensor(const string& identificador) : id(identificador) {
+        cout << "Sensor creado: " << id << endl;
+    }
+
+    // OBLIGATORIO para uso correcto con unique_ptr polimórfico
+    virtual ~Sensor() {
+        cout << "Sensor destruido: " << id << endl;
+    }
+
+    virtual string leer() const = 0;
+    string getId() const { return id; }
+};
+
+class SensorTemperatura : public Sensor {
+private:
+    double* buffer; // Recurso dinámico para demostrar la importancia del destructor
+
+public:
+    SensorTemperatura(const string& id, int tamBuffer)
+        : Sensor(id), buffer(new double[tamBuffer]) {
+        cout << "  Buffer de temperatura asignado para " << id << endl;
+    }
+
+    ~SensorTemperatura() override {
+        delete[] buffer;
+        cout << "  Buffer de temperatura liberado para " << id << endl;
+    }
+
+    string leer() const override {
+        return id + ": 23.5 °C";
+    }
+};
+
+class SensorHumedad : public Sensor {
+private:
+    string* registro; // Otro recurso dinámico
+
+public:
+    SensorHumedad(const string& id)
+        : Sensor(id), registro(new string("registro_" + id)) {
+        cout << "  Registro de humedad creado para " << id << endl;
+    }
+
+    ~SensorHumedad() override {
+        delete registro;
+        cout << "  Registro de humedad liberado para " << id << endl;
+    }
+
+    string leer() const override {
+        return id + ": 65%";
+    }
+};
+
+int main() {
+    // Vector de unique_ptr a la clase base
+    vector<unique_ptr<Sensor>> sensores;
+
+    sensores.push_back(make_unique<SensorTemperatura>("TEMP-01", 100));
+    sensores.push_back(make_unique<SensorHumedad>("HUM-01"));
+    sensores.push_back(make_unique<SensorTemperatura>("TEMP-02", 50));
+
+    cout << "\n--- Lecturas ---" << endl;
+    for (const auto& s : sensores) {
+        cout << s->leer() << endl;
+    }
+
+    // Al salir del scope, cada unique_ptr destruye su objeto correctamente
+    // gracias al destructor virtual en Sensor
+    cout << "\n--- Destruyendo sensores ---" << endl;
+    return 0;
+}
+<---Ejemplo de `std::unique_ptr` con Destructores Virtuales Result--->
+<---Ejemplo de Destructores en Qt con `deleteLater()`--->
+```cpp
+#include <QCoreApplication>
+#include <QObject>
+#include <QTimer>
+#include <QDebug>
+
+class Trabajador : public QObject {
+    Q_OBJECT
+public:
+    Trabajador(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent) {
+        setObjectName(nombre);
+        qDebug() << "Trabajador creado:" << objectName();
+    }
+
+    ~Trabajador() override {
+        qDebug() << "Trabajador destruido:" << objectName();
+    }
+
+public slots:
+    void ejecutarTarea() {
+        qDebug() << objectName() << "ejecutando tarea...";
+        qDebug() << objectName() << "tarea completada, solicitando auto-destruccion";
+
+        // deleteLater() difiere la destrucción al event loop
+        // Seguro incluso dentro de un slot del propio objeto
+        this->deleteLater();
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // --- Ejemplo 1: Parent-Child ownership ---
+    qDebug() << "=== Parent-Child Ownership ===";
+    auto* gestor = new QObject();
+    gestor->setObjectName("Gestor");
+
+    // Los hijos se destruirán automáticamente con el padre
+    new Trabajador("Obrero_1", gestor);
+    new Trabajador("Obrero_2", gestor);
+
+    // --- Ejemplo 2: deleteLater() con QTimer ---
+    qDebug() << "\n=== deleteLater() con QTimer ===";
+    auto* trabajadorTemporal = new Trabajador("Temporal");
+
+    // Ejecutar tarea después de 100ms (el trabajador se auto-destruirá)
+    QTimer::singleShot(100, trabajadorTemporal, &Trabajador::ejecutarTarea);
+
+    // Destruir el gestor (y sus hijos) después de 500ms
+    QTimer::singleShot(500, [gestor]() {
+        qDebug() << "\nDestruyendo gestor y sus hijos:";
+        delete gestor;
+    });
+
+    // Salir de la aplicación después de 1 segundo
+    QTimer::singleShot(1000, &app, &QCoreApplication::quit);
+
+    return app.exec();
+}
+<---Ejemplo de Destructores en Qt con `deleteLater()` Result--->

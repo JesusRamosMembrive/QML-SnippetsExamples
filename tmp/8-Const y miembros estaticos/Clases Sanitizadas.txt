@@ -1,0 +1,854 @@
+<---EXPLANATION--->
+### Clases Sanitizadas en C++
+
+En el contexto de la programación en C++, la sanitización de clases (a menudo referida como “Class Sanity Checks”) no es un concepto formal del lenguaje, pero se refiere a las prácticas y técnicas empleadas para asegurar que las clases se comporten correctamente y sus estados internos se mantengan válidos en todo momento. Este concepto abarca validaciones de invariantes, chequeo de precondiciones y postcondiciones, y el uso de herramientas de depuración y pruebas para detectar y corregir errores.
+
+#### Importancia de la Sanitización de Clases
+
+1. **Robustez:** Ayuda a prevenir errores y comportamientos inesperados al asegurar que las clases se mantengan en un estado válido.
+2. **Mantenibilidad:** Facilita la detección y corrección de errores, haciendo el código más fácil de mantener.
+3. **Confiabilidad:** Aumenta la confiabilidad del software al reducir la probabilidad de fallos en tiempo de ejecución.
+
+#### Técnicas para Sanitizar Clases
+
+1. **Invariantes de Clase:** Son condiciones que deben ser verdaderas en todo momento para los objetos de la clase, excepto durante la ejecución de sus métodos.
+2. **Precondiciones y Postcondiciones:** Las precondiciones son condiciones que deben ser verdaderas antes de la ejecución de un método, mientras que las postcondiciones son condiciones que deben ser verdaderas después de su ejecución.
+3. **Aserciones:** Son expresiones que se evalúan en tiempo de ejecución para verificar que ciertas condiciones se cumplan. Si la condición es falsa, el programa se detiene.
+4. **Pruebas Unitarias:** Se escriben pruebas automatizadas para verificar que los métodos de la clase funcionen correctamente.
+5. **Depuración y Herramientas de Análisis:** Uso de herramientas como sanitizadores de memoria, análisis estático y dinámico para detectar errores y posibles vulnerabilidades.
+
+#### Ejemplo de Sanitización de una Clase
+
+Consideremos una clase `CuentaBancaria` que representa una cuenta bancaria simple. Implementaremos algunas técnicas de sanitización para asegurar que la cuenta nunca tenga un saldo negativo.
+
+##### Definición de la Clase
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <cassert>
+using namespace std;
+
+class CuentaBancaria {
+private:
+    double saldo;
+
+    // Verifica el invariante de la clase
+    void verificarInvariante() const {
+        assert(saldo >= 0 && "El saldo no puede ser negativo");
+    }
+
+public:
+    // Constructor
+    CuentaBancaria(double saldoInicial) : saldo(saldoInicial) {
+        if (saldoInicial < 0) {
+            throw invalid_argument("El saldo inicial no puede ser negativo");
+        }
+        verificarInvariante();
+    }
+
+    // Depositar dinero
+    void depositar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a depositar no puede ser negativa");
+        }
+        saldo += cantidad;
+        verificarInvariante();
+    }
+
+    // Retirar dinero
+    void retirar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a retirar no puede ser negativa");
+        }
+        if (cantidad > saldo) {
+            throw runtime_error("Fondos insuficientes");
+        }
+        saldo -= cantidad;
+        verificarInvariante();
+    }
+
+    // Obtener el saldo actual
+    double obtenerSaldo() const {
+        verificarInvariante();
+        return saldo;
+    }
+};
+
+int main() {
+    try {
+        CuentaBancaria cuenta(100.0);
+        cuenta.depositar(50.0);
+        cout << "Saldo después de depositar 50: " << cuenta.obtenerSaldo() << endl;
+
+        cuenta.retirar(30.0);
+        cout << "Saldo después de retirar 30: " << cuenta.obtenerSaldo() << endl;
+
+        // Esta línea generará una excepción debido a fondos insuficientes
+        // cuenta.retirar(150.0);
+
+        // Esta línea generará una excepción debido a cantidad negativa
+        // cuenta.depositar(-20.0);
+
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- **Invariante de Clase:** Se asegura de que `saldo` nunca sea negativo usando la función `verificarInvariante()`.
+- **Precondiciones:** Los métodos `depositar` y `retirar` verifican que la cantidad no sea negativa y que haya suficientes fondos para retirar.
+- **Postcondiciones:** Las aserciones en `verificarInvariante` se usan para asegurarse de que el saldo sea válido después de cada operación.
+- **Manejo de Excepciones:** Se utilizan excepciones para manejar condiciones de error como saldos negativos y retiros excesivos.
+
+#### Herramientas y Prácticas Adicionales
+
+1. **Sanitizers:** Herramientas como AddressSanitizer, MemorySanitizer y UndefinedBehaviorSanitizer pueden detectar errores de memoria y comportamientos indefinidos en tiempo de ejecución.
+2. **Análisis Estático:** Herramientas de análisis estático pueden detectar errores potenciales y violaciones de estilo de código antes de que el código se ejecute.
+3. **Pruebas Unitarias Automatizadas:** Frameworks de pruebas como Google Test pueden automatizar la validación de las funciones y asegurar que los invariantes se mantengan.
+
+##### Ejemplo de Pruebas Unitarias con Google Test
+
+```cpp
+#include <gtest/gtest.h>
+#include "CuentaBancaria.h"
+
+TEST(CuentaBancariaTest, DepositarRetirar) {
+    CuentaBancaria cuenta(100.0);
+    cuenta.depositar(50.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 150.0);
+
+    cuenta.retirar(30.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 120.0);
+
+    EXPECT_THROW(cuenta.retirar(200.0), runtime_error);
+    EXPECT_THROW(cuenta.depositar(-10.0), invalid_argument);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+```
+
+En este ejemplo:
+- Se utilizan pruebas unitarias con Google Test para validar el comportamiento de la clase `CuentaBancaria`.
+
+#### `static_assert` para Validación en Compilación (C++11/17)
+
+`static_assert` es una herramienta poderosa que permite verificar condiciones en tiempo de compilación, detectando errores antes de que el programa se ejecute. A diferencia de `assert`, que evalúa condiciones en tiempo de ejecución, `static_assert` garantiza que ciertas restricciones se cumplan durante la compilación misma. Si la condición es falsa, el compilador emite un error con el mensaje proporcionado.
+
+En C++11, `static_assert` requiere un mensaje de error como segundo argumento. A partir de C++17, el mensaje es opcional, lo que simplifica su uso cuando la condición es autoexplicativa.
+
+`static_assert` es especialmente útil para:
+1. **Validar parámetros de plantilla:** Asegurar que los valores de template cumplan ciertos rangos o restricciones.
+2. **Verificar propiedades de tipos:** Comprobar que un tipo sea trivialmente copiable, tenga un tamaño específico, etc.
+3. **Garantizar compatibilidad de plataforma:** Verificar tamaños de tipos, alineación de memoria, etc.
+
+##### Ejemplo de static_assert con Plantillas
+
+```cpp
+#include <iostream>
+#include <type_traits>
+#include <array>
+using namespace std;
+
+// Clase Buffer con validaciones en tiempo de compilación
+template <typename T, size_t N>
+class Buffer {
+    // Validar que el tamaño sea válido (C++17: sin mensaje obligatorio)
+    static_assert(N > 0);
+    static_assert(N <= 1024, "El buffer no puede exceder 1024 elementos");
+
+    // Validar que el tipo sea trivialmente copiable para operaciones seguras
+    static_assert(is_trivially_copyable_v<T>,
+                  "El tipo T debe ser trivialmente copiable");
+
+    array<T, N> datos{};
+    size_t cantidad = 0;
+
+public:
+    // Agregar elemento al buffer
+    bool agregar(const T& valor) {
+        if (cantidad >= N) return false;
+        datos[cantidad++] = valor;
+        return true;
+    }
+
+    // Obtener elemento por índice
+    T obtener(size_t indice) const {
+        return datos[indice];
+    }
+
+    size_t tamano() const { return cantidad; }
+    static constexpr size_t capacidad() { return N; }
+};
+
+int main() {
+    // Compila correctamente: int es trivialmente copiable, N está en rango
+    Buffer<int, 10> bufferEnteros;
+    bufferEnteros.agregar(42);
+    bufferEnteros.agregar(100);
+
+    cout << "Buffer de enteros - Tamaño: " << bufferEnteros.tamano()
+         << ", Capacidad: " << bufferEnteros.capacidad() << endl;
+    cout << "Elemento 0: " << bufferEnteros.obtener(0) << endl;
+    cout << "Elemento 1: " << bufferEnteros.obtener(1) << endl;
+
+    Buffer<double, 5> bufferDoubles;
+    bufferDoubles.agregar(3.14);
+    cout << "Buffer de doubles - Elemento 0: " << bufferDoubles.obtener(0) << endl;
+
+    // Las siguientes líneas NO compilarían:
+    // Buffer<int, 0> b1;           // Error: N debe ser > 0
+    // Buffer<int, 2000> b2;        // Error: N no puede exceder 1024
+    // Buffer<string, 10> b3;       // Error: string no es trivialmente copiable
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `static_assert(N > 0)` usa la forma de C++17 sin mensaje, ya que la condición es clara.
+- `static_assert(N <= 1024, ...)` incluye un mensaje descriptivo para el error.
+- `is_trivially_copyable_v<T>` verifica que el tipo pueda copiarse de forma segura con `memcpy`.
+- Todos los errores se detectan en compilación, no en ejecución.
+
+#### `[[nodiscard]]` para Prevenir Errores de Uso (C++17/20)
+
+El atributo `[[nodiscard]]` indica al compilador que el valor de retorno de una función no debe ser ignorado. Si el programador llama a la función sin usar su resultado, el compilador emitirá una advertencia. Esto es particularmente útil para:
+
+1. **Funciones que retornan códigos de error:** Ignorar el código de error puede causar fallos silenciosos.
+2. **Funciones que retornan recursos:** Como punteros a memoria asignada, donde ignorar el retorno causa fugas de memoria.
+3. **Funciones cuyo único propósito es producir un valor:** Llamarlas sin usar el resultado indica un error lógico.
+
+A partir de C++20, se puede incluir una razón como cadena de texto: `[[nodiscard("Motivo")]]`, lo que hace que el mensaje de advertencia sea más informativo.
+
+##### Ejemplo de [[nodiscard]] en una Clase
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Códigos de error para la conexión
+enum class CodigoError {
+    Exito,
+    ErrorRed,
+    Timeout,
+    Rechazado,
+    Desconocido
+};
+
+class Conexion {
+private:
+    string servidor;
+    int puerto;
+    bool conectada = false;
+
+public:
+    Conexion(const string& srv, int p)
+        : servidor(srv), puerto(p) {}
+
+    // C++17: [[nodiscard]] advierte si se ignora el resultado
+    [[nodiscard]] bool conectar() {
+        cout << "Conectando a " << servidor << ":" << puerto << "..." << endl;
+        // Simular conexión exitosa
+        conectada = true;
+        return conectada;
+    }
+
+    // C++20: [[nodiscard]] con razón descriptiva
+    [[nodiscard("El código de error debe ser verificado")]]
+    CodigoError enviar(const string& mensaje) {
+        if (!conectada) {
+            cout << "Error: no conectado" << endl;
+            return CodigoError::ErrorRed;
+        }
+        cout << "Enviando: " << mensaje << endl;
+        return CodigoError::Exito;
+    }
+
+    // [[nodiscard]] en función que retorna un recurso importante
+    [[nodiscard("Los datos recibidos no deben ser ignorados")]]
+    string recibir() {
+        if (!conectada) return "";
+        return "Datos recibidos del servidor";
+    }
+
+    void desconectar() {
+        conectada = false;
+        cout << "Desconectado de " << servidor << endl;
+    }
+
+    bool estaConectada() const { return conectada; }
+};
+
+int main() {
+    Conexion conn("192.168.1.100", 8080);
+
+    // Uso correcto: verificar el resultado de conectar
+    if (conn.conectar()) {
+        cout << "Conexión establecida exitosamente" << endl;
+    }
+
+    // Uso correcto: verificar el código de error
+    CodigoError resultado = conn.enviar("Hola servidor");
+    if (resultado == CodigoError::Exito) {
+        cout << "Mensaje enviado correctamente" << endl;
+    }
+
+    // Uso correcto: almacenar los datos recibidos
+    string datos = conn.recibir();
+    cout << "Recibido: " << datos << endl;
+
+    // Las siguientes líneas generarían advertencias del compilador:
+    // conn.conectar();              // Advertencia: valor de retorno ignorado
+    // conn.enviar("test");          // Advertencia: "El código de error debe ser verificado"
+    // conn.recibir();               // Advertencia: "Los datos recibidos no deben ser ignorados"
+
+    conn.desconectar();
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `conectar()` retorna `bool` con `[[nodiscard]]`, obligando a verificar si la conexión fue exitosa.
+- `enviar()` usa la forma de C++20 con razón descriptiva para el código de error.
+- `recibir()` también usa `[[nodiscard]]` para evitar que se pierdan datos recibidos.
+- `desconectar()` no usa `[[nodiscard]]` porque es una operación de limpieza cuyo resultado no es crítico.
+
+#### Sanitizadores y Herramientas de Qt: `Q_ASSERT` y `qWarning`
+
+Qt proporciona su propio conjunto de macros y funciones para aserciones, validación y registro de mensajes, que se integran perfectamente con el ecosistema de Qt y ofrecen funcionalidades adicionales sobre las herramientas estándar de C++.
+
+##### Macros de Aserción de Qt
+
+1. **`Q_ASSERT(condición)`:** Similar a `assert`, pero se desactiva en compilaciones de release. Si la condición es falsa, imprime un mensaje de error y aborta el programa.
+2. **`Q_ASSERT_X(condición, donde, qué)`:** Versión extendida que incluye información sobre dónde ocurrió el fallo y qué condición falló.
+3. **`Q_CHECK_PTR(puntero)`:** Verifica que un puntero no sea `nullptr`. En modo debug, aborta si es nulo.
+
+##### Funciones de Registro de Qt
+
+Qt ofrece un sistema de registro por niveles de severidad:
+
+1. **`qDebug()`:** Mensajes de depuración, solo visibles en compilaciones debug.
+2. **`qWarning()`:** Advertencias que indican posibles problemas.
+3. **`qCritical()`:** Errores críticos que requieren atención inmediata.
+4. **`qFatal()`:** Errores fatales que causan la terminación inmediata del programa.
+
+##### Registro Categorizado con `Q_LOGGING_CATEGORY`
+
+Qt permite organizar los mensajes de log en categorías, facilitando el filtrado y la gestión de grandes cantidades de mensajes. Se define una categoría con `Q_LOGGING_CATEGORY` y se usa con las variantes categorizadas: `qCDebug()`, `qCWarning()`, `qCCritical()`.
+
+##### Ejemplo de Sanitización con Herramientas de Qt
+
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QLoggingCategory>
+
+// Definir categoría de logging para el módulo del motor
+Q_LOGGING_CATEGORY(motorLog, "app.motor")
+
+class Motor : public QObject {
+    Q_OBJECT
+
+private:
+    int rpm = 0;
+    int rpmMaximo = 8000;
+    double temperatura = 20.0;
+    double temperaturaMaxima = 120.0;
+    bool encendido = false;
+
+public:
+    explicit Motor(int maxRpm, QObject* parent = nullptr)
+        : QObject(parent), rpmMaximo(maxRpm)
+    {
+        // Verificar que el valor máximo de RPM sea razonable
+        Q_ASSERT_X(maxRpm > 0, "Motor::Motor",
+                    "Las RPM máximas deben ser positivas");
+        Q_ASSERT_X(maxRpm <= 20000, "Motor::Motor",
+                    "Las RPM máximas no pueden exceder 20000");
+
+        qCDebug(motorLog) << "Motor creado con RPM máximo:" << rpmMaximo;
+    }
+
+    void encender() {
+        if (encendido) {
+            qCWarning(motorLog) << "El motor ya está encendido";
+            return;
+        }
+        encendido = true;
+        rpm = 800; // RPM de ralentí
+        qCDebug(motorLog) << "Motor encendido - RPM:" << rpm;
+    }
+
+    void acelerar(int incremento) {
+        // Precondición: el motor debe estar encendido
+        Q_ASSERT(encendido && "El motor debe estar encendido para acelerar");
+
+        if (incremento <= 0) {
+            qCWarning(motorLog) << "Incremento inválido:" << incremento;
+            return;
+        }
+
+        int nuevasRpm = rpm + incremento;
+        if (nuevasRpm > rpmMaximo) {
+            qCWarning(motorLog) << "Limitando RPM al máximo:"
+                                << rpmMaximo << "(solicitado:" << nuevasRpm << ")";
+            rpm = rpmMaximo;
+        } else {
+            rpm = nuevasRpm;
+        }
+
+        qCDebug(motorLog) << "RPM actuales:" << rpm;
+
+        // Verificar temperatura después de acelerar
+        verificarTemperatura();
+    }
+
+    void establecerTemperatura(double temp) {
+        temperatura = temp;
+
+        if (temperatura > temperaturaMaxima) {
+            qCCritical(motorLog) << "¡TEMPERATURA CRÍTICA!"
+                                 << temperatura << "°C (máx:"
+                                 << temperaturaMaxima << "°C)";
+        } else if (temperatura > temperaturaMaxima * 0.8) {
+            qCWarning(motorLog) << "Temperatura alta:" << temperatura << "°C";
+        } else {
+            qCDebug(motorLog) << "Temperatura normal:" << temperatura << "°C";
+        }
+    }
+
+    void apagar() {
+        encendido = false;
+        rpm = 0;
+        qCDebug(motorLog) << "Motor apagado";
+    }
+
+    int obtenerRpm() const { return rpm; }
+    double obtenerTemperatura() const { return temperatura; }
+    bool estaEncendido() const { return encendido; }
+
+private:
+    void verificarTemperatura() {
+        if (temperatura > temperaturaMaxima) {
+            qCCritical(motorLog)
+                << "¡Emergencia! Temperatura excede el límite:"
+                << temperatura << "°C - Apagando motor";
+            apagar();
+        }
+    }
+};
+
+// Uso del Motor con las herramientas de Qt
+// int main(int argc, char *argv[]) {
+//     QCoreApplication app(argc, argv);
+//
+//     // Configurar filtros de logging (opcional)
+//     QLoggingCategory::setFilterRules("app.motor.debug=true");
+//
+//     Motor motor(8000);
+//     motor.encender();
+//     motor.acelerar(2000);
+//     motor.establecerTemperatura(95.0);
+//     motor.acelerar(3000);
+//     motor.establecerTemperatura(125.0); // Generará mensaje crítico
+//     motor.apagar();
+//
+//     return 0;
+// }
+```
+
+En este ejemplo:
+- `Q_ASSERT_X` valida los parámetros del constructor con mensajes descriptivos.
+- `Q_ASSERT` verifica precondiciones simples dentro de los métodos.
+- `qCDebug(motorLog)` registra operaciones normales bajo la categoría "app.motor".
+- `qCWarning(motorLog)` advierte sobre situaciones anómalas pero no fatales.
+- `qCCritical(motorLog)` reporta condiciones críticas como temperatura excesiva.
+- `Q_LOGGING_CATEGORY` permite filtrar los mensajes del motor independientemente de otros módulos.
+
+### Conclusión
+
+La sanitización de clases en C++ es una práctica esencial para asegurar la robustez y confiabilidad del software. Mediante la implementación de invariantes, precondiciones, postcondiciones, y el uso de herramientas de depuración y pruebas, los desarrolladores pueden detectar y corregir errores de manera más efectiva. Estas técnicas no solo mejoran la calidad del código sino que también facilitan su mantenimiento a largo plazo.
+<---FILES--->
+Definición de la Clase
+Definición de la Clase Result
+Ejemplo de Pruebas Unitarias con Google Test
+Ejemplo de Pruebas Unitarias con Google Test Result
+Ejemplo de static_assert con Plantillas
+Ejemplo de static_assert con Plantillas Result
+Ejemplo de [[nodiscard]] en una Clase
+Ejemplo de [[nodiscard]] en una Clase Result
+Ejemplo de Sanitización con Herramientas de Qt
+Ejemplo de Sanitización con Herramientas de Qt Result
+<---Definición de la Clase--->
+```cpp
+#include <iostream>
+#include <stdexcept>
+#include <cassert>
+using namespace std;
+
+class CuentaBancaria {
+private:
+    double saldo;
+
+    // Verifica el invariante de la clase
+    void verificarInvariante() const {
+        assert(saldo >= 0 && "El saldo no puede ser negativo");
+    }
+
+public:
+    // Constructor
+    CuentaBancaria(double saldoInicial) : saldo(saldoInicial) {
+        if (saldoInicial < 0) {
+            throw invalid_argument("El saldo inicial no puede ser negativo");
+        }
+        verificarInvariante();
+    }
+
+    // Depositar dinero
+    void depositar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a depositar no puede ser negativa");
+        }
+        saldo += cantidad;
+        verificarInvariante();
+    }
+
+    // Retirar dinero
+    void retirar(double cantidad) {
+        if (cantidad < 0) {
+            throw invalid_argument("La cantidad a retirar no puede ser negativa");
+        }
+        if (cantidad > saldo) {
+            throw runtime_error("Fondos insuficientes");
+        }
+        saldo -= cantidad;
+        verificarInvariante();
+    }
+
+    // Obtener el saldo actual
+    double obtenerSaldo() const {
+        verificarInvariante();
+        return saldo;
+    }
+};
+
+int main() {
+    try {
+        CuentaBancaria cuenta(100.0);
+        cuenta.depositar(50.0);
+        cout << "Saldo después de depositar 50: " << cuenta.obtenerSaldo() << endl;
+
+        cuenta.retirar(30.0);
+        cout << "Saldo después de retirar 30: " << cuenta.obtenerSaldo() << endl;
+
+        // Esta línea generará una excepción debido a fondos insuficientes
+        // cuenta.retirar(150.0);
+
+        // Esta línea generará una excepción debido a cantidad negativa
+        // cuenta.depositar(-20.0);
+
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+<---Definición de la Clase Result--->
+<---Ejemplo de Pruebas Unitarias con Google Test--->
+```cpp
+#include <gtest/gtest.h>
+#include "CuentaBancaria.h"
+
+TEST(CuentaBancariaTest, DepositarRetirar) {
+    CuentaBancaria cuenta(100.0);
+    cuenta.depositar(50.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 150.0);
+
+    cuenta.retirar(30.0);
+    EXPECT_EQ(cuenta.obtenerSaldo(), 120.0);
+
+    EXPECT_THROW(cuenta.retirar(200.0), runtime_error);
+    EXPECT_THROW(cuenta.depositar(-10.0), invalid_argument);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+<---Ejemplo de Pruebas Unitarias con Google Test Result--->
+<---Ejemplo de static_assert con Plantillas--->
+```cpp
+#include <iostream>
+#include <type_traits>
+#include <array>
+using namespace std;
+
+// Clase Buffer con validaciones en tiempo de compilación
+template <typename T, size_t N>
+class Buffer {
+    // Validar que el tamaño sea válido (C++17: sin mensaje obligatorio)
+    static_assert(N > 0);
+    static_assert(N <= 1024, "El buffer no puede exceder 1024 elementos");
+
+    // Validar que el tipo sea trivialmente copiable para operaciones seguras
+    static_assert(is_trivially_copyable_v<T>,
+                  "El tipo T debe ser trivialmente copiable");
+
+    array<T, N> datos{};
+    size_t cantidad = 0;
+
+public:
+    // Agregar elemento al buffer
+    bool agregar(const T& valor) {
+        if (cantidad >= N) return false;
+        datos[cantidad++] = valor;
+        return true;
+    }
+
+    // Obtener elemento por índice
+    T obtener(size_t indice) const {
+        return datos[indice];
+    }
+
+    size_t tamano() const { return cantidad; }
+    static constexpr size_t capacidad() { return N; }
+};
+
+int main() {
+    // Compila correctamente: int es trivialmente copiable, N está en rango
+    Buffer<int, 10> bufferEnteros;
+    bufferEnteros.agregar(42);
+    bufferEnteros.agregar(100);
+
+    cout << "Buffer de enteros - Tamaño: " << bufferEnteros.tamano()
+         << ", Capacidad: " << bufferEnteros.capacidad() << endl;
+    cout << "Elemento 0: " << bufferEnteros.obtener(0) << endl;
+    cout << "Elemento 1: " << bufferEnteros.obtener(1) << endl;
+
+    Buffer<double, 5> bufferDoubles;
+    bufferDoubles.agregar(3.14);
+    cout << "Buffer de doubles - Elemento 0: " << bufferDoubles.obtener(0) << endl;
+
+    // Las siguientes líneas NO compilarían:
+    // Buffer<int, 0> b1;           // Error: N debe ser > 0
+    // Buffer<int, 2000> b2;        // Error: N no puede exceder 1024
+    // Buffer<string, 10> b3;       // Error: string no es trivialmente copiable
+
+    return 0;
+}
+<---Ejemplo de static_assert con Plantillas Result--->
+<---Ejemplo de [[nodiscard]] en una Clase--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Códigos de error para la conexión
+enum class CodigoError {
+    Exito,
+    ErrorRed,
+    Timeout,
+    Rechazado,
+    Desconocido
+};
+
+class Conexion {
+private:
+    string servidor;
+    int puerto;
+    bool conectada = false;
+
+public:
+    Conexion(const string& srv, int p)
+        : servidor(srv), puerto(p) {}
+
+    // C++17: [[nodiscard]] advierte si se ignora el resultado
+    [[nodiscard]] bool conectar() {
+        cout << "Conectando a " << servidor << ":" << puerto << "..." << endl;
+        // Simular conexión exitosa
+        conectada = true;
+        return conectada;
+    }
+
+    // C++20: [[nodiscard]] con razón descriptiva
+    [[nodiscard("El código de error debe ser verificado")]]
+    CodigoError enviar(const string& mensaje) {
+        if (!conectada) {
+            cout << "Error: no conectado" << endl;
+            return CodigoError::ErrorRed;
+        }
+        cout << "Enviando: " << mensaje << endl;
+        return CodigoError::Exito;
+    }
+
+    // [[nodiscard]] en función que retorna un recurso importante
+    [[nodiscard("Los datos recibidos no deben ser ignorados")]]
+    string recibir() {
+        if (!conectada) return "";
+        return "Datos recibidos del servidor";
+    }
+
+    void desconectar() {
+        conectada = false;
+        cout << "Desconectado de " << servidor << endl;
+    }
+
+    bool estaConectada() const { return conectada; }
+};
+
+int main() {
+    Conexion conn("192.168.1.100", 8080);
+
+    // Uso correcto: verificar el resultado de conectar
+    if (conn.conectar()) {
+        cout << "Conexión establecida exitosamente" << endl;
+    }
+
+    // Uso correcto: verificar el código de error
+    CodigoError resultado = conn.enviar("Hola servidor");
+    if (resultado == CodigoError::Exito) {
+        cout << "Mensaje enviado correctamente" << endl;
+    }
+
+    // Uso correcto: almacenar los datos recibidos
+    string datos = conn.recibir();
+    cout << "Recibido: " << datos << endl;
+
+    // Las siguientes líneas generarían advertencias del compilador:
+    // conn.conectar();              // Advertencia: valor de retorno ignorado
+    // conn.enviar("test");          // Advertencia: "El código de error debe ser verificado"
+    // conn.recibir();               // Advertencia: "Los datos recibidos no deben ser ignorados"
+
+    conn.desconectar();
+
+    return 0;
+}
+<---Ejemplo de [[nodiscard]] en una Clase Result--->
+<---Ejemplo de Sanitización con Herramientas de Qt--->
+```cpp
+#include <QObject>
+#include <QDebug>
+#include <QLoggingCategory>
+
+// Definir categoría de logging para el módulo del motor
+Q_LOGGING_CATEGORY(motorLog, "app.motor")
+
+class Motor : public QObject {
+    Q_OBJECT
+
+private:
+    int rpm = 0;
+    int rpmMaximo = 8000;
+    double temperatura = 20.0;
+    double temperaturaMaxima = 120.0;
+    bool encendido = false;
+
+public:
+    explicit Motor(int maxRpm, QObject* parent = nullptr)
+        : QObject(parent), rpmMaximo(maxRpm)
+    {
+        // Verificar que el valor máximo de RPM sea razonable
+        Q_ASSERT_X(maxRpm > 0, "Motor::Motor",
+                    "Las RPM máximas deben ser positivas");
+        Q_ASSERT_X(maxRpm <= 20000, "Motor::Motor",
+                    "Las RPM máximas no pueden exceder 20000");
+
+        qCDebug(motorLog) << "Motor creado con RPM máximo:" << rpmMaximo;
+    }
+
+    void encender() {
+        if (encendido) {
+            qCWarning(motorLog) << "El motor ya está encendido";
+            return;
+        }
+        encendido = true;
+        rpm = 800; // RPM de ralentí
+        qCDebug(motorLog) << "Motor encendido - RPM:" << rpm;
+    }
+
+    void acelerar(int incremento) {
+        // Precondición: el motor debe estar encendido
+        Q_ASSERT(encendido && "El motor debe estar encendido para acelerar");
+
+        if (incremento <= 0) {
+            qCWarning(motorLog) << "Incremento inválido:" << incremento;
+            return;
+        }
+
+        int nuevasRpm = rpm + incremento;
+        if (nuevasRpm > rpmMaximo) {
+            qCWarning(motorLog) << "Limitando RPM al máximo:"
+                                << rpmMaximo << "(solicitado:" << nuevasRpm << ")";
+            rpm = rpmMaximo;
+        } else {
+            rpm = nuevasRpm;
+        }
+
+        qCDebug(motorLog) << "RPM actuales:" << rpm;
+
+        // Verificar temperatura después de acelerar
+        verificarTemperatura();
+    }
+
+    void establecerTemperatura(double temp) {
+        temperatura = temp;
+
+        if (temperatura > temperaturaMaxima) {
+            qCCritical(motorLog) << "¡TEMPERATURA CRÍTICA!"
+                                 << temperatura << "°C (máx:"
+                                 << temperaturaMaxima << "°C)";
+        } else if (temperatura > temperaturaMaxima * 0.8) {
+            qCWarning(motorLog) << "Temperatura alta:" << temperatura << "°C";
+        } else {
+            qCDebug(motorLog) << "Temperatura normal:" << temperatura << "°C";
+        }
+    }
+
+    void apagar() {
+        encendido = false;
+        rpm = 0;
+        qCDebug(motorLog) << "Motor apagado";
+    }
+
+    int obtenerRpm() const { return rpm; }
+    double obtenerTemperatura() const { return temperatura; }
+    bool estaEncendido() const { return encendido; }
+
+private:
+    void verificarTemperatura() {
+        if (temperatura > temperaturaMaxima) {
+            qCCritical(motorLog)
+                << "¡Emergencia! Temperatura excede el límite:"
+                << temperatura << "°C - Apagando motor";
+            apagar();
+        }
+    }
+};
+
+// Uso del Motor con las herramientas de Qt
+// int main(int argc, char *argv[]) {
+//     QCoreApplication app(argc, argv);
+//
+//     // Configurar filtros de logging (opcional)
+//     QLoggingCategory::setFilterRules("app.motor.debug=true");
+//
+//     Motor motor(8000);
+//     motor.encender();
+//     motor.acelerar(2000);
+//     motor.establecerTemperatura(95.0);
+//     motor.acelerar(3000);
+//     motor.establecerTemperatura(125.0); // Generará mensaje crítico
+//     motor.apagar();
+//
+//     return 0;
+// }
+<---Ejemplo de Sanitización con Herramientas de Qt Result--->

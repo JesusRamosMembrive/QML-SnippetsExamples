@@ -1,0 +1,174 @@
+<---EXPLANATION--->
+### Algoritmo de la Biblioteca Estándar: `std::nth_element`
+
+La función `std::nth_element` es un algoritmo de la biblioteca estándar de C++ que se utiliza para reorganizar los elementos de un rango de manera que el elemento en la posición n (índice) sea el que estaría en esa posición si el rango estuviera completamente ordenado. Todos los elementos precedentes al n-ésimo son menores o iguales, y todos los elementos posteriores son mayores o iguales. Es parte del encabezado `<algorithm>`.
+
+#### Sintaxis de `std::nth_element`
+
+```cpp
+#include <algorithm>
+
+template <class RandomIt>
+void nth_element(RandomIt first, RandomIt nth, RandomIt last);
+
+template <class RandomIt, class Compare>
+void nth_element(RandomIt first, RandomIt nth, RandomIt last, Compare comp);
+```
+
+- **`RandomIt first`**: Iterador al primer elemento del rango.
+- **`RandomIt nth`**: Iterador al elemento que será el n-ésimo en el rango ordenado.
+- **`RandomIt last`**: Iterador al elemento después del último en el rango.
+- **`Compare comp`**: (Opcional) Función de comparación que toma dos argumentos.
+
+#### Descripción
+
+`std::nth_element` reorganiza los elementos en el rango `[first, last)` de manera que el elemento en la posición `nth` sea el mismo que estaría en esa posición si el rango estuviera ordenado. Todos los elementos precedentes a `nth` serán menores o iguales que el elemento en `nth`, y todos los elementos posteriores serán mayores o iguales.
+
+#### Ejemplo de Uso de `std::nth_element`
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {10, 4, 5, 8, 6, 11, 26};
+
+    // Encontrar el tercer elemento más pequeño (índice 2)
+    std::nth_element(vec.begin(), vec.begin() + 2, vec.end());
+
+    // Mostrar el tercer elemento más pequeño
+    std::cout << "El tercer elemento más pequeño es: " << vec[2] << std::endl;
+
+    // Mostrar todos los elementos
+    std::cout << "Elementos del vector después de std::nth_element: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::nth_element(vec.begin(), vec.begin() + 2, vec.end())` coloca el tercer elemento más pequeño en la posición `vec[2]`.
+
+### Uso con Comparación Personalizada
+
+Puedes utilizar `std::nth_element` con una función de comparación personalizada para ordenar según un criterio específico.
+
+##### Ejemplo con Comparación Personalizada
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct Persona {
+    std::string nombre;
+    int edad;
+};
+
+bool compararPorEdad(const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+}
+
+int main() {
+    std::vector<Persona> personas = {{"Ana", 25}, {"Luis", 30}, {"Carlos", 22}, {"Maria", 28}, {"Jose", 24}};
+
+    // Encontrar la tercera persona más joven
+    std::nth_element(personas.begin(), personas.begin() + 2, personas.end(), compararPorEdad);
+
+    // Mostrar la tercera persona más joven
+    std::cout << "La tercera persona más joven es: " << personas[2].nombre << " (" << personas[2].edad << ")" << std::endl;
+
+    // Mostrar todas las personas
+    std::cout << "Personas después de std::nth_element: ";
+    for (const auto& persona : personas) {
+        std::cout << persona.nombre << " (" << persona.edad << "), ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::nth_element(personas.begin(), personas.begin() + 2, personas.end(), compararPorEdad)` coloca la tercera persona más joven en la posición `personas[2]`.
+
+### Consideraciones
+
+- **Rendimiento:** `std::nth_element` tiene una complejidad promedio de `O(n)`, pero en el peor de los casos puede ser `O(n log n)`.
+- **Uso de Comparadores:** Se puede utilizar una función de comparación personalizada para ordenar según criterios específicos.
+- **Requisitos de Iteradores:** `std::nth_element` requiere iteradores de acceso aleatorio, por lo que no puede utilizarse con contenedores que solo proporcionan iteradores de una sola dirección o bidireccionales, como `std::list`.
+
+### Conclusión
+
+`std::nth_element` es un algoritmo eficiente de la biblioteca estándar de C++ que permite encontrar y colocar el n-ésimo elemento en su posición correspondiente en un rango ordenado, asegurando que todos los elementos anteriores sean menores o iguales y todos los posteriores sean mayores o iguales. Su uso con comparaciones personalizadas proporciona flexibilidad para ordenar según criterios específicos. Comprender y utilizar `std::nth_element` es esencial para realizar operaciones de selección eficientes en contenedores en C++.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con Comparación Personalizada
+Ejemplo con Comparación Personalizada Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> vec = {10, 4, 5, 8, 6, 11, 26};
+
+    // Encontrar el tercer elemento más pequeño (índice 2)
+    std::nth_element(vec.begin(), vec.begin() + 2, vec.end());
+
+    // Mostrar el tercer elemento más pequeño
+    std::cout << "El tercer elemento más pequeño es: " << vec[2] << std::endl;
+
+    // Mostrar todos los elementos
+    std::cout << "Elementos del vector después de std::nth_element: ";
+    for (int elem : vec) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con Comparación Personalizada--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct Persona {
+    std::string nombre;
+    int edad;
+};
+
+bool compararPorEdad(const Persona& a, const Persona& b) {
+    return a.edad < b.edad;
+}
+
+int main() {
+    std::vector<Persona> personas = {{"Ana", 25}, {"Luis", 30}, {"Carlos", 22}, {"Maria", 28}, {"Jose", 24}};
+
+    // Encontrar la tercera persona más joven
+    std::nth_element(personas.begin(), personas.begin() + 2, personas.end(), compararPorEdad);
+
+    // Mostrar la tercera persona más joven
+    std::cout << "La tercera persona más joven es: " << personas[2].nombre << " (" << personas[2].edad << ")" << std::endl;
+
+    // Mostrar todas las personas
+    std::cout << "Personas después de std::nth_element: ";
+    for (const auto& persona : personas) {
+        std::cout << persona.nombre << " (" << persona.edad << "), ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo con Comparación Personalizada Result--->

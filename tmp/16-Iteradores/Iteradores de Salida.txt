@@ -1,0 +1,227 @@
+<---EXPLANATION--->
+### Iteradores de Salida en C++
+
+Los **iteradores de salida** (output iterators) son una categoría de iteradores en C++ que permiten escribir datos secuencialmente en una secuencia. Son esencialmente la contraparte de los iteradores de entrada y se utilizan cuando se necesita producir o generar datos, escribiéndolos en contenedores o flujos de salida.
+
+#### Características de los Iteradores de Salida
+
+1. **Escritura Secuencial:** Permiten escribir elementos en una secuencia en orden.
+2. **No Lectura:** No se pueden usar para leer los elementos de la secuencia.
+3. **Un Solo Paso:** Cada posición puede ser escrita una vez; no se garantiza que puedan retroceder.
+4. **Igualdad y Desigualdad:** Pueden compararse con otros iteradores de salida usando `==` y `!=`.
+
+#### Ejemplo con Flujos de Salida
+
+Los iteradores de salida son comúnmente utilizados con flujos de salida como `std::ostream`.
+
+##### Ejemplo Básico con `std::ostream_iterator`
+
+```cpp
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    std::vector<int> numeros = {1, 2, 3, 4, 5};
+
+    // Crear un ostream_iterator para escribir en std::cout
+    std::ostream_iterator<int> salida(std::cout, " ");
+
+    // Usar el iterador de salida para escribir los números
+    for (int numero : numeros) {
+        *salida = numero;
+        ++salida;
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::ostream_iterator<int>` se utiliza para crear un iterador de salida que escribe `int` en `std::cout`.
+- Los números en el vector `numeros` se escriben en la salida estándar utilizando el iterador de salida.
+
+#### Uso en Algoritmos de la STL
+
+Los iteradores de salida pueden ser utilizados en algoritmos de la STL que producen datos.
+
+##### Ejemplo con `std::copy`
+
+```cpp
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> numeros = {5, 2, 8, 1, 3};
+
+    // Crear un ostream_iterator para escribir en std::cout
+    std::ostream_iterator<int> salida(std::cout, " ");
+
+    // Usar std::copy para escribir los números en std::cout
+    std::copy(numeros.begin(), numeros.end(), salida);
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::copy` se utiliza para copiar los números del vector `numeros` a la salida estándar utilizando un iterador de salida.
+
+#### Implementación Personalizada de un Iterador de Salida
+
+Aunque `std::ostream_iterator` es una implementación estándar, es posible definir iteradores de salida personalizados.
+
+##### Ejemplo de Implementación Personalizada
+
+```cpp
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+class OutputIterator : public std::iterator<std::output_iterator_tag, void, void, void, void> {
+    std::ostream* out;
+    std::string delimiter;
+
+public:
+    OutputIterator(std::ostream& s, const std::string& delim = " ") : out(&s), delimiter(delim) {}
+
+    OutputIterator& operator=(int value) {
+        *out << value << delimiter;
+        return *this;
+    }
+
+    OutputIterator& operator*() {
+        return *this;
+    }
+
+    OutputIterator& operator++() {
+        return *this;
+    }
+
+    OutputIterator& operator++(int) {
+        return *this;
+    }
+};
+
+int main() {
+    std::vector<int> numeros = {1, 2, 3, 4, 5};
+
+    // Usar el iterador de salida personalizado para escribir en std::cout
+    OutputIterator salida(std::cout, " - ");
+
+    for (int numero : numeros) {
+        *salida = numero;
+        ++salida;
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `OutputIterator` es un iterador de salida personalizado que escribe `int` en un flujo de salida con un delimitador específico.
+- Se define sobrecargando los operadores necesarios para cumplir con los requisitos de un iterador de salida.
+
+### Conclusión
+
+Los iteradores de salida son una herramienta esencial en C++ para generar y escribir datos secuencialmente en contenedores o flujos de salida. Proporcionan una interfaz unificada para producir datos, lo que facilita su uso en combinación con los algoritmos de la STL. Entender cómo utilizar y, si es necesario, implementar iteradores de salida personalizados es crucial para escribir código C++ robusto y eficiente, especialmente cuando se trabaja con generación y producción de datos.
+<---FILES--->
+Ejemplo Básico con `std::ostream_iterator`
+Ejemplo Básico con `std::ostream_iterator` Result
+Ejemplo con `std::copy`
+Ejemplo con `std::copy` Result
+Ejemplo de Implementación Personalizada
+Ejemplo de Implementación Personalizada Result
+<---Ejemplo Básico con `std::ostream_iterator`--->
+```cpp
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+int main() {
+    std::vector<int> numeros = {1, 2, 3, 4, 5};
+
+    // Crear un ostream_iterator para escribir en std::cout
+    std::ostream_iterator<int> salida(std::cout, " ");
+
+    // Usar el iterador de salida para escribir los números
+    for (int numero : numeros) {
+        *salida = numero;
+        ++salida;
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo Básico con `std::ostream_iterator` Result--->
+<---Ejemplo con `std::copy`--->
+```cpp
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    std::vector<int> numeros = {5, 2, 8, 1, 3};
+
+    // Crear un ostream_iterator para escribir en std::cout
+    std::ostream_iterator<int> salida(std::cout, " ");
+
+    // Usar std::copy para escribir los números en std::cout
+    std::copy(numeros.begin(), numeros.end(), salida);
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo con `std::copy` Result--->
+<---Ejemplo de Implementación Personalizada--->
+```cpp
+#include <iostream>
+#include <iterator>
+#include <vector>
+
+class OutputIterator : public std::iterator<std::output_iterator_tag, void, void, void, void> {
+    std::ostream* out;
+    std::string delimiter;
+
+public:
+    OutputIterator(std::ostream& s, const std::string& delim = " ") : out(&s), delimiter(delim) {}
+
+    OutputIterator& operator=(int value) {
+        *out << value << delimiter;
+        return *this;
+    }
+
+    OutputIterator& operator*() {
+        return *this;
+    }
+
+    OutputIterator& operator++() {
+        return *this;
+    }
+
+    OutputIterator& operator++(int) {
+        return *this;
+    }
+};
+
+int main() {
+    std::vector<int> numeros = {1, 2, 3, 4, 5};
+
+    // Usar el iterador de salida personalizado para escribir en std::cout
+    OutputIterator salida(std::cout, " - ");
+
+    for (int numero : numeros) {
+        *salida = numero;
+        ++salida;
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo de Implementación Personalizada Result--->

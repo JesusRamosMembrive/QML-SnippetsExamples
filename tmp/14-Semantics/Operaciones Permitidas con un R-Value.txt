@@ -1,0 +1,263 @@
+<---EXPLANATION--->
+### Operaciones Permitidas con un R-Value en C++
+
+Los R-values en C++ son valores temporales que no tienen una dirección de memoria accesible. Aunque no pueden aparecer en el lado izquierdo de una asignación, hay varias operaciones que se pueden realizar con ellos. A continuación, se describen las operaciones permitidas con R-values, junto con ejemplos prácticos.
+
+#### Operaciones Comunes con R-Values
+
+1. **Asignación a una Variable:**
+   - Los R-values se pueden asignar a variables. Esto es común cuando se asigna el resultado de una expresión a una variable.
+
+2. **Paso como Argumentos a Funciones:**
+   - Los R-values se pueden pasar como argumentos a funciones, especialmente a funciones que toman parámetros por valor o R-value references.
+
+3. **Inicialización de Variables:**
+   - Los R-values se pueden utilizar para inicializar variables.
+
+4. **Operadores y Expresiones:**
+   - Los R-values se pueden usar en expresiones y con operadores aritméticos, lógicos, y relacionales.
+
+5. **Uso con R-Value References (`&&`):**
+   - Los R-values se pueden capturar con R-value references, lo que permite optimizaciones de movimiento (move semantics).
+
+#### Ejemplos de Operaciones con R-Values
+
+##### Asignación a una Variable
+
+```cpp
+int x = 5;         // '5' es un R-value asignado a 'x'
+double y = 3.14;   // '3.14' es un R-value asignado a 'y'
+```
+
+En este ejemplo:
+- `5` y `3.14` son R-values que se asignan a las variables `x` y `y`.
+
+##### Paso como Argumentos a Funciones
+
+```cpp
+#include <iostream>
+
+// Función que toma un parámetro por valor
+void procesar(int x) {
+    std::cout << "Valor: " << x << std::endl;
+}
+
+int main() {
+    procesar(10);   // '10' es un R-value pasado como argumento
+    return 0;
+}
+```
+
+En este ejemplo:
+- `10` es un R-value que se pasa como argumento a la función `procesar`.
+
+##### Inicialización de Variables
+
+```cpp
+int a = 5;         // '5' es un R-value usado para inicializar 'a'
+double b = a + 3;  // 'a + 3' es un R-value usado para inicializar 'b'
+```
+
+En este ejemplo:
+- `5` y `a + 3` son R-values que se usan para inicializar `a` y `b`.
+
+##### Uso en Expresiones y Operadores
+
+```cpp
+#include <iostream>
+
+int main() {
+    int x = 5;
+    int y = 10;
+    int z = x + y;  // 'x + y' es un R-value usado en una expresión
+
+    std::cout << "Resultado: " << z << std::endl;
+    return 0;
+}
+```
+
+En este ejemplo:
+- `x + y` es un R-value resultante de la expresión que se asigna a `z`.
+
+##### Uso con R-Value References
+
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    int* data;
+
+    // Constructor normal
+    MiClase(int value) : data(new int(value)) {
+        std::cout << "Constructor llamado para " << *data << std::endl;
+    }
+
+    // Destructor
+    ~MiClase() {
+        delete data;
+        std::cout << "Destructor llamado" << std::endl;
+    }
+
+    // Move Constructor
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+
+    // Move Assignment Operator
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    void mostrar() const {
+        if (data) {
+            std::cout << "Valor: " << *data << std::endl;
+        } else {
+            std::cout << "No hay datos" << std::endl;
+        }
+    }
+};
+
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = std::move(obj1);  // 'std::move(obj1)' convierte 'obj1' en un R-value
+    obj2.mostrar();
+    obj1.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    MiClase obj3(20);
+    obj3 = std::move(obj2);  // 'std::move(obj2)' convierte 'obj2' en un R-value
+    obj3.mostrar();
+    obj2.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `std::move` convierte un L-value (`obj1` y `obj2`) en un R-value, permitiendo que las move semantics se apliquen.
+
+### Resumen de Operaciones Permitidas con R-Values
+
+1. **Asignación a Variables:** Los R-values se pueden asignar a variables de tipos compatibles.
+2. **Paso como Argumentos a Funciones:** Los R-values se pueden pasar como argumentos a funciones, especialmente aquellas que aceptan R-value references (`&&`).
+3. **Inicialización de Variables:** Los R-values se pueden usar para inicializar variables.
+4. **Uso en Expresiones:** Los R-values se pueden usar en expresiones aritméticas, lógicas, y relacionales.
+5. **Move Semantics:** Los R-values se pueden usar con move semantics para transferir recursos eficientemente.
+
+### Conclusión
+
+Los R-values son fundamentales en C++ para trabajar con valores temporales y optimizar el manejo de recursos. Entender las operaciones permitidas con R-values y cómo utilizarlos correctamente es crucial para escribir código C++ moderno y eficiente. Las move semantics, habilitadas por las R-value references, permiten una gestión de recursos más eficiente y un rendimiento mejorado en aplicaciones críticas.
+<---FILES--->
+Asignación a una Variable
+Asignación a una Variable Result
+Paso como Argumentos a Funciones
+Paso como Argumentos a Funciones Result
+Inicialización de Variables
+Inicialización de Variables Result
+Uso en Expresiones y Operadores
+Uso en Expresiones y Operadores Result
+Uso con R-Value References
+Uso con R-Value References Result
+<---Asignación a una Variable--->
+```cpp
+int x = 5;         // '5' es un R-value asignado a 'x'
+double y = 3.14;   // '3.14' es un R-value asignado a 'y'
+<---Asignación a una Variable Result--->
+<---Paso como Argumentos a Funciones--->
+```cpp
+#include <iostream>
+
+// Función que toma un parámetro por valor
+void procesar(int x) {
+    std::cout << "Valor: " << x << std::endl;
+}
+
+int main() {
+    procesar(10);   // '10' es un R-value pasado como argumento
+    return 0;
+}
+<---Paso como Argumentos a Funciones Result--->
+<---Inicialización de Variables--->
+```cpp
+int a = 5;         // '5' es un R-value usado para inicializar 'a'
+double b = a + 3;  // 'a + 3' es un R-value usado para inicializar 'b'
+<---Inicialización de Variables Result--->
+<---Uso en Expresiones y Operadores--->
+```cpp
+#include <iostream>
+
+int main() {
+    int x = 5;
+    int y = 10;
+    int z = x + y;  // 'x + y' es un R-value usado en una expresión
+
+    std::cout << "Resultado: " << z << std::endl;
+    return 0;
+}
+<---Uso en Expresiones y Operadores Result--->
+<---Uso con R-Value References--->
+```cpp
+#include <iostream>
+
+class MiClase {
+public:
+    int* data;
+
+    // Constructor normal
+    MiClase(int value) : data(new int(value)) {
+        std::cout << "Constructor llamado para " << *data << std::endl;
+    }
+
+    // Destructor
+    ~MiClase() {
+        delete data;
+        std::cout << "Destructor llamado" << std::endl;
+    }
+
+    // Move Constructor
+    MiClase(MiClase&& other) noexcept : data(other.data) {
+        other.data = nullptr;
+        std::cout << "Move Constructor llamado" << std::endl;
+    }
+
+    // Move Assignment Operator
+    MiClase& operator=(MiClase&& other) noexcept {
+        if (this != &other) {
+            delete data;
+            data = other.data;
+            other.data = nullptr;
+            std::cout << "Move Assignment Operator llamado" << std::endl;
+        }
+        return *this;
+    }
+
+    void mostrar() const {
+        if (data) {
+            std::cout << "Valor: " << *data << std::endl;
+        } else {
+            std::cout << "No hay datos" << std::endl;
+        }
+    }
+};
+
+int main() {
+    MiClase obj1(10);
+    MiClase obj2 = std::move(obj1);  // 'std::move(obj1)' convierte 'obj1' en un R-value
+    obj2.mostrar();
+    obj1.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    MiClase obj3(20);
+    obj3 = std::move(obj2);  // 'std::move(obj2)' convierte 'obj2' en un R-value
+    obj3.mostrar();
+    obj2.mostrar();  // No hay datos, ya que los datos fueron movidos
+
+    return 0;
+}
+<---Uso con R-Value References Result--->

@@ -1,0 +1,854 @@
+<---EXPLANATION--->
+### Funciones Miembro Estáticas en C++
+
+En C++, las funciones miembro estáticas son funciones que pertenecen a la clase en sí misma, más que a cualquier instancia de la clase. Esto significa que pueden ser llamadas sin crear una instancia de la clase. Las funciones miembro estáticas no tienen acceso al puntero `this` y solo pueden acceder a otros miembros estáticos de la clase.
+
+#### Definición y Uso de Funciones Miembro Estáticas
+
+Una función miembro estática se declara usando la palabra clave `static` dentro de la definición de la clase. Estas funciones pueden ser llamadas usando el nombre de la clase en lugar de una instancia de la clase.
+
+##### Características de las Funciones Miembro Estáticas
+
+1. **Sin `this`:** No pueden acceder al puntero `this` ya que no están asociadas a ninguna instancia.
+2. **Acceso a Miembros Estáticos:** Solo pueden acceder a variables y otras funciones estáticas de la clase.
+3. **Llamada sin Instancia:** Pueden ser llamadas sin crear una instancia de la clase, usando el nombre de la clase.
+
+##### Sintaxis
+
+```cpp
+class Clase {
+public:
+    static tipo nombreFuncion(parametros);
+    // Otros miembros de la clase
+};
+```
+
+##### Ejemplo de Funciones Miembro Estáticas
+
+Consideremos una clase `Contador` que usa una función miembro estática para contar el número de instancias creadas de la clase.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    static int cuenta; // Variable miembro estática
+
+public:
+    Contador() {
+        cuenta++;
+    }
+
+    ~Contador() {
+        cuenta--;
+    }
+
+    static int obtenerCuenta() { // Función miembro estática
+        return cuenta;
+    }
+};
+
+// Definición de la variable miembro estática
+int Contador::cuenta = 0;
+
+int main() {
+    Contador c1;
+    Contador c2;
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    {
+        Contador c3;
+        cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 3
+    }
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `cuenta` es una variable miembro estática que rastrea el número de instancias de `Contador`.
+- `obtenerCuenta` es una función miembro estática que devuelve el valor de `cuenta`.
+
+#### Ventajas de Usar Funciones Miembro Estáticas
+
+1. **No Requieren Instancia:** Las funciones miembro estáticas pueden ser llamadas sin crear una instancia de la clase, lo que puede ser útil para funciones utilitarias que no dependen del estado de una instancia.
+2. **Acceso a Miembros Estáticos:** Pueden acceder y manipular variables estáticas de la clase, permitiendo el uso compartido de datos entre todas las instancias de la clase.
+3. **Facilidad de Uso:** Pueden ser utilizadas como funciones globales con el alcance de la clase, mejorando la organización del código.
+
+#### Comparación con Funciones Miembro No Estáticas
+
+- **Acceso a Miembros:** Las funciones miembro no estáticas pueden acceder a todos los miembros de la clase, incluyendo los no estáticos, mientras que las funciones estáticas solo pueden acceder a miembros estáticos.
+- **Uso de `this`:** Las funciones miembro no estáticas tienen acceso al puntero `this`, permitiendo operar sobre la instancia actual, mientras que las funciones estáticas no lo tienen.
+
+##### Ejemplo Comparativo
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Ejemplo {
+private:
+    int instanciaVariable; // Variable miembro no estática
+    static int estaticaVariable; // Variable miembro estática
+
+public:
+    Ejemplo(int valor) : instanciaVariable(valor) {
+        estaticaVariable += valor;
+    }
+
+    // Función miembro no estática
+    void mostrarInstancia() const {
+        cout << "Instancia Variable: " << instanciaVariable << endl;
+    }
+
+    // Función miembro estática
+    static void mostrarEstatica() {
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+};
+
+// Definición de la variable miembro estática
+int Ejemplo::estaticaVariable = 0;
+
+int main() {
+    Ejemplo e1(10);
+    Ejemplo e2(20);
+
+    e1.mostrarInstancia(); // Muestra: Instancia Variable: 10
+    e2.mostrarInstancia(); // Muestra: Instancia Variable: 20
+
+    Ejemplo::mostrarEstatica(); // Muestra: Estatica Variable: 30
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `mostrarInstancia` es una función miembro no estática que accede a `instanciaVariable`.
+- `mostrarEstatica` es una función miembro estática que accede a `estaticaVariable`.
+
+#### Aplicaciones Comunes de Funciones Miembro Estáticas
+
+1. **Funciones Utilitarias:** Para realizar operaciones que no dependen del estado de una instancia específica.
+2. **Contadores y Estadísticas:** Para rastrear y reportar estadísticas globales relacionadas con la clase.
+3. **Métodos de Fábrica:** Para crear instancias de la clase y realizar otras inicializaciones que no dependen del estado de una instancia.
+
+#### Métodos Estáticos Factory (Patrón de Fábrica)
+
+Una de las aplicaciones más comunes de las funciones miembro estáticas es el **patrón de fábrica** (Factory Pattern). Los métodos estáticos factory son funciones que crean y retornan instancias de la clase, ofreciendo una alternativa más expresiva y flexible a los constructores directos.
+
+Este patrón se conoce también como **constructores nombrados** (Named Constructors), porque cada método factory tiene un nombre descriptivo que indica claramente cómo se construye el objeto, a diferencia de los constructores que siempre llevan el nombre de la clase.
+
+##### Ventajas del Patrón Factory con Métodos Estáticos
+
+1. **Nombres descriptivos:** A diferencia de los constructores, los métodos factory pueden tener nombres que describen la intención de la creación.
+2. **Control sobre la creación:** Pueden aplicar validaciones, cachear objetos existentes o retornar subtipos.
+3. **Múltiples formas de creación:** Evitan la ambigüedad de tener múltiples constructores con parámetros similares.
+4. **Constructor privado:** Al hacer el constructor privado, se garantiza que los objetos solo se creen a través de los métodos factory controlados.
+
+##### Ejemplo de Métodos Factory con Clase Color
+
+```cpp
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <stdexcept>
+using namespace std;
+
+class Color {
+private:
+    int r, g, b;
+
+    // Constructor privado: solo accesible desde métodos factory
+    Color(int rojo, int verde, int azul)
+        : r(rojo), g(verde), b(azul) {}
+
+public:
+    // --- Métodos Factory: constructores nombrados ---
+
+    // Colores predefinidos
+    static Color rojo()   { return Color(255, 0, 0); }
+    static Color verde()  { return Color(0, 255, 0); }
+    static Color azul()   { return Color(0, 0, 255); }
+    static Color blanco() { return Color(255, 255, 255); }
+    static Color negro()  { return Color(0, 0, 0); }
+
+    // Factory desde componentes RGB con validación
+    static Color desde_rgb(int r, int g, int b) {
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+            throw invalid_argument("Los valores RGB deben estar entre 0 y 255");
+        }
+        return Color(r, g, b);
+    }
+
+    // Factory desde cadena hexadecimal (ej: "#FF8800" o "FF8800")
+    static Color desde_hex(const string& hex) {
+        string limpio = hex;
+        if (!limpio.empty() && limpio[0] == '#') {
+            limpio = limpio.substr(1);
+        }
+        if (limpio.size() != 6) {
+            throw invalid_argument("Formato hex inválido: se esperan 6 caracteres");
+        }
+
+        int r = stoi(limpio.substr(0, 2), nullptr, 16);
+        int g = stoi(limpio.substr(2, 2), nullptr, 16);
+        int b = stoi(limpio.substr(4, 2), nullptr, 16);
+
+        return Color(r, g, b);
+    }
+
+    // Factory desde escala de grises
+    static Color desde_gris(int intensidad) {
+        if (intensidad < 0 || intensidad > 255) {
+            throw invalid_argument("La intensidad debe estar entre 0 y 255");
+        }
+        return Color(intensidad, intensidad, intensidad);
+    }
+
+    // Convertir a cadena hexadecimal
+    string a_hex() const {
+        ostringstream oss;
+        oss << "#" << uppercase << hex << setfill('0')
+            << setw(2) << r << setw(2) << g << setw(2) << b;
+        return oss.str();
+    }
+
+    void mostrar() const {
+        cout << "Color RGB(" << r << ", " << g << ", " << b
+             << ") = " << a_hex() << endl;
+    }
+};
+
+int main() {
+    // Crear colores usando métodos factory nombrados
+    Color c1 = Color::rojo();
+    Color c2 = Color::verde();
+    Color c3 = Color::azul();
+
+    c1.mostrar(); // Color RGB(255, 0, 0) = #FF0000
+    c2.mostrar(); // Color RGB(0, 255, 0) = #00FF00
+    c3.mostrar(); // Color RGB(0, 0, 255) = #0000FF
+
+    // Crear desde componentes RGB
+    Color c4 = Color::desde_rgb(128, 64, 200);
+    c4.mostrar(); // Color RGB(128, 64, 200) = #8040C8
+
+    // Crear desde hexadecimal
+    Color c5 = Color::desde_hex("#FF8800");
+    c5.mostrar(); // Color RGB(255, 136, 0) = #FF8800
+
+    // Crear desde escala de grises
+    Color c6 = Color::desde_gris(180);
+    c6.mostrar(); // Color RGB(180, 180, 180) = #B4B4B4
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- El constructor es privado, lo que impide crear objetos directamente con `Color(r, g, b)`.
+- `Color::rojo()`, `Color::verde()`, `Color::azul()` son constructores nombrados que crean colores predefinidos.
+- `Color::desde_rgb()` y `Color::desde_hex()` ofrecen diferentes formas de crear un color con validación incluida.
+- `Color::desde_gris()` muestra cómo un factory puede simplificar la creación para casos especiales.
+
+#### Patrón Singleton con Función Estática
+
+El **Singleton** es un patrón de diseño que garantiza que una clase tenga una única instancia durante toda la vida del programa, proporcionando un punto de acceso global a ella. La implementación más elegante y segura en C++ moderno es el **Singleton de Meyer**, que utiliza una variable estática local dentro de una función miembro estática.
+
+##### Características del Singleton de Meyer
+
+1. **Inicialización perezosa (lazy):** La instancia se crea solo cuando se accede por primera vez, no al inicio del programa.
+2. **Seguridad en hilos (thread-safe):** Desde C++11, el estándar garantiza que la inicialización de variables estáticas locales es segura en entornos multihilo. El compilador genera el código necesario para evitar condiciones de carrera.
+3. **Destrucción automática:** La instancia se destruye automáticamente al finalizar el programa, en el orden inverso de creación.
+4. **Simplicidad:** No requiere mutexes, punteros inteligentes ni inicialización manual.
+
+##### Ejemplo del Patrón Singleton
+
+```cpp
+#include <iostream>
+#include <string>
+#include <map>
+using namespace std;
+
+class Configuracion {
+private:
+    map<string, string> parametros;
+
+    // Constructor privado: impide crear instancias externas
+    Configuracion() {
+        cout << "Configuracion: inicializando valores por defecto..." << endl;
+        parametros["idioma"] = "es";
+        parametros["tema"] = "oscuro";
+        parametros["fuente"] = "Arial";
+        parametros["tamano_fuente"] = "14";
+    }
+
+    // Eliminar copia y asignación
+    Configuracion(const Configuracion&) = delete;
+    Configuracion& operator=(const Configuracion&) = delete;
+
+public:
+    // Singleton de Meyer: variable estática local (thread-safe desde C++11)
+    static Configuracion& instancia() {
+        static Configuracion config; // Se crea solo una vez
+        return config;
+    }
+
+    // Obtener un parámetro
+    string obtener(const string& clave) const {
+        auto it = parametros.find(clave);
+        if (it != parametros.end()) {
+            return it->second;
+        }
+        return "(no definido)";
+    }
+
+    // Establecer un parámetro
+    void establecer(const string& clave, const string& valor) {
+        parametros[clave] = valor;
+        cout << "Configuracion: " << clave << " = " << valor << endl;
+    }
+
+    // Mostrar toda la configuración
+    void mostrarTodo() const {
+        cout << "=== Configuración actual ===" << endl;
+        for (const auto& [clave, valor] : parametros) {
+            cout << "  " << clave << ": " << valor << endl;
+        }
+    }
+};
+
+int main() {
+    // Primera llamada: crea la instancia
+    Configuracion& config = Configuracion::instancia();
+    config.mostrarTodo();
+
+    // Modificar configuración
+    config.establecer("tema", "claro");
+    config.establecer("idioma", "en");
+
+    cout << endl;
+
+    // Segunda llamada: obtiene la misma instancia
+    Configuracion& otraRef = Configuracion::instancia();
+    cout << "Tema actual: " << otraRef.obtener("tema") << endl;
+    cout << "Idioma actual: " << otraRef.obtener("idioma") << endl;
+
+    // Verificar que es la misma instancia
+    cout << "¿Misma instancia? "
+         << (&config == &otraRef ? "Sí" : "No") << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- El constructor es privado y la copia está eliminada, impidiendo crear más de una instancia.
+- `instancia()` usa una variable `static` local que se inicializa solo en la primera llamada (thread-safe en C++11+).
+- Todas las referencias obtenidas apuntan al mismo objeto.
+- La configuración se comparte entre todas las partes del programa que la necesiten.
+
+#### Funciones Estáticas en Qt
+
+Qt hace un uso extensivo de funciones miembro estáticas en todo su framework. Muchas de las funcionalidades más utilizadas de Qt se acceden a través de métodos estáticos, siguiendo patrones como Singleton, funciones utilitarias y acceso a información del sistema.
+
+##### Métodos Estáticos Comunes en Qt
+
+1. **`QCoreApplication::instance()`:** Retorna el puntero a la instancia única de la aplicación (patrón Singleton).
+2. **`QGuiApplication::primaryScreen()`:** Obtiene la pantalla principal del sistema sin necesidad de crear objetos adicionales.
+3. **`QThread::currentThread()`:** Retorna el hilo de ejecución actual.
+4. **`QMetaObject::invokeMethod()`:** Invoca métodos dinámicamente por nombre, útil para comunicación entre hilos.
+5. **`QWidget::createWindowContainer()`:** Crea un contenedor de widget para ventanas nativas.
+6. **`QColor::colorNames()`:** Retorna la lista de nombres de colores reconocidos por Qt.
+7. **`QFont::families()`:** Retorna las familias de fuentes disponibles en el sistema.
+8. **`QDir::homePath()`, `QDir::tempPath()`:** Acceden a rutas del sistema operativo.
+9. **`QFile::exists()`:** Verifica la existencia de un archivo sin crear un objeto `QFile`.
+
+##### Ejemplo de Funciones Estáticas en Qt
+
+```cpp
+#include <QCoreApplication>
+#include <QThread>
+#include <QDir>
+#include <QFile>
+#include <QDateTime>
+#include <QSysInfo>
+#include <QDebug>
+#include <QTimer>
+
+// Clase utilitaria que usa funciones estáticas de Qt
+class InfoSistema {
+public:
+    static void mostrarInformacionGeneral() {
+        qDebug() << "=== Información del Sistema ===";
+
+        // QSysInfo: información estática del sistema
+        qDebug() << "Sistema operativo:" << QSysInfo::prettyProductName();
+        qDebug() << "Arquitectura CPU:" << QSysInfo::currentCpuArchitecture();
+        qDebug() << "Tipo de kernel:" << QSysInfo::kernelType();
+        qDebug() << "Versión del kernel:" << QSysInfo::kernelVersion();
+    }
+
+    static void mostrarRutasSistema() {
+        qDebug() << "\n=== Rutas del Sistema ===";
+
+        // QDir: funciones estáticas para rutas del sistema
+        qDebug() << "Directorio home:" << QDir::homePath();
+        qDebug() << "Directorio temporal:" << QDir::tempPath();
+        qDebug() << "Directorio actual:" << QDir::currentPath();
+        qDebug() << "Separador de ruta:" << QDir::separator();
+    }
+
+    static void mostrarInfoHilo() {
+        qDebug() << "\n=== Información del Hilo ===";
+
+        // QThread: obtener hilo actual (estático)
+        QThread* hiloActual = QThread::currentThread();
+        qDebug() << "Hilo actual:" << hiloActual;
+        qDebug() << "¿Es hilo principal?"
+                 << (hiloActual == QCoreApplication::instance()->thread()
+                     ? "Sí" : "No");
+        qDebug() << "Procesadores ideales:" << QThread::idealThreadCount();
+    }
+
+    static void verificarArchivos(const QStringList& rutas) {
+        qDebug() << "\n=== Verificación de Archivos ===";
+
+        for (const QString& ruta : rutas) {
+            // QFile::exists(): función estática para verificar existencia
+            bool existe = QFile::exists(ruta);
+            qDebug() << ruta << "->" << (existe ? "Existe" : "No existe");
+        }
+    }
+
+    static void mostrarFechaHora() {
+        qDebug() << "\n=== Fecha y Hora ===";
+
+        // QDateTime: funciones estáticas para obtener fecha/hora
+        QDateTime ahora = QDateTime::currentDateTime();
+        qDebug() << "Fecha/hora local:" << ahora.toString("dd/MM/yyyy hh:mm:ss");
+
+        QDateTime utc = QDateTime::currentDateTimeUtc();
+        qDebug() << "Fecha/hora UTC:" << utc.toString("dd/MM/yyyy hh:mm:ss");
+    }
+};
+
+// int main(int argc, char *argv[]) {
+//     QCoreApplication app(argc, argv);
+//
+//     InfoSistema::mostrarInformacionGeneral();
+//     InfoSistema::mostrarRutasSistema();
+//     InfoSistema::mostrarInfoHilo();
+//     InfoSistema::mostrarFechaHora();
+//
+//     QStringList archivos = {
+//         QDir::homePath() + "/.bashrc",
+//         "/tmp/test.txt",
+//         QCoreApplication::applicationFilePath()
+//     };
+//     InfoSistema::verificarArchivos(archivos);
+//
+//     // QTimer::singleShot(): función estática para temporizadores
+//     QTimer::singleShot(1000, &app, []() {
+//         qDebug() << "\nTemporizador ejecutado después de 1 segundo";
+//         QCoreApplication::quit();
+//     });
+//
+//     return app.exec();
+// }
+```
+
+En este ejemplo:
+- `QSysInfo::prettyProductName()` y otros métodos estáticos obtienen información del sistema sin crear objetos.
+- `QDir::homePath()`, `QDir::tempPath()` acceden a rutas del sistema operativo directamente.
+- `QThread::currentThread()` retorna el hilo actual, y `QThread::idealThreadCount()` indica el número óptimo de hilos.
+- `QFile::exists()` verifica la existencia de archivos de forma estática.
+- `QDateTime::currentDateTime()` obtiene la fecha y hora actual.
+- `QTimer::singleShot()` programa un temporizador sin crear un objeto `QTimer` permanente.
+
+### Conclusión
+
+Las funciones miembro estáticas en C++ son una herramienta poderosa que permite definir funciones asociadas a la clase en lugar de a una instancia específica. Facilitan la implementación de métodos utilitarios, el manejo de datos compartidos entre todas las instancias de una clase y otras operaciones que no dependen del estado de una instancia. Entender cómo y cuándo usar funciones miembro estáticas es esencial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
+<---FILES--->
+Características de las Funciones Miembro Estáticas
+Características de las Funciones Miembro Estáticas Result
+Sintaxis
+Sintaxis Result
+Ejemplo de Funciones Miembro Estáticas
+Ejemplo de Funciones Miembro Estáticas Result
+Ejemplo Comparativo
+Ejemplo Comparativo Result
+Ejemplo de Métodos Factory con Clase Color
+Ejemplo de Métodos Factory con Clase Color Result
+Ejemplo del Patrón Singleton
+Ejemplo del Patrón Singleton Result
+Ejemplo de Funciones Estáticas en Qt
+Ejemplo de Funciones Estáticas en Qt Result
+<---Características de las Funciones Miembro Estáticas--->
+<---Características de las Funciones Miembro Estáticas Result--->
+<---Sintaxis--->
+```cpp
+class Clase {
+public:
+    static tipo nombreFuncion(parametros);
+    // Otros miembros de la clase
+};
+<---Sintaxis Result--->
+<---Ejemplo de Funciones Miembro Estáticas--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    static int cuenta; // Variable miembro estática
+
+public:
+    Contador() {
+        cuenta++;
+    }
+
+    ~Contador() {
+        cuenta--;
+    }
+
+    static int obtenerCuenta() { // Función miembro estática
+        return cuenta;
+    }
+};
+
+// Definición de la variable miembro estática
+int Contador::cuenta = 0;
+
+int main() {
+    Contador c1;
+    Contador c2;
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    {
+        Contador c3;
+        cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 3
+    }
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    return 0;
+}
+<---Ejemplo de Funciones Miembro Estáticas Result--->
+<---Ejemplo Comparativo--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Ejemplo {
+private:
+    int instanciaVariable; // Variable miembro no estática
+    static int estaticaVariable; // Variable miembro estática
+
+public:
+    Ejemplo(int valor) : instanciaVariable(valor) {
+        estaticaVariable += valor;
+    }
+
+    // Función miembro no estática
+    void mostrarInstancia() const {
+        cout << "Instancia Variable: " << instanciaVariable << endl;
+    }
+
+    // Función miembro estática
+    static void mostrarEstatica() {
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+};
+
+// Definición de la variable miembro estática
+int Ejemplo::estaticaVariable = 0;
+
+int main() {
+    Ejemplo e1(10);
+    Ejemplo e2(20);
+
+    e1.mostrarInstancia(); // Muestra: Instancia Variable: 10
+    e2.mostrarInstancia(); // Muestra: Instancia Variable: 20
+
+    Ejemplo::mostrarEstatica(); // Muestra: Estatica Variable: 30
+
+    return 0;
+}
+<---Ejemplo Comparativo Result--->
+<---Ejemplo de Métodos Factory con Clase Color--->
+```cpp
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <stdexcept>
+using namespace std;
+
+class Color {
+private:
+    int r, g, b;
+
+    // Constructor privado: solo accesible desde métodos factory
+    Color(int rojo, int verde, int azul)
+        : r(rojo), g(verde), b(azul) {}
+
+public:
+    // --- Métodos Factory: constructores nombrados ---
+
+    // Colores predefinidos
+    static Color rojo()   { return Color(255, 0, 0); }
+    static Color verde()  { return Color(0, 255, 0); }
+    static Color azul()   { return Color(0, 0, 255); }
+    static Color blanco() { return Color(255, 255, 255); }
+    static Color negro()  { return Color(0, 0, 0); }
+
+    // Factory desde componentes RGB con validación
+    static Color desde_rgb(int r, int g, int b) {
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+            throw invalid_argument("Los valores RGB deben estar entre 0 y 255");
+        }
+        return Color(r, g, b);
+    }
+
+    // Factory desde cadena hexadecimal (ej: "#FF8800" o "FF8800")
+    static Color desde_hex(const string& hex) {
+        string limpio = hex;
+        if (!limpio.empty() && limpio[0] == '#') {
+            limpio = limpio.substr(1);
+        }
+        if (limpio.size() != 6) {
+            throw invalid_argument("Formato hex inválido: se esperan 6 caracteres");
+        }
+
+        int r = stoi(limpio.substr(0, 2), nullptr, 16);
+        int g = stoi(limpio.substr(2, 2), nullptr, 16);
+        int b = stoi(limpio.substr(4, 2), nullptr, 16);
+
+        return Color(r, g, b);
+    }
+
+    // Factory desde escala de grises
+    static Color desde_gris(int intensidad) {
+        if (intensidad < 0 || intensidad > 255) {
+            throw invalid_argument("La intensidad debe estar entre 0 y 255");
+        }
+        return Color(intensidad, intensidad, intensidad);
+    }
+
+    // Convertir a cadena hexadecimal
+    string a_hex() const {
+        ostringstream oss;
+        oss << "#" << uppercase << hex << setfill('0')
+            << setw(2) << r << setw(2) << g << setw(2) << b;
+        return oss.str();
+    }
+
+    void mostrar() const {
+        cout << "Color RGB(" << r << ", " << g << ", " << b
+             << ") = " << a_hex() << endl;
+    }
+};
+
+int main() {
+    // Crear colores usando métodos factory nombrados
+    Color c1 = Color::rojo();
+    Color c2 = Color::verde();
+    Color c3 = Color::azul();
+
+    c1.mostrar(); // Color RGB(255, 0, 0) = #FF0000
+    c2.mostrar(); // Color RGB(0, 255, 0) = #00FF00
+    c3.mostrar(); // Color RGB(0, 0, 255) = #0000FF
+
+    // Crear desde componentes RGB
+    Color c4 = Color::desde_rgb(128, 64, 200);
+    c4.mostrar(); // Color RGB(128, 64, 200) = #8040C8
+
+    // Crear desde hexadecimal
+    Color c5 = Color::desde_hex("#FF8800");
+    c5.mostrar(); // Color RGB(255, 136, 0) = #FF8800
+
+    // Crear desde escala de grises
+    Color c6 = Color::desde_gris(180);
+    c6.mostrar(); // Color RGB(180, 180, 180) = #B4B4B4
+
+    return 0;
+}
+<---Ejemplo de Métodos Factory con Clase Color Result--->
+<---Ejemplo del Patrón Singleton--->
+```cpp
+#include <iostream>
+#include <string>
+#include <map>
+using namespace std;
+
+class Configuracion {
+private:
+    map<string, string> parametros;
+
+    // Constructor privado: impide crear instancias externas
+    Configuracion() {
+        cout << "Configuracion: inicializando valores por defecto..." << endl;
+        parametros["idioma"] = "es";
+        parametros["tema"] = "oscuro";
+        parametros["fuente"] = "Arial";
+        parametros["tamano_fuente"] = "14";
+    }
+
+    // Eliminar copia y asignación
+    Configuracion(const Configuracion&) = delete;
+    Configuracion& operator=(const Configuracion&) = delete;
+
+public:
+    // Singleton de Meyer: variable estática local (thread-safe desde C++11)
+    static Configuracion& instancia() {
+        static Configuracion config; // Se crea solo una vez
+        return config;
+    }
+
+    // Obtener un parámetro
+    string obtener(const string& clave) const {
+        auto it = parametros.find(clave);
+        if (it != parametros.end()) {
+            return it->second;
+        }
+        return "(no definido)";
+    }
+
+    // Establecer un parámetro
+    void establecer(const string& clave, const string& valor) {
+        parametros[clave] = valor;
+        cout << "Configuracion: " << clave << " = " << valor << endl;
+    }
+
+    // Mostrar toda la configuración
+    void mostrarTodo() const {
+        cout << "=== Configuración actual ===" << endl;
+        for (const auto& [clave, valor] : parametros) {
+            cout << "  " << clave << ": " << valor << endl;
+        }
+    }
+};
+
+int main() {
+    // Primera llamada: crea la instancia
+    Configuracion& config = Configuracion::instancia();
+    config.mostrarTodo();
+
+    // Modificar configuración
+    config.establecer("tema", "claro");
+    config.establecer("idioma", "en");
+
+    cout << endl;
+
+    // Segunda llamada: obtiene la misma instancia
+    Configuracion& otraRef = Configuracion::instancia();
+    cout << "Tema actual: " << otraRef.obtener("tema") << endl;
+    cout << "Idioma actual: " << otraRef.obtener("idioma") << endl;
+
+    // Verificar que es la misma instancia
+    cout << "¿Misma instancia? "
+         << (&config == &otraRef ? "Sí" : "No") << endl;
+
+    return 0;
+}
+<---Ejemplo del Patrón Singleton Result--->
+<---Ejemplo de Funciones Estáticas en Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QThread>
+#include <QDir>
+#include <QFile>
+#include <QDateTime>
+#include <QSysInfo>
+#include <QDebug>
+#include <QTimer>
+
+// Clase utilitaria que usa funciones estáticas de Qt
+class InfoSistema {
+public:
+    static void mostrarInformacionGeneral() {
+        qDebug() << "=== Información del Sistema ===";
+
+        // QSysInfo: información estática del sistema
+        qDebug() << "Sistema operativo:" << QSysInfo::prettyProductName();
+        qDebug() << "Arquitectura CPU:" << QSysInfo::currentCpuArchitecture();
+        qDebug() << "Tipo de kernel:" << QSysInfo::kernelType();
+        qDebug() << "Versión del kernel:" << QSysInfo::kernelVersion();
+    }
+
+    static void mostrarRutasSistema() {
+        qDebug() << "\n=== Rutas del Sistema ===";
+
+        // QDir: funciones estáticas para rutas del sistema
+        qDebug() << "Directorio home:" << QDir::homePath();
+        qDebug() << "Directorio temporal:" << QDir::tempPath();
+        qDebug() << "Directorio actual:" << QDir::currentPath();
+        qDebug() << "Separador de ruta:" << QDir::separator();
+    }
+
+    static void mostrarInfoHilo() {
+        qDebug() << "\n=== Información del Hilo ===";
+
+        // QThread: obtener hilo actual (estático)
+        QThread* hiloActual = QThread::currentThread();
+        qDebug() << "Hilo actual:" << hiloActual;
+        qDebug() << "¿Es hilo principal?"
+                 << (hiloActual == QCoreApplication::instance()->thread()
+                     ? "Sí" : "No");
+        qDebug() << "Procesadores ideales:" << QThread::idealThreadCount();
+    }
+
+    static void verificarArchivos(const QStringList& rutas) {
+        qDebug() << "\n=== Verificación de Archivos ===";
+
+        for (const QString& ruta : rutas) {
+            // QFile::exists(): función estática para verificar existencia
+            bool existe = QFile::exists(ruta);
+            qDebug() << ruta << "->" << (existe ? "Existe" : "No existe");
+        }
+    }
+
+    static void mostrarFechaHora() {
+        qDebug() << "\n=== Fecha y Hora ===";
+
+        // QDateTime: funciones estáticas para obtener fecha/hora
+        QDateTime ahora = QDateTime::currentDateTime();
+        qDebug() << "Fecha/hora local:" << ahora.toString("dd/MM/yyyy hh:mm:ss");
+
+        QDateTime utc = QDateTime::currentDateTimeUtc();
+        qDebug() << "Fecha/hora UTC:" << utc.toString("dd/MM/yyyy hh:mm:ss");
+    }
+};
+
+// int main(int argc, char *argv[]) {
+//     QCoreApplication app(argc, argv);
+//
+//     InfoSistema::mostrarInformacionGeneral();
+//     InfoSistema::mostrarRutasSistema();
+//     InfoSistema::mostrarInfoHilo();
+//     InfoSistema::mostrarFechaHora();
+//
+//     QStringList archivos = {
+//         QDir::homePath() + "/.bashrc",
+//         "/tmp/test.txt",
+//         QCoreApplication::applicationFilePath()
+//     };
+//     InfoSistema::verificarArchivos(archivos);
+//
+//     // QTimer::singleShot(): función estática para temporizadores
+//     QTimer::singleShot(1000, &app, []() {
+//         qDebug() << "\nTemporizador ejecutado después de 1 segundo";
+//         QCoreApplication::quit();
+//     });
+//
+//     return app.exec();
+// }
+<---Ejemplo de Funciones Estáticas en Qt Result--->

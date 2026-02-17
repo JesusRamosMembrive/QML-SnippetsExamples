@@ -35,6 +35,7 @@ Item {
         ListElement { text: "ECAM" }
         ListElement { text: "NavDisplay" }
         ListElement { text: "Teoria" }
+        ListElement { text: "Date" }
     }
 
     ListView {

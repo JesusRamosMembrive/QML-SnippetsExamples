@@ -23,9 +23,12 @@ qt_add_qml_module(qmlsnippetsstyle
         TextField.qml
         ToolButton.qml
         ToolTip.qml
+        Tumbler.qml
         # Componentes especializados - Buttons
         buttons/GlowButton.qml
         buttons/GradientButton.qml
         buttons/PulseButton.qml
         buttons/NeumorphicButton.qml
+        # Componentes especializados - Sliders
+        sliders/CircularSlider.qml
 )

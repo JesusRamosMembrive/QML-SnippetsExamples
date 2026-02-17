@@ -1,0 +1,448 @@
+<---EXPLANATION--->
+### Parámetros y Argumentos en C++
+
+Los parámetros y argumentos son conceptos fundamentales en la programación de funciones. Los parámetros son variables en la definición de la función que actúan como marcadores de posición para los valores que se pasarán a la función cuando se llame. Los argumentos son los valores reales que se pasan a la función cuando se invoca.
+
+#### Parámetros
+
+Los parámetros se declaran en la definición de la función. Actúan como variables locales dentro del cuerpo de la función, permitiendo que la función opere con los valores proporcionados en la llamada.
+
+##### Tipos de Parámetros
+
+1. **Parámetros por Valor**
+2. **Parámetros por Referencia**
+3. **Parámetros por Puntero**
+4. **Parámetros Predeterminados**
+
+##### Parámetros por Valor
+
+Cuando se pasan parámetros por valor, se copia el valor del argumento en el parámetro de la función. Los cambios hechos a los parámetros dentro de la función no afectan a los argumentos originales.
+
+```cpp
+void incrementarPorValor(int x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorValor(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 5
+    return 0;
+}
+```
+
+##### Parámetros por Referencia
+
+Cuando se pasan parámetros por referencia, se pasa la referencia del argumento a la función, permitiendo que la función modifique el valor original.
+
+```cpp
+void incrementarPorReferencia(int& x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorReferencia(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+```
+
+##### Parámetros por Puntero
+
+Los punteros pueden utilizarse para pasar la dirección de una variable a una función, permitiendo que la función modifique la variable original.
+
+```cpp
+void incrementarPorPuntero(int* x) {
+    (*x)++;
+    cout << "Dentro de la función: " << *x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorPuntero(&numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+```
+
+##### Parámetros Predeterminados
+
+C++ permite especificar valores predeterminados para los parámetros. Si no se proporcionan argumentos para estos parámetros en la llamada a la función, se utilizan los valores predeterminados.
+
+```cpp
+void saludar(string nombre = "Mundo") {
+    cout << "Hola, " << nombre << "!" << endl;
+}
+
+int main() {
+    saludar(); // Usa el valor predeterminado: Mundo
+    saludar("Juan"); // Usa el argumento proporcionado: Juan
+    return 0;
+}
+```
+
+#### Argumentos
+
+Los argumentos son los valores que se pasan a la función cuando se invoca. Pueden ser constantes, variables, expresiones, o incluso llamadas a otras funciones.
+
+##### Ejemplo de Argumentos
+
+```cpp
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int x = 5;
+    int y = 3;
+    int resultado = sumar(x, y); // x y y son los argumentos
+    cout << "Resultado: " << resultado << endl;
+    return 0;
+}
+```
+
+En este ejemplo, `x` y `y` son argumentos cuando se llama a la función `sumar`.
+
+### Funciones con Múltiples Parámetros
+
+Las funciones pueden aceptar múltiples parámetros, lo que permite realizar operaciones más complejas.
+
+##### Ejemplo con Múltiples Parámetros
+
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirDatos(string nombre, int edad, double altura) {
+    cout << "Nombre: " << nombre << endl;
+    cout << "Edad: " << edad << endl;
+    cout << "Altura: " << altura << " metros" << endl;
+}
+
+int main() {
+    imprimirDatos("Juan", 30, 1.75);
+    return 0;
+}
+```
+
+### Paso de Parámetros por Constante
+
+Es una buena práctica pasar parámetros por referencia constante cuando no se requiere modificar el argumento, especialmente para objetos grandes, para evitar copias innecesarias.
+
+##### Ejemplo con Referencia Constante
+
+```cpp
+void mostrarMensaje(const string& mensaje) {
+    cout << mensaje << endl;
+}
+
+int main() {
+    string saludo = "Hola, Mundo!";
+    mostrarMensaje(saludo);
+    return 0;
+}
+```
+
+### Semántica de Movimiento en Parámetros (C++11)
+
+A partir de C++11, se introdujeron las **referencias rvalue** (`&&`) y `std::move` para permitir la transferencia eficiente de recursos sin realizar copias. Esto es especialmente útil al pasar objetos grandes (como strings, vectores o contenedores) a funciones cuando el objeto original ya no se necesita.
+
+- **Referencia rvalue (`&&`)**: Acepta valores temporales (rvalues) que pueden ser "movidos" en lugar de copiados.
+- **`std::move`**: Convierte un lvalue en un rvalue, permitiendo que se aplique la semántica de movimiento.
+
+##### Ejemplo de Semántica de Movimiento
+
+```cpp
+#include <iostream>
+#include <string>
+#include <utility>
+using namespace std;
+
+void procesarTexto(string&& texto) {
+    cout << "Procesando: " << texto << endl;
+    // texto se ha "movido", evitando copia
+}
+
+void procesarGenerico(string texto) {
+    // Si se pasa un rvalue, se mueve; si lvalue, se copia
+    cout << "Texto: " << texto << endl;
+}
+
+int main() {
+    string mensaje = "Hola";
+    procesarTexto(std::move(mensaje)); // Move explícito
+    // mensaje está en estado válido pero indeterminado
+
+    procesarGenerico("temporal"); // Move implícito desde rvalue
+    return 0;
+}
+```
+
+En este ejemplo, `procesarTexto` acepta exclusivamente rvalues, por lo que se debe usar `std::move()` para pasar una variable existente. Después del movimiento, la variable `mensaje` queda en un estado válido pero indeterminado (no se debe asumir su contenido).
+
+### `std::string_view` como Parámetro (C++17)
+
+`std::string_view` es un tipo introducido en C++17 que proporciona una **vista ligera y no propietaria** de una secuencia de caracteres. No realiza copias ni asigna memoria, lo que lo convierte en una alternativa eficiente a `const std::string&` para parámetros de solo lectura.
+
+- Funciona con `std::string`, `const char*` y string literals sin conversiones costosas.
+- No posee la memoria subyacente, por lo que no debe usarse para almacenar datos a largo plazo.
+
+##### Ejemplo de `std::string_view`
+
+```cpp
+#include <iostream>
+#include <string_view>
+using namespace std;
+
+// Eficiente: no copia el string, solo referencia
+void imprimir(string_view texto) {
+    cout << texto << endl;
+}
+
+int main() {
+    string str = "Hola Mundo";
+    const char* cstr = "Desde C-string";
+
+    imprimir(str);        // Funciona con std::string
+    imprimir(cstr);       // Funciona con const char*
+    imprimir("Literal");  // Funciona con string literals
+    return 0;
+}
+```
+
+La ventaja principal de `string_view` es que evita copias innecesarias cuando solo se necesita leer el contenido del string, aceptando cualquier tipo de string como argumento.
+
+### Parámetros en Qt: `QString`, `QStringView` y Tipos Qt
+
+Qt proporciona sus propios tipos de strings y convenciones para el paso de parámetros que se integran con el ecosistema del framework.
+
+- **`const QString&`**: La forma estándar de pasar strings en Qt. Evita copias gracias a la referencia constante.
+- **`QStringView`**: Introducido en Qt 6, es el equivalente Qt de `std::string_view`. Proporciona una vista ligera y no propietaria de datos Unicode.
+- **`QList` y otros contenedores Qt**: Se pasan por `const` referencia para evitar copias innecesarias.
+
+##### Ejemplo de Parámetros Qt
+
+```cpp
+#include <QString>
+#include <QStringView>
+#include <QDebug>
+#include <QList>
+
+// Paso por const reference (strings largos)
+void procesarNombre(const QString& nombre) {
+    qDebug() << "Nombre:" << nombre;
+}
+
+// QStringView: vista ligera, similar a string_view (Qt 6)
+void mostrarTexto(QStringView texto) {
+    qDebug() << "Texto:" << texto;
+}
+
+// QList por const reference
+void procesarLista(const QList<int>& datos) {
+    for (int d : datos) {
+        qDebug() << d;
+    }
+}
+```
+
+> **Nota:** En Qt, se recomienda usar `const QString&` para parámetros de entrada de strings largos y `QStringView` para vistas de solo lectura (Qt 6+). Los contenedores como `QList`, `QMap` y `QHash` deben pasarse por `const` referencia cuando no se necesita modificarlos.
+
+### Conclusión
+
+Entender la diferencia entre parámetros y argumentos, y cómo se pueden pasar a las funciones, es esencial para escribir funciones flexibles y eficientes en C++. El uso adecuado de parámetros por valor, referencia, puntero, y valores predeterminados permite a los desarrolladores manipular datos de diversas maneras, mejorar el rendimiento y mantener el código limpio y fácil de entender. Con C++11, la semántica de movimiento permite transferencias eficientes de recursos, y con C++17, `std::string_view` ofrece una alternativa ligera para parámetros de solo lectura. En Qt, `QString`, `QStringView` y las convenciones de paso por referencia constante completan el panorama para el desarrollo moderno. Con estas habilidades, se puede maximizar la reutilización y modularidad del código en C++.
+<---FILES--->
+Tipos de Parámetros
+Tipos de Parámetros Result
+Parámetros por Valor
+Parámetros por Valor Result
+Parámetros por Referencia
+Parámetros por Referencia Result
+Parámetros por Puntero
+Parámetros por Puntero Result
+Parámetros Predeterminados
+Parámetros Predeterminados Result
+Ejemplo de Argumentos
+Ejemplo de Argumentos Result
+Ejemplo con Múltiples Parámetros
+Ejemplo con Múltiples Parámetros Result
+Ejemplo con Referencia Constante
+Ejemplo con Referencia Constante Result
+Ejemplo de Semántica de Movimiento
+Ejemplo de Semántica de Movimiento Result
+Ejemplo de string_view
+Ejemplo de string_view Result
+Ejemplo de Parámetros Qt
+Ejemplo de Parámetros Qt Result
+<---Tipos de Parámetros--->
+<---Tipos de Parámetros Result--->
+<---Parámetros por Valor--->
+```cpp
+void incrementarPorValor(int x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorValor(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 5
+    return 0;
+}
+<---Parámetros por Valor Result--->
+<---Parámetros por Referencia--->
+```cpp
+void incrementarPorReferencia(int& x) {
+    x++;
+    cout << "Dentro de la función: " << x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorReferencia(numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+<---Parámetros por Referencia Result--->
+<---Parámetros por Puntero--->
+```cpp
+void incrementarPorPuntero(int* x) {
+    (*x)++;
+    cout << "Dentro de la función: " << *x << endl;
+}
+
+int main() {
+    int numero = 5;
+    incrementarPorPuntero(&numero);
+    cout << "Fuera de la función: " << numero << endl; // Salida: 6
+    return 0;
+}
+<---Parámetros por Puntero Result--->
+<---Parámetros Predeterminados--->
+```cpp
+void saludar(string nombre = "Mundo") {
+    cout << "Hola, " << nombre << "!" << endl;
+}
+
+int main() {
+    saludar(); // Usa el valor predeterminado: Mundo
+    saludar("Juan"); // Usa el argumento proporcionado: Juan
+    return 0;
+}
+<---Parámetros Predeterminados Result--->
+<---Ejemplo de Argumentos--->
+```cpp
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int x = 5;
+    int y = 3;
+    int resultado = sumar(x, y); // x y y son los argumentos
+    cout << "Resultado: " << resultado << endl;
+    return 0;
+}
+<---Ejemplo de Argumentos Result--->
+<---Ejemplo con Múltiples Parámetros--->
+```cpp
+#include <iostream>
+using namespace std;
+
+void imprimirDatos(string nombre, int edad, double altura) {
+    cout << "Nombre: " << nombre << endl;
+    cout << "Edad: " << edad << endl;
+    cout << "Altura: " << altura << " metros" << endl;
+}
+
+int main() {
+    imprimirDatos("Juan", 30, 1.75);
+    return 0;
+}
+<---Ejemplo con Múltiples Parámetros Result--->
+<---Ejemplo con Referencia Constante--->
+```cpp
+void mostrarMensaje(const string& mensaje) {
+    cout << mensaje << endl;
+}
+
+int main() {
+    string saludo = "Hola, Mundo!";
+    mostrarMensaje(saludo);
+    return 0;
+}
+<---Ejemplo con Referencia Constante Result--->
+<---Ejemplo de Semántica de Movimiento--->
+```cpp
+#include <iostream>
+#include <string>
+#include <utility>
+using namespace std;
+
+void procesarTexto(string&& texto) {
+    cout << "Procesando: " << texto << endl;
+    // texto se ha "movido", evitando copia
+}
+
+void procesarGenerico(string texto) {
+    // Si se pasa un rvalue, se mueve; si lvalue, se copia
+    cout << "Texto: " << texto << endl;
+}
+
+int main() {
+    string mensaje = "Hola";
+    procesarTexto(std::move(mensaje)); // Move explícito
+    // mensaje está en estado válido pero indeterminado
+
+    procesarGenerico("temporal"); // Move implícito desde rvalue
+    return 0;
+}
+<---Ejemplo de Semántica de Movimiento Result--->
+<---Ejemplo de string_view--->
+```cpp
+#include <iostream>
+#include <string_view>
+using namespace std;
+
+// Eficiente: no copia el string, solo referencia
+void imprimir(string_view texto) {
+    cout << texto << endl;
+}
+
+int main() {
+    string str = "Hola Mundo";
+    const char* cstr = "Desde C-string";
+
+    imprimir(str);        // Funciona con std::string
+    imprimir(cstr);       // Funciona con const char*
+    imprimir("Literal");  // Funciona con string literals
+    return 0;
+}
+<---Ejemplo de string_view Result--->
+<---Ejemplo de Parámetros Qt--->
+```cpp
+#include <QString>
+#include <QStringView>
+#include <QDebug>
+#include <QList>
+
+// Paso por const reference (strings largos)
+void procesarNombre(const QString& nombre) {
+    qDebug() << "Nombre:" << nombre;
+}
+
+// QStringView: vista ligera, similar a string_view (Qt 6)
+void mostrarTexto(QStringView texto) {
+    qDebug() << "Texto:" << texto;
+}
+
+// QList por const reference
+void procesarLista(const QList<int>& datos) {
+    for (int d : datos) {
+        qDebug() << d;
+    }
+}
+<---Ejemplo de Parámetros Qt Result--->

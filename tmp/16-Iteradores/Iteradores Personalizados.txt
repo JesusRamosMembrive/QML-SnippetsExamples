@@ -1,0 +1,255 @@
+<---EXPLANATION--->
+### Iteradores Personalizados en C++
+
+En C++, además de los iteradores proporcionados por los contenedores de la STL, es posible crear iteradores personalizados para recorrer estructuras de datos no estándar o para proporcionar iteraciones especializadas. La creación de iteradores personalizados implica implementar ciertas funcionalidades requeridas por el concepto de iterador en C++.
+
+#### Requisitos de un Iterador
+
+Un iterador debe cumplir con ciertos requisitos dependiendo de su categoría (input, output, forward, bidirectional, random access). Estos requisitos incluyen la sobrecarga de operadores específicos y la provisión de ciertos tipos.
+
+### Implementación de un Iterador Personalizado
+
+A continuación, se presenta un ejemplo de cómo implementar un iterador bidireccional personalizado para una estructura de datos simple.
+
+##### Ejemplo: Iterador Bidireccional para una Lista Enlazada Simple
+
+Primero, definimos una lista enlazada simple.
+
+```cpp
+#include <iostream>
+
+// Nodo de la lista
+template <typename T>
+struct Node {
+    T data;
+    Node* next;
+    Node* prev;
+    Node(const T& data) : data(data), next(nullptr), prev(nullptr) {}
+};
+
+// Iterador bidireccional personalizado
+template <typename T>
+class ListIterator {
+public:
+    // Tipos requeridos para un iterador
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T*;
+    using reference = T&;
+
+    // Constructor
+    ListIterator(Node<T>* node = nullptr) : node(node) {}
+
+    // Operadores de sobrecarga
+    reference operator*() const { return node->data; }
+    pointer operator->() const { return &(node->data); }
+
+    // Incremento
+    ListIterator& operator++() {
+        node = node->next;
+        return *this;
+    }
+
+    ListIterator operator++(int) {
+        ListIterator temp = *this;
+        ++(*this);
+        return temp;
+    }
+
+    // Decremento
+    ListIterator& operator--() {
+        node = node->prev;
+        return *this;
+    }
+
+    ListIterator operator--(int) {
+        ListIterator temp = *this;
+        --(*this);
+        return temp;
+    }
+
+    // Comparación
+    bool operator==(const ListIterator& other) const { return node == other.node; }
+    bool operator!=(const ListIterator& other) const { return node != other.node; }
+
+private:
+    Node<T>* node;
+};
+
+// Lista enlazada simple
+template <typename T>
+class LinkedList {
+public:
+    using iterator = ListIterator<T>;
+
+    LinkedList() : head(nullptr), tail(nullptr) {}
+
+    void push_back(const T& value) {
+        Node<T>* newNode = new Node<T>(value);
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+    }
+
+    iterator begin() { return iterator(head); }
+    iterator end() { return iterator(nullptr); }
+
+private:
+    Node<T>* head;
+    Node<T>* tail;
+};
+
+int main() {
+    LinkedList<int> list;
+    list.push_back(1);
+    list.push_back(2);
+    list.push_back(3);
+
+    // Usar el iterador personalizado para recorrer la lista
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+### Desglose del Ejemplo
+
+1. **Definición del Nodo:**
+   - `Node` es una estructura que representa un nodo en una lista enlazada doblemente.
+   - Contiene un dato (`data`) y punteros al siguiente y al nodo anterior (`next`, `prev`).
+
+2. **Definición del Iterador:**
+   - `ListIterator` es una clase plantilla que actúa como un iterador bidireccional para la lista.
+   - Implementa los operadores requeridos para la iteración (`operator*`, `operator->`, `operator++`, `operator--`, `operator==`, `operator!=`).
+   - Los tipos requeridos (`iterator_category`, `value_type`, `difference_type`, `pointer`, `reference`) se definen utilizando `using`.
+
+3. **Operadores de Incremento y Decremento:**
+   - `operator++` y `operator--` permiten avanzar y retroceder el iterador.
+   - Ambos operadores tienen versiones pre y postfijo.
+
+4. **Definición de la Lista Enlazada:**
+   - `LinkedList` es una clase plantilla que representa una lista enlazada doblemente.
+   - Implementa los métodos `push_back` para añadir elementos al final de la lista y proporciona `begin` y `end` para obtener iteradores al inicio y al final de la lista.
+
+5. **Uso del Iterador Personalizado:**
+   - En `main`, se crea una lista, se añaden elementos y se usa un bucle `for` con el iterador personalizado para recorrer y mostrar los elementos de la lista.
+
+### Conclusión
+
+Crear iteradores personalizados en C++ permite extender la funcionalidad de las estructuras de datos no estándar y personalizar el comportamiento de iteración. La implementación de iteradores personalizados implica sobrecargar varios operadores y definir ciertos tipos requeridos por la interfaz del iterador. Esta habilidad es esencial para escribir código C++ flexible y eficiente, adaptado a necesidades específicas.
+<---FILES--->
+Ejemplo: Iterador Bidireccional para una Lista Enlazada Simple
+Ejemplo: Iterador Bidireccional para una Lista Enlazada Simple Result
+<---Ejemplo: Iterador Bidireccional para una Lista Enlazada Simple--->
+```cpp
+#include <iostream>
+
+// Nodo de la lista
+template <typename T>
+struct Node {
+    T data;
+    Node* next;
+    Node* prev;
+    Node(const T& data) : data(data), next(nullptr), prev(nullptr) {}
+};
+
+// Iterador bidireccional personalizado
+template <typename T>
+class ListIterator {
+public:
+    // Tipos requeridos para un iterador
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T*;
+    using reference = T&;
+
+    // Constructor
+    ListIterator(Node<T>* node = nullptr) : node(node) {}
+
+    // Operadores de sobrecarga
+    reference operator*() const { return node->data; }
+    pointer operator->() const { return &(node->data); }
+
+    // Incremento
+    ListIterator& operator++() {
+        node = node->next;
+        return *this;
+    }
+
+    ListIterator operator++(int) {
+        ListIterator temp = *this;
+        ++(*this);
+        return temp;
+    }
+
+    // Decremento
+    ListIterator& operator--() {
+        node = node->prev;
+        return *this;
+    }
+
+    ListIterator operator--(int) {
+        ListIterator temp = *this;
+        --(*this);
+        return temp;
+    }
+
+    // Comparación
+    bool operator==(const ListIterator& other) const { return node == other.node; }
+    bool operator!=(const ListIterator& other) const { return node != other.node; }
+
+private:
+    Node<T>* node;
+};
+
+// Lista enlazada simple
+template <typename T>
+class LinkedList {
+public:
+    using iterator = ListIterator<T>;
+
+    LinkedList() : head(nullptr), tail(nullptr) {}
+
+    void push_back(const T& value) {
+        Node<T>* newNode = new Node<T>(value);
+        if (!head) {
+            head = tail = newNode;
+        } else {
+            tail->next = newNode;
+            newNode->prev = tail;
+            tail = newNode;
+        }
+    }
+
+    iterator begin() { return iterator(head); }
+    iterator end() { return iterator(nullptr); }
+
+private:
+    Node<T>* head;
+    Node<T>* tail;
+};
+
+int main() {
+    LinkedList<int> list;
+    list.push_back(1);
+    list.push_back(2);
+    list.push_back(3);
+
+    // Usar el iterador personalizado para recorrer la lista
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        std::cout << *it << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+<---Ejemplo: Iterador Bidireccional para una Lista Enlazada Simple Result--->

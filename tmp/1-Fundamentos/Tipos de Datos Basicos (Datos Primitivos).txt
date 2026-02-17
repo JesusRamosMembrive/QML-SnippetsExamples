@@ -1,0 +1,168 @@
+<---EXPLANATION--->
+
+### Tipos de Datos Básicos (Datos Primitivos) en C++
+
+Los tipos de datos básicos, también conocidos como datos primitivos, son los bloques fundamentales que se utilizan para almacenar datos en un programa. C++ proporciona varios tipos de datos básicos para manejar diferentes tipos de información.
+
+#### 1. **Enteros (`int`)**
+El tipo de dato `int` se utiliza para almacenar números enteros. Su tamaño suele ser de 4 bytes, lo que permite almacenar valores en el rango de aproximadamente -2,147,483,648 a 2,147,483,647.
+
+```cpp
+int numero = 42;
+```
+
+#### 2. **Caracteres (`char`)**
+El tipo `char` se utiliza para almacenar un solo carácter. Su tamaño es de 1 byte, permitiendo representar caracteres individuales como letras, números y símbolos.
+
+```cpp
+char letra = 'A';
+```
+
+#### 3. **Booleanos (`bool`)**
+El tipo `bool` almacena valores booleanos, que pueden ser `true` o `false`. Se utiliza para representar condiciones y resultados lógicos.
+
+```cpp
+bool esVerdadero = true;
+```
+
+#### 4. **Flotantes (`float` y `double`)**
+Los tipos `float` y `double` se utilizan para almacenar números en punto flotante (números con decimales). `float` ocupa 4 bytes y `double` ocupa 8 bytes, ofreciendo mayor precisión.
+
+```cpp
+float numeroDecimal = 3.14f;
+double numeroGrande = 2.718281828459;
+```
+
+#### 5. **Enteros Modificados (`short`, `long`, `long long`)**
+C++ permite modificar los enteros para manejar diferentes rangos y tamaños. `short` es un entero corto, `long` es un entero largo, y `long long` es un entero aún más largo.
+
+```cpp
+short corto = 32767;         // Generalmente 2 bytes
+long largo = 2147483647;     // Generalmente 4 bytes
+long long muyLargo = 9223372036854775807LL; // Generalmente 8 bytes
+```
+
+#### 6. **Tipos Sin Signo (`unsigned`)**
+Los tipos sin signo (`unsigned`) se utilizan para almacenar solo números positivos, duplicando el rango positivo de los tipos de datos enteros.
+
+```cpp
+unsigned int positivo = 42;
+unsigned char caracter = 255;
+```
+
+### Ejemplos y Uso de Tipos de Datos Básicos
+
+A continuación se presenta un ejemplo completo que demuestra el uso de los tipos de datos básicos en un programa C++:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int entero = 100;                   // Entero
+    char caracter = 'C';                // Carácter
+    bool esCierto = true;               // Booleano
+    float flotante = 3.14f;             // Flotante
+    double doble = 2.718281828459;      // Doble precisión
+    short corto = 32767;                // Entero corto
+    long largo = 2147483647;            // Entero largo
+    long long muyLargo = 9223372036854775807LL; // Entero muy largo
+    unsigned int sinSigno = 4294967295; // Entero sin signo
+
+    // Salida de los valores
+    cout << "Entero: " << entero << endl;
+    cout << "Carácter: " << caracter << endl;
+    cout << "Booleano: " << esCierto << endl;
+    cout << "Flotante: " << flotante << endl;
+    cout << "Doble: " << doble << endl;
+    cout << "Corto: " << corto << endl;
+    cout << "Largo: " << largo << endl;
+    cout << "Muy Largo: " << muyLargo << endl;
+    cout << "Sin Signo: " << sinSigno << endl;
+
+    return 0;
+}
+```
+
+### Explicación del Ejemplo
+
+1. **Entero (`int`):** Se declara y se inicializa con un valor entero.
+2. **Carácter (`char`):** Se declara y se inicializa con un carácter.
+3. **Booleano (`bool`):** Se declara y se inicializa con un valor booleano.
+4. **Flotante (`float`):** Se declara y se inicializa con un número decimal.
+5. **Doble (`double`):** Se declara y se inicializa con un número decimal de doble precisión.
+6. **Corto (`short`):** Se declara y se inicializa con un valor entero corto.
+7. **Largo (`long`):** Se declara y se inicializa con un valor entero largo.
+8. **Muy Largo (`long long`):** Se declara y se inicializa con un valor entero muy largo.
+9. **Sin Signo (`unsigned`):** Se declara y se inicializa con un valor entero sin signo.
+
+Este ejemplo muestra cómo declarar, inicializar y utilizar diferentes tipos de datos básicos en C++. Cada tipo de dato se adapta a necesidades específicas dependiendo del rango y precisión que se requiera para las operaciones en un programa.
+
+### Tipos de Datos en Qt
+
+Qt define sus propios alias de tipos en `<QtTypes>` (o `<QtGlobal>`) para garantizar portabilidad entre plataformas. En C++ estándar, el tamaño de `int` o `long` puede variar según la arquitectura; los tipos Qt eliminan esa ambigüedad.
+
+#### Tipos enteros de ancho fijo
+
+| Tipo Qt | Equivalente C++ | Tamaño | Rango |
+|---------|-----------------|--------|-------|
+| `qint8` | `signed char` | 1 byte | -128 a 127 |
+| `quint8` | `unsigned char` | 1 byte | 0 a 255 |
+| `qint16` | `short` | 2 bytes | -32,768 a 32,767 |
+| `quint16` | `unsigned short` | 2 bytes | 0 a 65,535 |
+| `qint32` | `int` | 4 bytes | -2^31 a 2^31-1 |
+| `quint32` | `unsigned int` | 4 bytes | 0 a 2^32-1 |
+| `qint64` | `long long` | 8 bytes | -2^63 a 2^63-1 |
+| `quint64` | `unsigned long long` | 8 bytes | 0 a 2^64-1 |
+
+```cpp
+#include <QtTypes>
+
+qint32  contador = 0;          // Siempre 32 bits, cualquier plataforma
+quint64 idUsuario = 123456789; // Siempre 64 bits sin signo
+```
+
+#### Tipos flotantes y de tamaño
+
+| Tipo Qt | Descripción |
+|---------|-------------|
+| `qreal` | `double` en la mayoría de plataformas; `float` en ARM con `-DQT_COORD_TYPE=float` |
+| `qsizetype` | Tipo con signo para tamaños de contenedores (equivale a `ptrdiff_t`). Introducido en Qt 6. |
+| `qintptr` | Entero con signo del tamaño de un puntero (para conversiones puntero ↔ entero) |
+| `quintptr` | Entero sin signo del tamaño de un puntero |
+
+```cpp
+qreal factor = 1.5;                    // Portable entre desktop y ARM
+qsizetype n = miLista.size();          // Tipo correcto para tamaños en Qt 6
+```
+
+#### QString y QChar
+
+Qt no usa `char*` ni `std::string` como tipos principales de cadena. En su lugar:
+
+- **`QChar`** — Un carácter Unicode (UTF-16), equivale a un `char16_t`. Más potente que `char`.
+- **`QString`** — Cadena Unicode. Reemplaza a `std::string` en todo el ecosistema Qt.
+- **`QByteArray`** — Secuencia de bytes crudos. Equivale más a `std::string`/`std::vector<char>`.
+
+```cpp
+#include <QString>
+#include <QChar>
+#include <QDebug>
+
+QChar letra = QChar('A');
+QString nombre = QStringLiteral("Carlos");
+QByteArray datos = "raw bytes";
+
+qDebug() << "Letra:" << letra;         // Letra: 'A'
+qDebug() << "Nombre:" << nombre;       // Nombre: "Carlos"
+qDebug() << "Bytes:" << datos.size();  // Bytes: 9
+```
+
+#### Cuándo usar tipos Qt vs. C++ estándar
+
+- **Interfaces Qt** (señales, slots, propiedades QML): usar tipos Qt (`QString`, `qint32`, `qreal`).
+- **Lógica interna pura** sin dependencia de Qt: usar tipos estándar (`int`, `double`, `std::string`).
+- **APIs multiplataforma** donde el tamaño exacto importa: usar tipos Qt de ancho fijo (`qint64`, `quint32`).
+
+<---FILES--->
+NA.

@@ -24,6 +24,7 @@ import websocketex as WebSocketPage
 import ecam as EcamPage
 import navdisplay as NavDisplayPage
 import theorycpp as TheoryCppPage
+import date as DatePage
 
 Item {
     id: root
@@ -117,7 +118,7 @@ Item {
                         }
 
                         Label {
-                            text: "19 pages"
+                            text: "20 pages"
                             font.pixelSize: Style.resize(14)
                             color: "#999"
                         }
@@ -151,6 +152,7 @@ Item {
                             ListElement { name: "WebSocket"; desc: "C++ class exposed to QML, live echo server" }
                             ListElement { name: "NavDisplay"; desc: "Moving map, compass rose, flight plan" }
                             ListElement { name: "Teoria";     desc: "C++ theory: fundamentals through advanced topics" }
+                            ListElement { name: "Date";       desc: "Tumbler date picker, MonthGrid calendar" }
                         }
 
                         ColumnLayout {
@@ -318,5 +320,10 @@ Item {
     TheoryCppPage.Main {
         visible: fullSize
         fullSize: (root.state === "Teoria")
+    }
+
+    DatePage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Date")
     }
 }

@@ -1,0 +1,222 @@
+<---EXPLANATION--->
+### QVariant - Tipo Universal
+
+`QVariant` es un contenedor universal de Qt que puede almacenar **cualquier tipo de dato**. Actúa como un "any" type-safe, similar a `std::any` de C++17 pero con integración profunda en el ecosistema Qt. Es fundamental para el sistema de propiedades de Qt, las bases de datos (`QSqlQuery`) y la comunicación con QML.
+
+#### Almacenar y Recuperar Valores
+
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+void basico() {
+    // Almacenar diferentes tipos
+    QVariant vInt(42);
+    QVariant vStr(QString("Hola"));
+    QVariant vDouble(3.14);
+    QVariant vBool(true);
+    
+    // Recuperar con toXxx()
+    int entero = vInt.toInt();
+    QString texto = vStr.toString();
+    double decimal = vDouble.toDouble();
+    bool booleano = vBool.toBool();
+    
+    qDebug() << entero << texto << decimal << booleano;
+}
+```
+
+#### `canConvert()` - Verificar Conversión
+
+```cpp
+void verificarConversion() {
+    QVariant v(42);
+    
+    // ¿Se puede convertir a estos tipos?
+    qDebug() << "A int:" << v.canConvert<int>();       // true
+    qDebug() << "A QString:" << v.canConvert<QString>(); // true (42 → "42")
+    qDebug() << "A double:" << v.canConvert<double>();   // true (42 → 42.0)
+    qDebug() << "A QDate:" << v.canConvert<QDate>();     // false
+    
+    // Conversión con verificación de éxito
+    bool ok;
+    int valor = v.toInt(&ok);
+    qDebug() << "Valor:" << valor << "Éxito:" << ok;
+}
+```
+
+#### `typeName()` y `typeId()` - Inspeccionar el Tipo
+
+```cpp
+void inspeccionarTipo() {
+    QVariant v1(42);
+    QVariant v2(QString("texto"));
+    QVariant v3(3.14);
+    QVariant vNulo;
+    
+    // typeName() - nombre del tipo como string
+    qDebug() << v1.typeName();   // "int"
+    qDebug() << v2.typeName();   // "QString"
+    qDebug() << v3.typeName();   // "double"
+    
+    // isNull() / isValid()
+    qDebug() << "v1 válido:" << v1.isValid();    // true
+    qDebug() << "vNulo válido:" << vNulo.isValid(); // false
+    qDebug() << "vNulo nulo:" << vNulo.isNull();    // true
+}
+```
+
+#### `QVariant` con Tipos Personalizados
+
+Para almacenar tipos propios en `QVariant`, se usa la macro `Q_DECLARE_METATYPE`.
+
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+struct Coordenada {
+    double x, y;
+};
+Q_DECLARE_METATYPE(Coordenada)
+
+void tipoPersonalizado() {
+    Coordenada coord{3.5, 7.2};
+    
+    // Almacenar tipo personalizado
+    QVariant v = QVariant::fromValue(coord);
+    
+    // Recuperar
+    if (v.canConvert<Coordenada>()) {
+        Coordenada c = v.value<Coordenada>();
+        qDebug() << "x:" << c.x << "y:" << c.y;
+    }
+}
+```
+
+#### `QVariantList` y `QVariantMap`
+
+Qt define aliases útiles para listas y mapas de `QVariant`:
+
+```cpp
+void colecciones() {
+    // QVariantList = QList<QVariant>
+    QVariantList lista;
+    lista << 42 << "texto" << 3.14 << true;
+    
+    for (const QVariant &v : lista) {
+        qDebug() << v.typeName() << ":" << v.toString();
+    }
+    
+    // QVariantMap = QMap<QString, QVariant>
+    QVariantMap persona;
+    persona["nombre"] = "Carlos";
+    persona["edad"] = 30;
+    persona["activo"] = true;
+    
+    qDebug() << persona["nombre"].toString();
+    qDebug() << persona["edad"].toInt();
+}
+```
+
+#### Comparación con `std::any` y `std::variant`
+
+| Característica | `QVariant` | `std::any` (C++17) | `std::variant` (C++17) |
+| :--- | :--- | :--- | :--- |
+| **Tipos soportados** | Cualquiera (con metatype) | Cualquiera | Lista fija de tipos |
+| **Conversión** | `toInt()`, `toString()`, etc. | `any_cast<T>()` | `get<T>()` |
+| **Verificación** | `canConvert<T>()` | `type()` | `holds_alternative<T>()` |
+| **Integración Qt** | Propiedades, QML, SQL | Ninguna | Ninguna |
+| **Tipos personalizados** | `Q_DECLARE_METATYPE` | Automático | Declarado en plantilla |
+
+### Conclusión
+
+`QVariant` es indispensable en Qt para trabajar con datos heterogéneos. Su capacidad de almacenar cualquier tipo, verificar conversiones de forma segura y su integración con el sistema de propiedades y QML lo hacen una herramienta esencial en cualquier proyecto Qt.
+<---FILES--->
+Almacenar y Recuperar Valores
+Almacenar y Recuperar Valores Result
+`canConvert()` - Verificar Conversión
+`canConvert()` - Verificar Conversión Result
+`typeName()` y `typeId()` - Inspeccionar el Tipo
+`typeName()` y `typeId()` - Inspeccionar el Tipo Result
+`QVariant` con Tipos Personalizados
+`QVariant` con Tipos Personalizados Result
+`QVariantList` y `QVariantMap`
+`QVariantList` y `QVariantMap` Result
+<---Almacenar y Recuperar Valores--->
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+void basico() {
+    QVariant vInt(42);
+    QVariant vStr(QString("Hola"));
+    QVariant vDouble(3.14);
+    int entero = vInt.toInt();
+    QString texto = vStr.toString();
+    qDebug() << entero << texto;
+}
+<---Almacenar y Recuperar Valores Result--->
+<---`canConvert()` - Verificar Conversión--->
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+void verificarConversion() {
+    QVariant v(42);
+    qDebug() << "A int:" << v.canConvert<int>();
+    qDebug() << "A QString:" << v.canConvert<QString>();
+    bool ok;
+    int valor = v.toInt(&ok);
+    qDebug() << "Valor:" << valor << "Éxito:" << ok;
+}
+<---`canConvert()` - Verificar Conversión Result--->
+<---`typeName()` y `typeId()` - Inspeccionar el Tipo--->
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+void inspeccionarTipo() {
+    QVariant v1(42);
+    QVariant v2(QString("texto"));
+    QVariant vNulo;
+    qDebug() << v1.typeName() << v2.typeName();
+    qDebug() << "válido:" << v1.isValid();
+    qDebug() << "nulo:" << vNulo.isNull();
+}
+<---`typeName()` y `typeId()` - Inspeccionar el Tipo Result--->
+<---`QVariant` con Tipos Personalizados--->
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+struct Coordenada {
+    double x, y;
+};
+Q_DECLARE_METATYPE(Coordenada)
+
+void tipoPersonalizado() {
+    Coordenada coord{3.5, 7.2};
+    QVariant v = QVariant::fromValue(coord);
+    if (v.canConvert<Coordenada>()) {
+        Coordenada c = v.value<Coordenada>();
+        qDebug() << "x:" << c.x << "y:" << c.y;
+    }
+}
+<---`QVariant` con Tipos Personalizados Result--->
+<---`QVariantList` y `QVariantMap`--->
+```cpp
+#include <QVariant>
+#include <QDebug>
+
+void colecciones() {
+    QVariantList lista;
+    lista << 42 << "texto" << 3.14 << true;
+    for (const QVariant &v : lista) {
+        qDebug() << v.typeName() << ":" << v.toString();
+    }
+    QVariantMap persona;
+    persona["nombre"] = "Carlos";
+    persona["edad"] = 30;
+    qDebug() << persona["nombre"].toString();
+}
+<---`QVariantList` y `QVariantMap` Result--->

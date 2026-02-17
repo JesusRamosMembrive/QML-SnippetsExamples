@@ -1,0 +1,742 @@
+<---EXPLANATION--->
+### Funciones Lambda en C++
+
+Las funciones lambda, introducidas en C++11, son funciones anónimas que permiten definir funciones en línea en el lugar donde se necesitan, sin tener que declararlas por separado. Las lambdas son útiles para pasar funciones como argumentos a otras funciones, especialmente en algoritmos de la biblioteca estándar, como `std::sort`, `std::for_each`, etc.
+
+#### Sintaxis Básica de las Lambdas
+
+La sintaxis básica de una lambda en C++ es la siguiente:
+
+```cpp
+[captura](parametros) -> tipo_retorno {
+    // cuerpo de la lambda
+};
+```
+
+- **Captura (`[]`):** Define el alcance de las variables externas que la lambda puede usar.
+- **Parámetros (`()`):** Especifica los parámetros que la lambda toma (opcional).
+- **Tipo de Retorno (`->`):** Define explícitamente el tipo de retorno de la lambda (opcional, usualmente deducido).
+- **Cuerpo (`{}`):** El bloque de código que define el comportamiento de la lambda.
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    auto sumar = [](int a, int b) {
+        return a + b;
+    };
+
+    cout << "La suma de 3 y 4 es: " << sumar(3, 4) << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `sumar` es una lambda que toma dos enteros y devuelve su suma.
+
+#### Captura de Variables
+
+Las lambdas pueden capturar variables del entorno donde se definen. Existen diferentes modos de captura:
+
+- **Por Valor (`[=]`):** Captura todas las variables usadas en la lambda por valor.
+- **Por Referencia (`[&]`):** Captura todas las variables usadas en la lambda por referencia.
+- **Captura Explícita:** Captura variables específicas por valor o referencia.
+
+##### Ejemplo con Captura por Valor y Referencia
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 10;
+    int y = 20;
+
+    auto lambdaPorValor = [=]() {
+        return x + y;
+    };
+
+    auto lambdaPorReferencia = [&]() {
+        x++;
+        y++;
+    };
+
+    cout << "Resultado (por valor): " << lambdaPorValor() << endl;
+
+    lambdaPorReferencia();
+    cout << "x: " << x << ", y: " << y << " (después de modificar por referencia)" << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `lambdaPorValor` captura `x` y `y` por valor.
+- `lambdaPorReferencia` captura `x` y `y` por referencia, permitiendo modificar sus valores.
+
+#### Tipos de Retorno
+
+Las lambdas pueden deducir su tipo de retorno automáticamente o especificarlo explícitamente.
+
+##### Ejemplo con Tipo de Retorno Deducido y Especificado
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    auto sumar = [](int a, int b) {
+        return a + b;
+    };
+
+    auto dividir = [](int a, int b) -> double {
+        if (b == 0) {
+            throw invalid_argument("División por cero");
+        }
+        return static_cast<double>(a) / b;
+    };
+
+    cout << "La suma de 3 y 4 es: " << sumar(3, 4) << endl;
+    cout << "La división de 10 por 2 es: " << dividir(10, 2) << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `sumar` tiene su tipo de retorno deducido automáticamente como `int`, mientras que `dividir` especifica explícitamente su tipo de retorno como `double`.
+
+#### Uso en Algoritmos de la Biblioteca Estándar
+
+Las lambdas son extremadamente útiles cuando se utilizan con algoritmos de la biblioteca estándar.
+
+##### Ejemplo con `std::sort`
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> numeros = {5, 2, 9, 1, 5, 6};
+
+    sort(numeros.begin(), numeros.end(), [](int a, int b) {
+        return a < b;
+    });
+
+    cout << "Números ordenados: ";
+    for (int num : numeros) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, se usa una lambda para definir el criterio de ordenación en `std::sort`.
+
+#### Lambdas Capturando por Valor y Modificables
+
+Las lambdas pueden capturar variables por valor y modificarlas internamente usando la palabra clave `mutable`.
+
+##### Ejemplo con `mutable`
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 10;
+
+    auto modificar = [x]() mutable {
+        x += 5;
+        return x;
+    };
+
+    cout << "Resultado de la lambda mutable: " << modificar() << endl;
+    cout << "Valor original de x: " << x << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `modificar` captura `x` por valor pero usa `mutable` para permitir modificar la copia interna de `x`.
+
+### Ejemplo Completo
+
+A continuación, un ejemplo completo que demuestra el uso de lambdas en varias situaciones, incluyendo captura por valor, referencia, y uso en algoritmos de la biblioteca estándar.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> numeros = {5, 2, 9, 1, 5, 6};
+
+    // Lambda que captura por valor
+    auto imprimir = [=]() {
+        for (int num : numeros) {
+            cout << num << " ";
+        }
+        cout << endl;
+    };
+
+    // Lambda que captura por referencia
+    auto incrementar = [&]() {
+        for (int& num : numeros) {
+            num++;
+        }
+    };
+
+    // Lambda con tipo de retorno deducido
+    auto sumar = [](int a, int b) {
+        return a + b;
+    };
+
+    // Lambda con tipo de retorno especificado
+    auto dividir = [](int a, int b) -> double {
+        if (b == 0) {
+            throw invalid_argument("División por cero");
+        }
+        return static_cast<double>(a) / b;
+    };
+
+    cout << "Números originales: ";
+    imprimir();
+
+    incrementar();
+    cout << "Números incrementados: ";
+    imprimir();
+
+    sort(numeros.begin(), numeros.end(), [](int a, int b) {
+        return a < b;
+    });
+    cout << "Números ordenados: ";
+    imprimir();
+
+    cout << "La suma de 3 y 4 es: " << sumar(3, 4) << endl;
+    cout << "La división de 10 por 2 es: " << dividir(10, 2) << endl;
+
+    return 0;
+}
+```
+
+### Lambdas Genéricas con `auto` (C++14)
+
+C++14 introdujo las **lambdas genéricas**, que permiten usar `auto` como tipo de los parámetros. Esto convierte a la lambda en una plantilla implícita, capaz de aceptar argumentos de cualquier tipo. Es similar a escribir una función template, pero con la sintaxis concisa de las lambdas.
+
+##### Ejemplo de Lambdas Genéricas
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    // Lambda genérica: acepta cualquier tipo
+    auto imprimir = [](const auto& valor) {
+        cout << valor << endl;
+    };
+
+    imprimir(42);
+    imprimir(3.14);
+    imprimir("Hola");
+    imprimir(string("Mundo"));
+
+    // Lambda genérica con múltiples parámetros
+    auto sumar = [](auto a, auto b) { return a + b; };
+    cout << sumar(3, 4) << endl;       // int
+    cout << sumar(1.5, 2.5) << endl;   // double
+    return 0;
+}
+```
+
+### Lambdas con Init-Capture (C++14)
+
+La **captura con inicialización** (init-capture), también introducida en C++14, permite crear nuevas variables en la lista de captura e inicializarlas con expresiones arbitrarias. Esto es especialmente útil para mover objetos no copiables (como `std::unique_ptr`) dentro de una lambda, o para capturar el resultado de una expresión calculada.
+
+##### Ejemplo de Init-Capture
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+int main() {
+    // Captura con inicialización (move capture)
+    auto ptr = make_unique<string>("Recurso");
+
+    // Mover un unique_ptr dentro de la lambda
+    auto lambda = [p = std::move(ptr)]() {
+        cout << "Recurso: " << *p << endl;
+    };
+
+    lambda();
+    // ptr ya no es válido aquí (se movió a la lambda)
+
+    // Captura con nuevo nombre
+    int x = 10;
+    auto duplicar = [doble = x * 2]() {
+        cout << "Doble: " << doble << endl;
+    };
+    duplicar();
+    return 0;
+}
+```
+
+### Lambdas `constexpr` (C++17) y Template Lambdas (C++20)
+
+C++17 permite declarar lambdas como `constexpr`, lo que significa que pueden evaluarse en tiempo de compilación. Esto es útil para cálculos que se conocen en compilación, como determinar tamaños de arrays o usar `static_assert` para verificaciones.
+
+C++20 va un paso más allá e introduce las **template lambdas**, que permiten declarar parámetros de tipo explícitos con la sintaxis `<typename T>` directamente en la lambda, dando control total sobre los tipos sin depender de la deducción automática de `auto`.
+
+##### Ejemplo de Lambdas `constexpr` y Template Lambdas
+
+```cpp
+#include <iostream>
+#include <array>
+using namespace std;
+
+int main() {
+    // Lambda constexpr (C++17) - evaluable en tiempo de compilación
+    constexpr auto cuadrado = [](int x) constexpr { return x * x; };
+    static_assert(cuadrado(5) == 25); // Verificación en compile-time
+
+    constexpr array<int, cuadrado(3)> arr{}; // array de 9 elementos
+
+    // Template lambda (C++20)
+    auto convertir = []<typename T>(T valor) {
+        return static_cast<double>(valor);
+    };
+    cout << convertir(42) << endl;
+    cout << convertir(3.14f) << endl;
+    return 0;
+}
+```
+
+### `std::function` para Almacenar Lambdas
+
+`std::function` (definido en `<functional>`) es un contenedor polimórfico que puede almacenar cualquier objeto invocable: lambdas, punteros a función, functores, etc. Esto permite almacenar lambdas en variables con un tipo explícito, pasarlas como parámetros de funciones, y guardarlas en contenedores como `std::vector`.
+
+El costo de `std::function` es una pequeña sobrecarga por la indirección (type erasure), por lo que se recomienda usar `auto` cuando el tipo exacto de la lambda no necesita ser expuesto.
+
+##### Ejemplo de `std::function`
+
+```cpp
+#include <iostream>
+#include <functional>
+#include <vector>
+using namespace std;
+
+int main() {
+    // std::function almacena cualquier callable
+    function<int(int, int)> operacion;
+
+    operacion = [](int a, int b) { return a + b; };
+    cout << "Suma: " << operacion(3, 4) << endl;
+
+    operacion = [](int a, int b) { return a * b; };
+    cout << "Producto: " << operacion(3, 4) << endl;
+
+    // Vector de funciones
+    vector<function<int(int)>> transformaciones;
+    transformaciones.push_back([](int x) { return x * 2; });
+    transformaciones.push_back([](int x) { return x + 10; });
+    transformaciones.push_back([](int x) { return x * x; });
+
+    int valor = 5;
+    for (const auto& fn : transformaciones) {
+        cout << fn(valor) << " "; // 10 15 25
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+### Lambdas en Qt: `QObject::connect` y `QTimer`
+
+Las lambdas son una parte fundamental del desarrollo moderno con Qt. Desde Qt 5, el sistema de señales y slots soporta lambdas como receptores en `QObject::connect`, lo que simplifica enormemente la conexión de señales a lógica personalizada sin necesidad de declarar slots explícitos.
+
+Es importante tener cuidado con el **lifetime** (tiempo de vida) de los objetos capturados. Si capturas `this` en una lambda conectada a una señal, debes asegurarte de que el objeto siga vivo cuando se emita la señal. Qt permite pasar un objeto de contexto como tercer parámetro en `connect`, que desconecta automáticamente la señal si el objeto se destruye.
+
+`QTimer::singleShot` con lambdas es uno de los patrones más comunes en Qt para ejecutar código después de un retardo.
+
+##### Ejemplo de Lambdas en Qt
+
+```cpp
+#include <QObject>
+#include <QPushButton>
+#include <QTimer>
+#include <QDebug>
+
+// Conectar señal a lambda (Qt 5+)
+auto* boton = new QPushButton("Click");
+QObject::connect(boton, &QPushButton::clicked, [](bool checked) {
+    qDebug() << "Botón pulsado, checked:" << checked;
+});
+
+// QTimer con lambda (muy común en Qt)
+QTimer::singleShot(1000, []() {
+    qDebug() << "Ejecutado después de 1 segundo";
+});
+
+// Capturar 'this' en lambdas Qt (cuidado con lifetime)
+class MiWidget : public QObject {
+    Q_OBJECT
+public:
+    void iniciar() {
+        // Capturar this - asegurarse de que el objeto siga vivo
+        QTimer::singleShot(500, this, [this]() {
+            qDebug() << "Widget:" << objectName();
+        });
+
+        // Conectar con contexto (se desconecta si el objeto se destruye)
+        auto* timer = new QTimer(this);
+        connect(timer, &QTimer::timeout, this, [this]() {
+            actualizar();
+        });
+        timer->start(100);
+    }
+
+private:
+    void actualizar() { /* ... */ }
+};
+```
+
+### Conclusión
+
+Las funciones lambda en C++ son una poderosa herramienta para definir funciones en línea de manera concisa y flexible. Facilitan el paso de funciones como argumentos a otras funciones y mejoran la legibilidad y mantenibilidad del código. Las lambdas pueden capturar variables por valor o por referencia y permiten deducir o especificar explícitamente el tipo de retorno. Con una comprensión sólida de las lambdas, los desarrolladores pueden escribir código C++ más limpio y eficiente.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Ejemplo con Captura por Valor y Referencia
+Ejemplo con Captura por Valor y Referencia Result
+Ejemplo con Tipo de Retorno Deducido y Especificado
+Ejemplo con Tipo de Retorno Deducido y Especificado Result
+Ejemplo con `std::sort`
+Ejemplo con `std::sort` Result
+Ejemplo con `mutable`
+Ejemplo con `mutable` Result
+Ejemplo de Lambdas Genéricas
+Ejemplo de Lambdas Genéricas Result
+Ejemplo de Init-Capture
+Ejemplo de Init-Capture Result
+Ejemplo de Lambdas `constexpr` y Template Lambdas
+Ejemplo de Lambdas `constexpr` y Template Lambdas Result
+Ejemplo de `std::function`
+Ejemplo de `std::function` Result
+Ejemplo de Lambdas en Qt
+Ejemplo de Lambdas en Qt Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    auto sumar = [](int a, int b) {
+        return a + b;
+    };
+
+    cout << "La suma de 3 y 4 es: " << sumar(3, 4) << endl;
+
+    return 0;
+}
+<---Ejemplo Básico Result--->
+<---Ejemplo con Captura por Valor y Referencia--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 10;
+    int y = 20;
+
+    auto lambdaPorValor = [=]() {
+        return x + y;
+    };
+
+    auto lambdaPorReferencia = [&]() {
+        x++;
+        y++;
+    };
+
+    cout << "Resultado (por valor): " << lambdaPorValor() << endl;
+
+    lambdaPorReferencia();
+    cout << "x: " << x << ", y: " << y << " (después de modificar por referencia)" << endl;
+
+    return 0;
+}
+<---Ejemplo con Captura por Valor y Referencia Result--->
+<---Ejemplo con Tipo de Retorno Deducido y Especificado--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    auto sumar = [](int a, int b) {
+        return a + b;
+    };
+
+    auto dividir = [](int a, int b) -> double {
+        if (b == 0) {
+            throw invalid_argument("División por cero");
+        }
+        return static_cast<double>(a) / b;
+    };
+
+    cout << "La suma de 3 y 4 es: " << sumar(3, 4) << endl;
+    cout << "La división de 10 por 2 es: " << dividir(10, 2) << endl;
+
+    return 0;
+}
+<---Ejemplo con Tipo de Retorno Deducido y Especificado Result--->
+<---Ejemplo con `std::sort`--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> numeros = {5, 2, 9, 1, 5, 6};
+
+    sort(numeros.begin(), numeros.end(), [](int a, int b) {
+        return a < b;
+    });
+
+    cout << "Números ordenados: ";
+    for (int num : numeros) {
+        cout << num << " ";
+    }
+    cout << endl;
+
+    return 0;
+}
+<---Ejemplo con `std::sort` Result--->
+<---Ejemplo con `mutable`--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 10;
+
+    auto modificar = [x]() mutable {
+        x += 5;
+        return x;
+    };
+
+    cout << "Resultado de la lambda mutable: " << modificar() << endl;
+    cout << "Valor original de x: " << x << endl;
+
+    return 0;
+}
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> numeros = {5, 2, 9, 1, 5, 6};
+
+    // Lambda que captura por valor
+    auto imprimir = [=]() {
+        for (int num : numeros) {
+            cout << num << " ";
+        }
+        cout << endl;
+    };
+
+    // Lambda que captura por referencia
+    auto incrementar = [&]() {
+        for (int& num : numeros) {
+            num++;
+        }
+    };
+
+    // Lambda con tipo de retorno deducido
+    auto sumar = [](int a, int b) {
+        return a + b;
+    };
+
+    // Lambda con tipo de retorno especificado
+    auto dividir = [](int a, int b) -> double {
+        if (b == 0) {
+            throw invalid_argument("División por cero");
+        }
+        return static_cast<double>(a) / b;
+    };
+
+    cout << "Números originales: ";
+    imprimir();
+
+    incrementar();
+    cout << "Números incrementados: ";
+    imprimir();
+
+    sort(numeros.begin(), numeros.end(), [](int a, int b) {
+        return a < b;
+    });
+    cout << "Números ordenados: ";
+    imprimir();
+
+    cout << "La suma de 3 y 4 es: " << sumar(3, 4) << endl;
+    cout << "La división de 10 por 2 es: " << dividir(10, 2) << endl;
+
+    return 0;
+}
+<---Ejemplo con `mutable` Result--->
+<---Ejemplo de Lambdas Genéricas--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    // Lambda genérica: acepta cualquier tipo
+    auto imprimir = [](const auto& valor) {
+        cout << valor << endl;
+    };
+
+    imprimir(42);
+    imprimir(3.14);
+    imprimir("Hola");
+    imprimir(string("Mundo"));
+
+    // Lambda genérica con múltiples parámetros
+    auto sumar = [](auto a, auto b) { return a + b; };
+    cout << sumar(3, 4) << endl;       // int
+    cout << sumar(1.5, 2.5) << endl;   // double
+    return 0;
+}
+<---Ejemplo de Lambdas Genéricas Result--->
+<---Ejemplo de Init-Capture--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+using namespace std;
+
+int main() {
+    // Captura con inicialización (move capture)
+    auto ptr = make_unique<string>("Recurso");
+
+    // Mover un unique_ptr dentro de la lambda
+    auto lambda = [p = std::move(ptr)]() {
+        cout << "Recurso: " << *p << endl;
+    };
+
+    lambda();
+    // ptr ya no es válido aquí (se movió a la lambda)
+
+    // Captura con nuevo nombre
+    int x = 10;
+    auto duplicar = [doble = x * 2]() {
+        cout << "Doble: " << doble << endl;
+    };
+    duplicar();
+    return 0;
+}
+<---Ejemplo de Init-Capture Result--->
+<---Ejemplo de Lambdas `constexpr` y Template Lambdas--->
+```cpp
+#include <iostream>
+#include <array>
+using namespace std;
+
+int main() {
+    // Lambda constexpr (C++17) - evaluable en tiempo de compilación
+    constexpr auto cuadrado = [](int x) constexpr { return x * x; };
+    static_assert(cuadrado(5) == 25); // Verificación en compile-time
+
+    constexpr array<int, cuadrado(3)> arr{}; // array de 9 elementos
+
+    // Template lambda (C++20)
+    auto convertir = []<typename T>(T valor) {
+        return static_cast<double>(valor);
+    };
+    cout << convertir(42) << endl;
+    cout << convertir(3.14f) << endl;
+    return 0;
+}
+<---Ejemplo de Lambdas `constexpr` y Template Lambdas Result--->
+<---Ejemplo de `std::function`--->
+```cpp
+#include <iostream>
+#include <functional>
+#include <vector>
+using namespace std;
+
+int main() {
+    // std::function almacena cualquier callable
+    function<int(int, int)> operacion;
+
+    operacion = [](int a, int b) { return a + b; };
+    cout << "Suma: " << operacion(3, 4) << endl;
+
+    operacion = [](int a, int b) { return a * b; };
+    cout << "Producto: " << operacion(3, 4) << endl;
+
+    // Vector de funciones
+    vector<function<int(int)>> transformaciones;
+    transformaciones.push_back([](int x) { return x * 2; });
+    transformaciones.push_back([](int x) { return x + 10; });
+    transformaciones.push_back([](int x) { return x * x; });
+
+    int valor = 5;
+    for (const auto& fn : transformaciones) {
+        cout << fn(valor) << " "; // 10 15 25
+    }
+    cout << endl;
+    return 0;
+}
+<---Ejemplo de `std::function` Result--->
+<---Ejemplo de Lambdas en Qt--->
+```cpp
+#include <QObject>
+#include <QPushButton>
+#include <QTimer>
+#include <QDebug>
+
+// Conectar señal a lambda (Qt 5+)
+auto* boton = new QPushButton("Click");
+QObject::connect(boton, &QPushButton::clicked, [](bool checked) {
+    qDebug() << "Botón pulsado, checked:" << checked;
+});
+
+// QTimer con lambda (muy común en Qt)
+QTimer::singleShot(1000, []() {
+    qDebug() << "Ejecutado después de 1 segundo";
+});
+
+// Capturar 'this' en lambdas Qt (cuidado con lifetime)
+class MiWidget : public QObject {
+    Q_OBJECT
+public:
+    void iniciar() {
+        // Capturar this - asegurarse de que el objeto siga vivo
+        QTimer::singleShot(500, this, [this]() {
+            qDebug() << "Widget:" << objectName();
+        });
+
+        // Conectar con contexto (se desconecta si el objeto se destruye)
+        auto* timer = new QTimer(this);
+        connect(timer, &QTimer::timeout, this, [this]() {
+            actualizar();
+        });
+        timer->start(100);
+    }
+
+private:
+    void actualizar() { /* ... */ }
+};
+<---Ejemplo de Lambdas en Qt Result--->

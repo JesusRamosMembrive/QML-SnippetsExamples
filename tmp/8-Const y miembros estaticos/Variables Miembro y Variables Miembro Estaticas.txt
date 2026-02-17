@@ -1,0 +1,990 @@
+<---EXPLANATION--->
+### Variables Miembro y Variables Miembro Estáticas en C++
+
+En C++, las variables miembro son atributos que pertenecen a instancias específicas de una clase, mientras que las variables miembro estáticas son atributos que pertenecen a la clase en sí y son compartidas por todas las instancias de esa clase. Comprender la diferencia entre estas dos tipos de variables es esencial para aprovechar al máximo las capacidades de la programación orientada a objetos en C++.
+
+#### Variables Miembro
+
+Las variables miembro son atributos de una clase que existen independientemente en cada instancia de la clase. Cada objeto de la clase tiene su propia copia de estas variables, y sus valores pueden ser diferentes para cada objeto.
+
+##### Declaración y Uso de Variables Miembro
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p1("Juan", 30);
+    Persona p2("Maria", 25);
+
+    p1.mostrarInformacion(); // Muestra: Nombre: Juan, Edad: 30
+    p2.mostrarInformacion(); // Muestra: Nombre: Maria, Edad: 25
+
+    return 0;
+}
+```
+
+En este ejemplo, `nombre` y `edad` son variables miembro de la clase `Persona`. Cada instancia de `Persona` (`p1` y `p2`) tiene su propia copia de estas variables.
+
+#### Variables Miembro Estáticas
+
+Las variables miembro estáticas, por otro lado, son atributos que pertenecen a la clase en sí y no a instancias individuales. Solo existe una copia de una variable miembro estática, compartida por todas las instancias de la clase. Las variables estáticas se utilizan comúnmente para almacenar datos que deben ser comunes a todas las instancias de una clase.
+
+##### Declaración y Uso de Variables Miembro Estáticas
+
+1. **Declaración en la Clase:** Se declaran dentro de la clase con la palabra clave `static`.
+2. **Definición Fuera de la Clase:** Deben ser definidas fuera de la clase para que el compilador las asigne.
+
+##### Ejemplo de Variables Miembro Estáticas
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    static int cuenta; // Declaración de variable miembro estática
+
+public:
+    Contador() {
+        cuenta++;
+    }
+
+    ~Contador() {
+        cuenta--;
+    }
+
+    static int obtenerCuenta() {
+        return cuenta;
+    }
+};
+
+// Definición de la variable miembro estática
+int Contador::cuenta = 0;
+
+int main() {
+    Contador c1;
+    Contador c2;
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    {
+        Contador c3;
+        cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 3
+    }
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `cuenta` es una variable miembro estática de la clase `Contador`.
+- La variable `cuenta` es incrementada en el constructor y decrementada en el destructor, rastreando el número de instancias de `Contador`.
+- `obtenerCuenta` es un método estático que devuelve el valor de `cuenta`.
+
+#### Diferencias Clave entre Variables Miembro y Variables Miembro Estáticas
+
+1. **Alcance y Vida Útil:**
+   - **Variables Miembro:** Existen por separado en cada instancia de la clase y tienen la vida útil del objeto.
+   - **Variables Miembro Estáticas:** Existen una sola vez, independientemente del número de instancias, y tienen la vida útil del programa.
+
+2. **Acceso:**
+   - **Variables Miembro:** Accedidas a través de objetos de la clase.
+   - **Variables Miembro Estáticas:** Pueden ser accedidas a través de la clase o de objetos de la clase.
+
+3. **Inicialización:**
+   - **Variables Miembro:** Se inicializan cuando se crea un objeto.
+   - **Variables Miembro Estáticas:** Deben ser definidas fuera de la clase y se pueden inicializar en esa definición.
+
+##### Ejemplo de Diferencias
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Ejemplo {
+private:
+    int instanciaVariable;       // Variable miembro
+    static int estaticaVariable; // Variable miembro estática
+
+public:
+    Ejemplo(int valor) : instanciaVariable(valor) {
+        estaticaVariable += valor;
+    }
+
+    void mostrarVariables() const {
+        cout << "Instancia Variable: " << instanciaVariable << endl;
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+
+    static void mostrarEstatica() {
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+};
+
+// Definición de la variable miembro estática
+int Ejemplo::estaticaVariable = 0;
+
+int main() {
+    Ejemplo e1(10);
+    Ejemplo e2(20);
+
+    e1.mostrarVariables(); // Muestra: Instancia Variable: 10, Estatica Variable: 30
+    e2.mostrarVariables(); // Muestra: Instancia Variable: 20, Estatica Variable: 30
+
+    Ejemplo::mostrarEstatica(); // Muestra: Estatica Variable: 30
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `instanciaVariable` es una variable miembro y tiene un valor diferente en cada instancia (`e1` y `e2`).
+- `estaticaVariable` es una variable miembro estática y su valor es compartido por todas las instancias.
+
+#### `inline static` en C++17: Definición en la Clase
+
+Antes de C++17, las variables miembro estáticas debían ser **declaradas** dentro de la clase y luego **definidas** por separado en un archivo `.cpp`. Esto era necesario porque la regla de una definición (One Definition Rule, ODR) no permitía que la definición existiera en un encabezado incluido por múltiples unidades de traducción.
+
+C++17 introdujo `inline static`, que permite definir e inicializar variables miembro estáticas directamente dentro de la declaración de la clase, sin necesidad de una definición separada en un archivo `.cpp`. El especificador `inline` le indica al compilador que permita múltiples definiciones en diferentes unidades de traducción, resolviendo las definiciones en una sola.
+
+##### Ventajas de `inline static`
+
+1. **Código más conciso:** La declaración y definición están en un solo lugar.
+2. **Menos errores:** No es posible olvidar la definición en el `.cpp` ni tener inconsistencias entre declaración y definición.
+3. **Mejor organización:** Todo lo relacionado con la clase está en un solo archivo de encabezado.
+4. **Compatibilidad con header-only:** Facilita crear bibliotecas que consisten solo en archivos de encabezado.
+
+##### Ejemplo de inline static vs Patrón Pre-C++17
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// ============================================
+// PATRÓN PRE-C++17: Declarar en .h, definir en .cpp
+// ============================================
+
+// --- Archivo: RegistroClasico.h ---
+class RegistroClasico {
+private:
+    static int contadorInstancias;       // Solo declaración
+    static string nombreAplicacion;      // Solo declaración
+    static const int VERSION_MAJOR;      // Solo declaración (const)
+
+    string nombre;
+
+public:
+    RegistroClasico(const string& n) : nombre(n) {
+        contadorInstancias++;
+    }
+
+    ~RegistroClasico() {
+        contadorInstancias--;
+    }
+
+    static int obtenerContador() { return contadorInstancias; }
+    static string obtenerNombreApp() { return nombreAplicacion; }
+    static int obtenerVersionMajor() { return VERSION_MAJOR; }
+    string obtenerNombre() const { return nombre; }
+};
+
+// --- Archivo: RegistroClasico.cpp (definiciones obligatorias) ---
+int RegistroClasico::contadorInstancias = 0;
+string RegistroClasico::nombreAplicacion = "MiApp Clásica";
+const int RegistroClasico::VERSION_MAJOR = 2;
+
+// ============================================
+// PATRÓN C++17: Todo en la clase con inline static
+// ============================================
+
+// --- Archivo: RegistroModerno.h (sin .cpp necesario) ---
+class RegistroModerno {
+private:
+    // inline static: definición directa en la clase
+    inline static int contadorInstancias = 0;
+    inline static string nombreAplicacion = "MiApp Moderna";
+
+    // constexpr static es implícitamente inline desde C++17
+    static constexpr int VERSION_MAJOR = 3;
+
+    string nombre;
+
+public:
+    RegistroModerno(const string& n) : nombre(n) {
+        contadorInstancias++;
+    }
+
+    ~RegistroModerno() {
+        contadorInstancias--;
+    }
+
+    static int obtenerContador() { return contadorInstancias; }
+    static string obtenerNombreApp() { return nombreAplicacion; }
+    static constexpr int obtenerVersionMajor() { return VERSION_MAJOR; }
+    string obtenerNombre() const { return nombre; }
+};
+
+int main() {
+    cout << "=== Patrón Pre-C++17 (Clásico) ===" << endl;
+    {
+        RegistroClasico r1("Registro A");
+        RegistroClasico r2("Registro B");
+        cout << "App: " << RegistroClasico::obtenerNombreApp() << endl;
+        cout << "Versión: " << RegistroClasico::obtenerVersionMajor() << endl;
+        cout << "Instancias: " << RegistroClasico::obtenerContador() << endl;
+    }
+    cout << "Instancias tras destrucción: "
+         << RegistroClasico::obtenerContador() << endl;
+
+    cout << "\n=== Patrón C++17 (Moderno) ===" << endl;
+    {
+        RegistroModerno m1("Registro X");
+        RegistroModerno m2("Registro Y");
+        RegistroModerno m3("Registro Z");
+        cout << "App: " << RegistroModerno::obtenerNombreApp() << endl;
+        cout << "Versión: " << RegistroModerno::obtenerVersionMajor() << endl;
+        cout << "Instancias: " << RegistroModerno::obtenerContador() << endl;
+    }
+    cout << "Instancias tras destrucción: "
+         << RegistroModerno::obtenerContador() << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- `RegistroClasico` usa el patrón pre-C++17: las variables estáticas se declaran en la clase pero se definen fuera (simulando lo que iría en un archivo `.cpp`).
+- `RegistroModerno` usa `inline static` de C++17: las variables estáticas se definen e inicializan directamente en la clase.
+- `static constexpr` es implícitamente `inline` desde C++17, por lo que `VERSION_MAJOR` tampoco necesita definición externa.
+- Ambas clases funcionan igual, pero la versión moderna es más compacta y no requiere archivo `.cpp` separado.
+
+#### `static constexpr` para Constantes de Clase
+
+`static constexpr` es la forma preferida de definir constantes de clase en C++ moderno. Combina las ventajas de `static` (una sola copia compartida entre todas las instancias) con `constexpr` (valor evaluado en tiempo de compilación). Desde C++17, las variables `static constexpr` son implícitamente `inline`, lo que elimina la necesidad de una definición separada fuera de la clase.
+
+##### Ventajas de `static constexpr`
+
+1. **Evaluación en compilación:** Los valores se calculan durante la compilación, sin costo en tiempo de ejecución.
+2. **Tipo seguro:** A diferencia de `#define`, las constantes `constexpr` tienen tipo y respetan las reglas de alcance.
+3. **Uso en contextos constexpr:** Pueden usarse en expresiones que requieren valores constantes, como tamaños de arrays, parámetros de plantilla y `switch`.
+4. **Métodos constexpr:** Se pueden definir métodos `static constexpr` que realizan cálculos en tiempo de compilación.
+
+##### Ejemplo de Constantes de Clase con static constexpr
+
+```cpp
+#include <iostream>
+#include <cmath>
+#include <array>
+using namespace std;
+
+class Fisica {
+public:
+    // Constantes físicas como static constexpr (implícitamente inline en C++17)
+    static constexpr double PI = 3.14159265358979323846;
+    static constexpr double GRAVEDAD = 9.80665;           // m/s² (estándar)
+    static constexpr double LUZ_VELOCIDAD = 299792458.0;  // m/s
+    static constexpr double BOLTZMANN = 1.380649e-23;     // J/K
+    static constexpr double PLANCK = 6.62607015e-34;      // J·s
+    static constexpr double AVOGADRO = 6.02214076e23;     // 1/mol
+
+    // Método constexpr: cálculo en tiempo de compilación
+    static constexpr double circunferencia(double radio) {
+        return 2.0 * PI * radio;
+    }
+
+    static constexpr double areaCirculo(double radio) {
+        return PI * radio * radio;
+    }
+
+    static constexpr double volumenEsfera(double radio) {
+        return (4.0 / 3.0) * PI * radio * radio * radio;
+    }
+
+    // Energía cinética: E = 0.5 * m * v²
+    static constexpr double energiaCinetica(double masa, double velocidad) {
+        return 0.5 * masa * velocidad * velocidad;
+    }
+
+    // Energía relativista: E = m * c²
+    static constexpr double energiaRelativista(double masa) {
+        return masa * LUZ_VELOCIDAD * LUZ_VELOCIDAD;
+    }
+
+    // Tiempo de caída libre: t = sqrt(2h / g)
+    static double tiempoCaidaLibre(double altura) {
+        return sqrt(2.0 * altura / GRAVEDAD);
+    }
+
+    // Velocidad final en caída libre: v = sqrt(2 * g * h)
+    static double velocidadCaidaLibre(double altura) {
+        return sqrt(2.0 * GRAVEDAD * altura);
+    }
+};
+
+int main() {
+    cout << "=== Constantes Físicas ===" << endl;
+    cout << "PI: " << Fisica::PI << endl;
+    cout << "Gravedad: " << Fisica::GRAVEDAD << " m/s²" << endl;
+    cout << "Velocidad de la luz: " << Fisica::LUZ_VELOCIDAD << " m/s" << endl;
+    cout << "Constante de Boltzmann: " << Fisica::BOLTZMANN << " J/K" << endl;
+
+    cout << "\n=== Cálculos Geométricos (constexpr) ===" << endl;
+
+    // Estos cálculos se realizan en tiempo de compilación
+    constexpr double radio = 5.0;
+    constexpr double circ = Fisica::circunferencia(radio);
+    constexpr double area = Fisica::areaCirculo(radio);
+    constexpr double vol = Fisica::volumenEsfera(radio);
+
+    cout << "Radio: " << radio << " m" << endl;
+    cout << "Circunferencia: " << circ << " m" << endl;
+    cout << "Área del círculo: " << area << " m²" << endl;
+    cout << "Volumen de la esfera: " << vol << " m³" << endl;
+
+    // constexpr en contexto de array (tamaño en compilación)
+    constexpr int N = static_cast<int>(Fisica::circunferencia(1.0)); // 6
+    array<double, N> valores{};
+    cout << "\nArray con " << N << " elementos (circunferencia de radio 1)" << endl;
+
+    cout << "\n=== Cálculos Físicos ===" << endl;
+
+    // Energía cinética (constexpr)
+    constexpr double ek = Fisica::energiaCinetica(10.0, 3.0);
+    cout << "Energía cinética (10kg a 3m/s): " << ek << " J" << endl;
+
+    // Energía relativista de 1 kg
+    constexpr double er = Fisica::energiaRelativista(1.0);
+    cout << "E=mc² para 1 kg: " << er << " J" << endl;
+
+    // Caída libre desde 100 metros (no constexpr por sqrt)
+    double tiempo = Fisica::tiempoCaidaLibre(100.0);
+    double velocidad = Fisica::velocidadCaidaLibre(100.0);
+    cout << "Caída libre desde 100m:" << endl;
+    cout << "  Tiempo: " << tiempo << " s" << endl;
+    cout << "  Velocidad final: " << velocidad << " m/s" << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo:
+- Las constantes físicas se definen como `static constexpr`, garantizando que sus valores se resuelvan en tiempo de compilación.
+- Métodos como `circunferencia()`, `areaCirculo()` y `energiaCinetica()` son `constexpr`, permitiendo que sus resultados se calculen durante la compilación cuando se usan con argumentos constantes.
+- `constexpr double circ = Fisica::circunferencia(radio)` demuestra que el resultado se calcula en compilación.
+- El valor de `circunferencia(1.0)` se usa como tamaño de un `array`, lo cual solo es posible con valores conocidos en compilación.
+- `tiempoCaidaLibre()` no es `constexpr` porque usa `sqrt`, que en muchas implementaciones no es `constexpr`.
+
+#### Miembros Estáticos en Qt
+
+Qt utiliza miembros estáticos de forma extensiva para proporcionar acceso a funcionalidades globales del framework, datos compartidos y patrones como Singleton. Además, Qt ofrece la macro `Q_GLOBAL_STATIC` para la inicialización perezosa y segura en hilos de objetos estáticos globales.
+
+##### Ejemplos de Miembros Estáticos en Qt
+
+1. **`QApplication::instance()`:** Retorna un puntero a la instancia única de la aplicación. Es la implementación del patrón Singleton en Qt.
+2. **`QColor::colorNames()`:** Retorna una `QStringList` con todos los nombres de colores reconocidos por Qt (más de 140 colores SVG).
+3. **`QFont::families()`:** Retorna las familias de fuentes disponibles en el sistema.
+4. **`QLocale::system()`:** Retorna la configuración regional del sistema.
+
+##### `Q_GLOBAL_STATIC`: Inicialización Perezosa y Thread-Safe
+
+La macro `Q_GLOBAL_STATIC` crea un objeto estático global que se inicializa de forma perezosa (en su primer uso) y es seguro en entornos multihilo. Es la alternativa recomendada por Qt a las variables globales estáticas tradicionales, ya que:
+
+1. **Evita problemas de orden de inicialización:** Los objetos estáticos globales en C++ no tienen un orden de inicialización garantizado entre unidades de traducción. `Q_GLOBAL_STATIC` evita este problema al inicializar el objeto en su primer uso.
+2. **Es thread-safe:** La inicialización está protegida internamente contra condiciones de carrera.
+3. **Evita problemas de destrucción:** No sufre el problema de "static deinitialization order fiasco".
+
+##### Ejemplo de Miembros Estáticos y Q_GLOBAL_STATIC en Qt
+
+```cpp
+#include <QCoreApplication>
+#include <QMap>
+#include <QString>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QDebug>
+#include <QColor>
+#include <QGlobalStatic>
+
+// ============================================
+// Q_GLOBAL_STATIC para un mapa de configuración thread-safe
+// ============================================
+
+struct ConfigData {
+    QMap<QString, QString> parametros;
+    QMutex mutex;
+
+    ConfigData() {
+        qDebug() << "ConfigData: inicialización perezosa ejecutada";
+        // Valores por defecto
+        parametros["idioma"] = "es";
+        parametros["tema"] = "oscuro";
+        parametros["puerto"] = "8080";
+        parametros["max_conexiones"] = "100";
+    }
+};
+
+// Crear instancia global con inicialización perezosa
+Q_GLOBAL_STATIC(ConfigData, g_config)
+
+// Clase utilitaria para acceder a la configuración
+class AppConfig {
+public:
+    static QString obtener(const QString& clave) {
+        QMutexLocker locker(&g_config->mutex);
+        return g_config->parametros.value(clave, "(no definido)");
+    }
+
+    static void establecer(const QString& clave, const QString& valor) {
+        QMutexLocker locker(&g_config->mutex);
+        g_config->parametros[clave] = valor;
+        qDebug() << "Config:" << clave << "=" << valor;
+    }
+
+    static QStringList claves() {
+        QMutexLocker locker(&g_config->mutex);
+        return g_config->parametros.keys();
+    }
+
+    static void mostrarTodo() {
+        QMutexLocker locker(&g_config->mutex);
+        qDebug() << "=== Configuración Global ===";
+        for (auto it = g_config->parametros.cbegin();
+             it != g_config->parametros.cend(); ++it) {
+            qDebug() << " " << it.key() << ":" << it.value();
+        }
+    }
+};
+
+// ============================================
+// Ejemplo usando miembros estáticos de Qt
+// ============================================
+
+class DemoEstaticosQt {
+public:
+    static void mostrarColoresQt() {
+        qDebug() << "\n=== Colores Estáticos de Qt ===";
+
+        // QColor::colorNames(): miembro estático que retorna todos los colores
+        QStringList colores = QColor::colorNames();
+        qDebug() << "Total de colores reconocidos:" << colores.size();
+        qDebug() << "Primeros 5 colores:";
+        for (int i = 0; i < 5 && i < colores.size(); ++i) {
+            QColor c(colores[i]);
+            qDebug() << "  " << colores[i]
+                     << "-> RGB(" << c.red() << "," << c.green()
+                     << "," << c.blue() << ")";
+        }
+    }
+
+    static void mostrarInfoApp() {
+        qDebug() << "\n=== Información de la Aplicación ===";
+
+        // QCoreApplication: miembros estáticos de la aplicación
+        qDebug() << "Nombre:" << QCoreApplication::applicationName();
+        qDebug() << "Versión:" << QCoreApplication::applicationVersion();
+        qDebug() << "PID:" << QCoreApplication::applicationPid();
+        qDebug() << "Ruta:" << QCoreApplication::applicationDirPath();
+
+        // Rutas de bibliotecas
+        qDebug() << "Rutas de bibliotecas:"
+                 << QCoreApplication::libraryPaths();
+    }
+};
+
+// int main(int argc, char *argv[]) {
+//     QCoreApplication app(argc, argv);
+//     QCoreApplication::setApplicationName("DemoEstaticos");
+//     QCoreApplication::setApplicationVersion("1.0.0");
+//
+//     // g_config se inicializa aquí, en su primer uso
+//     qDebug() << "Antes de acceder a la configuración...";
+//     AppConfig::mostrarTodo();
+//
+//     // Modificar configuración (thread-safe)
+//     AppConfig::establecer("tema", "claro");
+//     AppConfig::establecer("idioma", "en");
+//     AppConfig::establecer("debug", "true");
+//
+//     qDebug() << "\nTema actual:" << AppConfig::obtener("tema");
+//     qDebug() << "Claves:" << AppConfig::claves();
+//
+//     // Usar miembros estáticos de clases de Qt
+//     DemoEstaticosQt::mostrarColoresQt();
+//     DemoEstaticosQt::mostrarInfoApp();
+//
+//     return 0;
+// }
+```
+
+En este ejemplo:
+- `Q_GLOBAL_STATIC(ConfigData, g_config)` crea un objeto `ConfigData` que se inicializa de forma perezosa la primera vez que se accede a `g_config`.
+- `QMutexLocker` protege el acceso al mapa de configuración, haciéndolo seguro para uso desde múltiples hilos.
+- `AppConfig` proporciona una interfaz estática limpia para acceder a la configuración global.
+- `QColor::colorNames()` es un ejemplo real de función estática de Qt que retorna datos compartidos.
+- `QCoreApplication::applicationName()` y similares demuestran cómo Qt expone información de la aplicación mediante métodos estáticos.
+
+### Conclusión
+
+Las variables miembro y las variables miembro estáticas en C++ son herramientas fundamentales para la gestión de datos en la programación orientada a objetos. Las variables miembro permiten que cada instancia de una clase mantenga su propio estado, mientras que las variables miembro estáticas permiten compartir datos entre todas las instancias de una clase. Entender cómo y cuándo usar estos tipos de variables es crucial para diseñar clases eficientes y efectivas en C++.
+<---FILES--->
+Declaración y Uso de Variables Miembro
+Declaración y Uso de Variables Miembro Result
+Declaración y Uso de Variables Miembro Estáticas
+Declaración y Uso de Variables Miembro Estáticas Result
+Ejemplo de Variables Miembro Estáticas
+Ejemplo de Variables Miembro Estáticas Result
+Ejemplo de Diferencias
+Ejemplo de Diferencias Result
+Ejemplo de inline static vs Patrón Pre-C++17
+Ejemplo de inline static vs Patrón Pre-C++17 Result
+Ejemplo de Constantes de Clase con static constexpr
+Ejemplo de Constantes de Clase con static constexpr Result
+Ejemplo de Miembros Estáticos y Q_GLOBAL_STATIC en Qt
+Ejemplo de Miembros Estáticos y Q_GLOBAL_STATIC en Qt Result
+<---Declaración y Uso de Variables Miembro--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Método para mostrar información
+    void mostrarInformacion() const {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p1("Juan", 30);
+    Persona p2("Maria", 25);
+
+    p1.mostrarInformacion(); // Muestra: Nombre: Juan, Edad: 30
+    p2.mostrarInformacion(); // Muestra: Nombre: Maria, Edad: 25
+
+    return 0;
+}
+<---Declaración y Uso de Variables Miembro Result--->
+<---Declaración y Uso de Variables Miembro Estáticas--->
+<---Declaración y Uso de Variables Miembro Estáticas Result--->
+<---Ejemplo de Variables Miembro Estáticas--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Contador {
+private:
+    static int cuenta; // Declaración de variable miembro estática
+
+public:
+    Contador() {
+        cuenta++;
+    }
+
+    ~Contador() {
+        cuenta--;
+    }
+
+    static int obtenerCuenta() {
+        return cuenta;
+    }
+};
+
+// Definición de la variable miembro estática
+int Contador::cuenta = 0;
+
+int main() {
+    Contador c1;
+    Contador c2;
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    {
+        Contador c3;
+        cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 3
+    }
+
+    cout << "Número de objetos Contador: " << Contador::obtenerCuenta() << endl; // Muestra: 2
+
+    return 0;
+}
+<---Ejemplo de Variables Miembro Estáticas Result--->
+<---Ejemplo de Diferencias--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Ejemplo {
+private:
+    int instanciaVariable;       // Variable miembro
+    static int estaticaVariable; // Variable miembro estática
+
+public:
+    Ejemplo(int valor) : instanciaVariable(valor) {
+        estaticaVariable += valor;
+    }
+
+    void mostrarVariables() const {
+        cout << "Instancia Variable: " << instanciaVariable << endl;
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+
+    static void mostrarEstatica() {
+        cout << "Estatica Variable: " << estaticaVariable << endl;
+    }
+};
+
+// Definición de la variable miembro estática
+int Ejemplo::estaticaVariable = 0;
+
+int main() {
+    Ejemplo e1(10);
+    Ejemplo e2(20);
+
+    e1.mostrarVariables(); // Muestra: Instancia Variable: 10, Estatica Variable: 30
+    e2.mostrarVariables(); // Muestra: Instancia Variable: 20, Estatica Variable: 30
+
+    Ejemplo::mostrarEstatica(); // Muestra: Estatica Variable: 30
+
+    return 0;
+}
+<---Ejemplo de Diferencias Result--->
+<---Ejemplo de inline static vs Patrón Pre-C++17--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// ============================================
+// PATRÓN PRE-C++17: Declarar en .h, definir en .cpp
+// ============================================
+
+// --- Archivo: RegistroClasico.h ---
+class RegistroClasico {
+private:
+    static int contadorInstancias;       // Solo declaración
+    static string nombreAplicacion;      // Solo declaración
+    static const int VERSION_MAJOR;      // Solo declaración (const)
+
+    string nombre;
+
+public:
+    RegistroClasico(const string& n) : nombre(n) {
+        contadorInstancias++;
+    }
+
+    ~RegistroClasico() {
+        contadorInstancias--;
+    }
+
+    static int obtenerContador() { return contadorInstancias; }
+    static string obtenerNombreApp() { return nombreAplicacion; }
+    static int obtenerVersionMajor() { return VERSION_MAJOR; }
+    string obtenerNombre() const { return nombre; }
+};
+
+// --- Archivo: RegistroClasico.cpp (definiciones obligatorias) ---
+int RegistroClasico::contadorInstancias = 0;
+string RegistroClasico::nombreAplicacion = "MiApp Clásica";
+const int RegistroClasico::VERSION_MAJOR = 2;
+
+// ============================================
+// PATRÓN C++17: Todo en la clase con inline static
+// ============================================
+
+// --- Archivo: RegistroModerno.h (sin .cpp necesario) ---
+class RegistroModerno {
+private:
+    // inline static: definición directa en la clase
+    inline static int contadorInstancias = 0;
+    inline static string nombreAplicacion = "MiApp Moderna";
+
+    // constexpr static es implícitamente inline desde C++17
+    static constexpr int VERSION_MAJOR = 3;
+
+    string nombre;
+
+public:
+    RegistroModerno(const string& n) : nombre(n) {
+        contadorInstancias++;
+    }
+
+    ~RegistroModerno() {
+        contadorInstancias--;
+    }
+
+    static int obtenerContador() { return contadorInstancias; }
+    static string obtenerNombreApp() { return nombreAplicacion; }
+    static constexpr int obtenerVersionMajor() { return VERSION_MAJOR; }
+    string obtenerNombre() const { return nombre; }
+};
+
+int main() {
+    cout << "=== Patrón Pre-C++17 (Clásico) ===" << endl;
+    {
+        RegistroClasico r1("Registro A");
+        RegistroClasico r2("Registro B");
+        cout << "App: " << RegistroClasico::obtenerNombreApp() << endl;
+        cout << "Versión: " << RegistroClasico::obtenerVersionMajor() << endl;
+        cout << "Instancias: " << RegistroClasico::obtenerContador() << endl;
+    }
+    cout << "Instancias tras destrucción: "
+         << RegistroClasico::obtenerContador() << endl;
+
+    cout << "\n=== Patrón C++17 (Moderno) ===" << endl;
+    {
+        RegistroModerno m1("Registro X");
+        RegistroModerno m2("Registro Y");
+        RegistroModerno m3("Registro Z");
+        cout << "App: " << RegistroModerno::obtenerNombreApp() << endl;
+        cout << "Versión: " << RegistroModerno::obtenerVersionMajor() << endl;
+        cout << "Instancias: " << RegistroModerno::obtenerContador() << endl;
+    }
+    cout << "Instancias tras destrucción: "
+         << RegistroModerno::obtenerContador() << endl;
+
+    return 0;
+}
+<---Ejemplo de inline static vs Patrón Pre-C++17 Result--->
+<---Ejemplo de Constantes de Clase con static constexpr--->
+```cpp
+#include <iostream>
+#include <cmath>
+#include <array>
+using namespace std;
+
+class Fisica {
+public:
+    // Constantes físicas como static constexpr (implícitamente inline en C++17)
+    static constexpr double PI = 3.14159265358979323846;
+    static constexpr double GRAVEDAD = 9.80665;           // m/s² (estándar)
+    static constexpr double LUZ_VELOCIDAD = 299792458.0;  // m/s
+    static constexpr double BOLTZMANN = 1.380649e-23;     // J/K
+    static constexpr double PLANCK = 6.62607015e-34;      // J·s
+    static constexpr double AVOGADRO = 6.02214076e23;     // 1/mol
+
+    // Método constexpr: cálculo en tiempo de compilación
+    static constexpr double circunferencia(double radio) {
+        return 2.0 * PI * radio;
+    }
+
+    static constexpr double areaCirculo(double radio) {
+        return PI * radio * radio;
+    }
+
+    static constexpr double volumenEsfera(double radio) {
+        return (4.0 / 3.0) * PI * radio * radio * radio;
+    }
+
+    // Energía cinética: E = 0.5 * m * v²
+    static constexpr double energiaCinetica(double masa, double velocidad) {
+        return 0.5 * masa * velocidad * velocidad;
+    }
+
+    // Energía relativista: E = m * c²
+    static constexpr double energiaRelativista(double masa) {
+        return masa * LUZ_VELOCIDAD * LUZ_VELOCIDAD;
+    }
+
+    // Tiempo de caída libre: t = sqrt(2h / g)
+    static double tiempoCaidaLibre(double altura) {
+        return sqrt(2.0 * altura / GRAVEDAD);
+    }
+
+    // Velocidad final en caída libre: v = sqrt(2 * g * h)
+    static double velocidadCaidaLibre(double altura) {
+        return sqrt(2.0 * GRAVEDAD * altura);
+    }
+};
+
+int main() {
+    cout << "=== Constantes Físicas ===" << endl;
+    cout << "PI: " << Fisica::PI << endl;
+    cout << "Gravedad: " << Fisica::GRAVEDAD << " m/s²" << endl;
+    cout << "Velocidad de la luz: " << Fisica::LUZ_VELOCIDAD << " m/s" << endl;
+    cout << "Constante de Boltzmann: " << Fisica::BOLTZMANN << " J/K" << endl;
+
+    cout << "\n=== Cálculos Geométricos (constexpr) ===" << endl;
+
+    // Estos cálculos se realizan en tiempo de compilación
+    constexpr double radio = 5.0;
+    constexpr double circ = Fisica::circunferencia(radio);
+    constexpr double area = Fisica::areaCirculo(radio);
+    constexpr double vol = Fisica::volumenEsfera(radio);
+
+    cout << "Radio: " << radio << " m" << endl;
+    cout << "Circunferencia: " << circ << " m" << endl;
+    cout << "Área del círculo: " << area << " m²" << endl;
+    cout << "Volumen de la esfera: " << vol << " m³" << endl;
+
+    // constexpr en contexto de array (tamaño en compilación)
+    constexpr int N = static_cast<int>(Fisica::circunferencia(1.0)); // 6
+    array<double, N> valores{};
+    cout << "\nArray con " << N << " elementos (circunferencia de radio 1)" << endl;
+
+    cout << "\n=== Cálculos Físicos ===" << endl;
+
+    // Energía cinética (constexpr)
+    constexpr double ek = Fisica::energiaCinetica(10.0, 3.0);
+    cout << "Energía cinética (10kg a 3m/s): " << ek << " J" << endl;
+
+    // Energía relativista de 1 kg
+    constexpr double er = Fisica::energiaRelativista(1.0);
+    cout << "E=mc² para 1 kg: " << er << " J" << endl;
+
+    // Caída libre desde 100 metros (no constexpr por sqrt)
+    double tiempo = Fisica::tiempoCaidaLibre(100.0);
+    double velocidad = Fisica::velocidadCaidaLibre(100.0);
+    cout << "Caída libre desde 100m:" << endl;
+    cout << "  Tiempo: " << tiempo << " s" << endl;
+    cout << "  Velocidad final: " << velocidad << " m/s" << endl;
+
+    return 0;
+}
+<---Ejemplo de Constantes de Clase con static constexpr Result--->
+<---Ejemplo de Miembros Estáticos y Q_GLOBAL_STATIC en Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QMap>
+#include <QString>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QDebug>
+#include <QColor>
+#include <QGlobalStatic>
+
+// ============================================
+// Q_GLOBAL_STATIC para un mapa de configuración thread-safe
+// ============================================
+
+struct ConfigData {
+    QMap<QString, QString> parametros;
+    QMutex mutex;
+
+    ConfigData() {
+        qDebug() << "ConfigData: inicialización perezosa ejecutada";
+        // Valores por defecto
+        parametros["idioma"] = "es";
+        parametros["tema"] = "oscuro";
+        parametros["puerto"] = "8080";
+        parametros["max_conexiones"] = "100";
+    }
+};
+
+// Crear instancia global con inicialización perezosa
+Q_GLOBAL_STATIC(ConfigData, g_config)
+
+// Clase utilitaria para acceder a la configuración
+class AppConfig {
+public:
+    static QString obtener(const QString& clave) {
+        QMutexLocker locker(&g_config->mutex);
+        return g_config->parametros.value(clave, "(no definido)");
+    }
+
+    static void establecer(const QString& clave, const QString& valor) {
+        QMutexLocker locker(&g_config->mutex);
+        g_config->parametros[clave] = valor;
+        qDebug() << "Config:" << clave << "=" << valor;
+    }
+
+    static QStringList claves() {
+        QMutexLocker locker(&g_config->mutex);
+        return g_config->parametros.keys();
+    }
+
+    static void mostrarTodo() {
+        QMutexLocker locker(&g_config->mutex);
+        qDebug() << "=== Configuración Global ===";
+        for (auto it = g_config->parametros.cbegin();
+             it != g_config->parametros.cend(); ++it) {
+            qDebug() << " " << it.key() << ":" << it.value();
+        }
+    }
+};
+
+// ============================================
+// Ejemplo usando miembros estáticos de Qt
+// ============================================
+
+class DemoEstaticosQt {
+public:
+    static void mostrarColoresQt() {
+        qDebug() << "\n=== Colores Estáticos de Qt ===";
+
+        // QColor::colorNames(): miembro estático que retorna todos los colores
+        QStringList colores = QColor::colorNames();
+        qDebug() << "Total de colores reconocidos:" << colores.size();
+        qDebug() << "Primeros 5 colores:";
+        for (int i = 0; i < 5 && i < colores.size(); ++i) {
+            QColor c(colores[i]);
+            qDebug() << "  " << colores[i]
+                     << "-> RGB(" << c.red() << "," << c.green()
+                     << "," << c.blue() << ")";
+        }
+    }
+
+    static void mostrarInfoApp() {
+        qDebug() << "\n=== Información de la Aplicación ===";
+
+        // QCoreApplication: miembros estáticos de la aplicación
+        qDebug() << "Nombre:" << QCoreApplication::applicationName();
+        qDebug() << "Versión:" << QCoreApplication::applicationVersion();
+        qDebug() << "PID:" << QCoreApplication::applicationPid();
+        qDebug() << "Ruta:" << QCoreApplication::applicationDirPath();
+
+        // Rutas de bibliotecas
+        qDebug() << "Rutas de bibliotecas:"
+                 << QCoreApplication::libraryPaths();
+    }
+};
+
+// int main(int argc, char *argv[]) {
+//     QCoreApplication app(argc, argv);
+//     QCoreApplication::setApplicationName("DemoEstaticos");
+//     QCoreApplication::setApplicationVersion("1.0.0");
+//
+//     // g_config se inicializa aquí, en su primer uso
+//     qDebug() << "Antes de acceder a la configuración...";
+//     AppConfig::mostrarTodo();
+//
+//     // Modificar configuración (thread-safe)
+//     AppConfig::establecer("tema", "claro");
+//     AppConfig::establecer("idioma", "en");
+//     AppConfig::establecer("debug", "true");
+//
+//     qDebug() << "\nTema actual:" << AppConfig::obtener("tema");
+//     qDebug() << "Claves:" << AppConfig::claves();
+//
+//     // Usar miembros estáticos de clases de Qt
+//     DemoEstaticosQt::mostrarColoresQt();
+//     DemoEstaticosQt::mostrarInfoApp();
+//
+//     return 0;
+// }
+<---Ejemplo de Miembros Estáticos y Q_GLOBAL_STATIC en Qt Result--->

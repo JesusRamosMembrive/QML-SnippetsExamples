@@ -1,0 +1,296 @@
+<---EXPLANATION--->
+### QFile y QDir - Sistema de Archivos
+
+Qt proporciona `QFile` y `QDir` para interactuar con el sistema de archivos de forma **multiplataforma**. A diferencia de `std::fstream` y `std::filesystem`, estas clases están integradas con el ecosistema Qt y manejan automáticamente las diferencias entre Windows, Linux y macOS (separadores de ruta, codificación, permisos).
+
+#### QFile - Lectura y Escritura de Archivos
+
+##### Lectura de un Archivo de Texto
+
+```cpp
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+
+void leerArchivo() {
+    QFile archivo("datos.txt");
+    
+    if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "No se pudo abrir:" << archivo.errorString();
+        return;
+    }
+    
+    QTextStream stream(&archivo);
+    
+    // Leer todo el contenido
+    QString contenido = stream.readAll();
+    qDebug() << contenido;
+    
+    archivo.close();
+}
+```
+
+##### Lectura Línea por Línea
+
+```cpp
+void leerLineas() {
+    QFile archivo("datos.txt");
+    
+    if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;
+    }
+    
+    QTextStream stream(&archivo);
+    
+    while (!stream.atEnd()) {
+        QString linea = stream.readLine();
+        qDebug() << linea;
+    }
+    
+    archivo.close();
+}
+```
+
+##### Escritura de un Archivo
+
+```cpp
+void escribirArchivo() {
+    QFile archivo("salida.txt");
+    
+    if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "No se pudo crear:" << archivo.errorString();
+        return;
+    }
+    
+    QTextStream stream(&archivo);
+    stream << "Primera línea" << Qt::endl;
+    stream << "Segunda línea" << Qt::endl;
+    stream << "Valor: " << 42 << Qt::endl;
+    
+    archivo.close();
+}
+```
+
+##### Verificar Existencia, Tamaño y Permisos
+
+```cpp
+void informacionArchivo() {
+    QString ruta = "datos.txt";
+    
+    // exists() - ¿existe el archivo?
+    bool existe = QFile::exists(ruta);
+    qDebug() << "Existe:" << existe;
+    
+    if (existe) {
+        QFileInfo info(ruta);
+        qDebug() << "Tamaño:" << info.size() << "bytes";
+        qDebug() << "Es legible:" << info.isReadable();
+        qDebug() << "Es escribible:" << info.isWritable();
+        qDebug() << "Última modificación:" << info.lastModified();
+        qDebug() << "Extensión:" << info.suffix();        // "txt"
+        qDebug() << "Nombre base:" << info.baseName();    // "datos"
+    }
+}
+```
+
+##### Copiar, Renombrar y Eliminar
+
+```cpp
+void operacionesArchivo() {
+    // copy() - copiar archivo
+    QFile::copy("origen.txt", "destino.txt");
+    
+    // rename() - renombrar/mover
+    QFile::rename("viejo.txt", "nuevo.txt");
+    
+    // remove() - eliminar archivo
+    QFile::remove("temporal.txt");
+    
+    // resize() - cambiar tamaño
+    QFile archivo("datos.txt");
+    archivo.resize(1024);  // Truncar o expandir a 1024 bytes
+}
+```
+
+#### QDir - Operaciones con Directorios
+
+##### Listar Contenido de un Directorio
+
+```cpp
+#include <QDir>
+#include <QDebug>
+
+void listarDirectorio() {
+    QDir dir("/home/usuario/documentos");
+    
+    // Listar archivos con filtro
+    QStringList filtros;
+    filtros << "*.cpp" << "*.h";
+    
+    QStringList archivos = dir.entryList(filtros, QDir::Files, QDir::Name);
+    
+    for (const QString &archivo : archivos) {
+        qDebug() << archivo;
+    }
+}
+```
+
+##### Crear y Eliminar Directorios
+
+```cpp
+void gestionDirectorios() {
+    QDir dir;
+    
+    // mkdir() - crear un directorio
+    dir.mkdir("nuevo_directorio");
+    
+    // mkpath() - crear toda la ruta (equivale a mkdir -p)
+    dir.mkpath("ruta/completa/de/directorios");
+    
+    // rmdir() - eliminar directorio vacío
+    dir.rmdir("nuevo_directorio");
+    
+    // removeRecursively() - eliminar directorio con contenido
+    QDir dirTemp("temporal");
+    dirTemp.removeRecursively();
+}
+```
+
+##### Rutas Especiales
+
+```cpp
+void rutasEspeciales() {
+    // Directorio home del usuario
+    QString home = QDir::homePath();
+    
+    // Directorio temporal del sistema
+    QString temp = QDir::tempPath();
+    
+    // Directorio actual de trabajo
+    QString actual = QDir::currentPath();
+    
+    // Directorio raíz
+    QString raiz = QDir::rootPath();
+    
+    // Separador de ruta (multiplataforma)
+    QChar sep = QDir::separator();  // '/' en Unix, '\\' en Windows
+    
+    qDebug() << "Home:" << home;
+    qDebug() << "Temp:" << temp;
+    qDebug() << "Actual:" << actual;
+    qDebug() << "Separador:" << sep;
+}
+```
+
+##### Navegación y Rutas
+
+```cpp
+void navegacion() {
+    QDir dir("/home/usuario/proyecto/src");
+    
+    // Subir un nivel
+    dir.cdUp();  // Ahora: /home/usuario/proyecto
+    
+    // Entrar en subdirectorio
+    dir.cd("build");  // Ahora: /home/usuario/proyecto/build
+    
+    // Ruta absoluta
+    qDebug() << "Absoluta:" << dir.absolutePath();
+    
+    // Construir ruta con filePath()
+    QString archivo = dir.filePath("output.bin");
+    //  "/home/usuario/proyecto/build/output.bin"
+    
+    // Limpiar ruta (eliminar ./ y ../)
+    QString limpia = QDir::cleanPath("/home/./usuario/../usuario/docs");
+    // "/home/usuario/docs"
+    
+    qDebug() << archivo << limpia;
+}
+```
+
+#### Comparación con `std::filesystem` (C++17)
+
+| Operación | Qt | `std::filesystem` |
+| :--- | :--- | :--- |
+| **Leer archivo** | `QFile` + `QTextStream` | `std::ifstream` |
+| **Existe** | `QFile::exists()` | `fs::exists()` |
+| **Listar directorio** | `QDir::entryList()` | `fs::directory_iterator` |
+| **Crear ruta completa** | `QDir::mkpath()` | `fs::create_directories()` |
+| **Ruta home** | `QDir::homePath()` | No estándar |
+| **Codificación** | UTF-16 nativo | Depende del OS |
+
+### Conclusión
+
+`QFile` y `QDir` ofrecen una API intuitiva y multiplataforma para operaciones de sistema de archivos. Su integración con `QTextStream` para lectura/escritura y `QFileInfo` para metadatos las convierte en herramientas más accesibles que sus equivalentes de la STL, especialmente en proyectos multiplataforma.
+<---FILES--->
+Lectura de un Archivo de Texto
+Lectura de un Archivo de Texto Result
+Escritura de un Archivo
+Escritura de un Archivo Result
+Listar Contenido de un Directorio
+Listar Contenido de un Directorio Result
+Rutas Especiales
+Rutas Especiales Result
+<---Lectura de un Archivo de Texto--->
+```cpp
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+
+void leerArchivo() {
+    QFile archivo("datos.txt");
+    if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Error:" << archivo.errorString();
+        return;
+    }
+    QTextStream stream(&archivo);
+    QString contenido = stream.readAll();
+    qDebug() << contenido;
+    archivo.close();
+}
+<---Lectura de un Archivo de Texto Result--->
+<---Escritura de un Archivo--->
+```cpp
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+
+void escribirArchivo() {
+    QFile archivo("salida.txt");
+    if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return;
+    }
+    QTextStream stream(&archivo);
+    stream << "Primera línea" << Qt::endl;
+    stream << "Valor: " << 42 << Qt::endl;
+    archivo.close();
+}
+<---Escritura de un Archivo Result--->
+<---Listar Contenido de un Directorio--->
+```cpp
+#include <QDir>
+#include <QDebug>
+
+void listarDirectorio() {
+    QDir dir(".");
+    QStringList filtros;
+    filtros << "*.cpp" << "*.h";
+    QStringList archivos = dir.entryList(filtros, QDir::Files, QDir::Name);
+    for (const QString &a : archivos) {
+        qDebug() << a;
+    }
+}
+<---Listar Contenido de un Directorio Result--->
+<---Rutas Especiales--->
+```cpp
+#include <QDir>
+#include <QDebug>
+
+void rutasEspeciales() {
+    qDebug() << "Home:" << QDir::homePath();
+    qDebug() << "Temp:" << QDir::tempPath();
+    qDebug() << "Actual:" << QDir::currentPath();
+    qDebug() << "Separador:" << QDir::separator();
+}
+<---Rutas Especiales Result--->

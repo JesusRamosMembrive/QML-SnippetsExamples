@@ -1,0 +1,575 @@
+<---EXPLANATION--->
+### Gestión Dinámica de la Memoria en C++
+
+La gestión dinámica de la memoria en C++ permite a los desarrolladores asignar y liberar memoria en tiempo de ejecución. Esto es esencial para manejar estructuras de datos cuyo tamaño no puede determinarse en tiempo de compilación y para optimizar el uso de la memoria. Sin embargo, también implica la responsabilidad de liberar la memoria asignada para evitar fugas de memoria y otros errores.
+
+#### Operadores `new` y `delete`
+
+##### Asignación de Memoria
+
+El operador `new` se utiliza para asignar memoria dinámica para un solo objeto o un arreglo de objetos. Devuelve un puntero al tipo especificado.
+
+```cpp
+int* ptr = new int; // Asignar memoria para un entero
+*ptr = 10;
+std::cout << *ptr << std::endl; // Salida: 10
+
+delete ptr; // Liberar la memoria asignada
+```
+
+##### Asignación de Memoria para Arreglos
+
+Para asignar memoria para un arreglo, se utiliza `new[]` y para liberarla, `delete[]`.
+
+```cpp
+int size = 5;
+int* arr = new int[size]; // Asignar memoria para un arreglo de enteros
+
+for(int i = 0; i < size; ++i) {
+    arr[i] = i * 10;
+}
+
+for(int i = 0; i < size; ++i) {
+    std::cout << arr[i] << " "; // Salida: 0 10 20 30 40
+}
+std::cout << std::endl;
+
+delete[] arr; // Liberar la memoria asignada para el arreglo
+```
+
+#### Gestión de Memoria en Clases
+
+Cuando se manejan recursos dinámicos en clases, es crucial implementar correctamente el constructor, destructor, constructor de copia y operador de asignación para gestionar la memoria de manera adecuada.
+
+##### Ejemplo: Clase con Gestión de Memoria Dinámica
+
+```cpp
+#include <iostream>
+
+class MiClase {
+private:
+    int* data;
+    size_t size;
+
+public:
+    // Constructor
+    MiClase(size_t s) : size(s) {
+        data = new int[size];
+        for(size_t i = 0; i < size; ++i) {
+            data[i] = i * 10;
+        }
+    }
+
+    // Destructor
+    ~MiClase() {
+        delete[] data;
+    }
+
+    // Constructor de copia
+    MiClase(const MiClase& other) : size(other.size) {
+        data = new int[size];
+        std::copy(other.data, other.data + size, data);
+    }
+
+    // Operador de asignación
+    MiClase& operator=(const MiClase& other) {
+        if (this == &other) return *this;
+
+        delete[] data;
+
+        size = other.size;
+        data = new int[size];
+        std::copy(other.data, other.data + size, data);
+
+        return *this;
+    }
+
+    void print() const {
+        for(size_t i = 0; i < size; ++i) {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+};
+
+int main() {
+    MiClase obj1(5);
+    obj1.print(); // Salida: 0 10 20 30 40
+
+    MiClase obj2 = obj1; // Constructor de copia
+    obj2.print(); // Salida: 0 10 20 30 40
+
+    MiClase obj3(3);
+    obj3 = obj1; // Operador de asignación
+    obj3.print(); // Salida: 0 10 20 30 40
+
+    return 0;
+}
+```
+
+### Smart Pointers
+
+C++11 introdujo los punteros inteligentes (`smart pointers`) en la biblioteca estándar (`<memory>`) para ayudar a gestionar la memoria de manera automática y segura. Los tres tipos principales son `std::unique_ptr`, `std::shared_ptr` y `std::weak_ptr`.
+
+#### `std::unique_ptr`
+
+Un `std::unique_ptr` es un puntero exclusivo que posee la memoria a la que apunta y no puede compartirla con otro puntero. Cuando el `unique_ptr` sale de alcance, la memoria se libera automáticamente.
+
+##### Ejemplo con `std::unique_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::unique_ptr<int> ptr = std::make_unique<int>(10);
+    std::cout << *ptr << std::endl; // Salida: 10
+
+    return 0;
+}
+```
+
+#### `std::shared_ptr`
+
+Un `std::shared_ptr` permite compartir la propiedad de la memoria con múltiples punteros. La memoria se libera cuando el último `shared_ptr` que la posee es destruido.
+
+##### Ejemplo con `std::shared_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(20);
+    std::shared_ptr<int> ptr2 = ptr1;
+
+    std::cout << *ptr1 << std::endl; // Salida: 20
+    std::cout << *ptr2 << std::endl; // Salida: 20
+
+    return 0;
+}
+```
+
+#### `std::weak_ptr`
+
+Un `std::weak_ptr` es un puntero no propietario que se utiliza junto con `std::shared_ptr` para evitar ciclos de referencia. No afecta la vida útil de la memoria a la que apunta.
+
+##### Ejemplo con `std::weak_ptr`
+
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> sptr = std::make_shared<int>(30);
+    std::weak_ptr<int> wptr = sptr;
+
+    std::cout << "Use count: " << sptr.use_count() << std::endl; // Salida: 1
+
+    if (auto spt = wptr.lock()) {
+        std::cout << *spt << std::endl; // Salida: 30
+    } else {
+        std::cout << "wptr is expired" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Buenas Prácticas para la Gestión Dinámica de la Memoria
+
+#### 1. Siempre Liberar la Memoria Asignada
+
+Evitar fugas de memoria asegurando que toda la memoria asignada dinámicamente se libera adecuadamente.
+
+```cpp
+int* ptr = new int(10);
+// ...
+delete ptr; // Liberar la memoria
+```
+
+#### 2. Usar Smart Pointers
+
+Preferir el uso de punteros inteligentes sobre los punteros crudos para evitar problemas de gestión de memoria.
+
+```cpp
+std::unique_ptr<int> ptr = std::make_unique<int>(10);
+```
+
+#### 3. Evitar Accesos Inválidos
+
+Asegurarse de no acceder a memoria después de haberla liberado. Asignar `nullptr` a los punteros después de `delete` puede ayudar.
+
+```cpp
+int* ptr = new int(10);
+delete ptr;
+ptr = nullptr; // Evitar acceso a memoria liberada
+```
+
+#### 4. Usar RAII (Resource Acquisition Is Initialization)
+
+Utilizar el principio RAII para gestionar recursos, asegurando que la adquisición de un recurso se produce en el constructor y su liberación en el destructor.
+
+```cpp
+class Recurso {
+public:
+    Recurso() { /* adquirir recurso */ }
+    ~Recurso() { /* liberar recurso */ }
+};
+```
+
+### Características Modernas de C++ para Gestión Dinámica
+
+#### `std::pmr` — Polimorphic Memory Resources (C++17)
+
+`std::pmr` permite personalizar la estrategia de asignación de memoria sin cambiar el tipo del contenedor. Útil para sistemas embebidos, juegos o aplicaciones de alto rendimiento.
+
+```cpp
+#include <iostream>
+#include <memory_resource>
+#include <vector>
+#include <array>
+
+int main() {
+    // Buffer en el stack para evitar asignaciones en el heap
+    std::array<std::byte, 1024> buffer;
+
+    // Monotonic buffer: asigna rápido, libera todo de una vez
+    std::pmr::monotonic_buffer_resource pool(
+        buffer.data(), buffer.size(),
+        std::pmr::null_memory_resource() // No usar heap si se agota
+    );
+
+    // Vector que usa memoria del stack en lugar del heap
+    std::pmr::vector<int> vec(&pool);
+    for (int i = 0; i < 100; ++i) {
+        vec.push_back(i * 10);
+    }
+
+    std::cout << "Elementos: " << vec.size() << std::endl;
+    std::cout << "Primer elemento: " << vec[0] << std::endl;
+    std::cout << "Último elemento: " << vec[99] << std::endl;
+
+    // La memoria se libera cuando pool sale del ámbito — sin delete
+    return 0;
+}
+```
+
+#### Asignación Alineada (C++17)
+
+C++17 permite especificar la alineación de la memoria para tipos sobre-alineados, útil para SIMD o requisitos de hardware.
+
+```cpp
+#include <iostream>
+#include <new>
+#include <memory>
+
+// Estructura alineada a 64 bytes (línea de caché típica)
+struct alignas(64) DatosAlineados {
+    float valores[16]; // 64 bytes exactos
+};
+
+int main() {
+    // new respeta automáticamente la alineación desde C++17
+    auto* datos = new DatosAlineados();
+    std::cout << "Alineación: " << alignof(DatosAlineados) << " bytes" << std::endl;
+    std::cout << "Dirección: " << datos << std::endl;
+    std::cout << "¿Alineado a 64? " << (reinterpret_cast<uintptr_t>(datos) % 64 == 0 ? "Sí" : "No") << std::endl;
+    delete datos;
+
+    // Con smart pointers — también funciona
+    auto ptr = std::make_unique<DatosAlineados>();
+    std::cout << "Smart pointer alineado correctamente" << std::endl;
+
+    return 0;
+}
+```
+
+#### `constexpr` y Asignación en Tiempo de Compilación (C++20)
+
+Desde C++20, se pueden usar `new` y `delete` dentro de funciones `constexpr`, permitiendo cómputos complejos en compilación.
+
+```cpp
+#include <iostream>
+#include <memory>
+
+// C++20: new/delete en constexpr
+constexpr int calcularEnCompilacion() {
+    int* ptr = new int(42);
+    int resultado = *ptr * 2;
+    delete ptr;
+    return resultado;
+}
+
+int main() {
+    constexpr int valor = calcularEnCompilacion(); // Calculado en compilación
+    static_assert(valor == 84);
+    std::cout << "Valor constexpr: " << valor << std::endl;
+
+    return 0;
+}
+```
+
+#### Equivalentes en Qt: Asignación con Parent System
+
+```cpp
+#include <QObject>
+#include <QTimer>
+#include <QDebug>
+
+// En Qt, rara vez se usa new/delete directo — se usa el sistema de padres
+class MiWidget : public QObject {
+    Q_OBJECT
+public:
+    explicit MiWidget(QObject* parent = nullptr) : QObject(parent) {
+        // Los hijos se crean con 'this' como padre
+        auto* timer = new QTimer(this); // Se destruirá con MiWidget
+        timer->setInterval(1000);
+
+        // O con smart pointers para recursos no-QObject
+        datos_ = std::make_unique<std::vector<int>>(100, 0);
+    }
+
+private:
+    std::unique_ptr<std::vector<int>> datos_; // Recurso no-QObject
+};
+```
+
+### Conclusión
+
+La gestión dinámica de la memoria en C++ proporciona flexibilidad y control, pero también implica la responsabilidad de manejar adecuadamente la asignación y liberación de memoria. El uso de punteros inteligentes y buenas prácticas de programación ayudan a prevenir errores comunes y aseguran que los recursos se gestionen de manera eficiente y segura. Al dominar estas técnicas, los desarrolladores pueden escribir código más robusto y mantenible.
+<---FILES--->
+Asignación de Memoria
+Asignación de Memoria Result
+Asignación de Memoria para Arreglos
+Asignación de Memoria para Arreglos Result
+Ejemplo: Clase con Gestión de Memoria Dinámica
+Ejemplo: Clase con Gestión de Memoria Dinámica Result
+Ejemplo con `std::unique_ptr`
+Ejemplo con `std::unique_ptr` Result
+Ejemplo con `std::shared_ptr`
+Ejemplo con `std::shared_ptr` Result
+Ejemplo con `std::weak_ptr`
+Ejemplo con `std::weak_ptr` Result
+<---Asignación de Memoria--->
+```cpp
+int* ptr = new int; // Asignar memoria para un entero
+*ptr = 10;
+std::cout << *ptr << std::endl; // Salida: 10
+
+delete ptr; // Liberar la memoria asignada
+<---Asignación de Memoria Result--->
+<---Asignación de Memoria para Arreglos--->
+```cpp
+int size = 5;
+int* arr = new int[size]; // Asignar memoria para un arreglo de enteros
+
+for(int i = 0; i < size; ++i) {
+    arr[i] = i * 10;
+}
+
+for(int i = 0; i < size; ++i) {
+    std::cout << arr[i] << " "; // Salida: 0 10 20 30 40
+}
+std::cout << std::endl;
+
+delete[] arr; // Liberar la memoria asignada para el arreglo
+<---Asignación de Memoria para Arreglos Result--->
+<---Ejemplo: Clase con Gestión de Memoria Dinámica--->
+```cpp
+#include <iostream>
+
+class MiClase {
+private:
+    int* data;
+    size_t size;
+
+public:
+    // Constructor
+    MiClase(size_t s) : size(s) {
+        data = new int[size];
+        for(size_t i = 0; i < size; ++i) {
+            data[i] = i * 10;
+        }
+    }
+
+    // Destructor
+    ~MiClase() {
+        delete[] data;
+    }
+
+    // Constructor de copia
+    MiClase(const MiClase& other) : size(other.size) {
+        data = new int[size];
+        std::copy(other.data, other.data + size, data);
+    }
+
+    // Operador de asignación
+    MiClase& operator=(const MiClase& other) {
+        if (this == &other) return *this;
+
+        delete[] data;
+
+        size = other.size;
+        data = new int[size];
+        std::copy(other.data, other.data + size, data);
+
+        return *this;
+    }
+
+    void print() const {
+        for(size_t i = 0; i < size; ++i) {
+            std::cout << data[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+};
+
+int main() {
+    MiClase obj1(5);
+    obj1.print(); // Salida: 0 10 20 30 40
+
+    MiClase obj2 = obj1; // Constructor de copia
+    obj2.print(); // Salida: 0 10 20 30 40
+
+    MiClase obj3(3);
+    obj3 = obj1; // Operador de asignación
+    obj3.print(); // Salida: 0 10 20 30 40
+
+    return 0;
+}
+<---Ejemplo: Clase con Gestión de Memoria Dinámica Result--->
+<---Ejemplo con `std::unique_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::unique_ptr<int> ptr = std::make_unique<int>(10);
+    std::cout << *ptr << std::endl; // Salida: 10
+
+    return 0;
+}
+<---Ejemplo con `std::unique_ptr` Result--->
+<---Ejemplo con `std::shared_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> ptr1 = std::make_shared<int>(20);
+    std::shared_ptr<int> ptr2 = ptr1;
+
+    std::cout << *ptr1 << std::endl; // Salida: 20
+    std::cout << *ptr2 << std::endl; // Salida: 20
+
+    return 0;
+}
+<---Ejemplo con `std::shared_ptr` Result--->
+<---Ejemplo con `std::weak_ptr`--->
+```cpp
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> sptr = std::make_shared<int>(30);
+    std::weak_ptr<int> wptr = sptr;
+
+    std::cout << "Use count: " << sptr.use_count() << std::endl; // Salida: 1
+
+    if (auto spt = wptr.lock()) {
+        std::cout << *spt << std::endl; // Salida: 30
+    } else {
+        std::cout << "wptr is expired" << std::endl;
+    }
+
+    return 0;
+}
+```cpp
+int* ptr = new int(10);
+// ...
+delete ptr; // Liberar la memoria
+```cpp
+std::unique_ptr<int> ptr = std::make_unique<int>(10);
+```cpp
+int* ptr = new int(10);
+delete ptr;
+ptr = nullptr; // Evitar acceso a memoria liberada
+```cpp
+class Recurso {
+public:
+    Recurso() { /* adquirir recurso */ }
+    ~Recurso() { /* liberar recurso */ }
+};
+<---Ejemplo con `std::weak_ptr` Result--->
+std::pmr — Polimorphic Memory Resources (C++17)
+std::pmr — Polimorphic Memory Resources (C++17) Result
+Asignación Alineada (C++17)
+Asignación Alineada (C++17) Result
+constexpr new/delete (C++20)
+constexpr new/delete (C++20) Result
+<---std::pmr — Polimorphic Memory Resources (C++17)--->
+```cpp
+#include <iostream>
+#include <memory_resource>
+#include <vector>
+#include <array>
+
+int main() {
+    std::array<std::byte, 1024> buffer;
+    std::pmr::monotonic_buffer_resource pool(
+        buffer.data(), buffer.size(),
+        std::pmr::null_memory_resource()
+    );
+
+    std::pmr::vector<int> vec(&pool);
+    for (int i = 0; i < 100; ++i) {
+        vec.push_back(i * 10);
+    }
+
+    std::cout << "Elementos: " << vec.size() << std::endl;
+    std::cout << "Primer elemento: " << vec[0] << std::endl;
+    return 0;
+}
+<---std::pmr — Polimorphic Memory Resources (C++17) Result--->
+<---Asignación Alineada (C++17)--->
+```cpp
+#include <iostream>
+#include <new>
+#include <memory>
+
+struct alignas(64) DatosAlineados {
+    float valores[16]; // 64 bytes
+};
+
+int main() {
+    auto* datos = new DatosAlineados();
+    std::cout << "Alineación: " << alignof(DatosAlineados) << " bytes" << std::endl;
+    std::cout << "¿Alineado a 64? "
+              << (reinterpret_cast<uintptr_t>(datos) % 64 == 0 ? "Sí" : "No")
+              << std::endl;
+    delete datos;
+
+    auto ptr = std::make_unique<DatosAlineados>();
+    std::cout << "Smart pointer alineado correctamente" << std::endl;
+    return 0;
+}
+<---Asignación Alineada (C++17) Result--->
+<---constexpr new/delete (C++20)--->
+```cpp
+#include <iostream>
+
+constexpr int calcularEnCompilacion() {
+    int* ptr = new int(42);
+    int resultado = *ptr * 2;
+    delete ptr;
+    return resultado;
+}
+
+int main() {
+    constexpr int valor = calcularEnCompilacion();
+    static_assert(valor == 84);
+    std::cout << "Valor constexpr: " << valor << std::endl;
+    return 0;
+}
+<---constexpr new/delete (C++20) Result--->

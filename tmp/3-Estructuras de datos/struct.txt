@@ -1,0 +1,363 @@
+<---EXPLANATION--->
+### `struct` en C++
+
+En C++, `struct` es una estructura de datos que permite agrupar diferentes tipos de datos bajo un mismo nombre, proporcionando una manera de manejar datos relacionados de forma cohesiva. Aunque `struct` es similar a la clase (`class`), existen algunas diferencias clave en su uso y sintaxis.
+
+#### Definición de `struct`
+
+Una estructura (`struct`) en C++ se define utilizando la palabra clave `struct` seguida del nombre de la estructura y el bloque de miembros.
+
+##### Sintaxis
+
+```cpp
+struct NombreEstructura {
+    tipo_dato1 miembro1;
+    tipo_dato2 miembro2;
+    // Otros miembros
+};
+```
+
+##### Ejemplo Básico
+
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Persona {
+    string nombre;
+    int edad;
+    float altura;
+};
+
+int main() {
+    // Declaración e inicialización de una estructura
+    Persona juan = {"Juan", 30, 1.75f};
+
+    // Acceso a los miembros de la estructura
+    cout << "Nombre: " << juan.nombre << endl;
+    cout << "Edad: " << juan.edad << endl;
+    cout << "Altura: " << juan.altura << " metros" << endl;
+
+    return 0;
+}
+```
+
+En este ejemplo, `Persona` es una estructura que contiene tres miembros: `nombre`, `edad` y `altura`.
+
+#### Inicialización de `struct`
+
+Existen varias maneras de inicializar una estructura en C++.
+
+##### Inicialización de Lista
+
+```cpp
+Persona maria = {"Maria", 25, 1.65f};
+```
+
+##### Inicialización Miembro por Miembro
+
+```cpp
+Persona pedro;
+pedro.nombre = "Pedro";
+pedro.edad = 28;
+pedro.altura = 1.80f;
+```
+
+#### Operaciones con `struct`
+
+Las estructuras pueden ser manipuladas de diversas maneras, como copiar, pasar como argumentos a funciones, y retornarlas desde funciones.
+
+##### Copia de Estructuras
+
+```cpp
+Persona juan = {"Juan", 30, 1.75f};
+Persona copiaJuan = juan;
+
+cout << "Copia de Juan - Nombre: " << copiaJuan.nombre << endl;
+```
+
+##### Pasar Estructuras a Funciones
+
+```cpp
+void imprimirPersona(Persona p) {
+    cout << "Nombre: " << p.nombre << endl;
+    cout << "Edad: " << p.edad << endl;
+    cout << "Altura: " << p.altura << " metros" << endl;
+}
+
+int main() {
+    Persona juan = {"Juan", 30, 1.75f};
+    imprimirPersona(juan);
+    return 0;
+}
+```
+
+##### Retornar Estructuras desde Funciones
+
+```cpp
+Persona crearPersona(string nombre, int edad, float altura) {
+    Persona p = {nombre, edad, altura};
+    return p;
+}
+
+int main() {
+    Persona ana = crearPersona("Ana", 22, 1.60f);
+    cout << "Nombre: " << ana.nombre << endl;
+    cout << "Edad: " << ana.edad << endl;
+    cout << "Altura: " << ana.altura << " metros" << endl;
+    return 0;
+}
+```
+
+#### Diferencias entre `struct` y `class`
+
+Aunque `struct` y `class` son similares, tienen algunas diferencias:
+
+- **Acceso Predeterminado:**
+  - En `struct`, los miembros son públicos por defecto.
+  - En `class`, los miembros son privados por defecto.
+
+- **Herencia:**
+  - La herencia pública es la predeterminada para `struct`.
+  - La herencia privada es la predeterminada para `class`.
+
+##### Ejemplo Comparativo
+
+```cpp
+struct Punto {
+    int x; // Público por defecto
+    int y;
+};
+
+class PuntoClase {
+private:
+    int x; // Privado por defecto
+    int y;
+public:
+    void setX(int val) { x = val; }
+    int getX() { return x; }
+};
+
+int main() {
+    Punto p1;
+    p1.x = 10; // Acceso directo permitido
+
+    PuntoClase p2;
+    // p2.x = 10; // Error: x es privado
+    p2.setX(10); // Acceso mediante función miembro
+
+    return 0;
+}
+```
+
+#### Ejemplo Completo
+
+A continuación, un ejemplo completo que muestra la creación y manipulación de estructuras, así como su uso en funciones.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Fecha {
+    int dia;
+    int mes;
+    int anio;
+};
+
+struct Persona {
+    string nombre;
+    int edad;
+    float altura;
+    Fecha nacimiento;
+};
+
+void imprimirPersona(const Persona& p) {
+    cout << "Nombre: " << p.nombre << endl;
+    cout << "Edad: " << p.edad << endl;
+    cout << "Altura: " << p.altura << " metros" << endl;
+    cout << "Fecha de Nacimiento: " << p.nacimiento.dia << "/"
+         << p.nacimiento.mes << "/" << p.nacimiento.anio << endl;
+}
+
+int main() {
+    Fecha fechaNacimiento = {15, 6, 1990};
+    Persona juan = {"Juan", 30, 1.75f, fechaNacimiento};
+
+    imprimirPersona(juan);
+
+    Persona maria;
+    maria.nombre = "Maria";
+    maria.edad = 25;
+    maria.altura = 1.65f;
+    maria.nacimiento = {12, 10, 1995};
+
+    imprimirPersona(maria);
+
+    return 0;
+}
+```
+
+En este ejemplo, la estructura `Fecha` se utiliza como un miembro dentro de la estructura `Persona`. La función `imprimirPersona` muestra cómo se pueden acceder y manipular estos datos estructurados.
+
+### `struct` en el Contexto de Qt
+
+#### `Q_GADGET` — Registrar structs en el meta-object system
+
+`Q_GADGET` es como `Q_OBJECT` pero para structs/clases sin señales ni herencia de QObject. Permite usar `Q_ENUM`, `Q_PROPERTY` y `Q_INVOKABLE`:
+
+```cpp
+struct Coordenada {
+    Q_GADGET
+    Q_PROPERTY(double latitud MEMBER latitud)
+    Q_PROPERTY(double longitud MEMBER longitud)
+public:
+    double latitud = 0.0;
+    double longitud = 0.0;
+
+    Q_INVOKABLE QString toString() const {
+        return QString("(%1, %2)").arg(latitud).arg(longitud);
+    }
+};
+// Ahora Coordenada se puede usar en QML y con QVariant
+```
+
+#### Structs como tipos de valor en Qt
+
+Qt usa structs para datos simples de valor (sin ownership ni identidad):
+
+```cpp
+// Qt define structs como QPoint, QSize, QRect, QColor...
+QPoint punto(10, 20);
+QSize tamano(800, 600);
+QRect rect(0, 0, 100, 50);
+
+// Son copiables y comparables
+QPoint copia = punto;
+if (punto == copia) qDebug() << "Iguales";
+```
+
+#### Structured Bindings (C++17) con structs
+
+```cpp
+struct Resultado {
+    bool exito;
+    QString mensaje;
+    int codigo;
+};
+
+Resultado verificar() { return {true, "OK", 200}; }
+
+// C++17: descomponer struct en variables
+auto [ok, msg, cod] = verificar();
+qDebug() << ok << msg << cod;  // true "OK" 200
+```
+
+#### Convención: `struct` vs `class` en Qt
+
+En código Qt, la convención es:
+- **`struct`**: Para datos de valor simples (POD, sin comportamiento complejo)
+- **`class`**: Para objetos con identidad, señales/slots, herencia de QObject
+
+### Conclusión
+
+Las estructuras (`struct`) en C++ son herramientas poderosas para agrupar datos relacionados y manejarlos de forma cohesiva. Proporcionan una manera clara y eficiente de trabajar con datos complejos y son esenciales para la programación orientada a objetos y el diseño de software modular. Con un entendimiento sólido de `struct`, los desarrolladores pueden escribir código más organizado, mantenible y escalable.
+<---FILES--->
+Ejemplo Básico
+Ejemplo Básico Result
+Pasar a Funciones
+Pasar a Funciones Result
+struct vs class
+struct vs class Result
+Ejemplo Completo
+Ejemplo Completo Result
+<---Ejemplo Básico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Persona {
+    string nombre;
+    int edad;
+    float altura;
+};
+
+int main() {
+    Persona juan = {"Juan", 30, 1.75f};
+    cout << "Nombre: " << juan.nombre << endl;
+    cout << "Edad: " << juan.edad << endl;
+    cout << "Altura: " << juan.altura << " m" << endl;
+    return 0;
+}
+```
+<---Ejemplo Básico Result--->
+<---Pasar a Funciones--->
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Persona {
+    string nombre;
+    int edad;
+    float altura;
+};
+
+void imprimir(const Persona& p) {
+    cout << p.nombre << ", " << p.edad << " años, " << p.altura << " m" << endl;
+}
+
+Persona crear(string n, int e, float a) {
+    return {n, e, a};
+}
+
+int main() {
+    Persona ana = crear("Ana", 22, 1.60f);
+    imprimir(ana);
+    return 0;
+}
+```
+<---Pasar a Funciones Result--->
+<---struct vs class--->
+```cpp
+struct Punto {
+    int x;  // Público por defecto
+    int y;
+};
+
+class PuntoClase {
+    int x;  // Privado por defecto
+    int y;
+public:
+    void setX(int val) { x = val; }
+    int getX() const { return x; }
+};
+```
+<---struct vs class Result--->
+<---Ejemplo Completo--->
+```cpp
+#include <iostream>
+using namespace std;
+
+struct Fecha {
+    int dia, mes, anio;
+};
+
+struct Persona {
+    string nombre;
+    int edad;
+    float altura;
+    Fecha nacimiento;
+};
+
+void imprimir(const Persona& p) {
+    cout << p.nombre << ", " << p.edad << " años" << endl;
+    cout << "Nacimiento: " << p.nacimiento.dia << "/"
+         << p.nacimiento.mes << "/" << p.nacimiento.anio << endl;
+}
+
+int main() {
+    Persona juan = {"Juan", 30, 1.75f, {15, 6, 1990}};
+    imprimir(juan);
+    return 0;
+}
+```
+<---Ejemplo Completo Result--->

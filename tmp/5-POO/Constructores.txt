@@ -1,0 +1,700 @@
+<---EXPLANATION--->
+### Constructores en C++
+
+Los constructores son funciones especiales de las clases en C++ que se utilizan para inicializar objetos. Un constructor tiene el mismo nombre que la clase y no tiene tipo de retorno, ni siquiera `void`. Los constructores pueden sobrecargarse, lo que significa que una clase puede tener más de un constructor con diferentes listas de parámetros.
+
+#### Tipos de Constructores
+
+1. **Constructor por Defecto**
+2. **Constructor Parametrizado**
+3. **Constructor de Copia**
+4. **Constructor de Movimiento** (Introducido en C++11)
+
+#### Constructor por Defecto
+
+El constructor por defecto es un constructor que se llama automáticamente cuando se crea un objeto sin pasar argumentos. Si no se define explícitamente un constructor por defecto, el compilador genera uno implícitamente.
+
+##### Ejemplo de Constructor por Defecto
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor por defecto
+    Persona() {
+        nombre = "Desconocido";
+        edad = 0;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p;  // Llama al constructor por defecto
+    p.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, el constructor por defecto inicializa `nombre` a "Desconocido" y `edad` a 0.
+
+#### Constructor Parametrizado
+
+Un constructor parametrizado permite inicializar un objeto con valores específicos al momento de su creación.
+
+##### Ejemplo de Constructor Parametrizado
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor parametrizado
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p("Juan", 30);  // Llama al constructor parametrizado
+    p.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, el constructor parametrizado inicializa `nombre` y `edad` con los valores proporcionados.
+
+#### Constructor de Copia
+
+El constructor de copia se utiliza para crear un nuevo objeto como copia de un objeto existente. Se define tomando una referencia constante al objeto de la misma clase.
+
+##### Ejemplo de Constructor de Copia
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor parametrizado
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    // Constructor de copia
+    Persona(const Persona& p) {
+        nombre = p.nombre;
+        edad = p.edad;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p1("Juan", 30);  // Llama al constructor parametrizado
+    Persona p2 = p1;         // Llama al constructor de copia
+    p2.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, el constructor de copia crea un nuevo objeto `p2` como una copia de `p1`.
+
+#### Constructor de Movimiento (Introducido en C++11)
+
+El constructor de movimiento se utiliza para transferir los recursos de un objeto a otro, evitando copias innecesarias. Se define tomando un rvalue reference al objeto de la misma clase.
+
+##### Ejemplo de Constructor de Movimiento
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor parametrizado
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Constructor de movimiento
+    Persona(Persona&& p) noexcept : nombre(move(p.nombre)), edad(p.edad) {
+        p.edad = 0; // Opcional: Dejar el objeto fuente en un estado válido
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p1("Juan", 30);  // Llama al constructor parametrizado
+    Persona p2 = move(p1);   // Llama al constructor de movimiento
+    p2.mostrarInformacion();
+
+    // p1 está en un estado indefinido, pero válido
+    cout << "Después de mover, p1: ";
+    p1.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, el constructor de movimiento transfiere los recursos de `p1` a `p2`, evitando una copia completa.
+
+#### Inicialización de Miembros (Lista de Inicialización)
+
+Es una buena práctica inicializar los miembros de la clase en la lista de inicialización del constructor, especialmente para miembros constantes y referencias.
+
+##### Ejemplo con Lista de Inicialización
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+public:
+    const int x;
+    const int y;
+
+    // Constructor con lista de inicialización
+    Punto(int a, int b) : x(a), y(b) {}
+
+    void mostrarInformacion() {
+        cout << "Punto(" << x << ", " << y << ")" << endl;
+    }
+};
+
+int main() {
+    Punto p(10, 20);  // Llama al constructor con lista de inicialización
+    p.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, los miembros `x` y `y` se inicializan en la lista de inicialización del constructor.
+
+#### Constructores Predeterminados por el Compilador
+
+Si no se definen constructores, el compilador proporciona un constructor por defecto, un constructor de copia y un operador de asignación de copia. Estos constructores realizan inicializaciones y copias miembro a miembro.
+
+### Ejemplo Completo con Diferentes Constructores
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor por defecto
+    Persona() : nombre("Desconocido"), edad(0) {}
+
+    // Constructor parametrizado
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Constructor de copia
+    Persona(const Persona& p) : nombre(p.nombre), edad(p.edad) {}
+
+    // Constructor de movimiento
+    Persona(Persona&& p) noexcept : nombre(move(p.nombre)), edad(p.edad) {
+        p.edad = 0;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    // Usando el constructor por defecto
+    Persona p1;
+    p1.mostrarInformacion();
+
+    // Usando el constructor parametrizado
+    Persona p2("Juan", 30);
+    p2.mostrarInformacion();
+
+    // Usando el constructor de copia
+    Persona p3 = p2;
+    p3.mostrarInformacion();
+
+    // Usando el constructor de movimiento
+    Persona p4 = move(p2);
+    p4.mostrarInformacion();
+
+    // Estado después del movimiento
+    cout << "Después de mover, p2: ";
+    p2.mostrarInformacion();
+
+    return 0;
+}
+```
+
+En este ejemplo, la clase `Persona` define todos los tipos principales de constructores, y el programa demuestra cómo usarlos.
+
+### `= default` y `= delete` (C++11)
+
+C++11 introdujo dos especificadores importantes para controlar la generación de funciones miembro especiales:
+
+- **`= default`:** Le indica al compilador que genere la implementación por defecto de una función miembro especial (constructor, destructor, operadores de copia/movimiento). Es útil cuando se define un constructor parametrizado y aún se desea conservar el constructor por defecto generado automáticamente.
+
+- **`= delete`:** Prohíbe explícitamente el uso de una función. Si alguien intenta llamar a una función eliminada, el compilador genera un error. Es la forma moderna de hacer que una clase no sea copiable o no sea movible.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+    int x, y;
+public:
+    Punto() = default;  // Usar el constructor por defecto generado por el compilador
+    Punto(int x, int y) : x(x), y(y) {}
+
+    // Prohibir la copia
+    Punto(const Punto&) = delete;
+    Punto& operator=(const Punto&) = delete;
+
+    // Permitir el movimiento
+    Punto(Punto&&) = default;
+    Punto& operator=(Punto&&) = default;
+
+    void mostrar() const {
+        cout << "Punto(" << x << ", " << y << ")" << endl;
+    }
+};
+
+int main() {
+    Punto p1;          // OK: constructor por defecto
+    Punto p2(10, 20);  // OK: constructor parametrizado
+    // Punto p3 = p2;  // ERROR: copia eliminada
+    Punto p4 = std::move(p2); // OK: movimiento permitido
+    return 0;
+}
+```
+
+### Constructores Delegados (C++11)
+
+Los **constructores delegados** permiten que un constructor de una clase llame a otro constructor de la misma clase. Esto evita la duplicación de código de inicialización y centraliza la lógica en un solo constructor "principal". Los demás constructores simplemente delegan al principal con valores por defecto o transformados.
+
+La sintaxis usa la lista de inicialización para invocar al otro constructor: `Clase(params) : Clase(otros_params) {}`.
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Conexion {
+    string host;
+    int puerto;
+    string protocolo;
+public:
+    // Constructor principal
+    Conexion(string h, int p, string prot)
+        : host(h), puerto(p), protocolo(prot) {
+        cout << "Conectando a " << protocolo << "://" << host << ":" << puerto << endl;
+    }
+
+    // Constructores delegados: reutilizan el constructor principal
+    Conexion(string h, int p) : Conexion(h, p, "tcp") {}
+    Conexion(string h) : Conexion(h, 80, "http") {}
+    Conexion() : Conexion("localhost", 8080, "http") {}
+};
+
+int main() {
+    Conexion c1;                         // localhost:8080 http
+    Conexion c2("servidor.com");         // servidor.com:80 http
+    Conexion c3("db.com", 5432);         // db.com:5432 tcp
+    Conexion c4("api.com", 443, "https"); // api.com:443 https
+    return 0;
+}
+```
+
+### Constructores en Qt: `Q_DISABLE_COPY` y Patrón Explicit
+
+En Qt, los constructores siguen patrones específicos del framework:
+
+- **`explicit`:** Los constructores de clases Qt siempre se declaran `explicit` para evitar conversiones implícitas no deseadas. Por ejemplo, sin `explicit`, un `QObject*` podría convertirse accidentalmente en un `Sensor`.
+
+- **`Q_DISABLE_COPY(Clase)`:** Este macro genera automáticamente `= delete` para el constructor de copia y el operador de asignación de copia. Es necesario porque `QObject` y sus derivados no deben copiarse (cada objeto tiene identidad única en el sistema de metaobjetos).
+
+- **`Q_DISABLE_COPY_MOVE(Clase)`:** Disponible en Qt 6, extiende `Q_DISABLE_COPY` para también prohibir el movimiento.
+
+- **Patrón parent:** El constructor típico de Qt recibe un `QObject *parent = nullptr`. El padre gestiona la memoria: cuando se destruye un padre, automáticamente destruye a todos sus hijos.
+
+```cpp
+#include <QObject>
+#include <QDebug>
+
+class Sensor : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY(Sensor)  // Prohíbe copia (genera = delete)
+
+public:
+    // Patrón Qt: constructor explicit con parent
+    explicit Sensor(QObject *parent = nullptr)
+        : QObject(parent), m_valor(0.0) {
+        qDebug() << "Sensor creado";
+    }
+
+    // En Qt 6: también se puede usar Q_DISABLE_COPY_MOVE
+    // Q_DISABLE_COPY_MOVE(Sensor)
+
+    double valor() const { return m_valor; }
+    void setValor(double v) { m_valor = v; }
+
+private:
+    double m_valor;
+};
+
+// Patrón de creación de objetos Qt:
+// Sensor* s = new Sensor(this); // parent gestiona la memoria
+// No usar: Sensor s;            // Evitar objetos QObject en el stack si tienen parent
+```
+
+### Conclusión
+
+Los constructores son fundamentales para la inicialización de objetos en C++. La capacidad de definir diferentes tipos de constructores (por defecto, parametrizados, de copia y de movimiento) proporciona flexibilidad y control sobre cómo se crean e inicializan los objetos. Utilizar correctamente estos constructores puede mejorar la eficiencia y la robustez del código, asegurando que los objetos se encuentren en estados válidos desde su creación.
+<---FILES--->
+Ejemplo de Constructor por Defecto
+Ejemplo de Constructor por Defecto Result
+Ejemplo de Constructor Parametrizado
+Ejemplo de Constructor Parametrizado Result
+Ejemplo de Constructor de Copia
+Ejemplo de Constructor de Copia Result
+Ejemplo de Constructor de Movimiento
+Ejemplo de Constructor de Movimiento Result
+Ejemplo con Lista de Inicialización
+Ejemplo con Lista de Inicialización Result
+default y delete (C++11)
+default y delete (C++11) Result
+Constructores Delegados (C++11)
+Constructores Delegados (C++11) Result
+Constructores en Qt Q_DISABLE_COPY
+Constructores en Qt Q_DISABLE_COPY Result
+<---Ejemplo de Constructor por Defecto--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor por defecto
+    Persona() {
+        nombre = "Desconocido";
+        edad = 0;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p;  // Llama al constructor por defecto
+    p.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo de Constructor por Defecto Result--->
+<---Ejemplo de Constructor Parametrizado--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor parametrizado
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p("Juan", 30);  // Llama al constructor parametrizado
+    p.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo de Constructor Parametrizado Result--->
+<---Ejemplo de Constructor de Copia--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor parametrizado
+    Persona(string n, int e) {
+        nombre = n;
+        edad = e;
+    }
+
+    // Constructor de copia
+    Persona(const Persona& p) {
+        nombre = p.nombre;
+        edad = p.edad;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p1("Juan", 30);  // Llama al constructor parametrizado
+    Persona p2 = p1;         // Llama al constructor de copia
+    p2.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo de Constructor de Copia Result--->
+<---Ejemplo de Constructor de Movimiento--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+public:
+    string nombre;
+    int edad;
+
+    // Constructor parametrizado
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Constructor de movimiento
+    Persona(Persona&& p) noexcept : nombre(move(p.nombre)), edad(p.edad) {
+        p.edad = 0; // Opcional: Dejar el objeto fuente en un estado válido
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    Persona p1("Juan", 30);  // Llama al constructor parametrizado
+    Persona p2 = move(p1);   // Llama al constructor de movimiento
+    p2.mostrarInformacion();
+
+    // p1 está en un estado indefinido, pero válido
+    cout << "Después de mover, p1: ";
+    p1.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo de Constructor de Movimiento Result--->
+<---Ejemplo con Lista de Inicialización--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+public:
+    const int x;
+    const int y;
+
+    // Constructor con lista de inicialización
+    Punto(int a, int b) : x(a), y(b) {}
+
+    void mostrarInformacion() {
+        cout << "Punto(" << x << ", " << y << ")" << endl;
+    }
+};
+
+int main() {
+    Punto p(10, 20);  // Llama al constructor con lista de inicialización
+    p.mostrarInformacion();
+
+    return 0;
+}
+```cpp
+#include <iostream>
+using namespace std;
+
+class Persona {
+private:
+    string nombre;
+    int edad;
+
+public:
+    // Constructor por defecto
+    Persona() : nombre("Desconocido"), edad(0) {}
+
+    // Constructor parametrizado
+    Persona(string n, int e) : nombre(n), edad(e) {}
+
+    // Constructor de copia
+    Persona(const Persona& p) : nombre(p.nombre), edad(p.edad) {}
+
+    // Constructor de movimiento
+    Persona(Persona&& p) noexcept : nombre(move(p.nombre)), edad(p.edad) {
+        p.edad = 0;
+    }
+
+    void mostrarInformacion() {
+        cout << "Nombre: " << nombre << ", Edad: " << edad << endl;
+    }
+};
+
+int main() {
+    // Usando el constructor por defecto
+    Persona p1;
+    p1.mostrarInformacion();
+
+    // Usando el constructor parametrizado
+    Persona p2("Juan", 30);
+    p2.mostrarInformacion();
+
+    // Usando el constructor de copia
+    Persona p3 = p2;
+    p3.mostrarInformacion();
+
+    // Usando el constructor de movimiento
+    Persona p4 = move(p2);
+    p4.mostrarInformacion();
+
+    // Estado después del movimiento
+    cout << "Después de mover, p2: ";
+    p2.mostrarInformacion();
+
+    return 0;
+}
+<---Ejemplo con Lista de Inicialización Result--->
+<---default y delete (C++11)--->
+```cpp
+#include <iostream>
+using namespace std;
+
+class Punto {
+    int x, y;
+public:
+    Punto() = default;  // Usar el constructor por defecto generado por el compilador
+    Punto(int x, int y) : x(x), y(y) {}
+
+    // Prohibir la copia
+    Punto(const Punto&) = delete;
+    Punto& operator=(const Punto&) = delete;
+
+    // Permitir el movimiento
+    Punto(Punto&&) = default;
+    Punto& operator=(Punto&&) = default;
+
+    void mostrar() const {
+        cout << "Punto(" << x << ", " << y << ")" << endl;
+    }
+};
+
+int main() {
+    Punto p1;          // OK: constructor por defecto
+    Punto p2(10, 20);  // OK: constructor parametrizado
+    // Punto p3 = p2;  // ERROR: copia eliminada
+    Punto p4 = std::move(p2); // OK: movimiento permitido
+    return 0;
+}
+<---default y delete (C++11) Result--->
+<---Constructores Delegados (C++11)--->
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Conexion {
+    string host;
+    int puerto;
+    string protocolo;
+public:
+    // Constructor principal
+    Conexion(string h, int p, string prot)
+        : host(h), puerto(p), protocolo(prot) {
+        cout << "Conectando a " << protocolo << "://" << host << ":" << puerto << endl;
+    }
+
+    // Constructores delegados: reutilizan el constructor principal
+    Conexion(string h, int p) : Conexion(h, p, "tcp") {}
+    Conexion(string h) : Conexion(h, 80, "http") {}
+    Conexion() : Conexion("localhost", 8080, "http") {}
+};
+
+int main() {
+    Conexion c1;                         // localhost:8080 http
+    Conexion c2("servidor.com");         // servidor.com:80 http
+    Conexion c3("db.com", 5432);         // db.com:5432 tcp
+    Conexion c4("api.com", 443, "https"); // api.com:443 https
+    return 0;
+}
+<---Constructores Delegados (C++11) Result--->
+<---Constructores en Qt Q_DISABLE_COPY--->
+```cpp
+#include <QObject>
+#include <QDebug>
+
+class Sensor : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY(Sensor)  // Prohíbe copia (genera = delete)
+
+public:
+    // Patrón Qt: constructor explicit con parent
+    explicit Sensor(QObject *parent = nullptr)
+        : QObject(parent), m_valor(0.0) {
+        qDebug() << "Sensor creado";
+    }
+
+    // En Qt 6: también se puede usar Q_DISABLE_COPY_MOVE
+    // Q_DISABLE_COPY_MOVE(Sensor)
+
+    double valor() const { return m_valor; }
+    void setValor(double v) { m_valor = v; }
+
+private:
+    double m_valor;
+};
+
+// Patrón de creación de objetos Qt:
+// Sensor* s = new Sensor(this); // parent gestiona la memoria
+// No usar: Sensor s;            // Evitar objetos QObject en el stack si tienen parent
+<---Constructores en Qt Q_DISABLE_COPY Result--->

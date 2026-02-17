@@ -19,9 +19,13 @@ TextArea 1.0 TextArea.qml
 TextField 1.0 TextField.qml
 ToolButton 1.0 ToolButton.qml
 ToolTip 1.0 ToolTip.qml
+Tumbler 1.0 Tumbler.qml
 
 # Componentes especializados - Buttons
 GlowButton 1.0 buttons/GlowButton.qml
 GradientButton 1.0 buttons/GradientButton.qml
 PulseButton 1.0 buttons/PulseButton.qml
 NeumorphicButton 1.0 buttons/NeumorphicButton.qml
+
+# Componentes especializados - Sliders
+CircularSlider 1.0 sliders/CircularSlider.qml

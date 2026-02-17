@@ -1,0 +1,211 @@
+<---EXPLANATION--->
+### QRegularExpression - Expresiones Regulares
+
+`QRegularExpression` es la clase de Qt para trabajar con expresiones regulares, basada en la biblioteca **PCRE2** (Perl Compatible Regular Expressions). Reemplaza a la antigua `QRegExp` (obsoleta desde Qt 5.12) y ofrece un rendimiento superior y compatibilidad completa con la sintaxis de Perl.
+
+#### Comparación con `std::regex`
+
+| Característica | `QRegularExpression` | `std::regex` |
+| :--- | :--- | :--- |
+| **Motor** | PCRE2 (muy rápido) | Varía por implementación |
+| **Rendimiento** | Excelente | Generalmente lento |
+| **Integración** | Nativa con `QString` | Solo `std::string` |
+| **Lookahead/behind** | Completo | Parcial |
+| **Unicode** | Nativo | Limitado |
+
+#### Búsqueda Básica
+
+```cpp
+#include <QRegularExpression>
+#include <QDebug>
+
+void busquedaBasica() {
+    QString texto = "Mi correo es user@example.com y otro es admin@test.org";
+    
+    // Crear patrón
+    QRegularExpression regex("\\w+@\\w+\\.\\w+");
+    
+    // Buscar primera coincidencia
+    QRegularExpressionMatch match = regex.match(texto);
+    
+    if (match.hasMatch()) {
+        qDebug() << "Encontrado:" << match.captured(0);  // "user@example.com"
+        qDebug() << "Posición:" << match.capturedStart(); // posición del inicio
+        qDebug() << "Longitud:" << match.capturedLength();
+    }
+}
+```
+
+#### Búsqueda Global (Todas las Coincidencias)
+
+```cpp
+void busquedaGlobal() {
+    QString texto = "Precios: 10€, 25.50€, 3.99€";
+    QRegularExpression regex("(\\d+\\.?\\d*)€");
+    
+    // Iterar sobre todas las coincidencias
+    QRegularExpressionMatchIterator it = regex.globalMatch(texto);
+    
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        qDebug() << "Precio:" << match.captured(1);
+    }
+    // Salida: "10", "25.50", "3.99"
+}
+```
+
+#### Grupos de Captura
+
+```cpp
+void gruposCaptura() {
+    QString fecha = "2024-12-25";
+    QRegularExpression regex("(\\d{4})-(\\d{2})-(\\d{2})");
+    
+    QRegularExpressionMatch match = regex.match(fecha);
+    
+    if (match.hasMatch()) {
+        qDebug() << "Completo:" << match.captured(0); // "2024-12-25"
+        qDebug() << "Año:" << match.captured(1);       // "2024"
+        qDebug() << "Mes:" << match.captured(2);       // "12"
+        qDebug() << "Día:" << match.captured(3);       // "25"
+    }
+    
+    // Grupos con nombre
+    QRegularExpression regexNombrado(
+        "(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2})"
+    );
+    QRegularExpressionMatch match2 = regexNombrado.match(fecha);
+    
+    if (match2.hasMatch()) {
+        qDebug() << "Año:" << match2.captured("year");
+        qDebug() << "Mes:" << match2.captured("month");
+    }
+}
+```
+
+#### Opciones de Patrón
+
+```cpp
+void opciones() {
+    // Case insensitive
+    QRegularExpression regex1("hola", QRegularExpression::CaseInsensitiveOption);
+    qDebug() << regex1.match("HOLA MUNDO").hasMatch(); // true
+    
+    // Multiline (^ y $ aplican por línea)
+    QRegularExpression regex2("^inicio",
+        QRegularExpression::MultilineOption);
+    
+    // Combinar opciones
+    QRegularExpression regex3("patrón",
+        QRegularExpression::CaseInsensitiveOption |
+        QRegularExpression::DotMatchesEverythingOption);
+}
+```
+
+#### Uso con `QString::replace()` y `QString::split()`
+
+```cpp
+void usoConQString() {
+    // replace() con regex
+    QString texto = "abc123def456";
+    texto.replace(QRegularExpression("\\d+"), "#");
+    qDebug() << texto;  // "abc#def#"
+    
+    // split() con regex
+    QString csv = "uno;  dos, tres;cuatro";
+    QStringList partes = csv.split(QRegularExpression("[;,]\\s*"));
+    qDebug() << partes; // ("uno", "dos", "tres", "cuatro")
+    
+    // contains() con regex
+    QString email = "user@example.com";
+    bool valido = email.contains(QRegularExpression("^\\w+@\\w+\\.\\w+$"));
+    qDebug() << "Email válido:" << valido; // true
+}
+```
+
+#### Validación
+
+```cpp
+void validacion() {
+    QRegularExpression regex("(invalid[");
+    
+    if (!regex.isValid()) {
+        qDebug() << "Error en patrón:" << regex.errorString();
+        qDebug() << "Posición del error:" << regex.patternErrorOffset();
+    }
+}
+```
+
+### Conclusión
+
+`QRegularExpression` es significativamente más rápida que `std::regex` y ofrece integración nativa con `QString`. Su motor PCRE2 soporta todas las características modernas de regex incluyendo lookahead, lookbehind, grupos nombrados y Unicode completo.
+<---FILES--->
+Búsqueda Básica
+Búsqueda Básica Result
+Búsqueda Global
+Búsqueda Global Result
+Grupos de Captura
+Grupos de Captura Result
+Uso con `QString::replace()` y `split()`
+Uso con `QString::replace()` y `split()` Result
+<---Búsqueda Básica--->
+```cpp
+#include <QRegularExpression>
+#include <QDebug>
+
+void busquedaBasica() {
+    QString texto = "Mi correo es user@example.com";
+    QRegularExpression regex("\\w+@\\w+\\.\\w+");
+    QRegularExpressionMatch match = regex.match(texto);
+    if (match.hasMatch()) {
+        qDebug() << "Encontrado:" << match.captured(0);
+    }
+}
+<---Búsqueda Básica Result--->
+<---Búsqueda Global--->
+```cpp
+#include <QRegularExpression>
+#include <QDebug>
+
+void busquedaGlobal() {
+    QString texto = "Precios: 10€, 25.50€, 3.99€";
+    QRegularExpression regex("(\\d+\\.?\\d*)€");
+    QRegularExpressionMatchIterator it = regex.globalMatch(texto);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        qDebug() << "Precio:" << match.captured(1);
+    }
+}
+<---Búsqueda Global Result--->
+<---Grupos de Captura--->
+```cpp
+#include <QRegularExpression>
+#include <QDebug>
+
+void gruposCaptura() {
+    QString fecha = "2024-12-25";
+    QRegularExpression regex("(\\d{4})-(\\d{2})-(\\d{2})");
+    QRegularExpressionMatch match = regex.match(fecha);
+    if (match.hasMatch()) {
+        qDebug() << "Año:" << match.captured(1);
+        qDebug() << "Mes:" << match.captured(2);
+        qDebug() << "Día:" << match.captured(3);
+    }
+}
+<---Grupos de Captura Result--->
+<---Uso con `QString::replace()` y `split()`--->
+```cpp
+#include <QRegularExpression>
+#include <QString>
+#include <QStringList>
+#include <QDebug>
+
+void usoConQString() {
+    QString texto = "abc123def456";
+    texto.replace(QRegularExpression("\\d+"), "#");
+    qDebug() << texto;
+    QString csv = "uno;  dos, tres;cuatro";
+    QStringList partes = csv.split(QRegularExpression("[;,]\\s*"));
+    qDebug() << partes;
+}
+<---Uso con `QString::replace()` y `split()` Result--->
