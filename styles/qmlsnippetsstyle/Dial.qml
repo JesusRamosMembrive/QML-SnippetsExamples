@@ -31,7 +31,8 @@ T.Dial {
     readonly property real _arcStart:  130 * Math.PI / 180
     readonly property real _arcSweep:  280 * Math.PI / 180
     readonly property real _arcEnd:    _arcStart + _arcSweep
-    readonly property real _arcRadius: Math.min(implicitWidth, implicitHeight) / 2 - Style.resize(18)
+    readonly property real _dialSize:  Math.min(width, height)
+    readonly property real _arcRadius: _dialSize / 2 - _dialSize * 0.09
     readonly property real _progressAngle: _arcStart + root.position * _arcSweep
 
     background: Item {
@@ -56,7 +57,7 @@ T.Dial {
                     ctx.beginPath()
                     ctx.arc(cx, cy, r, root._arcStart, root._progressAngle, false)
                     ctx.strokeStyle = root.progressColor
-                    ctx.lineWidth = root.trackWidth + Style.resize(6)
+                    ctx.lineWidth = root.trackWidth + root._dialSize * 0.03
                     ctx.lineCap = "round"
                     ctx.globalAlpha = 0.2
                     ctx.stroke()
@@ -65,17 +66,18 @@ T.Dial {
 
                 // -- Tick marks --
                 if (root.showTicks) {
+                    var s = root._dialSize
                     for (var i = 0; i <= root.tickCount; i++) {
                         var ta  = root._arcStart + (i / root.tickCount) * root._arcSweep
                         var maj = (i % 5 === 0)
-                        var ri  = r - root.trackWidth / 2 - Style.resize(maj ? 14 : 8)
-                        var ro  = r - root.trackWidth / 2 - Style.resize(2)
+                        var ri  = r - root.trackWidth / 2 - s * (maj ? 0.07 : 0.04)
+                        var ro  = r - root.trackWidth / 2 - s * 0.01
 
                         ctx.beginPath()
                         ctx.moveTo(cx + ri * Math.cos(ta), cy + ri * Math.sin(ta))
                         ctx.lineTo(cx + ro * Math.cos(ta), cy + ro * Math.sin(ta))
                         ctx.strokeStyle = Qt.rgba(0, 0, 0, maj ? 0.3 : 0.12)
-                        ctx.lineWidth = maj ? Style.resize(2) : 1
+                        ctx.lineWidth = maj ? Math.max(1.5, s * 0.01) : 1
                         ctx.stroke()
                     }
                 }
@@ -128,7 +130,7 @@ T.Dial {
 
     handle: Item {
         id: handleItem
-        width: Style.resize(28)
+        width: root._dialSize * 0.14
         height: width
 
         x: root.background.x + root.background.width / 2 - width / 2
@@ -141,7 +143,7 @@ T.Dial {
             width: parent.width
             height: width
             radius: width / 2
-            y: Style.resize(2)
+            y: root._dialSize * 0.01
             color: Qt.rgba(0, 0, 0, 0.2)
         }
 
@@ -153,13 +155,13 @@ T.Dial {
             radius: width / 2
             color: "white"
             border.color: root.progressColor
-            border.width: Style.resize(3)
+            border.width: Math.max(2, root._dialSize * 0.015)
             scale: root.pressed ? 1.15 : 1.0
             Behavior on scale { NumberAnimation { duration: 100 } }
 
             // Inner dot
             Rectangle {
-                width: Style.resize(8)
+                width: root._dialSize * 0.04
                 height: width
                 radius: width / 2
                 color: root.progressColor
@@ -168,10 +170,12 @@ T.Dial {
         }
     }
 
-    // Repaint on value/state changes
+    // Repaint on value/state/size changes
     onPositionChanged:     dialCanvas.requestPaint()
     onPressedChanged:      dialCanvas.requestPaint()
     onProgressColorChanged: dialCanvas.requestPaint()
     onTrackColorChanged:   dialCanvas.requestPaint()
+    onWidthChanged:        dialCanvas.requestPaint()
+    onHeightChanged:       dialCanvas.requestPaint()
     Component.onCompleted: dialCanvas.requestPaint()
 }

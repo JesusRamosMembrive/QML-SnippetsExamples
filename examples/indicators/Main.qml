@@ -83,26 +83,14 @@ Item {
                                     spacing: Style.resize(8)
                                     Layout.alignment: Qt.AlignHCenter
 
-                                    Item {
-                                        Layout.preferredWidth: Style.resize(100)
-                                        Layout.preferredHeight: Style.resize(100)
+                                    Dial {
+                                        id: basicDial
+                                        Layout.preferredWidth: Style.resize(140)
+                                        Layout.preferredHeight: Style.resize(140)
                                         Layout.alignment: Qt.AlignHCenter
-
-                                        Dial {
-                                            id: basicDial
-                                            anchors.fill: parent
-                                            from: 0
-                                            to: 100
-                                            value: 35
-                                        }
-
-                                        Label {
-                                            anchors.centerIn: parent
-                                            text: basicDial.value.toFixed(0)
-                                            font.pixelSize: Style.resize(16)
-                                            font.bold: true
-                                            color: Style.mainColor
-                                        }
+                                        from: 0
+                                        to: 100
+                                        value: 35
                                     }
 
                                     Label {
@@ -118,28 +106,16 @@ Item {
                                     spacing: Style.resize(8)
                                     Layout.alignment: Qt.AlignHCenter
 
-                                    Item {
-                                        Layout.preferredWidth: Style.resize(100)
-                                        Layout.preferredHeight: Style.resize(100)
+                                    Dial {
+                                        id: steppedDial
+                                        Layout.preferredWidth: Style.resize(140)
+                                        Layout.preferredHeight: Style.resize(140)
                                         Layout.alignment: Qt.AlignHCenter
-
-                                        Dial {
-                                            id: steppedDial
-                                            anchors.fill: parent
-                                            from: 0
-                                            to: 100
-                                            stepSize: 10
-                                            snapMode: Dial.SnapAlways
-                                            value: 50
-                                        }
-
-                                        Label {
-                                            anchors.centerIn: parent
-                                            text: steppedDial.value.toFixed(0)
-                                            font.pixelSize: Style.resize(16)
-                                            font.bold: true
-                                            color: Style.mainColor
-                                        }
+                                        from: 0
+                                        to: 100
+                                        stepSize: 10
+                                        snapMode: Dial.SnapAlways
+                                        value: 50
                                     }
 
                                     Label {
@@ -155,28 +131,17 @@ Item {
                                     spacing: Style.resize(8)
                                     Layout.alignment: Qt.AlignHCenter
 
-                                    Item {
-                                        Layout.preferredWidth: Style.resize(100)
-                                        Layout.preferredHeight: Style.resize(100)
+                                    Dial {
+                                        id: tempDial
+                                        Layout.preferredWidth: Style.resize(140)
+                                        Layout.preferredHeight: Style.resize(140)
                                         Layout.alignment: Qt.AlignHCenter
-
-                                        Dial {
-                                            id: tempDial
-                                            anchors.fill: parent
-                                            from: 0
-                                            to: 40
-                                            stepSize: 1
-                                            snapMode: Dial.SnapAlways
-                                            value: 21
-                                        }
-
-                                        Label {
-                                            anchors.centerIn: parent
-                                            text: tempDial.value.toFixed(0) + "°C"
-                                            font.pixelSize: Style.resize(14)
-                                            font.bold: true
-                                            color: Style.mainColor
-                                        }
+                                        from: 0
+                                        to: 40
+                                        stepSize: 1
+                                        snapMode: Dial.SnapAlways
+                                        value: 21
+                                        suffix: "°C"
                                     }
 
                                     Label {
@@ -431,30 +396,20 @@ Item {
                                     spacing: Style.resize(5)
                                     Layout.alignment: Qt.AlignHCenter
 
-                                    Item {
-                                        Layout.preferredWidth: Style.resize(100)
-                                        Layout.preferredHeight: Style.resize(100)
+                                    Dial {
+                                        id: cpuDial
+                                        Layout.preferredWidth: Style.resize(130)
+                                        Layout.preferredHeight: Style.resize(130)
                                         Layout.alignment: Qt.AlignHCenter
+                                        from: 0
+                                        to: 100
+                                        value: monitorCard.cpuValue
+                                        enabled: false
+                                        suffix: "%"
+                                        progressColor: monitorCard.cpuValue > 80 ? "#FF5900" : Style.mainColor
 
-                                        Dial {
-                                            id: cpuDial
-                                            anchors.fill: parent
-                                            from: 0
-                                            to: 100
-                                            value: monitorCard.cpuValue
-                                            enabled: false
-
-                                            Behavior on value {
-                                                NumberAnimation { duration: 500 }
-                                            }
-                                        }
-
-                                        Label {
-                                            anchors.centerIn: parent
-                                            text: monitorCard.cpuValue.toFixed(0) + "%"
-                                            font.pixelSize: Style.resize(14)
-                                            font.bold: true
-                                            color: monitorCard.cpuValue > 80 ? "#FF5900" : Style.mainColor
+                                        Behavior on value {
+                                            NumberAnimation { duration: 500 }
                                         }
                                     }
 
