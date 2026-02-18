@@ -87,7 +87,7 @@ ColumnLayout {
                     var gPrice = minP + range * g / 4
                     var gy = yScale(gPrice)
                     ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(w - pad, gy); ctx.stroke()
-                    ctx.fillText(gPrice.toFixed(1), 2, gy - 3)
+                    ctx.fillText(Number(gPrice).toFixed(1), 2, gy - 3)
                 }
 
                 // Moving average

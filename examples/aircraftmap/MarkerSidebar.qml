@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -16,6 +17,7 @@ Rectangle {
     property bool showEmergency: true
     property bool showFuel:      true
     property bool showAvionics:  true
+
 
     signal markerClicked(int index)
 
@@ -53,7 +55,7 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            height: 1
+            Layout.preferredHeight: 1
             color: Style.bgColor
         }
 
@@ -75,11 +77,15 @@ Rectangle {
 
             delegate: Rectangle {
                 id: listDelegate
+
+                required property int index
+                required property var model
+
                 width: markerListView.width
                 height: Style.resize(30)
                 radius: Style.resize(4)
-                visible: root.isCategoryVisible(model.category)
-                color: index === root.selectedMarker
+                visible: root.isCategoryVisible(listDelegate.model.category)
+                color: listDelegate.index === root.selectedMarker
                        ? Qt.rgba(255, 255, 255, 0.06) : "transparent"
                 implicitHeight: visible ? Style.resize(30) : 0
 
@@ -91,14 +97,14 @@ Rectangle {
                     visible: listDelegate.visible
 
                     Rectangle {
-                        width: Style.resize(10)
-                        height: width
+                        Layout.preferredWidth: Style.resize(10)
+                        Layout.preferredHeight: width
                         radius: width / 2
-                        color: model.color
+                        color: listDelegate.model.color
                     }
 
                     Label {
-                        text: model.name
+                        text: listDelegate.model.name
                         font.pixelSize: Style.resize(12)
                         color: Style.fontPrimaryColor
                         elide: Text.ElideRight
@@ -109,7 +115,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     visible: listDelegate.visible
-                    onClicked: root.markerClicked(index)
+                    onClicked: root.markerClicked(listDelegate.index)
                 }
             }
         }

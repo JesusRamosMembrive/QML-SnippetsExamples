@@ -55,13 +55,13 @@ Item {
             height: Style.resize(47)
             Rectangle {
                 anchors.fill: parent
-                color: Style.bgColorDark
-                opacity: .6
+                color: Style.mainColor
+                opacity: 0.12
             }
             Rectangle {
                 width: Style.resize(4)
                 height: parent.height
-                color: Style.bgColor
+                color: Style.mainColor
             }
         }
         spacing: Style.resize(20)
@@ -70,7 +70,7 @@ Item {
         delegate: ItemDelegate {
             width: listView.width
             height: Style.resize(47)
-            background: Rectangle { color: Style.bgColorDark }
+            background: Rectangle { color: "transparent" }
             contentItem: Item {
                 anchors.fill: parent
                 Image {

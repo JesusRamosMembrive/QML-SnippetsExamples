@@ -96,7 +96,7 @@ ColumnLayout {
                 ctx.fillStyle = "#E0E0E0"
                 ctx.textAlign = "center"
                 ctx.textBaseline = "middle"
-                ctx.fillText(total.toString(), cx, cy - 6)
+                ctx.fillText(String(total).toString(), cx, cy - 6)
                 ctx.font = "10px sans-serif"
                 ctx.fillStyle = "#888"
                 ctx.fillText("TOTAL", cx, cy + 12)

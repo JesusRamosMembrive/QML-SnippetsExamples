@@ -10,8 +10,9 @@ QtObject {
     property string theme: "green"
 
     property string bgColor: "#1A1D23"
-    property string bgColorDark: "#2e6b05"
+    property string bgColorDark: "#14171C"
     property string mainColor: (theme === "green") ? "#00D1A9" : "#FEA601"
+    property string bgColorDashBoradMenu: "#14171C"
     property string inactiveColor: "#999999"
 
     property color cardColor: "#252830"

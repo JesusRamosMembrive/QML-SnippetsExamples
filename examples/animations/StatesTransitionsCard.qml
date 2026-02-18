@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -50,31 +51,28 @@ Rectangle {
                     State {
                         name: "square"
                         PropertyChanges {
-                            target: morphRect
-                            width: Style.resize(100)
-                            height: Style.resize(100)
-                            radius: 0
-                            color: "#4A90D9"
+                            morphRect.width: Style.resize(100)
+                            morphRect.height: Style.resize(100)
+                            morphRect.radius: 0
+                            morphRect.color: "#4A90D9"
                         }
                     },
                     State {
                         name: "circle"
                         PropertyChanges {
-                            target: morphRect
-                            width: Style.resize(100)
-                            height: Style.resize(100)
-                            radius: Style.resize(50)
-                            color: "#00D1A9"
+                            morphRect.width: Style.resize(100)
+                            morphRect.height: Style.resize(100)
+                            morphRect.radius: Style.resize(50)
+                            morphRect.color: "#00D1A9"
                         }
                     },
                     State {
                         name: "wide"
                         PropertyChanges {
-                            target: morphRect
-                            width: Style.resize(200)
-                            height: Style.resize(80)
-                            radius: Style.resize(10)
-                            color: "#FEA601"
+                            morphRect.width: Style.resize(200)
+                            morphRect.height: Style.resize(80)
+                            morphRect.radius: Style.resize(10)
+                            morphRect.color: "#FEA601"
                         }
                     }
                 ]

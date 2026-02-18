@@ -106,6 +106,7 @@ Rectangle {
                 Repeater {
                     model: warningModel
                     Label {
+                        required property var model
                         text: "\u26A0 " + model.msg
                         font.pixelSize: Style.resize(13)
                         font.bold: true
@@ -118,6 +119,7 @@ Rectangle {
                 Repeater {
                     model: cautionModel
                     Label {
+                        required property var model
                         text: "\u25B3 " + model.msg
                         font.pixelSize: Style.resize(13)
                         color: "#FF9800"

@@ -12,7 +12,7 @@ Item {
         id: mainMenuColorFill
         width: root.width
         height: root.height
-        color: Style.mainColor
+        color: Style.bgColorDashBoradMenu
 
         MainMenuList {
             id: mainMenuList

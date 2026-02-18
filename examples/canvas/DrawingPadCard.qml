@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -29,6 +30,8 @@ Rectangle {
                 model: ["#FFFFFF", "#00D1A9", "#4A90D9", "#E74C3C", "#FEA601"]
 
                 Rectangle {
+                    required property string modelData
+
                     width: Style.resize(24)
                     height: Style.resize(24)
                     radius: width / 2
@@ -38,7 +41,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: drawCanvas.strokeColor = modelData
+                        onClicked: drawCanvas.strokeColor = parent.modelData
                     }
                 }
             }

@@ -7,4 +7,7 @@ qt_add_qml_module(databaseexplugin
         CrudTableCard.qml
         QueryExplorerCard.qml
         DataDashboardCard.qml
+    DEPENDENCIES
+        database
 )
+target_link_libraries(databaseexplugin PRIVATE databaseplugin)

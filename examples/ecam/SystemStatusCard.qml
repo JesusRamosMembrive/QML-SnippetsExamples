@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -52,35 +53,38 @@ Rectangle {
                         ]
 
                         RowLayout {
+                            id: hydDelegate
+                            required property var modelData
+
                             Layout.fillWidth: true
                             spacing: Style.resize(8)
 
                             Label {
-                                text: modelData.name
+                                text: hydDelegate.modelData.name
                                 font.pixelSize: Style.resize(12)
-                                color: modelData.clr
+                                color: hydDelegate.modelData.clr
                                 Layout.preferredWidth: Style.resize(60)
                             }
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: Style.resize(16)
-                                color: "#333"
+                                Layout.preferredHeight: Style.resize(16)
+                                color: "#333333"
                                 radius: Style.resize(3)
 
                                 Rectangle {
-                                    width: parent.width * modelData.val / 100
+                                    width: parent.width * hydDelegate.modelData.val / 100
                                     height: parent.height
-                                    color: modelData.val > 20 ? modelData.clr : "#F44336"
+                                    color: hydDelegate.modelData.val > 20 ? hydDelegate.modelData.clr : "#F44336"
                                     radius: Style.resize(3)
                                     Behavior on width { NumberAnimation { duration: 200 } }
                                 }
                             }
 
                             Label {
-                                text: Math.round(modelData.val) + "%"
+                                text: Math.round(hydDelegate.modelData.val) + "%"
                                 font.pixelSize: Style.resize(11)
-                                color: modelData.val > 20 ? modelData.clr : "#F44336"
+                                color: hydDelegate.modelData.val > 20 ? hydDelegate.modelData.clr : "#F44336"
                                 Layout.preferredWidth: Style.resize(35)
                             }
                         }
@@ -104,28 +108,31 @@ Rectangle {
                         ]
 
                         RowLayout {
+                            id: elecDelegate
+                            required property var modelData
+
                             Layout.fillWidth: true
                             spacing: Style.resize(8)
 
                             Label {
-                                text: modelData.name
+                                text: elecDelegate.modelData.name
                                 font.pixelSize: Style.resize(12)
                                 color: "#AAAAAA"
                                 Layout.preferredWidth: Style.resize(70)
                             }
 
                             Rectangle {
-                                width: Style.resize(12)
-                                height: Style.resize(12)
+                                Layout.preferredWidth: Style.resize(12)
+                                Layout.preferredHeight: Style.resize(12)
                                 radius: width / 2
-                                color: modelData.on ? "#4CAF50" : "#F44336"
+                                color: elecDelegate.modelData.on ? "#4CAF50" : "#F44336"
                             }
 
                             Label {
-                                text: modelData.on ? "ON" : "OFF"
+                                text: elecDelegate.modelData.on ? "ON" : "OFF"
                                 font.pixelSize: Style.resize(12)
                                 font.bold: true
-                                color: modelData.on ? "#4CAF50" : "#F44336"
+                                color: elecDelegate.modelData.on ? "#4CAF50" : "#F44336"
                                 Layout.fillWidth: true
                             }
                         }
@@ -150,28 +157,31 @@ Rectangle {
                         ]
 
                         RowLayout {
+                            id: bleedDelegate
+                            required property var modelData
+
                             Layout.fillWidth: true
                             spacing: Style.resize(8)
 
                             Label {
-                                text: modelData.name
+                                text: bleedDelegate.modelData.name
                                 font.pixelSize: Style.resize(12)
                                 color: "#AAAAAA"
                                 Layout.preferredWidth: Style.resize(70)
                             }
 
                             Rectangle {
-                                width: Style.resize(12)
-                                height: Style.resize(12)
+                                Layout.preferredWidth: Style.resize(12)
+                                Layout.preferredHeight: Style.resize(12)
                                 radius: width / 2
-                                color: modelData.on ? "#4CAF50" : "#FF9800"
+                                color: bleedDelegate.modelData.on ? "#4CAF50" : "#FF9800"
                             }
 
                             Label {
-                                text: modelData.on ? "ON" : "OFF"
+                                text: bleedDelegate.modelData.on ? "ON" : "OFF"
                                 font.pixelSize: Style.resize(12)
                                 font.bold: true
-                                color: modelData.on ? "#4CAF50" : "#FF9800"
+                                color: bleedDelegate.modelData.on ? "#4CAF50" : "#FF9800"
                                 Layout.fillWidth: true
                             }
                         }

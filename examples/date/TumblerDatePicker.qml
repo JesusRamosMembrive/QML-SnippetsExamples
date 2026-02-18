@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -25,6 +26,10 @@ Rectangle {
     function setDay(day)   { dayTumbler.currentIndex = day - 1 }
     function setMonth(month) { monthTumbler.currentIndex = month }
     function setYear(year) { yearTumbler.currentIndex = year - 2000 }
+
+    function pad2(n: int) : string {
+        return n < 10 ? "0" + n : "" + n
+    }
 
     function goToToday() {
         var now = new Date()
@@ -79,7 +84,10 @@ Rectangle {
                     Layout.preferredHeight: Style.resize(220)
 
                     delegate: Text {
-                        text: (modelData + 1).toString().padStart(2, '0')
+                        required property int modelData
+                        required property int index
+
+                        text: root.pad2(modelData + 1)
                         font.pixelSize: Style.resize(18)
                             * (1.0 - 0.3 * Math.abs(Tumbler.displacement))
                         font.family: Style.fontFamilyRegular
@@ -91,9 +99,6 @@ Rectangle {
                                  / (dayTumbler.visibleItemCount / 2)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-
-                        required property var modelData
-                        required property int index
                     }
                 }
             }
@@ -141,7 +146,10 @@ Rectangle {
                     Layout.preferredHeight: Style.resize(220)
 
                     delegate: Text {
-                        text: (2000 + modelData).toString()
+                        required property int modelData
+                        required property int index
+
+                        text: "" + (2000 + modelData)
                         font.pixelSize: Style.resize(18)
                             * (1.0 - 0.3 * Math.abs(Tumbler.displacement))
                         font.family: Style.fontFamilyRegular
@@ -153,9 +161,6 @@ Rectangle {
                                  / (yearTumbler.visibleItemCount / 2)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-
-                        required property var modelData
-                        required property int index
                     }
                 }
             }
@@ -165,15 +170,14 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(40)
-            color: Qt.rgba(Style.mainColor.r, Style.mainColor.g,
-                           Style.mainColor.b, 0.1)
+            color: { let c = Qt.color(Style.mainColor); return Qt.rgba(c.r, c.g, c.b, 0.1) }
             radius: Style.resize(6)
 
             Label {
                 anchors.centerIn: parent
-                text: root.selectedDay.toString().padStart(2, '0')
+                text: root.pad2(root.selectedDay)
                       + " / "
-                      + (root.selectedMonth + 1).toString().padStart(2, '0')
+                      + root.pad2(root.selectedMonth + 1)
                       + " / " + root.selectedYear
                 font.pixelSize: Style.resize(18)
                 font.bold: true

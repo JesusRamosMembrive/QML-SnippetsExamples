@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -303,9 +304,9 @@ Rectangle {
                 spacing: Style.resize(6)
 
                 Rectangle {
-                    width: Style.resize(8)
-                    height: width
-                    radius: width / 2
+                    Layout.preferredWidth: Style.resize(8)
+                    Layout.preferredHeight: Style.resize(8)
+                    radius: Style.resize(4)
                     color: infoPopup.markerIndex >= 0
                            ? root.markerModel.get(infoPopup.markerIndex).color
                            : "gray"

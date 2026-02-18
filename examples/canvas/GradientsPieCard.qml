@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -177,16 +179,18 @@ Rectangle {
                 Repeater {
                     model: pieCanvas.slices.length
                     Row {
+                        required property int index
+
                         spacing: Style.resize(4)
                         Rectangle {
                             width: Style.resize(10)
                             height: Style.resize(10)
                             radius: Style.resize(2)
-                            color: pieCanvas.slices[index].color
+                            color: pieCanvas.slices[parent.index].color
                             anchors.verticalCenter: parent.verticalCenter
                         }
                         Label {
-                            text: pieCanvas.slices[index].label
+                            text: pieCanvas.slices[parent.index].label
                             font.pixelSize: Style.resize(10)
                             color: Style.fontSecondaryColor
                         }
