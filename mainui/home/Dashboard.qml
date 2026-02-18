@@ -32,6 +32,7 @@ import pdfreader as PdfReaderPage
 import threadsex as ThreadsPage
 import tableview as TableViewPage
 import treeview as TreeViewPage
+import databaseex as DatabasePage
 
 Item {
     id: root
@@ -142,7 +143,7 @@ Item {
                         }
 
                         Label {
-                            text: "27 pages"
+                            text: "28 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -184,6 +185,7 @@ Item {
                             ListElement { name: "Threads";     desc: "C++ pipeline: QThread, moveToThread, cross-thread signals" }
                             ListElement { name: "TableView";   desc: "C++ QAbstractTableModel, sort/filter proxy, editable cells" }
                             ListElement { name: "TreeView";    desc: "C++ QAbstractItemModel, tree hierarchy, expand/collapse, add/remove" }
+                            ListElement { name: "Database";    desc: "SQLite CRUD with QSqlTableModel, query explorer, data dashboard" }
                         }
 
                         ColumnLayout {
@@ -391,5 +393,10 @@ Item {
     TreeViewPage.Main {
         visible: fullSize
         fullSize: (root.state === "TreeView")
+    }
+
+    DatabasePage.Main {
+        visible: fullSize
+        fullSize: (root.state === "Database")
     }
 }

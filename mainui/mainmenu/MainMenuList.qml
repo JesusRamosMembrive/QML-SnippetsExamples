@@ -43,6 +43,7 @@ Item {
         ListElement { text: "Threads" }
         ListElement { text: "TableView" }
         ListElement { text: "TreeView" }
+        ListElement { text: "Database" }
     }
 
     ListView {
@@ -60,7 +61,7 @@ Item {
             Rectangle {
                 width: Style.resize(4)
                 height: parent.height
-                color: "#000000"
+                color: Style.bgColor
             }
         }
         spacing: Style.resize(20)
@@ -69,7 +70,7 @@ Item {
         delegate: ItemDelegate {
             width: listView.width
             height: Style.resize(47)
-            background: Style.bgColorDark
+            background: Rectangle { color: Style.bgColorDark }
             contentItem: Item {
                 anchors.fill: parent
                 Image {

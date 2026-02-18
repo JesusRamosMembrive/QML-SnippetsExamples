@@ -1,0 +1,5 @@
+module databaseex
+Main 1.0 Main.qml
+CrudTableCard 1.0 CrudTableCard.qml
+QueryExplorerCard 1.0 QueryExplorerCard.qml
+DataDashboardCard 1.0 DataDashboardCard.qml

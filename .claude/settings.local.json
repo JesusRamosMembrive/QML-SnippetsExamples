@@ -35,7 +35,8 @@
       "Bash(powershell -Command:*)",
       "WebFetch(domain:www.basyskom.de)",
       "WebFetch(domain:www.learnqt.guide)",
-      "WebFetch(domain:forum.qt.io)"
+      "WebFetch(domain:forum.qt.io)",
+      "WebFetch(domain:wiki.qt.io)"
     ]
   }
 }

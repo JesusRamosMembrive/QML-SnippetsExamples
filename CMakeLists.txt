@@ -4,7 +4,7 @@ project(QMLSnippetsExamples VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Graphs WebSockets Location Positioning Pdf PdfQuick)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Graphs WebSockets Location Positioning Pdf PdfQuick Sql)
 
 # Set Qt policies
 if(POLICY CMP0071)
@@ -42,6 +42,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     Qt6::Location
     Qt6::Positioning
     Qt6::PdfQuick
+    Qt6::Sql
 )
 
 # Copy PDF library files next to the executable
