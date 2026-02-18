@@ -40,6 +40,7 @@ ColumnLayout {
 
         Canvas {
             id: roseCanvas
+            onAvailableChanged: if (available) requestPaint()
             anchors.fill: parent
             anchors.margins: Style.resize(4)
 

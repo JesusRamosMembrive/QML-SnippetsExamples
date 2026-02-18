@@ -18,6 +18,7 @@ Rectangle {
 
     Canvas {
         id: hudCanvas
+        onAvailableChanged: if (available) requestPaint()
         anchors.fill: parent
 
         property color hudColor: "#00FF00"

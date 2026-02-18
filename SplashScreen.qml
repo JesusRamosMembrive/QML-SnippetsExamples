@@ -57,8 +57,6 @@ Item {
                     height: width
                     radius: width / 2
                     color: Style.mainColor
-                    opacity: 0.3
-                    scale: 0.6
 
                     SequentialAnimation on opacity {
                         loops: Animation.Infinite

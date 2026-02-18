@@ -34,6 +34,7 @@ Rectangle {
 
                     Canvas {
                         id: speedTape
+                        onAvailableChanged: if (available) requestPaint()
                         anchors.fill: parent
 
                         property real speed: speedSlider.value
@@ -152,6 +153,7 @@ Rectangle {
 
                     Canvas {
                         id: altTape
+                        onAvailableChanged: if (available) requestPaint()
                         anchors.fill: parent
 
                         property real altitude: altSlider.value

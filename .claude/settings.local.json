@@ -24,7 +24,13 @@
       "Bash(shapes \")",
       "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1 /b\")",
       "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1\\\\mingw_64\\\\lib\\\\cmake\\\\*Pdf* /b\")",
-      "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1\\\\msvc2022_64\\\\lib\\\\cmake\\\\Qt6PdfQuick /b\")"
+      "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1\\\\msvc2022_64\\\\lib\\\\cmake\\\\Qt6PdfQuick /b\")",
+      "Bash(cmd //c \"dir C:\\\\Users\\\\ramos\\\\H\\\\Git_Overture\\\\QML-SnippetsExamples\\\\pdf_files\")",
+      "Bash(cmd //c \"dir H:\\\\Git_Overture\\\\QML-SnippetsExamples\\\\pdf_files\")",
+      "Bash(test:*)",
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+      "Bash(git grep:*)"
     ]
   }
 }

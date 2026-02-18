@@ -34,6 +34,7 @@ Rectangle {
 
                     Canvas {
                         id: vsiCanvas
+                        onAvailableChanged: if (available) requestPaint()
                         anchors.centerIn: parent
                         width: Math.min(parent.width, parent.height) - Style.resize(5)
                         height: width
@@ -156,6 +157,7 @@ Rectangle {
 
                     Canvas {
                         id: turnCanvas
+                        onAvailableChanged: if (available) requestPaint()
                         anchors.centerIn: parent
                         width: Math.min(parent.width, parent.height) - Style.resize(5)
                         height: width

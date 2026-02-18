@@ -40,6 +40,7 @@ Rectangle {
 
                         Canvas {
                             id: eng1Canvas
+                            onAvailableChanged: if (available) requestPaint()
                             anchors.fill: parent
 
                             property real n1: n1Slider.value
@@ -144,6 +145,7 @@ Rectangle {
 
                         Canvas {
                             id: eng2Canvas
+                            onAvailableChanged: if (available) requestPaint()
                             anchors.fill: parent
 
                             property real n1: n2Slider.value

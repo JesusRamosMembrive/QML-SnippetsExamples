@@ -37,6 +37,7 @@ Rectangle {
 
                 Canvas {
                     id: mapCanvas
+                    onAvailableChanged: if (available) requestPaint()
                     anchors.fill: parent
                     anchors.margins: Style.resize(4)
 

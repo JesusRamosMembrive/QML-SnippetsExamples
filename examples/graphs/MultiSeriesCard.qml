@@ -10,17 +10,26 @@ Rectangle {
     radius: Style.resize(8)
 
     property bool active: false
+    property bool animRunning: false
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Style.resize(20)
         spacing: Style.resize(8)
 
-        Label {
-            text: "Multi-Series"
-            font.pixelSize: Style.resize(20)
-            font.bold: true
-            color: Style.mainColor
+        RowLayout {
+            Layout.fillWidth: true
+            Label {
+                text: "Multi-Series"
+                font.pixelSize: Style.resize(20)
+                font.bold: true
+                color: Style.mainColor
+                Layout.fillWidth: true
+            }
+            Button {
+                text: root.animRunning ? "Stop" : "Start"
+                onClicked: root.animRunning = !root.animRunning
+            }
         }
 
         // Frequency slider
@@ -136,7 +145,7 @@ Rectangle {
                     property real time: 0
 
                     FrameAnimation {
-                        running: root.active
+                        running: root.active && root.animRunning
                         onTriggered: {
                             sawSeries.time += 0.03
                             let freq = multiFreqSlider.value

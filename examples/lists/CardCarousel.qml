@@ -65,6 +65,10 @@ ColumnLayout {
                     NumberAnimation { duration: 250 }
                 }
 
+                TapHandler {
+                    onTapped: carouselList.currentIndex = carouselDelegate.index
+                }
+
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: Style.resize(10)

@@ -44,6 +44,13 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     Qt6::PdfQuick
 )
 
+# Copy PDF library files next to the executable
+add_custom_command(TARGET QMLSnippetsExamples POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/pdf_files
+    $<TARGET_FILE_DIR:QMLSnippetsExamples>/pdf_files
+)
+
 install(TARGETS QMLSnippetsExamples
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

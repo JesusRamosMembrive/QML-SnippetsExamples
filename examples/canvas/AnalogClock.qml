@@ -36,6 +36,7 @@ ColumnLayout {
         Canvas {
             id: clockCanvas
             anchors.centerIn: parent
+            onAvailableChanged: if (available) requestPaint()
             width: Style.resize(240)
             height: Style.resize(240)
 

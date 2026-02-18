@@ -25,6 +25,7 @@ Rectangle {
 
             Canvas {
                 id: adiCanvas
+                onAvailableChanged: if (available) requestPaint()
                 anchors.centerIn: parent
                 width: Math.min(parent.width, parent.height) - Style.resize(10)
                 height: width

@@ -31,6 +31,7 @@ Rectangle {
                 id: primitiveCanvas
                 anchors.fill: parent
                 anchors.margins: Style.resize(4)
+                onAvailableChanged: if (available) requestPaint()
 
                 onPaint: {
                     var ctx = getContext("2d")

@@ -38,6 +38,7 @@ ColumnLayout {
             id: vizCanvas
             anchors.fill: parent
             anchors.margins: Style.resize(4)
+            onAvailableChanged: if (available) requestPaint()
 
             property var levels: []
             property var targets: []

@@ -35,6 +35,23 @@ Item {
     state: "Dashboard"
     objectName: "Dashboard"
 
+    onStateChanged: repaintTimer.restart()
+
+    Timer {
+        id: repaintTimer
+        interval: 250
+        onTriggered: forceRepaintCanvases(root)
+    }
+
+    function forceRepaintCanvases(item) {
+        for (var i = 0; i < item.children.length; i++) {
+            var child = item.children[i]
+            if (typeof child.requestPaint === "function")
+                child.requestPaint()
+            forceRepaintCanvases(child)
+        }
+    }
+
     // Dashboard home content
     Item {
         anchors.fill: parent

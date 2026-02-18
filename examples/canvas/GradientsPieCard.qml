@@ -127,6 +127,7 @@ Rectangle {
             Canvas {
                 id: pieCanvas
                 anchors.centerIn: parent
+                onAvailableChanged: if (available) requestPaint()
                 width: Math.min(parent.width, Style.resize(200))
                 height: width
 

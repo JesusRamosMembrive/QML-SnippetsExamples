@@ -37,6 +37,7 @@ ColumnLayout {
         Canvas {
             id: kaleidoCanvas
             anchors.centerIn: parent
+            onAvailableChanged: if (available) requestPaint()
             width: Math.min(parent.width - Style.resize(20), Style.resize(280))
             height: width
 

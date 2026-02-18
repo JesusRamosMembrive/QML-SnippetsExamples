@@ -38,6 +38,7 @@ ColumnLayout {
 
         Canvas {
             id: donutCanvas
+            onAvailableChanged: if (available) requestPaint()
             anchors.centerIn: parent
             width: Math.min(parent.width - Style.resize(20), Style.resize(240))
             height: width

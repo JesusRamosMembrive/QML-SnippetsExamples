@@ -73,6 +73,7 @@ ColumnLayout {
 
             Canvas {
                 id: progressRing
+                onAvailableChanged: if (available) requestPaint()
                 anchors.fill: parent
 
                 property real prog: parent.progress

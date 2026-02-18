@@ -83,7 +83,7 @@ Item {
                 // ════════════════════════════════════════════════════════
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Style.resize(1800)
+                    Layout.preferredHeight: Style.resize(2800)
                     color: Style.cardColor
                     radius: Style.resize(8)
 

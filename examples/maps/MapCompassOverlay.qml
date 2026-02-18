@@ -20,6 +20,7 @@ Rectangle {
 
     Canvas {
         id: compassCanvas
+        onAvailableChanged: if (available) requestPaint()
         anchors.fill: parent
         anchors.margins: Style.resize(5)
 

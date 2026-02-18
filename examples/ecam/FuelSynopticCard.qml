@@ -30,6 +30,7 @@ Rectangle {
 
                 Canvas {
                     id: fuelCanvas
+                    onAvailableChanged: if (available) requestPaint()
                     anchors.fill: parent
                     anchors.margins: Style.resize(8)
 

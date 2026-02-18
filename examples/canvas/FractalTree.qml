@@ -48,6 +48,7 @@ ColumnLayout {
             id: treeCanvas
             anchors.fill: parent
             anchors.margins: Style.resize(4)
+            onAvailableChanged: if (available) requestPaint()
 
             function drawBranch(ctx, x, y, len, angle, depth, maxDepth) {
                 if (depth > maxDepth || len < 2)
