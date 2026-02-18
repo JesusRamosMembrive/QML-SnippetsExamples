@@ -4,4 +4,8 @@ qt_add_qml_module(navdisplayplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        MovingMapCard.qml
+        FlightPlanCard.qml
+        CompassRoseCard.qml
+        ModeRangeCard.qml
 )

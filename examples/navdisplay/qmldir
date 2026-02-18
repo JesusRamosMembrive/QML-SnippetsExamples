@@ -1,2 +1,6 @@
 module navdisplay
 Main 1.0 Main.qml
+MovingMapCard 1.0 MovingMapCard.qml
+FlightPlanCard 1.0 FlightPlanCard.qml
+CompassRoseCard 1.0 CompassRoseCard.qml
+ModeRangeCard 1.0 ModeRangeCard.qml

@@ -4,4 +4,8 @@ qt_add_qml_module(particlesplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        BasicEmitterCard.qml
+        AffectorsCard.qml
+        TrailEmitterCard.qml
+        InteractiveParticlesCard.qml
 )

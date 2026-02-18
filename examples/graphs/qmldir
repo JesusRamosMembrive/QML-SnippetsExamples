@@ -1,2 +1,12 @@
 module graphs
 Main 1.0 Main.qml
+VibrationSensorCard 1.0 VibrationSensorCard.qml
+ScrollingWaveformCard 1.0 ScrollingWaveformCard.qml
+BarSeriesCard 1.0 BarSeriesCard.qml
+MultiSeriesCard 1.0 MultiSeriesCard.qml
+SystemMonitor 1.0 SystemMonitor.qml
+RadarChart 1.0 RadarChart.qml
+CandlestickChart 1.0 CandlestickChart.qml
+DonutChart 1.0 DonutChart.qml
+ScatterPlot 1.0 ScatterPlot.qml
+HeatmapChart 1.0 HeatmapChart.qml

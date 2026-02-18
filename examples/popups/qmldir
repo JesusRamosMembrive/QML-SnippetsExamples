@@ -1,2 +1,12 @@
 module popups
 Main 1.0 Main.qml
+DialogCard 1.0 DialogCard.qml
+PopupCard 1.0 PopupCard.qml
+ToolTipCard 1.0 ToolTipCard.qml
+MenuCard 1.0 MenuCard.qml
+ToastNotifications 1.0 ToastNotifications.qml
+AlertCards 1.0 AlertCards.qml
+BottomSheet 1.0 BottomSheet.qml
+Snackbar 1.0 Snackbar.qml
+FloatingActionButton 1.0 FloatingActionButton.qml
+CommandPalette 1.0 CommandPalette.qml

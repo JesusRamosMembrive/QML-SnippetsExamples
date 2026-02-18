@@ -1,2 +1,6 @@
 module ecam
 Main 1.0 Main.qml
+EngineGaugesCard 1.0 EngineGaugesCard.qml
+WarningPanelCard 1.0 WarningPanelCard.qml
+FuelSynopticCard 1.0 FuelSynopticCard.qml
+SystemStatusCard 1.0 SystemStatusCard.qml

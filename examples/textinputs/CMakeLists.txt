@@ -4,4 +4,15 @@ qt_add_qml_module(textinputsplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        TextFieldCard.qml
+        TextAreaCard.qml
+        ComboSpinCard.qml
+        FormBuilderCard.qml
+        SearchBar.qml
+        PinInput.qml
+        TagInput.qml
+        EditableLabels.qml
+        StarRating.qml
+        CharLimitInput.qml
+        ColorPicker.qml
 )

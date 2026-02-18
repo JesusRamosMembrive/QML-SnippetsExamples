@@ -1,2 +1,12 @@
 module layouts
 Main 1.0 Main.qml
+RowColumnLayoutCard 1.0 RowColumnLayoutCard.qml
+GridLayoutCard 1.0 GridLayoutCard.qml
+FlowCard 1.0 FlowCard.qml
+StackLayoutCard 1.0 StackLayoutCard.qml
+CollapsibleSidebar 1.0 CollapsibleSidebar.qml
+DraggableSplitPane 1.0 DraggableSplitPane.qml
+MasonryGrid 1.0 MasonryGrid.qml
+HolyGrailLayout 1.0 HolyGrailLayout.qml
+ResponsiveBreakpoints 1.0 ResponsiveBreakpoints.qml
+NestedDashboard 1.0 NestedDashboard.qml

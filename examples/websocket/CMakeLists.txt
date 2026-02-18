@@ -4,4 +4,7 @@ qt_add_qml_module(websocketexplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        ConnectionCard.qml
+        SendMessageCard.qml
+        MessageLogCard.qml
 )

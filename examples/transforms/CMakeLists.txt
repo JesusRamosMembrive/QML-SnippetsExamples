@@ -4,4 +4,14 @@ qt_add_qml_module(transformsplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        Transforms2DCard.qml
+        Rotation3DCard.qml
+        GraphicalEffectsCard.qml
+        CardFlipCard.qml
+        Carousel3D.qml
+        ParallaxDepth.qml
+        ElasticSpring.qml
+        NeonGlow.qml
+        MatrixShear.qml
+        WaveGrid.qml
 )

@@ -1,2 +1,7 @@
 module sliders
 Main 1.0 Main.qml
+BasicSlidersCard 1.0 BasicSlidersCard.qml
+VerticalSlidersCard 1.0 VerticalSlidersCard.qml
+GlowDemoCard 1.0 GlowDemoCard.qml
+VolumeActionsCard 1.0 VolumeActionsCard.qml
+DialCard 1.0 DialCard.qml

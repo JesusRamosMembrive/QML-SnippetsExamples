@@ -1,2 +1,12 @@
 module switches
 Main 1.0 Main.qml
+BasicSwitchCard 1.0 BasicSwitchCard.qml
+CheckBoxCard 1.0 CheckBoxCard.qml
+RadioButtonCard 1.0 RadioButtonCard.qml
+SmartHomeCard 1.0 SmartHomeCard.qml
+IconToggles 1.0 IconToggles.qml
+ColoredTrackSwitches 1.0 ColoredTrackSwitches.qml
+PillToggles 1.0 PillToggles.qml
+DayNightSwitch 1.0 DayNightSwitch.qml
+LargeKnobToggles 1.0 LargeKnobToggles.qml
+SegmentedToggle 1.0 SegmentedToggle.qml

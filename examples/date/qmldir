@@ -1,2 +1,4 @@
 module date
 Main 1.0 Main.qml
+TumblerDatePicker 1.0 TumblerDatePicker.qml
+CalendarCard 1.0 CalendarCard.qml

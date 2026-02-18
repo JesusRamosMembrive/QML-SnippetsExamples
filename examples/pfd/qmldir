@@ -1,2 +1,6 @@
 module pfd
 Main 1.0 Main.qml
+ArtificialHorizonCard 1.0 ArtificialHorizonCard.qml
+SpeedAltTapesCard 1.0 SpeedAltTapesCard.qml
+HeadingIndicatorCard 1.0 HeadingIndicatorCard.qml
+VsiTurnCard 1.0 VsiTurnCard.qml

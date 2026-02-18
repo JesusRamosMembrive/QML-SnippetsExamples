@@ -4,4 +4,9 @@ qt_add_qml_module(slidersplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        BasicSlidersCard.qml
+        VerticalSlidersCard.qml
+        GlowDemoCard.qml
+        VolumeActionsCard.qml
+        DialCard.qml
 )

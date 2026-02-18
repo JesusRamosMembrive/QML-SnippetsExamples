@@ -1,2 +1,12 @@
 module lists
 Main 1.0 Main.qml
+ListViewCard 1.0 ListViewCard.qml
+GridViewCard 1.0 GridViewCard.qml
+DynamicListCard 1.0 DynamicListCard.qml
+SectionsCard 1.0 SectionsCard.qml
+SwipeToActionList 1.0 SwipeToActionList.qml
+ExpandableAccordion 1.0 ExpandableAccordion.qml
+ChatBubbles 1.0 ChatBubbles.qml
+Timeline 1.0 Timeline.qml
+CardCarousel 1.0 CardCarousel.qml
+KanbanBoard 1.0 KanbanBoard.qml

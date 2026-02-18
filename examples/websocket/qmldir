@@ -1,2 +1,5 @@
 module websocketex
 Main 1.0 Main.qml
+ConnectionCard 1.0 ConnectionCard.qml
+SendMessageCard 1.0 SendMessageCard.qml
+MessageLogCard 1.0 MessageLogCard.qml

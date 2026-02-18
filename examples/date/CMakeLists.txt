@@ -4,4 +4,6 @@ qt_add_qml_module(dateplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        TumblerDatePicker.qml
+        CalendarCard.qml
 )

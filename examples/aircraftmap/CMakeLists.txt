@@ -4,4 +4,6 @@ qt_add_qml_module(aircraftmapplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        MarkerSidebar.qml
+        BlueprintViewer.qml
 )

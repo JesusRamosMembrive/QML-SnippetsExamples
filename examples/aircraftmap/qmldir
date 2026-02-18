@@ -1,2 +1,4 @@
 module aircraftmap
 Main 1.0 Main.qml
+MarkerSidebar 1.0 MarkerSidebar.qml
+BlueprintViewer 1.0 BlueprintViewer.qml

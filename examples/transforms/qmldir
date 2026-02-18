@@ -1,2 +1,12 @@
 module transforms
 Main 1.0 Main.qml
+Transforms2DCard 1.0 Transforms2DCard.qml
+Rotation3DCard 1.0 Rotation3DCard.qml
+GraphicalEffectsCard 1.0 GraphicalEffectsCard.qml
+CardFlipCard 1.0 CardFlipCard.qml
+Carousel3D 1.0 Carousel3D.qml
+ParallaxDepth 1.0 ParallaxDepth.qml
+ElasticSpring 1.0 ElasticSpring.qml
+NeonGlow 1.0 NeonGlow.qml
+MatrixShear 1.0 MatrixShear.qml
+WaveGrid 1.0 WaveGrid.qml

@@ -1,2 +1,6 @@
 module particles
 Main 1.0 Main.qml
+BasicEmitterCard 1.0 BasicEmitterCard.qml
+AffectorsCard 1.0 AffectorsCard.qml
+TrailEmitterCard 1.0 TrailEmitterCard.qml
+InteractiveParticlesCard 1.0 InteractiveParticlesCard.qml

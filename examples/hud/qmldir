@@ -1,2 +1,4 @@
 module hud
 Main 1.0 Main.qml
+HudCanvas 1.0 HudCanvas.qml
+HudControlsPanel 1.0 HudControlsPanel.qml

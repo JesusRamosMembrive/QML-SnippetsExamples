@@ -1,2 +1,8 @@
 module buttons
 Main 1.0 Main.qml
+StandardButtonsCard 1.0 StandardButtonsCard.qml
+IconButtonsCard 1.0 IconButtonsCard.qml
+ButtonStatesCard 1.0 ButtonStatesCard.qml
+CustomStyledCard 1.0 CustomStyledCard.qml
+SpecializedButtonsCard 1.0 SpecializedButtonsCard.qml
+ToolButtonMenuCard 1.0 ToolButtonMenuCard.qml

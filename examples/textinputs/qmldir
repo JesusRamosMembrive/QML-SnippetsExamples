@@ -1,2 +1,13 @@
 module textinputs
 Main 1.0 Main.qml
+TextFieldCard 1.0 TextFieldCard.qml
+TextAreaCard 1.0 TextAreaCard.qml
+ComboSpinCard 1.0 ComboSpinCard.qml
+FormBuilderCard 1.0 FormBuilderCard.qml
+SearchBar 1.0 SearchBar.qml
+PinInput 1.0 PinInput.qml
+TagInput 1.0 TagInput.qml
+EditableLabels 1.0 EditableLabels.qml
+StarRating 1.0 StarRating.qml
+CharLimitInput 1.0 CharLimitInput.qml
+ColorPicker 1.0 ColorPicker.qml

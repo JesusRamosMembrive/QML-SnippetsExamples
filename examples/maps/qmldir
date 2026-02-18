@@ -1,2 +1,5 @@
 module maps
 Main 1.0 Main.qml
+MapCompassOverlay 1.0 MapCompassOverlay.qml
+MapInfoPanel 1.0 MapInfoPanel.qml
+MapControlsBar 1.0 MapControlsBar.qml
