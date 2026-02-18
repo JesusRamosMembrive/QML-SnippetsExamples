@@ -41,6 +41,7 @@ Item {
         ListElement { text: "Maps" }
         ListElement { text: "PdfReader" }
         ListElement { text: "Threads" }
+        ListElement { text: "TableView" }
     }
 
     ListView {

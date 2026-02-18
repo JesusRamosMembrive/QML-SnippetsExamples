@@ -34,7 +34,7 @@ ColumnLayout {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: Style.resize(28)
+                    Layout.preferredHeight: Style.resize(28)
                     radius: Style.resize(4)
                     color: Qt.rgba(0.36, 0.55, 0.94, 0.15)
 
@@ -59,7 +59,7 @@ ColumnLayout {
                         id: kanbanTodo
                         required property var modelData
                         Layout.fillWidth: true
-                        height: Style.resize(52)
+                        Layout.preferredHeight: Style.resize(52)
                         radius: Style.resize(6)
                         color: Style.surfaceColor
 
@@ -115,7 +115,7 @@ ColumnLayout {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: Style.resize(28)
+                    Layout.preferredHeight: Style.resize(28)
                     radius: Style.resize(4)
                     color: Qt.rgba(1, 0.58, 0, 0.15)
 
@@ -138,7 +138,7 @@ ColumnLayout {
                         id: kanbanProgress
                         required property var modelData
                         Layout.fillWidth: true
-                        height: Style.resize(52)
+                        Layout.preferredHeight: Style.resize(52)
                         radius: Style.resize(6)
                         color: Style.surfaceColor
 
@@ -194,7 +194,7 @@ ColumnLayout {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: Style.resize(28)
+                    Layout.preferredHeight: Style.resize(28)
                     radius: Style.resize(4)
                     color: Qt.rgba(0.2, 0.78, 0.35, 0.15)
 
@@ -218,7 +218,7 @@ ColumnLayout {
                         id: kanbanDone
                         required property var modelData
                         Layout.fillWidth: true
-                        height: Style.resize(52)
+                        Layout.preferredHeight: Style.resize(52)
                         radius: Style.resize(6)
                         color: Style.surfaceColor
 

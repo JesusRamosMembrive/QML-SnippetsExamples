@@ -32,7 +32,9 @@
       "Bash(printf:*)",
       "Bash(git grep:*)",
       "Bash(where:*)",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "WebFetch(domain:www.basyskom.de)",
+      "WebFetch(domain:www.learnqt.guide)"
     ]
   }
 }

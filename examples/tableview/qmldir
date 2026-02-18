@@ -1,0 +1,5 @@
+module tableview
+Main 1.0 Main.qml
+BasicTableCard 1.0 BasicTableCard.qml
+SortFilterTableCard 1.0 SortFilterTableCard.qml
+EditableTableCard 1.0 EditableTableCard.qml

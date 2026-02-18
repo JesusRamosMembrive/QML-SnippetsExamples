@@ -70,16 +70,20 @@ Rectangle {
             Layout.preferredHeight: Style.resize(30)
             locale: Qt.locale("en_US")
 
-            delegate: Text {
-                text: shortName
-                font.pixelSize: Style.resize(13)
-                font.bold: true
-                font.family: Style.fontFamilyBold
-                color: Style.inactiveColor
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+            delegate: Item {
+                implicitWidth: (dayOfWeekRow.width - 6 * 2) / 7
+                implicitHeight: Style.resize(30)
 
                 required property string shortName
+
+                Text {
+                    anchors.centerIn: parent
+                    text: parent.shortName
+                    font.pixelSize: Style.resize(13)
+                    font.bold: true
+                    font.family: Style.fontFamilyBold
+                    color: Style.inactiveColor
+                }
             }
         }
 
@@ -112,7 +116,7 @@ Rectangle {
                     && model.day === root.selectedDay
                 readonly property bool isToday: model.today
 
-                implicitWidth: Style.resize(36)
+                implicitWidth: (monthGrid.width - 6 * monthGrid.spacing) / 7
                 implicitHeight: Style.resize(36)
                 radius: width / 2
                 color: isSelected ? Style.mainColor

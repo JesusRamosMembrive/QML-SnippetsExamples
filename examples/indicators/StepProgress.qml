@@ -18,7 +18,7 @@ ColumnLayout {
     Item {
         id: stepProgressItem
         Layout.fillWidth: true
-        Layout.preferredHeight: Style.resize(80)
+        Layout.preferredHeight: Style.resize(130)
 
         property int currentStep: 2
         property var stepLabels: ["Order", "Payment", "Processing", "Shipping", "Delivered"]
