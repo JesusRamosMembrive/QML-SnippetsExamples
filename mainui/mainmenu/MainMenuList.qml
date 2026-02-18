@@ -39,6 +39,7 @@ Item {
         ListElement { text: "AircraftMap" }
         ListElement { text: "Shapes" }
         ListElement { text: "Maps" }
+        ListElement { text: "PdfReader" }
     }
 
     ListView {

@@ -21,7 +21,10 @@
       "Bash(cd:*)",
       "WebFetch(domain:doc.qt.io)",
       "Bash(canvas)",
-      "Bash(shapes \")"
+      "Bash(shapes \")",
+      "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1 /b\")",
+      "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1\\\\mingw_64\\\\lib\\\\cmake\\\\*Pdf* /b\")",
+      "Bash(cmd //c \"dir C:\\\\Qt\\\\6.10.1\\\\msvc2022_64\\\\lib\\\\cmake\\\\Qt6PdfQuick /b\")"
     ]
   }
 }

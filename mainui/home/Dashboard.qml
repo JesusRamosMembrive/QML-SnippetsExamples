@@ -28,6 +28,7 @@ import date as DatePage
 import aircraftmap as AircraftMapPage
 import shapes as ShapesPage
 import maps as MapsPage
+import pdfreader as PdfReaderPage
 
 Item {
     id: root
@@ -121,7 +122,7 @@ Item {
                         }
 
                         Label {
-                            text: "23 pages"
+                            text: "24 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -159,6 +160,7 @@ Item {
                             ListElement { name: "AircraftMap"; desc: "Interactive blueprint with zoomable markers" }
                             ListElement { name: "Shapes";      desc: "Bezier curves, arcs, SVG paths, gradients, morphing" }
                             ListElement { name: "Maps";        desc: "OSM map, compass overlay, animated GPS route" }
+                            ListElement { name: "PdfReader";   desc: "Drag & drop PDF viewer with zoom and navigation" }
                         }
 
                         ColumnLayout {
@@ -346,5 +348,10 @@ Item {
     MapsPage.Main {
         visible: fullSize
         fullSize: (root.state === "Maps")
+    }
+
+    PdfReaderPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "PdfReader")
     }
 }
