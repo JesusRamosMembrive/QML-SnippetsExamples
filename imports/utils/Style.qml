@@ -10,6 +10,7 @@ QtObject {
     property string theme: "green"
 
     property string bgColor: "#1A1D23"
+    property string bgColorDark: "#14171B"
     property string mainColor: (theme === "green") ? "#00D1A9" : "#FEA601"
     property string inactiveColor: "#999999"
 

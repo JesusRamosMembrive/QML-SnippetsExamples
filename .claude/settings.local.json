@@ -34,7 +34,8 @@
       "Bash(where:*)",
       "Bash(powershell -Command:*)",
       "WebFetch(domain:www.basyskom.de)",
-      "WebFetch(domain:www.learnqt.guide)"
+      "WebFetch(domain:www.learnqt.guide)",
+      "WebFetch(domain:forum.qt.io)"
     ]
   }
 }

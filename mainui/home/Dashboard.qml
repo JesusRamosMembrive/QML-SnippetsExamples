@@ -31,6 +31,7 @@ import maps as MapsPage
 import pdfreader as PdfReaderPage
 import threadsex as ThreadsPage
 import tableview as TableViewPage
+import treeview as TreeViewPage
 
 Item {
     id: root
@@ -141,7 +142,7 @@ Item {
                         }
 
                         Label {
-                            text: "26 pages"
+                            text: "27 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -182,6 +183,7 @@ Item {
                             ListElement { name: "PdfReader";   desc: "Drag & drop PDF viewer with zoom and navigation" }
                             ListElement { name: "Threads";     desc: "C++ pipeline: QThread, moveToThread, cross-thread signals" }
                             ListElement { name: "TableView";   desc: "C++ QAbstractTableModel, sort/filter proxy, editable cells" }
+                            ListElement { name: "TreeView";    desc: "C++ QAbstractItemModel, tree hierarchy, expand/collapse, add/remove" }
                         }
 
                         ColumnLayout {
@@ -384,5 +386,10 @@ Item {
     TableViewPage.Main {
         visible: fullSize
         fullSize: (root.state === "TableView")
+    }
+
+    TreeViewPage.Main {
+        visible: fullSize
+        fullSize: (root.state === "TreeView")
     }
 }

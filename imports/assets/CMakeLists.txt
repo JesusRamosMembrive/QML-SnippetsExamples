@@ -52,6 +52,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/pdfreader.png
         icons/threads.png
         icons/tableview.png
+        icons/treeview.png
         images/particle.png
         images/card.png
         images/dark-texture-background.png
