@@ -30,7 +30,9 @@
       "Bash(test:*)",
       "Bash(echo:*)",
       "Bash(printf:*)",
-      "Bash(git grep:*)"
+      "Bash(git grep:*)",
+      "Bash(where:*)",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

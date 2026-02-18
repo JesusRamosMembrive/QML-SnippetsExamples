@@ -40,6 +40,7 @@ Item {
         ListElement { text: "Shapes" }
         ListElement { text: "Maps" }
         ListElement { text: "PdfReader" }
+        ListElement { text: "Threads" }
     }
 
     ListView {

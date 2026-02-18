@@ -1,0 +1,6 @@
+module threadsex
+Main 1.0 Main.qml
+PipelineControlCard 1.0 PipelineControlCard.qml
+PipelineFlowCard 1.0 PipelineFlowCard.qml
+RecordsCard 1.0 RecordsCard.qml
+ThreadInfoCard 1.0 ThreadInfoCard.qml
