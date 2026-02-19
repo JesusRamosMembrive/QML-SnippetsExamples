@@ -1,3 +1,22 @@
+// =============================================================================
+// Main.qml — Pagina principal del modulo File Dialogs
+// =============================================================================
+// Punto de entrada para los ejemplos de dialogos de archivos nativos.
+// Qt 6 provee FileDialog y FolderDialog en el modulo QtQuick.Dialogs,
+// que invocan el selector nativo del sistema operativo (Windows Explorer,
+// Nautilus, Finder, etc.).
+//
+// Cuatro tarjetas en grid 2x2:
+//   - FileDialogCard: abrir archivos con filtros y seleccion multiple
+//   - FolderDialogCard: seleccionar carpetas con historial
+//   - SaveDialogCard: guardar archivos con seleccion de formato
+//   - InteractiveDialogCard: log de acciones combinando todos los dialogos
+//
+// Nota: estos dialogos son nativos del SO, no se pueden personalizar
+// visualmente desde QML. Lo que se controla es el titulo, filtros,
+// modo (abrir/guardar), y la respuesta (onAccepted/onRejected).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +27,10 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // -------------------------------------------------------------------------
+    // Patron de visibilidad del proyecto: fullSize controla la animacion
+    // de entrada/salida de la pagina desde Dashboard.qml.
+    // -------------------------------------------------------------------------
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -43,6 +66,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // Grid 2x2 con las cuatro tarjetas de ejemplo de dialogos
                 GridLayout {
                     columns: 2
                     rows: 2

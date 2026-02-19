@@ -1,3 +1,26 @@
+// =============================================================================
+// Oscilloscope.qml — Simulacion de osciloscopio con tres tipos de onda
+// =============================================================================
+// Dibuja tres senales superpuestas sobre un fondo estilo osciloscopio CRT:
+//   - Senoidal (verde fosforescente): Math.sin() puro.
+//   - Cuadrada (ambar): se genera con Math.sin() > 0 ? 1 : -1.
+//   - Triangular (cyan): se calcula con aritmetica modular sobre la fase.
+//
+// CONCEPTOS DEMOSTRADOS:
+//   - Canvas 2D para visualizacion cientifica: grilla de referencia, linea
+//     central, y multiples curvas superpuestas con colores distintos.
+//   - Generacion de formas de onda por software: en lugar de datos reales,
+//     las ondas se calculan matematicamente pixel a pixel.
+//   - Controles interactivos: frecuencia y amplitud ajustables con Sliders
+//     que afectan las tres ondas simultaneamente gracias a bindings.
+//
+// ESTETICA CRT: el fondo negro (#0A100A) y la grilla verde oscuro (#0A3A0A)
+// imitan la pantalla de un osciloscopio analogico. Los colores de las ondas
+// (verde fosforescente, ambar, cyan) son los tipicos de fosforos CRT reales.
+//
+// PATRON DE LEYENDA: la Row de rectangulos coloreados + labels en la esquina
+// funciona como leyenda visual para identificar cada senal.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -95,7 +118,8 @@ ColumnLayout {
                 var amp = scopeAmp.value * (h * 0.4)
                 var gridSize = 30
 
-                // Grid
+                // Grilla de referencia: lineas finas verde oscuro cada 30px.
+                // La linea central es mas brillante para marcar el eje Y=0.
                 ctx.strokeStyle = "#0A3A0A"
                 ctx.lineWidth = 0.5
                 for (var gx = 0; gx < w; gx += gridSize) {
@@ -109,7 +133,8 @@ ColumnLayout {
                 ctx.lineWidth = 1
                 ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke()
 
-                // Sine wave (green phosphor)
+                // Onda senoidal: la mas basica (Math.sin). scopePhase avanza
+                // con el Timer para dar la ilusion de movimiento continuo.
                 ctx.beginPath()
                 for (var sx = 0; sx < w; sx++) {
                     var sy = cy - amp * Math.sin(freq * sx * 0.04 + scopePhase)
@@ -119,7 +144,8 @@ ColumnLayout {
                 ctx.lineWidth = 2
                 ctx.stroke()
 
-                // Square wave (amber)
+                // Onda cuadrada: se genera evaluando el signo de sin().
+                // Amplitud reducida a 60% para no solaparse con la senoidal.
                 ctx.beginPath()
                 for (var qx = 0; qx < w; qx++) {
                     var qPhase = freq * qx * 0.04 + scopePhase + 1.0
@@ -130,7 +156,8 @@ ColumnLayout {
                 ctx.lineWidth = 1.5
                 ctx.stroke()
 
-                // Triangle wave (cyan)
+                // Onda triangular: se calcula normalizando la fase y aplicando
+                // una funcion lineal por tramos (sube de -1 a 1, luego baja).
                 ctx.beginPath()
                 for (var tx = 0; tx < w; tx++) {
                     var tPhase = freq * tx * 0.04 + scopePhase + 2.0

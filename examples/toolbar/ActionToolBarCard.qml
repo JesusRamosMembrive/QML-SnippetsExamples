@@ -1,3 +1,23 @@
+// =============================================================================
+// ActionToolBarCard.qml — ToolBar con acciones agrupadas y log
+// =============================================================================
+// Demuestra una barra de herramientas mas completa con grupos de acciones
+// separados por ToolSeparator, y un ComboBox integrado para zoom.
+// Todas las acciones se registran en un log visible debajo de la barra.
+//
+// Conceptos clave:
+//   - ToolSeparator: linea vertical que divide grupos logicos de herramientas.
+//     Ayuda al usuario a encontrar herramientas por categoria visual.
+//   - ComboBox dentro de ToolBar: demuestra que una ToolBar puede contener
+//     cualquier control, no solo ToolButtons. Comun en apps reales (seleccion
+//     de fuente, zoom, etc.).
+//   - Funcion log(): JavaScript en QML para logica de presentacion.
+//     Prepend (msg + "\n" + logText) hace que las nuevas acciones aparezcan
+//     arriba. El truncado a 200 caracteres evita crecimiento infinito.
+//   - Operador || en binding: "logText || placeholder" muestra texto por
+//     defecto cuando logText esta vacio (string vacio es falsy en JS).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,6 +30,9 @@ Rectangle {
 
     property string logText: ""
 
+    // -- Funcion helper para agregar entradas al log.
+    //    Nuevas entradas van al inicio (prepend). Se trunca para no crecer
+    //    indefinidamente en memoria.
     function log(msg) {
         logText = msg + "\n" + logText
         if (logText.length > 200)
@@ -28,7 +51,9 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // ToolBar with mixed controls
+        // -- ToolBar con controles mixtos: ToolButtons + ToolSeparators + ComboBox.
+        //    Los grupos (New | Cut/Copy/Paste | Undo/Redo | Zoom) siguen la
+        //    convencion de aplicaciones de oficina.
         ToolBar {
             Layout.fillWidth: true
             background: Rectangle {
@@ -57,6 +82,8 @@ Rectangle {
 
                 Item { Layout.fillWidth: true }
 
+                // -- ComboBox integrado en la toolbar para seleccion de zoom.
+                //    onCurrentTextChanged se dispara al cambiar la seleccion.
                 ComboBox {
                     model: ["100%", "75%", "50%", "125%", "150%"]
                     implicitWidth: Style.resize(90)
@@ -65,7 +92,7 @@ Rectangle {
             }
         }
 
-        // Action log
+        // -- Area de log que muestra el historial de acciones ejecutadas
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

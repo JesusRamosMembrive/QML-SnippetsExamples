@@ -1,3 +1,34 @@
+// =============================================================================
+// BasicSlidersCard.qml — Variantes fundamentales del componente Slider
+// =============================================================================
+// Presenta tres configuraciones basicas del Slider de Qt Quick Controls:
+// continuo, escalonado (stepped) y deshabilitado. Cubre las propiedades
+// esenciales que todo desarrollador debe conocer para controles de rango.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Propiedades basicas de Slider:
+//    - from/to: rango de valores (minimo y maximo).
+//    - value: valor actual (bidireccional si se vincula con un binding).
+//    - El valor se muestra con toFixed(N) para controlar los decimales.
+//
+// 2. stepSize y snapMode (slider escalonado):
+//    - stepSize: 10 hace que el slider solo se detenga en multiplos de 10.
+//    - snapMode: Slider.SnapAlways fuerza a que el handle "salte" al paso
+//      mas cercano, en lugar de permitir posiciones intermedias.
+//    - Sin snapMode, el handle se mueve libremente aunque stepSize este
+//      definido (solo afecta al valor reportado).
+//
+// 3. Slider deshabilitado (enabled: false):
+//    - El estilo automaticamente atenua el slider y desactiva la interaccion.
+//    - Util para mostrar un valor de referencia que no se puede modificar.
+//
+// 4. Patron de wrapping en Item:
+//    - Los Sliders estan envueltos en un Item con anchors.fill + margenes.
+//    - Esto evita que el handle del slider se corte en los extremos, ya que
+//      el handle se extiende ligeramente mas alla del track.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +51,8 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Horizontal Slider
+        // Slider continuo: se mueve libremente entre from y to.
+        // toFixed(2) muestra dos decimales para evidenciar la continuidad.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -49,7 +81,8 @@ Rectangle {
             }
         }
 
-        // Stepped Slider
+        // Slider escalonado: stepSize + snapMode restringen los valores
+        // a multiplos de 10, simulando un selector discreto.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -79,7 +112,8 @@ Rectangle {
             }
         }
 
-        // Disabled Slider
+        // Slider deshabilitado: muestra un valor fijo sin interaccion.
+        // El estilo qmlsnippetsstyle lo renderiza con opacidad reducida.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10

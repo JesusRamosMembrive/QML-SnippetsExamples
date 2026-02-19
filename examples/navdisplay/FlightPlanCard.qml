@@ -1,3 +1,14 @@
+// =============================================================================
+// FlightPlanCard.qml — Tabla interactiva de waypoints del plan de vuelo
+// =============================================================================
+// Muestra el plan de vuelo en formato tabular con cabecera fija y lista
+// desplazable. Permite seleccionar un waypoint con clic para resaltarlo
+// en el mapa movil. Demuestra:
+// - ListView con delegate personalizado (tabla con columnas alineadas).
+// - Comunicacion hijo->padre via signal (waypointSelected).
+// - Resaltado condicional: el waypoint seleccionado cambia a cyan,
+//   el hover muestra un fondo diferente, y filas alternas usan zebra striping.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +19,10 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // La tarjeta recibe el plan de vuelo y el indice seleccionado desde
+    // el padre, y emite una signal cuando el usuario hace clic en un waypoint.
+    // Este patron de "datos hacia abajo, eventos hacia arriba" es fundamental
+    // en QML para mantener un flujo de datos predecible.
     property var flightPlan: []
     property int selectedWp: -1
     signal waypointSelected(int index)
@@ -24,7 +39,11 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Header row
+        // ── Cabecera de la tabla ────────────────────────────────
+        // Fila fija con los nombres de columna. Usa RowLayout con
+        // preferredWidth para que las columnas se alineen con los datos
+        // del delegate. En aviacion: WPT=waypoint, BRG=bearing (rumbo),
+        // DIST=distancia, ALT=altitud, ETA=hora estimada de llegada.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(30)
@@ -45,7 +64,10 @@ Rectangle {
             }
         }
 
-        // Waypoint list
+        // ── Lista de waypoints ──────────────────────────────────
+        // Usa model: flightPlan.length (entero) en lugar de un ListModel
+        // porque el plan de vuelo es un array JS. El delegate accede
+        // a los datos via root.flightPlan[index].
         ListView {
             id: wpListView
             Layout.fillWidth: true
@@ -58,6 +80,9 @@ Rectangle {
 
                 width: wpListView.width
                 height: Style.resize(36)
+
+                // Resaltado condicional con tres estados: seleccionado (cyan-oscuro),
+                // hover (azul-oscuro), o zebra striping para mejor legibilidad.
                 color: {
                     if (index === root.selectedWp) return "#1a3a3a";
                     if (wpMa.containsMouse) return "#1a1a2a";
@@ -110,6 +135,9 @@ Rectangle {
                     }
                 }
 
+                // MouseArea con hoverEnabled para mostrar feedback visual
+                // al pasar el raton. El clic emite la signal para que el
+                // padre actualice selectedWp globalmente.
                 MouseArea {
                     id: wpMa
                     anchors.fill: parent

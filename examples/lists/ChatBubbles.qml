@@ -1,3 +1,27 @@
+// =============================================================================
+// ChatBubbles.qml — Interfaz de chat con burbujas y entrada de mensajes
+// =============================================================================
+// Implementa una UI de chat completa con mensajes alineados por emisor:
+// los mensajes propios ("isMe") se alinean a la derecha con color de acento,
+// y los ajenos a la izquierda con un avatar circular.
+//
+// Tecnicas clave:
+//   1. Alineacion condicional: anchors.right se activa solo si isMe=true,
+//      y anchors.left si isMe=false. En QML se usa 'undefined' para
+//      desactivar un anchor (ej: anchors.right: isMe ? parent.right : undefined)
+//   2. Ancho adaptativo: Math.min(maxWidth, implicitWidth + padding) asegura
+//      que las burbujas nunca excedan el 70% del ancho pero se ajusten al
+//      texto cuando este es corto.
+//   3. Lista con entrada: combina ListView (mensajes) con TextField + Button
+//      para enviar nuevos mensajes. chatModel.append() agrega al modelo y
+//      positionViewAtEnd() scrollea automaticamente al ultimo mensaje.
+//   4. Component.onCompleted: positionViewAtEnd() asegura que al cargar,
+//      el chat muestre los mensajes mas recientes (como cualquier app de chat).
+//
+// El avatar usa sender[0] (primera letra del nombre) como inicial,
+// patron comun cuando no hay imagenes de perfil disponibles.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -57,7 +81,9 @@ ColumnLayout {
                 required property string sender
                 required property string time
 
-                // Bubble
+                // Burbuja: se alinea a derecha (isMe) o izquierda (!isMe).
+                // El ancho es el minimo entre 70% del ListView y el ancho
+                // natural del texto + padding, para no desperdiciar espacio.
                 Rectangle {
                     id: chatBubble
                     anchors.right: chatDelegate.isMe ? parent.right : undefined
@@ -99,7 +125,8 @@ ColumnLayout {
                     }
                 }
 
-                // Avatar (other person only)
+                // Avatar: solo visible para mensajes ajenos (!isMe).
+                // Circulo con la inicial del nombre, anclado al pie de la burbuja.
                 Rectangle {
                     visible: !chatDelegate.isMe
                     anchors.left: parent.left
@@ -120,7 +147,10 @@ ColumnLayout {
             }
         }
 
-        // Chat input bar
+        // Barra de entrada: TextField + Button. onAccepted (Enter) y
+        // el click del boton ambos invocan la misma logica de envio.
+        // chatModel.append() agrega el mensaje y positionViewAtEnd()
+        // scrollea al final para mostrar el mensaje nuevo.
         Rectangle {
             anchors.bottom: parent.bottom
             anchors.left: parent.left

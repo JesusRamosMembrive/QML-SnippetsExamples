@@ -1,3 +1,15 @@
+// =============================================================================
+// ModeRangeCard.qml — Panel de control de modo ND y rango del mapa
+// =============================================================================
+// Replica los controles de un panel EFIS (Electronic Flight Instrument System)
+// real. Permite seleccionar el modo del Navigation Display (ROSE, ARC, PLAN,
+// VOR) y el rango en millas nauticas. Demuestra:
+// - Repeater con modelo de array JS para generar botones dinamicamente.
+// - Patron de seleccion exclusiva: comparar modelData/index contra la
+//   property activa para resaltar el boton seleccionado.
+// - currentRange como computed property derivada de rangeValues[rangeIndex].
+// - Panel de estado que lee datos de otros componentes via bindings.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,10 +20,17 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // ndMode controla la presentacion del mapa movil. En aviacion real:
+    // ROSE = brujula completa, ARC = arco frontal, PLAN = norte arriba, VOR = modo VOR.
     property string ndMode: "ROSE"
+
+    // El rango se gestiona con un indice sobre el array de valores predefinidos.
+    // currentRange es una property derivada (computed) que siempre refleja
+    // el valor actual. Este patron evita duplicar estado.
     property int rangeIndex: 2
     property var rangeValues: [10, 20, 40, 80, 160, 320]
     property real currentRange: rangeValues[rangeIndex]
+
     property real heading: 0
     property var flightPlan: []
 
@@ -41,7 +60,10 @@ Rectangle {
                     anchors.margins: Style.resize(15)
                     spacing: Style.resize(15)
 
-                    // ND Mode
+                    // ── Selector de modo ND ─────────────────────────
+                    // Repeater genera un boton por cada modo. El modelo
+                    // es un array de strings, asi que cada delegate recibe
+                    // modelData con el nombre del modo.
                     Label {
                         text: "ND MODE"
                         font.pixelSize: Style.resize(14)
@@ -63,6 +85,8 @@ Rectangle {
 
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(40)
+                                // Seleccion exclusiva: verde cuando activo, gris cuando inactivo.
+                                // El texto invierte colores para mantener contraste.
                                 color: root.ndMode === modelData ? "#00FF00" : "#333333"
                                 radius: Style.resize(4)
                                 border.color: "#00FF00"
@@ -84,7 +108,10 @@ Rectangle {
                         }
                     }
 
-                    // Range
+                    // ── Selector de rango ───────────────────────────
+                    // Similar al selector de modo, pero usa el index del
+                    // Repeater para comparar contra rangeIndex.
+                    // Los valores (10-320 NM) son estandar en ND reales.
                     Label {
                         text: "RANGE"
                         font.pixelSize: Style.resize(14)
@@ -128,7 +155,10 @@ Rectangle {
                         }
                     }
 
-                    // Status info
+                    // ── Panel de estado ─────────────────────────────
+                    // Resumen de solo lectura que muestra los valores actuales.
+                    // GridLayout de 2 columnas (etiqueta: valor) para formato limpio.
+                    // Los datos se leen reactivamente via bindings a las properties.
                     Item { Layout.preferredHeight: Style.resize(10) }
 
                     Label {

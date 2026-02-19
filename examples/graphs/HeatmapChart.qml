@@ -1,3 +1,31 @@
+// =============================================================================
+// HeatmapChart.qml — Mapa de calor interactivo con Canvas 2D
+// =============================================================================
+// Dibuja una cuadricula de 16x10 celdas donde cada celda tiene un color que
+// representa un valor (frio=azul, medio=verde, caliente=rojo). Un Slider
+// controla la "fase" de una funcion matematica que genera los valores,
+// creando un efecto de onda animada interactivamente.
+//
+// Patrones clave:
+//   - Funcion heatColor(val): convierte un valor normalizado (0-1) a un color
+//     RGB usando interpolacion lineal por tramos:
+//       0.0-0.5: azul → verde (B baja, G sube)
+//       0.5-1.0: verde → rojo (G baja, R sube)
+//     Este patron es mas eficiente que crear un gradiente Qt porque se calcula
+//     en JavaScript sin crear objetos QML.
+//   - Formula de onda compuesta: combina sin(c) + cos(r) + sin(c+r) con
+//     desfases dependientes de "phase". Esto genera patrones ondulatorios
+//     bidimensionales que cambian suavemente al mover el slider.
+//   - Barra de escala (color scale bar): se dibuja en el borde derecho
+//     como una tira vertical de 1px de alto por cada nivel de color,
+//     proporcionando al usuario una referencia visual de la escala.
+//   - onAvailableChanged: Canvas necesita que su contexto GL este listo.
+//     Este signal asegura el primer pintado en el momento correcto, evitando
+//     un canvas en blanco si onPaint se llama antes de la inicializacion.
+//   - Slider.onValueChanged: solicita repintado cada vez que cambia la fase.
+//     En Canvas, los cambios de propiedad NO disparan repintado automatico.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -1,3 +1,21 @@
+// =============================================================================
+// CameraCard.qml — Tarjeta de ejemplo: acceso a camara y captura de imagen
+// =============================================================================
+// Demuestra el flujo completo de captura en Qt 6: CaptureSession conecta
+// una Camera con un ImageCapture y un VideoOutput. El usuario puede iniciar
+// la camara, capturar una foto y ver la preview.
+//
+// Patrones clave para el aprendiz:
+// - CaptureSession: componente central que orquesta Camera, ImageCapture y
+//   VideoOutput. En Qt 6 reemplaza al antiguo QCamera + QCameraViewfinder.
+// - MediaDevices: consulta en tiempo real los dispositivos multimedia del
+//   sistema. videoInputs.length indica cuantas camaras hay disponibles.
+// - ImageCapture.onImageCaptured: devuelve una URL de preview en memoria
+//   (no un archivo en disco), ideal para mostrar la foto inmediatamente.
+// - Patron de visibilidad condicional: VideoOutput se muestra solo cuando
+//   la camara esta activa y no hay captura; Image se muestra solo cuando
+//   hay captura, creando una transicion fluida entre ambos estados.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -12,8 +30,16 @@ Rectangle {
     property bool cameraActive: false
     property string lastCapture: ""
 
+    // MediaDevices enumera los dispositivos multimedia del sistema.
+    // Se usa para saber si hay camaras disponibles antes de intentar activarlas.
     MediaDevices { id: mediaDevices }
 
+    // -------------------------------------------------------------------------
+    // CaptureSession: conecta los tres componentes del pipeline de captura.
+    // - Camera: controla el hardware (on/off via `active`).
+    // - ImageCapture: toma fotos y emite onImageCaptured con la preview.
+    // - videoOutput: muestra el feed en vivo de la camara en la UI.
+    // -------------------------------------------------------------------------
     CaptureSession {
         id: captureSession
         camera: Camera {
@@ -48,7 +74,11 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Camera / captured image display
+        // -----------------------------------------------------------------
+        // Area de visualizacion: alterna entre el feed en vivo (VideoOutput)
+        // y la imagen capturada (Image) segun el estado. Un Label central
+        // muestra mensajes informativos cuando no hay camara o esta apagada.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -84,7 +114,11 @@ Rectangle {
             }
         }
 
-        // Controls
+        // -----------------------------------------------------------------
+        // Controles: Start/Stop alterna la camara, Capture toma una foto,
+        // Clear descarta la preview. Los botones se habilitan/deshabilitan
+        // segun el estado actual (hay camara, esta activa, hay captura).
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

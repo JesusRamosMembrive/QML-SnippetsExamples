@@ -1,3 +1,20 @@
+// =============================================================================
+// IconToggles.qml — Toggles tipo tarjeta con icono y color de acento
+// =============================================================================
+// Crea una fila de botones toggle visualmente ricos, cada uno con un icono
+// emoji, una etiqueta y un color de acento unico. El estado on/off cambia
+// el color de fondo, borde e icono con animaciones suaves.
+//
+// Tecnica clave — construir toggles desde cero:
+// En lugar de usar el componente Switch de Qt, se usa Rectangle + MouseArea.
+// Esto da control total sobre el aspecto visual: fondo semitransparente con
+// Qt.rgba(), bordes coloreados, y opacidad del icono segun el estado.
+//
+// El Repeater recibe un array de objetos JS como modelo. Cada objeto define
+// icono, etiqueta y color de acento. Las propiedades 'required property var
+// modelData' y 'required property int index' dan acceso tipado a los datos.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -18,6 +35,11 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Style.resize(15)
 
+        // -----------------------------------------------------------------
+        // El modelo es un array JS inline — alternativa ligera a ListModel
+        // cuando los datos son estaticos y no necesitan manipulacion dinamica.
+        // Cada elemento es un objeto con propiedades accesibles via modelData.
+        // -----------------------------------------------------------------
         Repeater {
             model: [
                 { icon: "\uD83D\uDCF6", label: "Wi-Fi",    accent: "#4FC3F7" },
@@ -27,6 +49,9 @@ ColumnLayout {
                 { icon: "\u2708",        label: "Flight",   accent: "#CE93D8" }
             ]
 
+            // Cada delegate es un Rectangle interactivo. La propiedad 'on'
+            // define el estado local del toggle — no esta bindeada a ningun
+            // componente externo, es estado interno del delegate.
             Rectangle {
                 id: iconToggle
                 required property var modelData

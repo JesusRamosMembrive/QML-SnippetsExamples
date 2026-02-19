@@ -1,3 +1,31 @@
+// =============================================================================
+// GeometricMandala.qml — Mandala geometrica parametrica con Canvas 2D
+// =============================================================================
+// Genera un mandala (patron radial simetrico) controlado por dos parametros:
+//   - Ejes de simetria (N): cuantas veces se repite el patron alrededor
+//     del centro. N=8 crea simetria octogonal (como un copo de nieve).
+//   - Capas: anillos concentricos con decoraciones diferentes segun la capa.
+//
+// ESTRUCTURA DEL MANDALA (de adentro hacia afuera):
+//   1. Punto central (dot).
+//   2. Lineas radiales (spokes) que dividen el circulo en N sectores.
+//   3. Capas concentricas con decoraciones que alternan segun layer % 3:
+//      - 0: circulos rellenos.
+//      - 1: diamantes (rombos).
+//      - 2: anillos vacios (circulos con solo borde).
+//   4. Petalos en capas impares: arcos concentricos con relleno translucido
+//      que crean un efecto de flor.
+//   5. Borde circular exterior.
+//
+// PATRON INTERACTIVO: los Sliders modifican mandalaAxes y mandalaLayers.
+// onValueChanged dispara requestPaint() para redibujar el Canvas.
+// A diferencia de Shape (que se actualiza automaticamente con bindings),
+// Canvas necesita que le pidamos explicitamente que se repinte.
+//
+// PALETA DE COLORES: un array de 8 colores que se rota con el operador
+// modulo (layer % palette.length) para que nunca se repitan colores
+// adyacentes aunque haya muchas capas.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -56,7 +84,7 @@ ColumnLayout {
                 var N = Math.round(mandalaAxes.value)
                 var layers = Math.round(mandalaLayers.value)
 
-                // Spoke lines
+                // Lineas radiales (spokes): dividen el circulo en N sectores iguales.
                 ctx.strokeStyle = "#333"
                 ctx.lineWidth = 0.5
                 for (var s = 0; s < N; s++) {
@@ -67,7 +95,9 @@ ColumnLayout {
                     ctx.stroke()
                 }
 
-                // Layers
+                // Capas concentricas: cada capa tiene un radio proporcional
+                // y decoraciones que varian segun (layer % 3) para dar
+                // variedad visual sin repetir patrones adyacentes.
                 for (var layer = 0; layer < layers; layer++) {
                     var r = (layer + 1) / (layers + 1) * maxR
                     var color = palette[layer % palette.length]
@@ -112,7 +142,9 @@ ColumnLayout {
                         }
                     }
 
-                    // Petal arcs on odd layers
+                    // Petalos en capas impares: dos arcos concentricos (uno hacia
+                    // afuera, otro hacia adentro) crean una forma de hoja/petalo.
+                    // El relleno translucido (hex + "20" = alfa ~12%) permite ver capas debajo.
                     if (layer % 2 === 1) {
                         var bulge = r * 0.12
                         for (var p2 = 0; p2 < N; p2++) {

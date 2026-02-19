@@ -1,3 +1,33 @@
+// =============================================================================
+// SortFilterTableCard.qml — Tabla con ordenamiento y filtrado via C++ Proxy
+// =============================================================================
+// Demuestra el uso de QSortFilterProxyModel para agregar ordenamiento por
+// columna y filtrado por texto a un TableView sin modificar el modelo original.
+//
+// Conexion QML <-> C++:
+//   - EmployeeProxyModel (C++): hereda de QSortFilterProxyModel. Envuelve
+//     al EmployeeModel como sourceModel y expone:
+//     - filterText (Q_PROPERTY): texto de filtrado. Al cambiar, el proxy
+//       re-evalua filterAcceptsRow() y oculta las filas que no coinciden.
+//     - toggleSort(column) (Q_INVOKABLE): alterna entre ascendente y
+//       descendente para la columna dada. Internamente llama a sort().
+//     - sortColumn / currentSortOrder (Q_PROPERTYs): informan a QML cual
+//       columna esta ordenada y en que direccion, para mostrar la flecha.
+//   - El proxyModel se instancia en Main.qml y se pasa como required property.
+//     Esto permite que multiples cards compartan el mismo modelo fuente.
+//
+// Patrones clave:
+//   - TapHandler en header delegate: al tocar una cabecera, llama a
+//     toggleSort(model.index). El indicador de flecha se actualiza via
+//     binding a sortColumn y currentSortOrder.
+//   - Formateo condicional por columna: column === 4 muestra "Yes"/"No"
+//     con color verde/rojo; column === 3 formatea como moneda. Se usa
+//     el numero de columna porque TableView expone "column" en el delegate.
+//   - Modelo compartido: proxyModel envuelve al mismo employeeModel que
+//     usa EditableTableCard. Cambios en una card se reflejan en la otra
+//     gracias al sistema de senales de Qt.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

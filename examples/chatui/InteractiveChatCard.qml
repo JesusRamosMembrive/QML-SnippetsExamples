@@ -1,3 +1,21 @@
+// =============================================================================
+// InteractiveChatCard.qml — Tarjeta de ejemplo: chat interactivo con bot
+// =============================================================================
+// Chat funcional donde el usuario escribe mensajes y un bot simulado responde
+// tras un retardo aleatorio. Incluye cabecera con estado del bot, indicador
+// de escritura animado y campo de entrada con envio por Enter o boton.
+//
+// Patrones clave para el aprendiz:
+// - Timer con intervalo aleatorio (1000 + Math.random() * 1500) para simular
+//   latencia de red y hacer el bot mas creible.
+// - ListModel.insert(0, ...) para agregar mensajes al inicio del modelo,
+//   combinado con BottomToTop para que aparezcan naturalmente abajo.
+// - Separacion de logica en funcion sendMessage(): encapsula la creacion
+//   del mensaje, limpieza del input y activacion del bot en un solo lugar.
+// - onAccepted en TextField para enviar con Enter, ademas del boton.
+// - Indicador de escritura con animacion de desvanecimiento en 3 puntos,
+//   visible solo mientras botTyping es true.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,8 +26,11 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Estado del bot: controla la visibilidad del indicador de escritura
+    // y deshabilita el boton de envio mientras el bot "responde".
     property bool botTyping: false
 
+    // Respuestas predefinidas del bot: se elige una al azar con Math.random().
     readonly property var botResponses: [
         "That's interesting! Tell me more.",
         "I'm just a demo bot, but thanks!",
@@ -21,6 +42,8 @@ Rectangle {
         "Let me think about that..."
     ]
 
+    // Funcion centralizada de envio: valida texto, inserta en el modelo,
+    // limpia el input y activa el temporizador de respuesta del bot.
     function sendMessage(text) {
         if (!text.trim()) return
         var time = new Date().toLocaleTimeString(Qt.locale(), "HH:mm")
@@ -32,6 +55,9 @@ Rectangle {
         botTimer.start()
     }
 
+    // Timer de respuesta del bot: el intervalo aleatorio (1-2.5 seg) simula
+    // un retardo de "pensamiento". Al dispararse, inserta la respuesta y
+    // desactiva el indicador de escritura.
     Timer {
         id: botTimer
         interval: 1000 + Math.random() * 1500
@@ -48,7 +74,10 @@ Rectangle {
         anchors.margins: Style.resize(20)
         spacing: Style.resize(10)
 
-        // Header
+        // -----------------------------------------------------------------
+        // Cabecera del chat: avatar circular, nombre del bot y estado
+        // ("typing..." u "online") con colores dinamicos.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -91,7 +120,12 @@ Rectangle {
             }
         }
 
-        // Chat messages
+        // -----------------------------------------------------------------
+        // Area de mensajes: ListView BottomToTop con ListModel dinamico.
+        // El modelo empieza con un mensaje de bienvenida del bot.
+        // Se usa insert(0, ...) para agregar nuevos mensajes al inicio,
+        // que gracias a BottomToTop aparecen visualmente abajo.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -152,7 +186,8 @@ Rectangle {
                 }
             }
 
-            // Typing indicator
+            // Indicador de escritura del bot: 3 puntos con animacion de
+            // desvanecimiento escalonado. Solo visible cuando botTyping es true.
             Rectangle {
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
@@ -190,7 +225,11 @@ Rectangle {
             }
         }
 
-        // Input area
+        // -----------------------------------------------------------------
+        // Area de entrada: TextField + boton de envio. onAccepted permite
+        // enviar con Enter. El boton se deshabilita si el texto esta vacio
+        // o el bot esta escribiendo, evitando spam de mensajes.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

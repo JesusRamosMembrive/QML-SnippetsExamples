@@ -1,3 +1,34 @@
+// =============================================================================
+// QueryExplorerCard.qml — Editor SQL interactivo con resultados en tabla
+// =============================================================================
+// Permite al usuario escribir consultas SQL arbitrarias y ver los resultados
+// en una tabla dinamica. Incluye consultas predefinidas (presets) y medicion
+// del tiempo de ejecucion.
+//
+// Conexion QML <-> C++:
+//   - SqlQueryModel (C++): modelo de solo lectura basado en QSqlQueryModel.
+//     execQuery(sql, connectionName) ejecuta la consulta y actualiza el modelo.
+//     columnCount(), headerName(col) y getRow(index) son Q_INVOKABLEs que
+//     permiten construir la tabla dinamicamente sin conocer la estructura
+//     de antemano.
+//   - lastError: Q_PROPERTY string que expone el ultimo error SQL. Si esta
+//     vacio, la consulta fue exitosa.
+//
+// Patrones clave:
+//   - ComboBox con textRole/valueRole: separa la etiqueta visible del SQL.
+//     onCurrentIndexChanged copia el SQL al TextArea automaticamente.
+//   - Tabla dinamica con doble Repeater: el header y las filas usan
+//     queryModel.columnCount() como modelo numerico. Cada celda accede a
+//     los datos via getRow(rowIndex)[headerName(colIndex)]. Este patron
+//     permite mostrar resultados de CUALQUIER consulta sin conocer las
+//     columnas de antemano.
+//   - Medicion de tiempo: Date.now() antes y despues de execQuery()
+//     calcula el tiempo de ejecucion en milisegundos. Util para comparar
+//     rendimiento de diferentes consultas.
+//   - TextArea con font monospace: facilita la lectura de consultas SQL
+//     con indentacion. selectByMouse permite copiar/pegar.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -33,7 +64,9 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Preset queries
+        // ── Consultas predefinidas ──
+        // El ComboBox usa textRole/valueRole para separar la etiqueta visible
+        // del SQL real. onCurrentIndexChanged copia el SQL al TextArea.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -149,7 +182,10 @@ Rectangle {
             visible: queryModel.lastError.length > 0
         }
 
-        // Results
+        // ── Tabla de resultados dinamica ──
+        // Header y filas se generan con Repeaters cuyo modelo es
+        // queryModel.columnCount(). Esto permite mostrar resultados de
+        // CUALQUIER consulta sin conocer las columnas de antemano.
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true

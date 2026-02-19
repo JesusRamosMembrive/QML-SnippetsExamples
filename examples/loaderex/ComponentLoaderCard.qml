@@ -1,3 +1,19 @@
+// =============================================================================
+// ComponentLoaderCard.qml — Control de carga/descarga con Loader.active
+// =============================================================================
+// Demuestra la propiedad "active" del Loader, que controla si el componente
+// está instanciado o no. Cuando active = false, el Loader destruye el item
+// y libera toda la memoria asociada. Cuando active = true, lo re-crea.
+//
+// Esto es fundamental para la gestión de memoria en QML:
+// - Loader.active = false → item se destruye, status pasa a Null
+// - Loader.active = true  → item se recrea, status pasa a Ready
+// - Loader.item es null cuando no hay componente cargado
+//
+// La barra de estado inferior muestra en tiempo real las propiedades del
+// Loader (status, active, item) para que el estudiante observe cómo cambian.
+// Los cuatro estados posibles del Loader son: Null, Loading, Ready, Error.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -34,6 +50,11 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            // ---- Loader con control de active ----
+            // La propiedad active está vinculada a root.loaded. Cuando se
+            // desactiva, el Loader destruye completamente el árbol de items
+            // (el Rectangle + sus hijos). Esto es diferente de solo ocultar
+            // con visible: false, que mantiene los objetos en memoria.
             Loader {
                 id: stateLoader
                 anchors.fill: parent
@@ -82,7 +103,12 @@ Rectangle {
                 }
             }
 
-            // Unloaded state
+            // ---- Estado descargado ----
+            // Se muestra cuando el Loader está inactivo. Es un ColumnLayout
+            // separado (no dentro del Loader) porque cuando active = false,
+            // el contenido del Loader no existe. Este es el patrón típico
+            // para mostrar un "placeholder" cuando el contenido real no
+            // está cargado.
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: Style.resize(10)
@@ -109,7 +135,12 @@ Rectangle {
             }
         }
 
-        // Status info
+        // ---- Barra de estado del Loader ----
+        // Muestra las propiedades internas del Loader en tiempo real.
+        // - status: Null (0), Ready (1), Loading (2), Error (3)
+        // - active: si el Loader está activo
+        // - item: si existe el objeto instanciado
+        // Los colores refuerzan el significado: verde = Ready, naranja = Error.
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(36)
@@ -150,6 +181,7 @@ Rectangle {
             }
         }
 
+        // Botón toggle: el texto cambia según el estado actual
         Button {
             text: root.loaded ? "Unload" : "Load"
             Layout.fillWidth: true

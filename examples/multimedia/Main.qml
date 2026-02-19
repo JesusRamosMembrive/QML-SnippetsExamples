@@ -1,3 +1,14 @@
+// =============================================================================
+// Main.qml — Pagina principal del modulo Multimedia
+// =============================================================================
+// Punto de entrada de la pagina "Multimedia". Sigue el patron estandar de
+// navegacion del proyecto con fullSize + animacion de opacidad.
+//
+// Organiza 4 tarjetas en un GridLayout 2x2: reproductor de video,
+// reproductor de audio con visualizacion, control de camara y un
+// reproductor interactivo con URL personalizada. Todas requieren
+// el modulo QtMultimedia de Qt 6.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +19,10 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // -------------------------------------------------------------------------
+    // Patron de navegacion: fullSize controla la visibilidad de la pagina.
+    // opacity + visible evita renderizado innecesario cuando esta oculta.
+    // -------------------------------------------------------------------------
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -24,6 +39,7 @@ Item {
         anchors.fill: parent
         color: Style.bgColor
 
+        // ScrollView con contentWidth: availableWidth fuerza layout vertical.
         ScrollView {
             id: scrollView
             anchors.fill: parent
@@ -43,6 +59,11 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // ---------------------------------------------------------
+                // GridLayout 2x2: cada tarjeta demuestra un aspecto
+                // diferente del modulo QtMultimedia (video, audio, camara,
+                // y controles avanzados de reproduccion).
+                // ---------------------------------------------------------
                 GridLayout {
                     columns: 2
                     rows: 2

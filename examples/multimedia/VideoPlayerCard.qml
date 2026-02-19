@@ -1,3 +1,22 @@
+// =============================================================================
+// VideoPlayerCard.qml — Tarjeta de ejemplo: reproductor de video
+// =============================================================================
+// Reproductor de video completo usando MediaPlayer + VideoOutput de Qt 6.
+// Incluye controles de transporte personalizados (play/pause/stop/retroceder),
+// barra de busqueda (seek) y control de volumen.
+//
+// Patrones clave para el aprendiz:
+// - MediaPlayer es el motor de reproduccion; no tiene UI propia. Se conecta
+//   a AudioOutput (para sonido) y VideoOutput (para imagen) por separado.
+// - Los iconos de los botones usan caracteres Unicode (23EE, 23F8, 25B6, 23F9)
+//   en lugar de imagenes, simplificando el ejemplo.
+// - El Slider de seek usa onMoved (no onValueChanged) para evitar un bucle
+//   de retroalimentacion: onValueChanged se dispara tambien cuando la
+//   posicion cambia por la reproduccion, causando saltos.
+// - mediaStatus vs playbackState: mediaStatus describe el estado del medio
+//   (cargando, error, etc.) mientras playbackState describe la accion
+//   (reproduciendo, pausado, detenido). Se usan ambos para feedback visual.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +28,11 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -------------------------------------------------------------------------
+    // MediaPlayer: nucleo de reproduccion. Se le asigna una URL de video,
+    // un AudioOutput para el sonido (cuyo volumen se vincula al slider)
+    // y un VideoOutput para renderizar el fotograma.
+    // -------------------------------------------------------------------------
     MediaPlayer {
         id: player
         source: "https://www.w3schools.com/html/mov_bbb.mp4"
@@ -37,7 +61,12 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Video display
+        // -----------------------------------------------------------------
+        // Area de video: Rectangle negro como fondo con VideoOutput encima.
+        // clip: true evita que el video se desborde del borde redondeado.
+        // El Label central muestra estados del medio (cargando, error)
+        // usando un switch sobre player.mediaStatus.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -67,7 +96,12 @@ Rectangle {
             }
         }
 
-        // Seek bar
+        // -----------------------------------------------------------------
+        // Barra de busqueda (seek): Slider vinculado a player.position.
+        // IMPORTANTE: se usa onMoved en vez de onValueChanged para que
+        // el usuario pueda arrastrar sin conflicto con la actualizacion
+        // automatica de position durante la reproduccion.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -95,7 +129,12 @@ Rectangle {
             }
         }
 
-        // Transport controls
+        // -----------------------------------------------------------------
+        // Controles de transporte: retroceder al inicio, play/pause, stop.
+        // El icono del boton play/pause cambia dinamicamente segun el
+        // playbackState. Item vacio con fillWidth actua como espaciador
+        // flexible para empujar el control de volumen a la derecha.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -146,6 +185,7 @@ Rectangle {
         }
     }
 
+    // Funcion auxiliar para convertir milisegundos a formato m:ss.
     function formatTime(ms) {
         var s = Math.floor(ms / 1000)
         var m = Math.floor(s / 60)

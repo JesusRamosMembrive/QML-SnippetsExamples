@@ -1,3 +1,28 @@
+// =============================================================================
+// BreathingCircles.qml — Circulos concentricos pulsantes con Canvas
+// =============================================================================
+// Crea un efecto visual de "respiracion" usando anillos concentricos que
+// pulsan con desfase temporal entre si, generando una onda visual desde
+// el centro hacia afuera.
+//
+// MATEMATICA DE LA ANIMACION:
+//   Cada anillo usa sin(t * 1.8 - i * 0.5) donde:
+//   - t * 1.8 controla la velocidad general de la pulsacion
+//   - i * 0.5 crea un DESFASE entre anillos (cada uno pulsa un poco despues
+//     del anterior), generando el efecto de onda propagandose hacia afuera
+//   El resultado se multiplica por 0.15 para mantener la variacion sutil
+//   (solo 15% de expansion/contraccion), sumado a 1.0 como base.
+//
+// COLORES CON Qt.hsla():
+//   En vez de usar colores RGB fijos, se calculan con HSL (Hue, Saturation,
+//   Lightness, Alpha). El hue varia ligeramente por anillo (0.47 + i*0.04)
+//   creando una transicion suave de tonos. La alpha depende de la posicion
+//   del anillo: los exteriores son mas transparentes.
+//
+// El texto "Inhale/Hold/Exhale" al pie se sincroniza con la misma funcion
+// seno que controla la pulsacion, demostrando como reutilizar una senal
+// matematica para multiples propositos visuales.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -65,6 +90,8 @@ ColumnLayout {
                 var rings = 8
                 var maxR = Math.min(cx, cy) - 20
 
+                // Se dibujan de afuera hacia adentro (i decreciente) para que
+                // los anillos interiores se pinten ENCIMA de los exteriores.
                 for (var i = rings - 1; i >= 0; i--) {
                     var baseR = maxR * (i + 1) / rings
                     var pulse = Math.sin(t * 1.8 - i * 0.5) * 0.15 + 1.0
@@ -88,7 +115,9 @@ ColumnLayout {
                     ctx.stroke()
                 }
 
-                // Center orb
+                // Orbe central: un gradiente radial que pulsa con la misma
+                // frecuencia base (sin desfase). El nucleo blanco brillante
+                // da la impresion de una fuente de energia.
                 var orbPulse = Math.sin(t * 1.8) * 0.3 + 1.0
                 var orbR = 12 * orbPulse
                 var orbGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, orbR * 2)
@@ -107,7 +136,10 @@ ColumnLayout {
             }
         }
 
-        // Breathing guide text
+        // Texto guia sincronizado con la pulsacion: la misma funcion seno
+        // que mueve los circulos determina el texto mostrado. Esto demuestra
+        // como una sola variable (time) puede controlar multiples aspectos
+        // visuales de forma coherente.
         Label {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter

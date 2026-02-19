@@ -1,3 +1,30 @@
+// =============================================================================
+// NeonGlow.qml — Texto neon pulsante con efecto Glow de GraphicalEffects
+// =============================================================================
+// Simula letreros de neon pulsantes usando el efecto Glow del modulo
+// Qt5Compat.GraphicalEffects. Tres "carteles" con colores diferentes
+// (rosa, cyan, verde) pulsan con desfase temporal, creando un efecto
+// de secuencia como carteles de neon reales que parpadean alternadamente.
+//
+// EFECTO GLOW:
+//   - 'source': el item al que se aplica el resplandor (Label con texto).
+//   - 'radius': tamano del halo. Se anima con sin() para el efecto pulsante.
+//     Rango: 6 (minimo, casi sin halo) a 18 (maximo, halo extendido).
+//   - 'samples': calidad del desenfoque del halo (25 es suficiente).
+//   - 'color': color del halo, igual al color del texto para efecto neon.
+//
+// PATRON SOURCE INVISIBLE:
+//   El Label fuente tiene 'visible: false' porque Glow lo renderiza por
+//   completo (texto + halo). Si el Label fuera visible, se dibujaria dos
+//   veces (una el Label, otra el Glow), causando un texto mas brillante
+//   de lo esperado. Este patron es comun en todos los GraphicalEffects.
+//
+// DESFASE TEMPORAL: cada cartel usa sin(time + offset) con offsets
+// diferentes (0, 2.1, 4.2 radianes). Esto hace que los picos de brillo
+// no coincidan, creando un efecto de "ola" entre los tres carteles.
+// Math.max(0, sin(...)) recorta la parte negativa para que el radio
+// minimo sea 6 (nunca negativo), creando un "apagado" parcial.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

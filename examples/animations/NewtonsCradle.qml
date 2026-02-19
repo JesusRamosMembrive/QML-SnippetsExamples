@@ -1,3 +1,28 @@
+// =============================================================================
+// NewtonsCradle.qml — Pendulo de Newton con Canvas y fisica simplificada
+// =============================================================================
+// Simula el clasico juguete de escritorio donde bolas colgantes transfieren
+// energia cinetica de un extremo al otro. La simulacion es visual (no fisica
+// real): solo las bolas de los extremos se mueven, alternando segun la fase
+// de una funcion seno.
+//
+// FISICA SIMPLIFICADA:
+//   - Se usa sin(t * 3.5) como oscilador base. Cuando es positivo, la bola
+//     izquierda se eleva; cuando es negativo, la derecha.
+//   - energy (amplitud) decrece con damping (0.9995 por frame), simulando
+//     la perdida gradual de energia por friccion.
+//   - La posicion de cada bola se calcula con trigonometria de pendulo:
+//     x = ancla + longitud * sin(angulo), y = ancla + longitud * cos(angulo)
+//
+// TECNICAS GRAFICAS:
+//   - createRadialGradient() con offset de luz crea el efecto metalico 3D
+//     de las bolas (highlight en la esquina superior izquierda).
+//   - Sombras usando gradientes radiales semi-transparentes debajo de cada bola.
+//   - La barra superior se dibuja con lineCap "round" para extremos suaves.
+//
+// El boton Reset restaura la energia a su valor inicial, permitiendo
+// reiniciar la animacion despues de que se haya detenido por amortiguacion.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,7 +35,7 @@ ColumnLayout {
     property bool active: false
     property bool sectionActive: false
 
-    // ── Section title ────────────────────────────────
+    // ── Titulo + boton Play/Stop ────────────────────
     RowLayout {
         Layout.fillWidth: true
         Label {
@@ -28,7 +53,10 @@ ColumnLayout {
         }
     }
 
-    // ── Content ──────────────────────────────────────
+    // ── Area de simulacion ────────────────────────────
+    // energy actua como amplitud angular (en radianes). damping la reduce
+    // multiplicativamente cada frame (0.9995^frame), creando una caida
+    // exponencial suave que simula perdida de energia por friccion.
     Item {
         id: content
         Layout.fillWidth: true
@@ -36,7 +64,7 @@ ColumnLayout {
 
         property bool running: root.active && root.sectionActive
         property real time: 0
-        property real energy: 0.85  // amplitude in radians
+        property real energy: 0.85  // amplitud en radianes
         property real damping: 0.9995
         property int ballCount: 5
         property real stringLen: 120
@@ -87,8 +115,10 @@ ColumnLayout {
                 ctx.lineCap = "round"
                 ctx.stroke()
 
-                // Pendulum cycle: left swings out, then right swings out
-                var phase = Math.sin(t * 3.5)  // oscillation
+                // Ciclo del pendulo: sin() alterna entre positivo y negativo.
+                // Solo una bola se mueve a la vez, imitando la transferencia
+                // de energia del pendulo de Newton real.
+                var phase = Math.sin(t * 3.5)
                 var leftAngle = phase > 0 ? amp * phase : 0
                 var rightAngle = phase < 0 ? -amp * phase : 0
 

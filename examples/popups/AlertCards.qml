@@ -1,3 +1,36 @@
+// =============================================================================
+// AlertCards.qml — Tarjetas de alerta con dismiss animado
+// =============================================================================
+// Implementa un conjunto de alertas de tipo banner (success, error, warning,
+// info) con animacion de cierre. Cada alerta se puede descartar individualmente
+// y restaurar con un boton "Reset".
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Modelo declarativo con array de objetos JS:
+//    - El Repeater usa un array literal como modelo. Cada objeto define tipo,
+//      icono, titulo, mensaje, color de fondo y color de acento.
+//    - Esto centraliza la configuracion visual de cada variante de alerta.
+//
+// 2. Animacion de dismiss con Behavior:
+//    - "dismissed" es un bool que controla height y opacity simultaneamente.
+//    - Behavior on height y Behavior on opacity animan ambas propiedades
+//      automaticamente cuando "dismissed" cambia, creando un efecto de
+//      colapso + fade-out combinado.
+//    - clip: true evita que el contenido se dibuje fuera del area reducida.
+//
+// 3. Qt.color() para manipulacion de colores:
+//    - Se usa Qt.color(string).r/g/b para extraer componentes RGB de un color
+//      en formato string y combinarlo con Qt.rgba() para ajustar la opacidad.
+//    - Esto permite crear variantes transparentes del color de acento sin
+//      definir colores adicionales.
+//
+// 4. Reset iterando hijos del layout:
+//    - El boton "Reset" recorre parent.children buscando elementos con la
+//      propiedad "dismissed". Esto es un patron pragmatico pero fragil;
+//      en produccion seria mejor usar un modelo ListModel.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,6 +52,8 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Style.resize(8)
 
+        // Repeater con modelo declarativo: cada objeto define la apariencia
+        // y contenido de una alerta. El delegate genera una tarjeta por tipo.
         Repeater {
             model: [
                 { type: "success", icon: "✓", title: "Success",
@@ -35,6 +70,8 @@ ColumnLayout {
                   bg: "#1A2A3A", accent: "#5B8DEF" }
             ]
 
+            // Delegate con animacion de dismiss: height colapsa a 0 y opacity
+            // se desvanece. Los Behaviors aplican la transicion automaticamente.
             delegate: Rectangle {
                 id: alertCard
                 required property var modelData
@@ -62,7 +99,8 @@ ColumnLayout {
                     anchors.margins: Style.resize(14)
                     spacing: Style.resize(12)
 
-                    // Icon circle
+                    // Circulo de icono con fondo semitransparente del color de acento.
+                    // Qt.rgba() con alpha 0.2 crea un tono sutil que complementa el icono.
                     Rectangle {
                         width: Style.resize(34)
                         height: Style.resize(34)

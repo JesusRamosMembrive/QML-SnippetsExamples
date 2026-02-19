@@ -1,3 +1,20 @@
+// =============================================================================
+// BasicStatesCard.qml — Estados basicos con PropertyChanges
+// =============================================================================
+// Demuestra el concepto fundamental de estados en QML: un Item define una
+// lista de State, cada uno con un nombre unico y un conjunto de PropertyChanges
+// que modifican propiedades de uno o mas targets cuando ese estado se activa.
+//
+// Al asignar stateBox.state = "expanded", QML aplica automaticamente todos
+// los PropertyChanges definidos en ese State. Si el estado vuelve a "" (vacio),
+// las propiedades regresan a sus valores base (los definidos fuera de states).
+//
+// La Transition define como se animan los cambios entre estados. Aqui se usa
+// una sola Transition sin 'from'/'to', lo que la aplica a TODAS las
+// transiciones. NumberAnimation anima propiedades numericas, ColorAnimation
+// anima colores.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -48,6 +65,12 @@ Rectangle {
                     color: "#FFFFFF"
                 }
 
+                // ---------------------------------------------------------
+                // Lista de estados: cada State tiene un nombre y uno o mas
+                // PropertyChanges. 'target' indica que objeto se modifica.
+                // Se pueden cambiar multiples propiedades en un solo
+                // PropertyChanges, y afectar multiples targets por estado.
+                // ---------------------------------------------------------
                 states: [
                     State {
                         name: "expanded"
@@ -66,6 +89,9 @@ Rectangle {
                     }
                 ]
 
+                // Transition sin from/to = se aplica a cualquier cambio de estado.
+                // NumberAnimation anima propiedades numericas listadas en 'properties'.
+                // ColorAnimation detecta automaticamente propiedades de tipo color.
                 transitions: Transition {
                     NumberAnimation { properties: "width,height,rotation,radius"; duration: 400; easing.type: Easing.InOutQuad }
                     ColorAnimation { duration: 400 }
@@ -73,7 +99,8 @@ Rectangle {
             }
         }
 
-        // State buttons
+        // Botones para activar cada estado. state = "" vuelve al estado
+        // por defecto (sin nombre), restaurando los valores base originales.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -97,6 +124,7 @@ Rectangle {
             }
         }
 
+        // Muestra el nombre del estado activo como feedback visual
         Label {
             text: "state: \"" + (stateBox.state || "default") + "\""
             font.pixelSize: Style.resize(12)

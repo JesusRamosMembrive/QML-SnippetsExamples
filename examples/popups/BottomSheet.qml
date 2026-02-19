@@ -1,3 +1,35 @@
+// =============================================================================
+// BottomSheet.qml — Panel deslizante inferior tipo Material Design
+// =============================================================================
+// Implementa un "bottom sheet" — un panel que se desliza desde la parte
+// inferior, patron comun en apps moviles para menus de compartir, seleccion
+// de opciones o configuracion rapida.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Animacion de deslizamiento con anchors + Behavior:
+//    - El sheet se posiciona con "y" relativo al parent. Cuando esta cerrado,
+//      y = parent.height (fuera de vista por abajo). Cuando se abre,
+//      y = parent.height - height (visible en la parte inferior).
+//    - Behavior on y con Easing.OutCubic da una desaceleracion suave.
+//
+// 2. Overlay de oscurecimiento (dim overlay):
+//    - Un Rectangle semitransparente (rgba 0,0,0,0.4) cubre el fondo.
+//    - Su opacity se anima con el estado open/close.
+//    - visible: opacity > 0 evita capturar eventos cuando es invisible.
+//    - Un MouseArea en el overlay permite cerrar al hacer clic fuera del sheet.
+//
+// 3. Drag handle visual:
+//    - La barra horizontal gris en la parte superior del sheet es una convencion
+//      visual que indica al usuario que el panel es arrastrable (aunque aqui
+//      la interaccion es solo por clic, no por drag real).
+//
+// 4. Repeater con modelo de opciones:
+//    - Las opciones de compartir se definen como array de objetos con nombre,
+//      icono y color. Cada una se renderiza como boton circular con label.
+//    - scale + Behavior on scale crea un efecto de hover sutil al pasar el mouse.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -29,7 +61,8 @@ ColumnLayout {
             radius: Style.resize(8)
         }
 
-        // Background content
+        // Contenido de fondo: visible cuando el sheet esta cerrado.
+        // Contiene el boton que abre el bottom sheet.
         ColumnLayout {
             anchors.centerIn: parent
             spacing: Style.resize(15)
@@ -48,7 +81,8 @@ ColumnLayout {
             }
         }
 
-        // Dim overlay
+        // Overlay de oscurecimiento: capa semitransparente que indica
+        // que hay contenido modal activo. El clic en el overlay cierra el sheet.
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(0, 0, 0, 0.4)
@@ -63,7 +97,9 @@ ColumnLayout {
             }
         }
 
-        // Sheet
+        // Sheet deslizante: se posiciona fuera de la vista (y = parent.height)
+        // cuando esta cerrado. Al abrirse, y se anima hasta quedar visible.
+        // radius superior da la apariencia de panel redondeado tipo Material.
         Rectangle {
             id: bottomSheet
             anchors.left: parent.left
@@ -85,7 +121,7 @@ ColumnLayout {
                 anchors.margins: Style.resize(16)
                 spacing: Style.resize(12)
 
-                // Drag handle
+                // Drag handle visual: convencion de UI movil que indica arrastre.
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     width: Style.resize(40)
@@ -101,7 +137,8 @@ ColumnLayout {
                     color: Style.fontPrimaryColor
                 }
 
-                // Share options
+                // Opciones de compartir: Repeater genera un boton circular por cada
+                // opcion. El modelo define nombre, icono Unicode y color de fondo.
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Style.resize(15)

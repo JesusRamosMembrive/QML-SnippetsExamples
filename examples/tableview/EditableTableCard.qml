@@ -1,3 +1,37 @@
+// =============================================================================
+// EditableTableCard.qml — Tabla editable con DelegateChooser por columna
+// =============================================================================
+// Demuestra como hacer un TableView con celdas editables en Qt 6 usando
+// DelegateChooser para asignar un delegate diferente segun la columna.
+//
+// Conexion QML <-> C++:
+//   - EmployeeModel (C++): hereda de QAbstractTableModel. Para soportar
+//     edicion, implementa:
+//     - setData(index, value, role): modifica el dato y emite dataChanged().
+//     - flags(): retorna Qt::ItemIsEditable para las columnas editables.
+//   - addEmployee() / removeEmployee(): Q_INVOKABLEs que llaman a
+//     beginInsertRows()/endInsertRows() y beginRemoveRows()/endRemoveRows()
+//     respectivamente, para que TableView se entere de los cambios.
+//
+// Patrones clave:
+//   - DelegateChooser (Qt.labs.qmlmodels): selecciona un delegate segun
+//     la columna. Cada DelegateChoice especifica column: N y un delegate
+//     personalizado. Esto permite:
+//       Col 0 (ID): solo lectura
+//       Col 1-2 (Name, Dept): TextField editable
+//       Col 3 (Salary): TextField con DoubleValidator
+//       Col 4 (Active): CheckBox toggle
+//   - TableView.editDelegate: delegate especial que aparece solo cuando
+//     la celda entra en modo edicion. Se activa con doble-click
+//     (editTriggers: DoubleTapped | EditKeyPressed).
+//   - TableView.commit(): metodo que se llama en onAccepted del TextField.
+//     Esto guarda el valor editado y cierra el modo edicion.
+//   - model.display = value: asignacion que internamente llama a setData()
+//     del modelo C++, completando el ciclo QML -> C++ -> señal -> QML.
+//   - Modelo compartido: el mismo employeeModel se usa en SortFilterTableCard.
+//     Editar una celda aqui actualiza la otra card automaticamente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

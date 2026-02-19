@@ -1,3 +1,30 @@
+// =============================================================================
+// InteractiveBridgeCard.qml — Los tres mecanismos C++ <-> QML combinados
+// =============================================================================
+// Tarjeta resumen que usa PropertyBridge, MethodBridge y SignalBridge
+// simultaneamente, demostrando como los tres mecanismos de comunicacion
+// C++ <-> QML trabajan juntos en una aplicacion real.
+//
+// Integracion C++ <-> QML:
+//   - PropertyBridge (props): Q_PROPERTY para datos reactivos.
+//     userName, counter y summary se leen/escriben directamente.
+//   - MethodBridge (methods): Q_INVOKABLE para logica de negocio.
+//     transformText() y fibonacci() se llaman desde bindings y handlers.
+//   - SignalBridge (sigs): signals para eventos asincronos.
+//     onDataReceived/onTaskCompleted/onErrorOccurred actualizan lastSignal.
+//
+// Arquitectura de la tarjeta:
+//   Tres secciones visuales (rectangulos con color de acento diferente),
+//   cada una demostrando un mecanismo. La seccion de signals incluye un
+//   ProgressBar vinculado a sigs.progress (Q_PROPERTY de solo lectura)
+//   y un area de texto que muestra la ultima signal recibida.
+//
+// Aprendizaje: en una aplicacion real, estos tres QObjects serian
+// probablemente uno solo (o un modelo mas complejo), pero aqui estan
+// separados para que cada tarjeta del ejemplo pueda ensenar un mecanismo
+// de forma aislada.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,12 +36,16 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Estado local: almacena la ultima signal recibida para mostrarla.
     property string lastSignal: ""
 
+    // -- Tres instancias de QObjects C++ trabajando juntas.
+    //    Cada una aporta un mecanismo diferente de comunicacion.
     PropertyBridge { id: props }
     MethodBridge { id: methods }
     SignalBridge {
         id: sigs
+        // -- Handlers de signals: actualizan lastSignal con cada evento.
         onDataReceived: function(data) { root.lastSignal = data }
         onTaskCompleted: function(result) { root.lastSignal = result }
         onErrorOccurred: function(error) { root.lastSignal = error }
@@ -39,7 +70,10 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Section: Q_PROPERTY
+        // -- Seccion Q_PROPERTY: binding bidireccional con TextField
+        //    y botones que llaman Q_INVOKABLE increment()/decrement().
+        //    props.summary es una propiedad computada que se actualiza
+        //    automaticamente cuando counter o userName cambian.
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: propCol.implicitHeight + Style.resize(16)
@@ -106,7 +140,11 @@ Rectangle {
             }
         }
 
-        // Section: Q_INVOKABLE + Q_ENUM
+        // -- Seccion Q_INVOKABLE + Q_ENUM: transformacion de texto y
+        //    calculo de Fibonacci. Los botones "UC", "lc", "Tc", "Rev"
+        //    corresponden a los valores del enum TextTransform (0-3).
+        //    El Repeater genera botones para cada valor del enum, y el
+        //    index del Repeater coincide con el valor del enum.
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: methCol.implicitHeight + Style.resize(16)
@@ -139,6 +177,8 @@ Rectangle {
                         font.pixelSize: Style.resize(11)
                     }
 
+                    // -- Repeater genera un boton por cada transformacion.
+                    //    index del Repeater = valor del Q_ENUM TextTransform.
                     Repeater {
                         model: ["UC", "lc", "Tc", "Rev"]
 
@@ -163,6 +203,9 @@ Rectangle {
                     elide: Text.ElideRight
                 }
 
+                // -- Fibonacci: binding declarativo que llama a C++ cada
+                //    vez que fibInput.value cambia. QML re-evalua el
+                //    binding automaticamente.
                 RowLayout {
                     spacing: Style.resize(8)
 
@@ -182,7 +225,11 @@ Rectangle {
             }
         }
 
-        // Section: Signals
+        // -- Seccion SIGNALS: tarea asincrona con barra de progreso.
+        //    Al presionar "Run", QML llama startTask() (Q_INVOKABLE) que
+        //    inicia un QTimer en C++. El Timer emite signals periodicamente
+        //    (dataReceived, taskCompleted, errorOccurred) que llegan a los
+        //    handlers de sigs. El ultimo mensaje se muestra en el area de texto.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -223,6 +270,8 @@ Rectangle {
                     }
                 }
 
+                // -- Area de texto que muestra la ultima signal recibida.
+                //    lastSignal se actualiza en los handlers de signals.
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true

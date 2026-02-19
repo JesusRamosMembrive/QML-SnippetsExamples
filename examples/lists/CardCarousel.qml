@@ -1,3 +1,27 @@
+// =============================================================================
+// CardCarousel.qml — Carrusel horizontal con tarjetas y efecto de profundidad
+// =============================================================================
+// Implementa un carrusel de tarjetas tipo "cover flow" usando ListView
+// horizontal con snap y escala/opacidad diferencial para el item central.
+//
+// Tecnicas clave:
+//   1. orientation: ListView.Horizontal — convierte el ListView vertical
+//      por defecto en uno que se desplaza lateralmente.
+//   2. snapMode + highlightRangeMode: SnapOneItem asegura que el scroll
+//      siempre se detenga en un item completo. StrictlyEnforceRange junto
+//      con preferredHighlightBegin/End centra el item actual en la vista.
+//   3. Efecto de profundidad: el delegate compara su index con currentIndex.
+//      El item central tiene scale: 1.0 y opacity: 1.0, mientras los
+//      laterales usan scale: 0.88 y opacity: 0.6, simulando distancia.
+//   4. Gradient: las tarjetas usan Rectangle con Gradient de dos colores,
+//      creando fondos visualmente ricos sin imagenes.
+//   5. Page dots: un Row de Repeater muestra indicadores de pagina.
+//      El dot activo se alarga (width: 20 vs 8) con animacion.
+//
+// cacheBuffer: 1000 pre-crea delegates fuera de la vista visible para
+// que las tarjetas laterales ya existan al hacer scroll (evita flickeo).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,6 +43,8 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.resize(220)
 
+        // ListView horizontal con snap: se comporta como un carrusel.
+        // preferredHighlightBegin/End centra el item activo en la vista.
         ListView {
             id: carouselList
             anchors.fill: parent
@@ -115,7 +141,9 @@ ColumnLayout {
             }
         }
 
-        // Page dots
+        // Indicadores de pagina (dots): el activo se alarga a 20px
+        // de ancho creando la clasica forma de "pastilla", mientras
+        // los inactivos son circulos de 8px. Ambos animados.
         Row {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter

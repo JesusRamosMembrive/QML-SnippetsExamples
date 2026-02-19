@@ -1,3 +1,26 @@
+// =============================================================================
+// Timeline.qml — Lista vertical con apariencia de linea de tiempo
+// =============================================================================
+// Implementa una linea de tiempo vertical (timeline) con puntos, linea
+// conectora y contenido a la derecha. Cada item muestra una fecha a la
+// izquierda, un indicador circular en el centro, y titulo + descripcion
+// a la derecha.
+//
+// Tecnicas clave:
+//   1. Linea conectora continua: un Rectangle vertical de 2px de alto
+//      se extiende de arriba a abajo del delegate (anchors.top/bottom).
+//      Al tener spacing: 0 en el ListView, las lineas se conectan
+//      visualmente entre delegates consecutivos.
+//   2. Estado completado vs pendiente: el rol 'done' controla si el
+//      punto esta relleno (color solido) o vacio (solo borde), y si
+//      el texto usa colores activos o atenuados (Style.inactiveColor).
+//   3. Punto interno: un circulo blanco mas pequenyo dentro del punto
+//      coloreado crea el clasico indicador de "completado".
+//   4. Layout hibrido: en vez de usar RowLayout, se usan anchors
+//      manuales (anchors.left: timelineDot.right) para posicionar
+//      los elementos respecto al punto central, dando mas control.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -22,6 +45,8 @@ ColumnLayout {
         radius: Style.resize(8)
         clip: true
 
+        // spacing: 0 es critico para que las lineas verticales de cada
+        // delegate se conecten sin huecos entre items.
         ListView {
             id: timelineList
             anchors.fill: parent
@@ -51,7 +76,9 @@ ColumnLayout {
                 required property string clr
                 required property bool done
 
-                // Vertical line
+                // Linea vertical conectora: se extiende por toda la altura
+                // del delegate. Como spacing=0 en el ListView, las lineas
+                // de delegates adyacentes se tocan, creando una linea continua.
                 Rectangle {
                     id: timelineLine
                     anchors.horizontalCenter: timelineDot.horizontalCenter
@@ -61,7 +88,8 @@ ColumnLayout {
                     color: Qt.rgba(1, 1, 1, 0.1)
                 }
 
-                // Dot
+                // Punto indicador: relleno si done=true, solo borde si pendiente.
+                // El circulo blanco interno solo es visible en items completados.
                 Rectangle {
                     id: timelineDot
                     x: Style.resize(40)

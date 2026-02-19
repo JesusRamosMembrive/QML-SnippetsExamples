@@ -1,3 +1,24 @@
+// =============================================================================
+// DnaDoubleHelix.qml — Doble helice de ADN animada con Canvas 2D
+// =============================================================================
+// Visualiza la estructura de doble helice del ADN con dos cadenas
+// sinusoidales opuestas (sin y -sin) conectadas por pares de bases.
+//
+// CONCEPTOS DEMOSTRADOS:
+//   - Proyeccion 2D de una estructura 3D: la doble helice es un objeto 3D,
+//     pero aqui se proyecta a 2D usando dos ondas sinusoidales desfasadas
+//     180 grados. El efecto de "giro" se logra con la animacion de fase.
+//   - Orden de dibujo (z-order manual): los pares de bases se dibujan
+//     PRIMERO (detras) y las cadenas principales DESPUES (delante).
+//     En Canvas no hay z-index — el ultimo en pintarse queda arriba.
+//   - Pares de bases coloreados: 4 colores rotan ciclicamente simulando
+//     los 4 nucleotidos (A, T, C, G) con puntos centrales representando
+//     los puentes de hidrogeno.
+//
+// DETALLE CIENTIFICO: las etiquetas 5' y 3' indican la polaridad de las
+// cadenas de ADN. Las dos cadenas corren en direcciones opuestas
+// (antiparalelas), un detalle real de la biologia molecular.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -61,7 +82,8 @@ ColumnLayout {
                 var freq = 0.035
                 var pairSpacing = 22
 
-                // Draw base pairs first (behind strands)
+                // Pares de bases: lineas verticales entre las dos cadenas.
+                // Se dibujan primero para que las cadenas queden por encima.
                 for (var px = 0; px < w; px += pairSpacing) {
                     var py1 = cy + amp * Math.sin(freq * px + phase)
                     var py2 = cy - amp * Math.sin(freq * px + phase)
@@ -84,7 +106,8 @@ ColumnLayout {
                     ctx.fill()
                 }
 
-                // Strand 1
+                // Cadena 1 (teal): onda sinusoidal positiva.
+                // Se dibuja pixel a pixel (paso de 2) para una curva suave.
                 ctx.beginPath()
                 for (var x1 = 0; x1 < w; x1 += 2) {
                     var y1 = cy + amp * Math.sin(freq * x1 + phase)
@@ -95,7 +118,7 @@ ColumnLayout {
                 ctx.lineWidth = 3
                 ctx.stroke()
 
-                // Strand 2
+                // Cadena 2 (naranja): onda sinusoidal negativa (opuesta a la 1).
                 ctx.beginPath()
                 for (var x2 = 0; x2 < w; x2 += 2) {
                     var y2 = cy - amp * Math.sin(freq * x2 + phase)

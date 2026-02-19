@@ -1,3 +1,24 @@
+// =============================================================================
+// InteractiveDialogCard.qml — Log de acciones con multiples dialogos
+// =============================================================================
+// Combina los cuatro tipos de dialogo (Open, Save, Folder, OpenFiles) en una
+// sola tarjeta con un registro de acciones (action log) que muestra el
+// historial de operaciones realizadas.
+//
+// Cada dialogo tiene su propio FileDialog/FolderDialog declarado como
+// componente no-visual. Al aceptar cualquier dialogo, se llama a addLog()
+// que registra la accion con timestamp, tipo y ruta.
+//
+// Patrones aprendidos:
+// - Funcion JS como helper: addLog() encapsula logica de manipulacion
+//   de arrays que seria repetitiva en cada onAccepted.
+// - Badges de color por tipo: cada accion tiene un color asociado
+//   (Open=teal, Save=amber, Folder=azul, Multi=violeta), usando un
+//   Rectangle con opacity:0.2 como fondo semitransparente y Label
+//   con color solido encima para crear un "chip" visual.
+// - unshift() + pop() mantiene un maximo de 8 entradas (FIFO invertido).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -11,6 +32,11 @@ Rectangle {
 
     property var actionLog: []
 
+    // -------------------------------------------------------------------------
+    // Helper JS: centraliza la logica de agregar entradas al log.
+    // Reasignar root.actionLog (en vez de solo mutar el array) es necesario
+    // para que QML detecte el cambio y actualice los bindings del Repeater.
+    // -------------------------------------------------------------------------
     function addLog(action, path) {
         var log = root.actionLog
         var entry = {
@@ -23,6 +49,8 @@ Rectangle {
         root.actionLog = log
     }
 
+    // Cuatro dialogos declarados como componentes no-visuales.
+    // Cada uno registra su resultado en el log al ser aceptado.
     FileDialog {
         id: openDlg
         title: "Open"
@@ -44,6 +72,8 @@ Rectangle {
         onAccepted: root.addLog("Folder", selectedFolder)
     }
 
+    // OpenFiles: seleccion multiple. El bucle for registra cada archivo
+    // como una entrada separada en el log.
     FileDialog {
         id: multiDlg
         title: "Open Multiple"
@@ -67,7 +97,7 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Action buttons
+        // Grid 2x2 de botones de accion, cada uno abre un dialogo diferente
         GridLayout {
             Layout.fillWidth: true
             columns: 2
@@ -96,7 +126,10 @@ Rectangle {
             }
         }
 
-        // Action log
+        // -----------------------------------------------------------------
+        // Log de acciones: lista scrolleable con timestamp, badge de tipo
+        // y ruta del archivo/carpeta. El boton "Clear" vacia el log.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -152,6 +185,7 @@ Rectangle {
                                     anchors.margins: Style.resize(4)
                                     spacing: Style.resize(6)
 
+                                    // Timestamp de la accion
                                     Label {
                                         text: modelData.time
                                         font.pixelSize: Style.resize(10)
@@ -159,6 +193,10 @@ Rectangle {
                                         Layout.preferredWidth: Style.resize(55)
                                     }
 
+                                    // Badge de tipo: Rectangle con opacity 0.2
+                                    // crea un fondo semitransparente del color
+                                    // correspondiente, y el Label encima muestra
+                                    // el texto con el color solido.
                                     Rectangle {
                                         width: Style.resize(50)
                                         height: Style.resize(18)

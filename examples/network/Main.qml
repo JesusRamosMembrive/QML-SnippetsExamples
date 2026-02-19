@@ -1,3 +1,22 @@
+// =============================================================================
+// Main.qml — Pagina principal del modulo de ejemplos de Network
+// =============================================================================
+// Punto de entrada de la seccion "Network" del proyecto. Organiza cuatro
+// tarjetas en un GridLayout 2x2 que cubren diferentes aspectos de las
+// peticiones HTTP desde QML:
+//
+//   - XHRCard: peticion GET basica con XMLHttpRequest
+//   - RestApiCard: consumo de multiples endpoints REST
+//   - JsonParserCard: parsing y formateo de JSON
+//   - InteractiveNetworkCard: constructor de peticiones (metodo, URL, body)
+//
+// PATRON DE PAGINA:
+// Sigue la misma estructura que todas las paginas del dashboard:
+//   1. fullSize controla la visibilidad con animacion de opacidad
+//   2. ScrollView envuelve el contenido para scroll vertical
+//   3. GridLayout distribuye las tarjetas en cuadricula
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +27,8 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // --- Patron de visibilidad animada ---
+    // fullSize es controlada por Dashboard.qml segun el menu lateral.
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -43,6 +64,9 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // Grid 2x2 con las cuatro tarjetas de ejemplo.
+                // Cada tarjeta es un componente QML independiente que
+                // demuestra un patron diferente de comunicacion HTTP.
                 GridLayout {
                     columns: 2
                     rows: 2

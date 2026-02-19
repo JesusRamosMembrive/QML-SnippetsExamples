@@ -1,3 +1,34 @@
+// =============================================================================
+// ToastNotifications.qml — Sistema de notificaciones toast con auto-dismiss
+// =============================================================================
+// Implementa un patron de notificaciones temporales ("toasts") similar al de
+// Android o apps web modernas. Las notificaciones aparecen apiladas, se
+// auto-eliminan tras 4 segundos, y tienen una barra de progreso visual que
+// muestra el tiempo restante.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Modelo de datos reactivo con arrays JS:
+//    - "toasts" es un property var (array JS) que actua como modelo del Repeater.
+//    - QML NO detecta cambios internos en arrays (push/pop). Para notificar
+//      cambios, se reasigna el array completo con slice() + push/shift.
+//    - Se limita a 5 toasts maximo con shift() (elimina el mas antiguo).
+//
+// 2. Timer para countdown de vida:
+//    - Un Timer global decrementa "life" en cada toast cada 100ms.
+//    - Cuando life llega a 0, el toast se filtra del array.
+//    - Este patron es mas eficiente que un Timer por toast, ya que un solo
+//      Timer maneja todas las notificaciones.
+//
+// 3. Opacidad vinculada a vida restante:
+//    - opacity: Math.min(1, life * 2) crea un fade-out suave en el ultimo
+//      medio segundo de vida (life < 0.5 -> opacity < 1).
+//
+// 4. Tipos semanticos con diccionario de colores:
+//    - Cada tipo (success, error, warning, info) tiene colores de fondo y
+//      borde predefinidos, siguiendo convenciones de diseno estandar.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -23,6 +54,9 @@ ColumnLayout {
         property var toasts: []
         property int nextId: 0
 
+        // Crea un nuevo toast con tipo y mensaje. El diccionario "colors"
+        // asocia cada tipo semantico con su esquema visual (fondo, borde, icono).
+        // slice() + push + reasignacion garantiza que QML detecte el cambio.
         function addToast(type, message) {
             var colors = {
                 success: { bg: "#1A3A2A", border: "#34C759", icon: "✓" },
@@ -38,6 +72,9 @@ ColumnLayout {
             toastSection.toasts = t
         }
 
+        // Timer global de countdown: decrementa la vida de todos los toasts
+        // cada 100ms. Solo corre cuando hay toasts activos (running vinculado).
+        // Los toasts con life <= 0 se filtran automaticamente.
         Timer {
             running: toastSection.toasts.length > 0
             interval: 100
@@ -59,7 +96,8 @@ ColumnLayout {
             radius: Style.resize(8)
         }
 
-        // Trigger buttons
+        // Botones de disparo: cada uno invoca addToast() con un tipo distinto.
+        // Posicionados en la parte inferior del area de demostracion.
         Row {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
@@ -93,7 +131,9 @@ ColumnLayout {
             }
         }
 
-        // Toast stack
+        // Pila de toasts: Column apila las notificaciones de arriba a abajo.
+        // El Repeater genera un delegate por cada elemento del array "toasts".
+        // Cada delegate es un Rectangle con icono, mensaje y barra de progreso.
         Column {
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
@@ -108,6 +148,8 @@ ColumnLayout {
                     id: toastItem
                     required property int index
 
+                    // Acceso seguro al objeto toast: el || {} evita errores si el
+                    // indice queda fuera de rango durante la animacion de salida.
                     readonly property var toast: toastSection.toasts[toastItem.index] || {}
                     readonly property real life: toast.life || 0
 

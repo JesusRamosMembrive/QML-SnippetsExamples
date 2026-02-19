@@ -1,3 +1,32 @@
+// =============================================================================
+// MatrixRain.qml — Efecto "lluvia de Matrix" con caracteres Katakana
+// =============================================================================
+// Recrea el iconico efecto visual de la pelicula Matrix: columnas de caracteres
+// japoneses (Katakana) cayendo con un brillo verde fosforescente.
+//
+// TECNICA DE FADE CON CANVAS (sin clearRect):
+//   En vez de limpiar el canvas completamente cada frame, se pinta un
+//   rectangulo semi-transparente oscuro encima (alpha 0.15). Esto hace que
+//   los caracteres anteriores se "desvanezcan" gradualmente, creando el
+//   efecto de persistencia/trail sin necesidad de almacenar historial.
+//   Este truco es clasico en demos graficas y visualizaciones.
+//
+// ESTRUCTURA DE COLUMNAS:
+//   Cada columna tiene una posicion Y (cabeza), velocidad de caida,
+//   y un array de caracteres Katakana pre-generados. Unicode 0x30A0-0x30FF
+//   cubre el rango de Katakana. Algunos caracteres se cambian aleatoriamente
+//   cada frame para crear el efecto de "parpadeo" del original.
+//
+// COLORES POR DISTANCIA A LA CABEZA:
+//   - Cabeza (dist 0): blanco brillante #FFFFFF
+//   - Cerca (dist < 3): verde claro intenso
+//   - Lejos (dist >= 3): verde oscuro con opacidad decreciente
+//   Esto simula el efecto de fosforescencia del CRT original.
+//
+// La inicializacion lazy (initialized flag) evita recrear las columnas
+// en cada tick del Timer, solo se inicializan cuando cambia el tamanio
+// del canvas o en el primer frame.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -94,7 +123,9 @@ ColumnLayout {
 
             onPaint: {
                 var ctx = getContext("2d")
-                // Fade effect
+                // Efecto de desvanecimiento: en vez de clearRect(), se pinta
+                // un rectangulo semi-transparente oscuro. Los dibujos anteriores
+                // se oscurecen gradualmente creando el trail caracteristico.
                 ctx.fillStyle = Qt.rgba(0.04, 0.04, 0.04, 0.15)
                 ctx.fillRect(0, 0, width, height)
 

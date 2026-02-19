@@ -1,3 +1,17 @@
+// =============================================================================
+// Main.qml — Pagina principal del modulo Date
+// =============================================================================
+// Pagina de ejemplo que combina dos componentes de seleccion de fecha:
+// un TumblerDatePicker (ruedas giratorias) y un CalendarCard (cuadricula
+// mensual con MonthGrid). Ambos estan sincronizados bidireccionalmente:
+// cambiar la fecha en uno actualiza el otro automaticamente.
+//
+// Este archivo demuestra un patron importante: la comunicacion entre
+// componentes hermanos mediante propiedades y senales. El TumblerDatePicker
+// expone la fecha como propiedades readonly, y el CalendarCard emite
+// senales (previousMonth, nextMonth, dayClicked, todayClicked) que el
+// padre (este Main.qml) conecta a funciones del picker.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +22,7 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // Patron de navegacion estandar del proyecto.
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -41,6 +56,16 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // ---------------------------------------------------------
+                // Layout horizontal: TumblerDatePicker a la izquierda
+                // con ancho fijo, CalendarCard a la derecha expandiendose.
+                // La sincronizacion funciona asi:
+                // - Picker -> Calendar: las propiedades monthNames,
+                //   selectedYear/Month/Day se pasan como bindings.
+                // - Calendar -> Picker: las senales del calendar se
+                //   conectan a funciones setMonth/setYear/setDay/goToToday
+                //   del picker, creando un flujo bidireccional.
+                // ---------------------------------------------------------
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Style.resize(20)

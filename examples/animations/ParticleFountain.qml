@@ -1,3 +1,30 @@
+// =============================================================================
+// ParticleFountain.qml — Sistema de particulas manual con Canvas + Timer
+// =============================================================================
+// Implementa un sistema de particulas desde cero usando JavaScript puro,
+// sin el modulo QtQuick.Particles (que es mas complejo y menos didactico).
+//
+// PATRON Timer + Canvas para simulaciones:
+//   1. Un Timer se ejecuta cada ~25ms (40 FPS aproximados).
+//   2. En cada tick: spawner crea particulas nuevas, se aplican fuerzas
+//      (gravedad, viento), se actualizan posiciones, y se eliminan las muertas.
+//   3. Se llama requestPaint() para redibujar el Canvas con el nuevo estado.
+//
+// CONCEPTOS DE FISICA SIMULADA:
+//   - Cada particula tiene posicion (x,y), velocidad (vx,vy) y vida (life).
+//   - La gravedad se suma a vy cada frame (aceleracion constante hacia abajo).
+//   - El viento se suma a vx (desplazamiento horizontal).
+//   - life decrece linealmente; cuando llega a 0, la particula se elimina.
+//
+// El alpha de cada particula usa fade-in/fade-out: aparece gradualmente,
+// se mantiene opaca, y desaparece suavemente al morir. Esto crea un efecto
+// visual mas pulido que simplemente desaparecer de golpe.
+//
+// PATRON active/sectionActive:
+//   - active: viene del padre (Main.qml), true cuando la pagina es visible.
+//   - sectionActive: control individual del usuario (boton Play/Stop).
+//   - El Timer solo corre cuando AMBOS son true, evitando CPU desperdiciada.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,7 +37,7 @@ ColumnLayout {
     property bool active: false
     property bool sectionActive: false
 
-    // ── Section title ────────────────────────────────
+    // ── Titulo + boton Play/Stop ────────────────────
     RowLayout {
         Layout.fillWidth: true
         Label {
@@ -28,7 +55,9 @@ ColumnLayout {
         }
     }
 
-    // ── Content ──────────────────────────────────────
+    // ── Area de simulacion ────────────────────────────
+    // 'particles' es un array JS que actua como pool de particulas activas.
+    // maxParticles limita el conteo para mantener rendimiento estable.
     Item {
         id: content
         Layout.fillWidth: true
@@ -51,6 +80,9 @@ ColumnLayout {
                 z: -1
             }
 
+            // onPaint recorre todas las particulas vivas y las dibuja como
+            // circulos con alpha variable. ctx.reset() limpia el canvas
+            // completamente (mas agresivo que clearRect, resetea tambien estilos).
             onPaint: {
                 var ctx = getContext("2d")
                 ctx.reset()
@@ -58,6 +90,8 @@ ColumnLayout {
                 var ps = content.particles
                 for (var i = 0; i < ps.length; i++) {
                     var p = ps[i]
+                    // Fade-in durante el primer 30% de vida, opaco en el medio,
+                    // fade-out en el ultimo 30%. Crea transiciones suaves.
                     var life = p.life / p.maxLife
                     var alpha = life > 0.7 ? (1 - life) / 0.3
                               : life < 0.3 ? life / 0.3
@@ -82,7 +116,9 @@ ColumnLayout {
                 var grav = content.gravity
                 var wnd = content.wind
 
-                // Spawn new particles
+                // Crear 3 particulas por frame desde el centro inferior.
+                // El angulo se dispersa alrededor de -PI/2 (hacia arriba)
+                // con variacion aleatoria para el efecto de "fuente".
                 for (var s = 0; s < 3; s++) {
                     if (ps.length < content.maxParticles) {
                         var angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8
@@ -107,7 +143,8 @@ ColumnLayout {
                     }
                 }
 
-                // Update particles
+                // Actualizar fisica: gravedad afecta vy, viento afecta vx.
+                // Se filtran particulas muertas o fuera de pantalla.
                 var alive = []
                 for (var i = 0; i < ps.length; i++) {
                     var p = ps[i]
@@ -125,7 +162,9 @@ ColumnLayout {
             }
         }
 
-        // Controls overlay
+        // Controles superpuestos sobre el canvas para ajustar parametros
+        // de fisica en tiempo real. Estan posicionados con anchors, no Layout,
+        // porque viven dentro de un Item (no de un Layout).
         Row {
             anchors.top: parent.top
             anchors.right: parent.right

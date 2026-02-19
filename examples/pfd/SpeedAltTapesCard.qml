@@ -1,3 +1,29 @@
+// =============================================================================
+// SpeedAltTapesCard.qml — Cintas de Velocidad y Altitud
+// =============================================================================
+// Las cintas (tapes) son indicadores lineales verticales que muestran velocidad
+// (izquierda) y altitud (derecha). Desplazan verticalmente una escala numerica
+// mientras el valor actual queda fijo en el centro con una caja resaltada.
+//
+// Este es el formato estandar de los PFD modernos (Airbus, Boeing) que
+// reemplazo a los instrumentos analogicos de aguja circulares.
+//
+// Tecnicas Canvas 2D utilizadas:
+//   - Clipping rectangular: ctx.rect() + ctx.clip() para limitar el area
+//     visible de la cinta y evitar que las marcas se dibujen fuera
+//   - Scroll virtual: las marcas se posicionan en funcion del valor actual,
+//     creando la ilusion de una cinta infinita que se desplaza
+//   - Bandas de color (speed tape): franjas verde/ambar/rojo en el borde
+//     que indican rangos operativos (VNE, rango normal, baja velocidad)
+//   - Caja de valor actual: rectangulo con borde amarillo sobre fondo negro
+//
+// Matematica del scroll:
+//   ppk = pixeles por unidad (knot o foot): define cuantos pixeles
+//         equivalen a una unidad de la magnitud
+//   y = cy - (marca - valorActual) * ppk
+//   Esto centra el valor actual en cy y desplaza todas las marcas
+//   proporcionalmente. Marcas con valor mayor quedan arriba (y menor).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -27,7 +53,15 @@ Rectangle {
                 anchors.fill: parent
                 spacing: Style.resize(30)
 
-                // Speed Tape (left)
+                // =============================================================
+                // CINTA DE VELOCIDAD (izquierda)
+                // Muestra velocidad en nudos (knots) con scroll vertical.
+                // Las marcas cada 10 kt con subdivisiones cada 5 kt.
+                // Bandas de color en el borde derecho:
+                //   - Rojo (VNE): por encima de 340 kt (velocidad maxima)
+                //   - Verde: 180-340 kt (rango operativo normal)
+                //   - Ambar: por debajo de 180 kt (velocidad baja)
+                // =============================================================
                 Item {
                     Layout.preferredWidth: parent.width * 0.35
                     Layout.fillHeight: true
@@ -48,20 +82,30 @@ Rectangle {
                             var tapeW = w * 0.6;
                             var tapeX = w * 0.2;
                             var cy = h / 2;
-                            var ppk = h / 80; // pixels per knot visible
+                            var ppk = h / 80; // pixels por nudo (80 kt visibles)
 
                             ctx.clearRect(0, 0, w, h);
 
-                            // Tape background
+                            // Fondo de la cinta
                             ctx.fillStyle = "#1a1a1a";
                             ctx.fillRect(tapeX, 0, tapeW, h);
 
+                            // -------------------------------------------------
+                            // Clipping: limita el dibujo al area de la cinta
+                            // para que las marcas no se dibujen fuera.
+                            // -------------------------------------------------
                             ctx.save();
                             ctx.beginPath();
                             ctx.rect(tapeX, 0, tapeW, h);
                             ctx.clip();
 
-                            // Speed marks
+                            // -------------------------------------------------
+                            // Marcas de velocidad:
+                            // Se calcula el rango visible (speed +-60 kt) y se
+                            // dibujan marcas cada 10 kt. La posicion Y se obtiene
+                            // con: cy - (marca - speed) * ppk
+                            // Esto hace que la velocidad actual siempre este en cy.
+                            // -------------------------------------------------
                             ctx.fillStyle = "#FFFFFF";
                             ctx.strokeStyle = "#FFFFFF";
                             ctx.lineWidth = 1;
@@ -76,19 +120,17 @@ Rectangle {
                                 var y = cy - (s - speed) * ppk;
                                 if (y < -10 || y > h + 10) continue;
 
-                                // Tick mark
                                 ctx.beginPath();
                                 ctx.moveTo(tapeX + tapeW - 1, y);
                                 ctx.lineTo(tapeX + tapeW - tapeW * 0.15, y);
                                 ctx.stroke();
 
-                                // Speed value
                                 if (s >= 0) {
                                     ctx.fillText(s.toString(), tapeX + tapeW - tapeW * 0.2, y);
                                 }
                             }
 
-                            // 5-knot minor ticks
+                            // Subdivisiones cada 5 kt (marcas menores)
                             for (var s2 = startSpd + 5; s2 <= endSpd; s2 += 10) {
                                 var y2 = cy - (s2 - speed) * ppk;
                                 if (y2 < 0 || y2 > h) continue;
@@ -100,29 +142,34 @@ Rectangle {
 
                             ctx.restore();
 
-                            // Color bands (right edge) - simplified
-                            // VNE (red) above 340
+                            // -------------------------------------------------
+                            // Bandas de color (borde derecho de la cinta):
+                            // Indican los limites operativos de velocidad.
+                            // La posicion Y de cada limite se calcula igual que
+                            // las marcas, convirtiendo kt a pixeles.
+                            // -------------------------------------------------
+                            // VNE (rojo) por encima de 340 kt
                             var vneY = cy - (340 - speed) * ppk;
                             if (vneY > 0) {
                                 ctx.fillStyle = "#FF0000";
                                 ctx.fillRect(tapeX + tapeW, 0, 4, Math.max(0, vneY));
                             }
 
-                            // Green band 180-340
+                            // Rango verde: 180-340 kt
                             var greenTop = cy - (340 - speed) * ppk;
                             var greenBot = cy - (180 - speed) * ppk;
                             ctx.fillStyle = "#00E676";
                             ctx.fillRect(tapeX + tapeW, Math.max(0, greenTop), 4,
                                 Math.min(h, greenBot) - Math.max(0, greenTop));
 
-                            // Amber band below 180
+                            // Rango ambar: por debajo de 180 kt
                             var amberTop = cy - (180 - speed) * ppk;
                             if (amberTop < h) {
                                 ctx.fillStyle = "#FF9800";
                                 ctx.fillRect(tapeX + tapeW, Math.max(0, amberTop), 4, h - Math.max(0, amberTop));
                             }
 
-                            // Current speed box
+                            // Caja del valor actual
                             var boxH = h * 0.08;
                             ctx.fillStyle = "#000000";
                             ctx.strokeStyle = "#FFD600";
@@ -136,7 +183,7 @@ Rectangle {
                             ctx.textBaseline = "middle";
                             ctx.fillText(Math.round(speed).toString(), tapeX + tapeW / 2, cy);
 
-                            // Label
+                            // Etiquetas de unidad
                             ctx.fillStyle = "#AAAAAA";
                             ctx.font = (h * 0.035) + "px sans-serif";
                             ctx.textAlign = "center";
@@ -146,7 +193,16 @@ Rectangle {
                     }
                 }
 
-                // Altitude Tape (right)
+                // =============================================================
+                // CINTA DE ALTITUD (derecha)
+                // Misma mecanica que la cinta de velocidad pero para altitud
+                // en pies (feet). Marcas cada 100 ft, etiquetas cada 200 ft.
+                // ppf (pixels per foot) = h / 1000 — muestra 1000 ft de rango.
+                //
+                // A diferencia de la cinta de velocidad, no tiene bandas de
+                // color porque los limites de altitud dependen del tipo de
+                // aeronave y la fase de vuelo.
+                // =============================================================
                 Item {
                     Layout.preferredWidth: parent.width * 0.35
                     Layout.fillHeight: true
@@ -167,11 +223,11 @@ Rectangle {
                             var tapeW = w * 0.6;
                             var tapeX = w * 0.2;
                             var cy = h / 2;
-                            var ppf = h / 1000; // pixels per foot visible
+                            var ppf = h / 1000; // pixels por pie (1000 ft visibles)
 
                             ctx.clearRect(0, 0, w, h);
 
-                            // Tape background
+                            // Fondo
                             ctx.fillStyle = "#1a1a1a";
                             ctx.fillRect(tapeX, 0, tapeW, h);
 
@@ -180,7 +236,7 @@ Rectangle {
                             ctx.rect(tapeX, 0, tapeW, h);
                             ctx.clip();
 
-                            // Altitude marks
+                            // Marcas de altitud cada 100 ft
                             ctx.fillStyle = "#FFFFFF";
                             ctx.strokeStyle = "#FFFFFF";
                             ctx.lineWidth = 1;
@@ -207,7 +263,7 @@ Rectangle {
 
                             ctx.restore();
 
-                            // Current altitude box
+                            // Caja del valor actual de altitud
                             var boxH = h * 0.08;
                             ctx.fillStyle = "#000000";
                             ctx.strokeStyle = "#FFD600";
@@ -221,7 +277,7 @@ Rectangle {
                             ctx.textBaseline = "middle";
                             ctx.fillText(Math.round(altitude).toString(), tapeX + tapeW / 2, cy);
 
-                            // Label
+                            // Etiquetas
                             ctx.fillStyle = "#AAAAAA";
                             ctx.font = (h * 0.035) + "px sans-serif";
                             ctx.textAlign = "center";
@@ -233,7 +289,7 @@ Rectangle {
             }
         }
 
-        // Controls
+        // Controles interactivos
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(15)

@@ -1,3 +1,23 @@
+// =============================================================================
+// BatteryIndicator.qml — Indicador de batería con niveles y animaciones
+// =============================================================================
+// Demuestra cómo construir un indicador de batería visual usando solo
+// Rectangles apilados. Conceptos clave:
+//
+//   - Repeater con array de objetos JS como modelo: cada elemento define
+//     level (0.0–1.0), charging (bool) y label. Esto permite renderizar
+//     múltiples baterías con un solo delegate.
+//   - Color semántico con ternario encadenado: verde > 50%, naranja > 20%,
+//     rojo <= 20%. Centralizado en una propiedad readonly para DRY.
+//   - Rectángulo de relleno anclado a bottom: su height es proporcional al
+//     nivel (parent.height * level). Así el relleno "crece" desde abajo.
+//   - SequentialAnimation on opacity: parpadeo infinito para batería crítica
+//     (<= 12%). La condición `running` activa/desactiva automáticamente.
+//   - Icono de rayo (⚡) con animación de pulso para estado "cargando".
+//   - required property var modelData + required property int index: patrón
+//     moderno Qt 6 para acceso seguro a datos del modelo en delegates.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

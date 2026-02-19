@@ -1,3 +1,28 @@
+// =============================================================================
+// ParallaxDepth.qml — Efecto parallax con capas a diferente velocidad
+// =============================================================================
+// Simula profundidad mediante el efecto parallax: objetos "lejanos" se
+// mueven poco con el mouse, mientras que objetos "cercanos" se mueven mucho.
+// Este efecto se usa en paginas web (parallax scrolling), juegos 2D
+// (fondos de plataformas), y UIs premium para dar sensacion de capas.
+//
+// IMPLEMENTACION:
+//   - MouseArea con hoverEnabled detecta la posicion del cursor.
+//   - mx/my se normalizan a rango -1..+1 (centro = 0).
+//   - 3 capas con multiplicadores de movimiento diferentes:
+//     * Far (8px): objetos grandes, translucidos, se mueven poco.
+//     * Mid (25px): objetos medianos con borde semi-visible.
+//     * Near (50px): objetos pequenos, opacos, se mueven mucho.
+//   - El multiplicador mas alto = mas movimiento = apariencia mas cercana.
+//
+// POR QUE FUNCIONA PERCEPTUALMENTE: en la vida real, al mover la cabeza,
+// los objetos cercanos se desplazan mucho en nuestro campo visual mientras
+// los lejanos apenas se mueven (parallax natural). Replicar esta relacion
+// de velocidades engana al cerebro para percibir profundidad en 2D.
+//
+// onExited: cuando el cursor sale del area, mx/my se resetean a 0 para
+// que las capas vuelvan a su posicion original.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,7 +51,8 @@ ColumnLayout {
         property real mx: 0
         property real my: 0
 
-        // Far layer (0.05x)
+        // Capa lejana (multiplicador bajo = poco movimiento).
+        // Objetos grandes y translucidos para simular nebulosas o estrellas distantes.
         Rectangle {
             x: parallaxContainer.width * 0.72 + parallaxContainer.mx * 8
             y: parallaxContainer.height * 0.18 + parallaxContainer.my * 5
@@ -40,7 +66,7 @@ ColumnLayout {
             color: "#9B59B610"; border.color: "#9B59B630"; border.width: 1
         }
 
-        // Mid layer (0.15x)
+        // Capa media (multiplicador medio = movimiento moderado).
         Rectangle {
             x: parallaxContainer.width * 0.35 + parallaxContainer.mx * 25
             y: parallaxContainer.height * 0.28 + parallaxContainer.my * 18
@@ -54,7 +80,8 @@ ColumnLayout {
             color: "#00D1A918"; border.color: "#00D1A950"; border.width: 1
         }
 
-        // Near layer (0.3x)
+        // Capa cercana (multiplicador alto = mucho movimiento).
+        // Objetos pequenos, opacos y con borde visible para realzar la cercan.
         Rectangle {
             x: parallaxContainer.width * 0.22 + parallaxContainer.mx * 50
             y: parallaxContainer.height * 0.42 + parallaxContainer.my * 40

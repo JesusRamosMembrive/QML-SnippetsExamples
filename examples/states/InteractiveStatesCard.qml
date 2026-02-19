@@ -1,3 +1,22 @@
+// =============================================================================
+// InteractiveStatesCard.qml — Estados reactivos con clausula 'when'
+// =============================================================================
+// Demuestra la clausula 'when' en State: en vez de asignar el estado
+// manualmente (state = "foo"), cada State define una condicion booleana
+// en 'when'. QML activa automaticamente el estado cuya condicion sea true.
+//
+// Esto es ideal para UIs que reaccionan a datos del modelo (conexion,
+// carga, error) sin logica imperativa. El estado se "autodetermina"
+// segun las propiedades isConnected, isLoading, hasError.
+//
+// Ademas se incluye un RotationAnimation "on rotation" que actua como
+// spinner de carga, y un Timer que simula una conexion de red con 70%
+// de exito y 30% de fallo (Math.random).
+//
+// Patron clave: los Switches permiten manipular las propiedades directamente
+// para experimentar como 'when' reacciona a combinaciones de flags.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +27,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Tres propiedades booleanas que actuan como "modelo de datos".
+    // Los estados reaccionan a estas mediante 'when'.
     property bool isConnected: false
     property bool isLoading: false
     property bool hasError: false
@@ -48,7 +69,7 @@ Rectangle {
                     anchors.centerIn: parent
                     spacing: Style.resize(8)
 
-                    // Status icon
+                    // Icono de estado: cambia color y simbolo segun el estado
                     Rectangle {
                         id: statusIcon
                         width: Style.resize(50)
@@ -65,7 +86,9 @@ Rectangle {
                             color: "#FFFFFF"
                         }
 
-                        // Loading spinner
+                        // RotationAnimation "on rotation": se aplica directamente
+                        // a la propiedad rotation. 'running' controla si gira.
+                        // Solo gira durante el estado "loading".
                         RotationAnimation on rotation {
                             running: root.isLoading
                             from: 0; to: 360
@@ -92,6 +115,12 @@ Rectangle {
                     }
                 }
 
+                // ---------------------------------------------------------
+                // Estados con 'when': QML evalua las condiciones y activa
+                // automaticamente el estado cuya expresion 'when' sea true.
+                // Si varias son true, gana la primera en la lista.
+                // Cada estado modifica multiples targets con PropertyChanges.
+                // ---------------------------------------------------------
                 states: [
                     State {
                         name: "disconnected"
@@ -137,7 +166,11 @@ Rectangle {
             }
         }
 
-        // Property toggles
+        // -----------------------------------------------------------------
+        // Panel de control: Switches para manipular las propiedades
+        // directamente. Permite experimentar con combinaciones de flags
+        // y ver como 'when' reacciona en tiempo real.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             color: Style.surfaceColor
@@ -167,7 +200,10 @@ Rectangle {
             }
         }
 
-        // Simulate button
+        // Boton de simulacion: activa isLoading, y tras 1.5s el Timer
+        // decide aleatoriamente si la "conexion" fue exitosa (70%) o fallo (30%).
+        // Esto demuestra como los estados con 'when' reaccionan automaticamente
+        // a cambios de propiedades sin necesidad de asignar el estado manualmente.
         Button {
             text: "Simulate Connection"
             Layout.fillWidth: true

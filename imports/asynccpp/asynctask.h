@@ -34,6 +34,7 @@
 
 #include <QObject>
 #include <QFutureWatcher>
+#include <QElapsedTimer>
 #include <QStringList>
 #include <QtQml/qqmlregistration.h>
 
@@ -47,6 +48,7 @@ class AsyncTask : public QObject
     Q_PROPERTY(double progress READ progress NOTIFY progressChanged)   // 0.0 a 1.0
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)        // Texto descriptivo del paso actual
     Q_PROPERTY(QStringList results READ results NOTIFY resultsChanged) // Resultados acumulados
+    Q_PROPERTY(int elapsedMs READ elapsedMs NOTIFY elapsedMsChanged)   // Duracion de la ultima ejecucion
 
 public:
     explicit AsyncTask(QObject *parent = nullptr);
@@ -56,6 +58,7 @@ public:
     double progress() const { return m_progress; }
     QString status() const { return m_status; }
     QStringList results() const { return m_results; }
+    int elapsedMs() const { return m_elapsedMs; }
 
     // runSteps: ejecuta N pasos secuenciales con nombre, reportando progreso
     Q_INVOKABLE void runSteps(int totalSteps);
@@ -63,6 +66,9 @@ public:
     // processItems: procesa una lista de strings, invierte cada uno y
     // acumula resultados incrementalmente
     Q_INVOKABLE void processItems(const QStringList &items);
+    // processItemsParallelMap: procesa una lista usando QtConcurrent::mapped
+    // para demostrar paralelismo real con resultados incrementales.
+    Q_INVOKABLE void processItemsParallelMap(const QStringList &items);
 
     // cancel: solicita la cancelacion de la tarea actual.
     // La cancelacion es cooperativa: la tarea debe verificar isCanceled().
@@ -73,20 +79,27 @@ signals:
     void progressChanged();
     void statusChanged();
     void resultsChanged();
+    void elapsedMsChanged();
 
 private:
     void setRunning(bool r);
     void setProgress(double p);
     void setStatus(const QString &s);
+    void setElapsedMs(int ms);
 
     // QFutureWatcher<void>: watcher para tareas que no devuelven valor,
     // pero si reportan progreso y soportan cancelacion
     QFutureWatcher<void> m_watcher;
+    // Watcher dedicado al demo de QtConcurrent::mapped (resultados QString)
+    QFutureWatcher<QString> m_mapWatcher;
+
+    QElapsedTimer m_timer;
 
     bool m_running = false;
     double m_progress = 0.0;
     QString m_status;
     QStringList m_results;
+    int m_elapsedMs = 0;
 };
 
 #endif

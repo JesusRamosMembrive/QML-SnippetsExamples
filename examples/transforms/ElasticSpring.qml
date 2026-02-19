@@ -1,3 +1,30 @@
+// =============================================================================
+// ElasticSpring.qml — Animacion de resorte elastico con SpringAnimation
+// =============================================================================
+// Demuestra SpringAnimation, uno de los tipos de animacion mas naturales de
+// QML. Simula la fisica de un resorte: al soltar un objeto desplazado, este
+// oscila alrededor de su posicion de equilibrio con amortiguamiento.
+//
+// SPRINGANIMATION VS NUMBERANIMATION:
+//   - NumberAnimation: va del punto A al B en un tiempo fijo (lineal o con
+//     easing). Predecible pero mecanico.
+//   - SpringAnimation: simula un sistema masa-resorte-amortiguador. El
+//     resultado depende de la distancia al destino, no de un tiempo fijo.
+//     Se siente mas "fisico" y organico.
+//
+// PARAMETROS DEL RESORTE:
+//   - spring (3): rigidez del resorte. Mayor = oscilaciones mas rapidas.
+//   - damping (0.12): amortiguamiento. Mayor = se detiene antes. Si es 0,
+//     oscila infinitamente. Si es muy alto, no oscila (overdamped).
+//
+// PATRON DE ARRASTRE: 'Behavior on x/y' se habilita/deshabilita con
+// 'enabled: !isDragging'. Cuando el usuario arrastra, el Behavior se
+// desactiva para que la bola siga el mouse directamente. Al soltar,
+// se reactiva y la bola "rebota" hacia el centro con SpringAnimation.
+//
+// GUIAS VISUALES: los circulos concentricos y la cruceta central ayudan
+// a percibir la posicion de equilibrio y la amplitud de la oscilacion.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -27,7 +54,7 @@ ColumnLayout {
             anchors.fill: parent
             property bool isDragging: false
 
-            // Center crosshair
+            // Cruceta central: marca visual del punto de equilibrio (destino del resorte).
             Rectangle {
                 x: springSection.width / 2 - Style.resize(15)
                 y: springSection.height / 2 - 0.5
@@ -41,7 +68,7 @@ ColumnLayout {
                 color: Style.inactiveColor; opacity: 0.5
             }
 
-            // Trail circles (show spring path)
+            // Circulos de referencia: ayudan a visualizar la amplitud del rebote.
             Rectangle {
                 x: springSection.width / 2 - width / 2
                 y: springSection.height / 2 - height / 2

@@ -1,3 +1,37 @@
+// =============================================================================
+// FileSystemTreeCard.qml — Explorador de archivos con TreeView
+// =============================================================================
+// Simula un explorador de sistema de archivos con carpetas expandibles y
+// archivos con iconos y tamanos. Demuestra los conceptos fundamentales de
+// TreeView en Qt 6 con un modelo jerarquico de C++.
+//
+// Conexion QML <-> C++:
+//   - FileSystemTreeModel (C++): hereda de QAbstractItemModel. Implementa
+//     la jerarquia padre-hijo necesaria para TreeView:
+//     - index(row, col, parent): crea un QModelIndex usando createIndex()
+//       con un puntero interno al nodo del arbol.
+//     - parent(index): devuelve el padre del nodo, o QModelIndex{} para raiz.
+//     - rowCount(parent): numero de hijos del nodo.
+//     - data(index, role): retorna fileName, fileSize, isFolder segun el rol.
+//     - totalNodes (Q_PROPERTY): conteo total de nodos para la UI.
+//
+// Patrones clave de TreeView:
+//   - required properties en delegate: TreeView inyecta propiedades especiales
+//     en cada delegate: depth (nivel de profundidad), hasChildren, expanded,
+//     isTreeNode, row, selected. Estas NO vienen del modelo sino del TreeView.
+//   - Indentacion por profundidad: x = base + depth * 20px. Cada nivel del
+//     arbol se indenta proporcionalmente, creando la estructura visual.
+//   - Flecha expandir/contraer: visible solo si hasChildren es true. El texto
+//     cambia entre triangulo abajo (expanded) y derecha (collapsed).
+//   - Iconos condicionales: model.isFolder determina si se muestra icono de
+//     carpeta o de archivo. model.fileSize solo es visible para archivos.
+//   - TapHandler + toggleExpanded(): al tocar un nodo con hijos, alterna
+//     su estado expandido/contraido. Tambien actualiza la seleccion.
+//   - expandRecursively(-1, -1) / collapseRecursively(-1): expande o colapsa
+//     TODOS los nodos del arbol. El -1 indica "desde la raiz" y "sin limite
+//     de profundidad".
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

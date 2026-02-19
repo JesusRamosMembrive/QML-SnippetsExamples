@@ -1,3 +1,25 @@
+// =============================================================================
+// CheckableMenuCard.qml — MenuItems con checkable y submenus
+// =============================================================================
+// Demuestra MenuItems marcables (checkable: true) y submenus anidados.
+// Simula un editor grafico donde el usuario puede activar/desactivar
+// cuadricula, reglas y ajuste a grid, ademas de seleccionar nivel de zoom
+// desde un submenu.
+//
+// Conceptos clave:
+//   - MenuItem con checkable: true — muestra un checkbox junto al texto.
+//     El binding bidireccional checked <-> propiedad mantiene sincronizado
+//     el estado del menu con las propiedades del componente.
+//   - Menu anidado (submenu): un Menu dentro de otro Menu crea una jerarquia
+//     de menus desplegables, ideal para opciones con muchos valores.
+//   - Canvas QML: API de dibujo similar a HTML5 Canvas, usada aqui para
+//     dibujar la cuadricula dinamicamente con lineas verticales y horizontales.
+//   - Menu.popup(): abre el menu como popup bajo el boton que lo invoca.
+//
+// La vista previa reacciona en tiempo real a los cambios de las propiedades,
+// demostrando el binding declarativo de QML en accion.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +30,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Estado del editor visual: cada propiedad controla un aspecto
+    //    de la vista previa y se sincroniza con los MenuItems checkable.
     property bool showGrid: true
     property bool showRulers: false
     property bool snapToGrid: true
@@ -25,7 +49,9 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Menu button
+        // -- Boton que abre el menu como popup.
+        //    El Menu se declara como hijo del Button pero se abre manualmente
+        //    con popup() para tener control total del momento de apertura.
         Button {
             text: "View Options \u25BE"
             onClicked: viewMenu.popup()
@@ -33,6 +59,9 @@ Rectangle {
             Menu {
                 id: viewMenu
 
+                // -- Cada MenuItem checkable tiene binding bidireccional:
+                //    checked lee el valor de la propiedad root, y
+                //    onCheckedChanged lo escribe de vuelta.
                 MenuItem {
                     text: "Show Grid"
                     checkable: true
@@ -56,6 +85,9 @@ Rectangle {
 
                 MenuSeparator {}
 
+                // -- Submenu anidado: Menu dentro de Menu.
+                //    Cada item del submenu usa onTriggered (no checkable)
+                //    porque el zoom es una seleccion exclusiva, no un toggle.
                 Menu {
                     title: "Zoom"
 
@@ -68,7 +100,8 @@ Rectangle {
             }
         }
 
-        // Preview area
+        // -- Area de vista previa que reacciona a las opciones del menu.
+        //    clip: true evita que la cuadricula y reglas se dibujen fuera.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -76,7 +109,9 @@ Rectangle {
             radius: Style.resize(4)
             clip: true
 
-            // Grid overlay
+            // -- Canvas dibuja la cuadricula con la API 2D de JavaScript.
+            //    Se muestra/oculta con la propiedad showGrid del root.
+            //    onPaint se ejecuta cuando el Canvas necesita repintarse.
             Canvas {
                 anchors.fill: parent
                 visible: root.showGrid
@@ -101,7 +136,7 @@ Rectangle {
                 }
             }
 
-            // Ruler top
+            // -- Regla horizontal superior con marcas numericas
             Rectangle {
                 anchors.top: parent.top
                 anchors.left: parent.left
@@ -126,7 +161,7 @@ Rectangle {
                 }
             }
 
-            // Ruler left
+            // -- Regla vertical izquierda (simplificada, sin marcas)
             Rectangle {
                 anchors.top: parent.top
                 anchors.left: parent.left
@@ -136,7 +171,6 @@ Rectangle {
                 visible: root.showRulers
             }
 
-            // Center info
             Label {
                 anchors.centerIn: parent
                 text: "Zoom: " + root.zoomLevel
@@ -146,7 +180,7 @@ Rectangle {
             }
         }
 
-        // Status
+        // -- Barra de estado que muestra el estado actual de todas las opciones
         Label {
             text: "Grid: " + root.showGrid + " | Rulers: " + root.showRulers + " | Snap: " + root.snapToGrid
             font.pixelSize: Style.resize(11)

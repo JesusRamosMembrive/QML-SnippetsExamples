@@ -1,3 +1,36 @@
+// =============================================================================
+// Main.qml — Lector de PDF integrado con biblioteca y drag-and-drop
+// =============================================================================
+// Pagina completa que funciona como un lector de PDF. Usa el modulo QtQuick.Pdf
+// para renderizar documentos y QtQuick.Dialogs para el dialogo de apertura.
+//
+// Funcionalidades:
+//   - Abrir PDFs desde una biblioteca predefinida, dialogo de archivos o
+//     arrastrando un archivo (drag-and-drop).
+//   - Controles de zoom (+, -, Fit), busqueda de texto dentro del PDF,
+//     e indicador de pagina actual.
+//   - Estado vacio con zona de drop y tarjetas de biblioteca.
+//   - Drop overlay incluso mientras se visualiza un PDF (para reemplazarlo).
+//
+// Modulos Qt usados:
+//   - QtQuick.Pdf: PdfDocument (modelo de datos del PDF) y PdfMultiPageView
+//     (visor multipagina con scroll y zoom).
+//   - QtQuick.Dialogs: FileDialog nativo del sistema operativo.
+//
+// Patrones importantes:
+//   - PdfDocument como modelo + PdfMultiPageView como vista: separacion
+//     modelo-vista del framework Qt Pdf.
+//   - DropArea para drag-and-drop: detecta cuando un archivo se arrastra
+//     sobre la ventana. drop.hasUrls + filtrado por extension .pdf.
+//   - HoverHandler + TapHandler: alternativa moderna a MouseArea.
+//     HoverHandler solo detecta hover, TapHandler solo detecta taps.
+//     Mas composable que MouseArea cuando solo se necesita una funcion.
+//   - appDirPath: propiedad expuesta desde C++ (main.cpp) que contiene
+//     la ruta del ejecutable, usada para construir rutas a archivos PDF.
+//   - Dos DropAreas: una para el estado vacio (con UI visual) y otra
+//     invisible sobre el visor PDF (para permitir reemplazar el documento).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +41,7 @@ import utils
 Item {
     id: root
 
+    // -- Patron de visibilidad animada estandar del proyecto
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -20,7 +54,8 @@ Item {
 
     anchors.fill: parent
 
-    // PDF library model
+    // -- Modelo de biblioteca: PDFs predefinidos que se incluyen con la app.
+    //    ListModel permite acceder a las propiedades con model.title, etc.
     ListModel {
         id: libraryModel
         ListElement {
@@ -35,14 +70,21 @@ Item {
         }
     }
 
+    // -- Helper para construir rutas file:// a los PDFs de la biblioteca.
+    //    appDirPath es una propiedad de contexto expuesta desde C++ (main.cpp).
     function pdfFilePath(filename) {
         return "file:///" + appDirPath + "/pdf_files/" + filename
     }
 
+    // -- PdfDocument: modelo que carga y parsea el PDF.
+    //    El status cambia a PdfDocument.Ready cuando el documento esta listo.
+    //    Se asigna source para cargar un archivo.
     PdfDocument {
         id: pdfDoc
     }
 
+    // -- FileDialog nativo del SO para seleccionar un PDF.
+    //    nameFilters restringe a archivos .pdf.
     FileDialog {
         id: fileDialog
         title: "Open PDF"
@@ -58,7 +100,8 @@ Item {
             anchors.fill: parent
             spacing: 0
 
-            // Toolbar
+            // -- Barra de herramientas con controles de zoom, busqueda,
+            //    indicador de pagina y boton de apertura.
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(60)
@@ -79,7 +122,8 @@ Item {
 
                     Item { Layout.fillWidth: true }
 
-                    // Zoom controls
+                    // -- Controles de zoom: limitan el rango entre 25% y 400%.
+                    //    Math.max/Math.min evitan valores fuera de rango.
                     Button {
                         text: "\u2212"
                         enabled: pdfDoc.status === PdfDocument.Ready
@@ -115,7 +159,7 @@ Item {
                         onClicked: pdfView.scaleToWidth(pdfView.width, pdfView.height)
                     }
 
-                    // Separator
+                    // -- Separadores visuales entre grupos de controles
                     Rectangle {
                         Layout.preferredWidth: 1
                         Layout.preferredHeight: Style.resize(30)
@@ -123,7 +167,9 @@ Item {
                         opacity: 0.3
                     }
 
-                    // Search
+                    // -- Busqueda de texto dentro del PDF.
+                    //    onAccepted (Enter) inicia la busqueda hacia adelante.
+                    //    Los botones de flecha permiten navegar entre resultados.
                     TextField {
                         id: searchField
                         placeholderText: "Search..."
@@ -160,7 +206,6 @@ Item {
                         }
                     }
 
-                    // Separator
                     Rectangle {
                         Layout.preferredWidth: 1
                         Layout.preferredHeight: Style.resize(30)
@@ -168,7 +213,7 @@ Item {
                         opacity: 0.3
                     }
 
-                    // Page indicator
+                    // -- Indicador de pagina: currentPage es 0-indexed, se suma 1
                     Label {
                         text: pdfDoc.status === PdfDocument.Ready
                               ? (pdfView.currentPage + 1) + " / " + pdfDoc.pageCount
@@ -177,7 +222,6 @@ Item {
                         color: Style.fontSecondaryColor
                     }
 
-                    // Separator
                     Rectangle {
                         Layout.preferredWidth: 1
                         Layout.preferredHeight: Style.resize(30)
@@ -191,7 +235,7 @@ Item {
                         onClicked: fileDialog.open()
                     }
 
-                    // Filename
+                    // -- Nombre del archivo actual, extraido de la URL con substring
                     Label {
                         text: {
                             if (pdfDoc.status !== PdfDocument.Ready)
@@ -207,7 +251,6 @@ Item {
                 }
             }
 
-            // Separator line
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
@@ -215,13 +258,16 @@ Item {
                 opacity: 0.3
             }
 
-            // Content area
+            // -- Area de contenido: muestra el visor PDF o el estado vacio.
+            //    clip: true evita que el PDF se dibuje fuera del area.
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
 
-                // PDF viewer
+                // -- PdfMultiPageView: visor de PDF multipagina con scroll.
+                //    renderScale controla el zoom, searchString activa busqueda.
+                //    Solo visible cuando hay un documento cargado.
                 PdfMultiPageView {
                     id: pdfView
                     anchors.fill: parent
@@ -229,7 +275,9 @@ Item {
                     visible: pdfDoc.status === PdfDocument.Ready
                 }
 
-                // Empty state: drop zone + library
+                // -- Estado vacio con zona de drop y biblioteca.
+                //    DropArea detecta archivos arrastrados sobre la ventana.
+                //    La propiedad hovering controla el feedback visual.
                 DropArea {
                     id: dropArea
                     anchors.fill: parent
@@ -256,7 +304,8 @@ Item {
                         anchors.margins: Style.resize(40)
                         spacing: Style.resize(30)
 
-                        // Drop zone
+                        // -- Zona de drop visual: rectangulo con borde punteado
+                        //    que cambia de color al arrastrar un archivo encima.
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: Style.resize(200)
@@ -295,7 +344,8 @@ Item {
                             }
                         }
 
-                        // Library section
+                        // -- Seccion de biblioteca: tarjetas clickeables de PDFs
+                        //    incluidos con la aplicacion.
                         ColumnLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
@@ -315,6 +365,10 @@ Item {
                                 Repeater {
                                     model: libraryModel
 
+                                    // -- Tarjeta de libro: icono + info + click to open.
+                                    //    HoverHandler + TapHandler son la alternativa
+                                    //    moderna a MouseArea cuando solo se necesita
+                                    //    hover y tap por separado.
                                     Rectangle {
                                         Layout.preferredWidth: Style.resize(280)
                                         Layout.preferredHeight: Style.resize(120)
@@ -326,7 +380,7 @@ Item {
                                             anchors.margins: Style.resize(15)
                                             spacing: Style.resize(15)
 
-                                            // Book icon
+                                            // -- Icono de libro simulado con Rectangle
                                             Rectangle {
                                                 Layout.preferredWidth: Style.resize(60)
                                                 Layout.preferredHeight: Style.resize(80)
@@ -392,7 +446,8 @@ Item {
                     }
                 }
 
-                // Drop overlay when viewing PDF (to allow replacing)
+                // -- DropArea secundaria: invisible, activa cuando ya hay un PDF
+                //    abierto. Permite reemplazar el documento arrastrando otro PDF.
                 DropArea {
                     anchors.fill: parent
                     visible: pdfDoc.status === PdfDocument.Ready

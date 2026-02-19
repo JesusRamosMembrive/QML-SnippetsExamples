@@ -1,3 +1,27 @@
+// =============================================================================
+// KanbanBoard.qml — Tablero Kanban con tres columnas de estado
+// =============================================================================
+// Implementa un tablero Kanban estatico con tres columnas: "To Do",
+// "In Progress" y "Done". Cada columna es un Rectangle con un Repeater
+// que genera tarjetas de tarea desde un array JS.
+//
+// Tecnicas clave:
+//   1. RowLayout con 3 columnas fillWidth: cada columna ocupa un tercio
+//      del espacio disponible automaticamente, sin calculos manuales.
+//   2. Tags coloreados: cada tarea tiene un tag (Feature, Testing, etc.)
+//      con un color de fondo semitransparente generado con Qt.rgba() a
+//      partir del color del tag. Esto crea badges con fondo tenue y
+//      texto del color de acento — patron comun en UIs de gestion.
+//   3. Qt.color() + Qt.rgba(): se usa Qt.color(string) para parsear
+//      un hex a componentes RGB, y luego Qt.rgba() para crear una
+//      version semitransparente (alpha 0.2) del mismo color.
+//   4. Encabezados de columna: Rectangle con fondo semitransparente
+//      usando Qt.rgba() y emoji como icono — rapido y sin assets.
+//
+// Este ejemplo es puramente visual (no tiene drag & drop entre columnas),
+// pero establece la estructura base para agregar esa funcionalidad.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +44,8 @@ ColumnLayout {
         Layout.preferredHeight: Style.resize(340)
         spacing: Style.resize(10)
 
-        // To Do column
+        // Columna "To Do": tareas pendientes con tags de categoria.
+        // Cada tarea es un Rectangle con ColumnLayout (titulo + tag badge).
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -101,7 +126,8 @@ ColumnLayout {
             }
         }
 
-        // In Progress column
+        // Columna "In Progress": misma estructura que "To Do" pero con
+        // color de encabezado naranja y menos items.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -180,7 +206,8 @@ ColumnLayout {
             }
         }
 
-        // Done column
+        // Columna "Done": tareas completadas. El color verde del encabezado
+        // indica visualmente el estado final del flujo de trabajo.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

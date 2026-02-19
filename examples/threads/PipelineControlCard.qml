@@ -1,3 +1,36 @@
+// =============================================================================
+// PipelineControlCard.qml — Controles del pipeline de hilos
+// =============================================================================
+// Panel de control para el pipeline de 3 hilos: botones start/stop/clear,
+// slider de velocidad de generacion y selector de patron de filtrado.
+//
+// Conexion QML <-> C++:
+//   - ThreadPipeline (C++) expone:
+//     - start() / stop() (Q_INVOKABLEs): inician o detienen los 3 hilos.
+//     - running (Q_PROPERTY bool): estado actual del pipeline.
+//     - generationInterval (Q_PROPERTY int): intervalo del QTimer del
+//       Generator en milisegundos. Al cambiar desde QML, se llama
+//       setInterval() en el hilo del Generator via QueuedConnection.
+//     - setFilterPattern(QVariantList) (Q_INVOKABLE): cambia el patron de
+//       bytes que busca el Filter. Se convierte de array JS a QByteArray.
+//     - filterPatternHex (Q_PROPERTY string): representacion hex del patron
+//       activo para mostrar en la UI.
+//     - clear() (Q_INVOKABLE): resetea contadores y limpia registros.
+//
+// Patrones clave:
+//   - Indicador de estado con punto coloreado: un circulo verde/rojo con
+//     Behavior on color que cambia suavemente al iniciar/detener el pipeline.
+//   - Slider de velocidad con calculo inverso: muestra "~N/s" (operaciones
+//     por segundo) calculando 1000 / interval. Valores bajos = mas rapido.
+//   - ComboBox con arrays de bytes: el modelo del ComboBox muestra descripciones
+//     legibles, pero onActivated accede a un array paralelo de patrones binarios.
+//     Esto desacopla la presentacion de los datos tecnicos.
+//   - Cross-thread property change: al cambiar generationInterval desde QML
+//     (hilo GUI), Qt envia el cambio al hilo del Generator via
+//     QueuedConnection automaticamente porque los objetos viven en hilos
+//     diferentes.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

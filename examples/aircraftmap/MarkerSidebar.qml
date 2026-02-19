@@ -1,3 +1,20 @@
+// =============================================================================
+// MarkerSidebar.qml — Panel lateral con filtros y lista de marcadores
+// =============================================================================
+// Sidebar que combina filtros por categoria (CheckBox) con una lista
+// desplazable de todos los marcadores. Al hacer clic en un marcador,
+// emite una signal para que el visor centre la vista en el.
+//
+// Patrones y conceptos clave:
+// - pragma ComponentBehavior: Bound — exige que cada delegate declare
+//   explicitamente las propiedades del modelo que usa (required property).
+//   Esto mejora la seguridad de tipos y el rendimiento en Qt 6.
+// - Filtrado visual: los delegates se ocultan (visible: false) segun la
+//   categoria, pero siguen en el modelo. implicitHeight: 0 cuando no
+//   es visible evita que dejen espacio en blanco en la lista.
+// - CheckBox con palette.highlight: personaliza el color del indicador
+//   para que coincida con el color de la categoria que controla.
+// =============================================================================
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -12,6 +29,9 @@ Rectangle {
     property var markerModel
     property int selectedMarker: -1
 
+    // Flags de visibilidad por categoria. Cada uno controla si los marcadores
+    // de esa categoria se muestran en la lista y en el visor.
+    // Se exponen como properties publicas para que el padre las pase al visor.
     property bool showExits:     true
     property bool showHydraulic: true
     property bool showEmergency: true
@@ -21,6 +41,8 @@ Rectangle {
 
     signal markerClicked(int index)
 
+    // Funcion helper que traduce el nombre de categoria a su flag de visibilidad.
+    // Centraliza la logica en un solo lugar en vez de repetir ifs en cada delegate.
     function isCategoryVisible(cat) {
         if (cat === "exits")     return showExits
         if (cat === "hydraulic") return showHydraulic
@@ -35,6 +57,10 @@ Rectangle {
         anchors.margins: Style.resize(12)
         spacing: Style.resize(10)
 
+        // ── Seccion de filtros ──────────────────────────────────
+        // Cada CheckBox usa palette.highlight para colorear su indicador
+        // con el color de la categoria correspondiente, creando una
+        // asociacion visual inmediata entre filtro y marcadores.
         Label {
             text: "Filters"
             font.pixelSize: Style.resize(16)
@@ -59,6 +85,10 @@ Rectangle {
             color: Style.bgColor
         }
 
+        // ── Lista de marcadores ─────────────────────────────────
+        // ListView con delegate que usa required properties (Bound mode).
+        // El delegate se oculta si su categoria no esta activa, y usa
+        // implicitHeight: 0 para colapsar el espacio del item oculto.
         Label {
             text: "Markers"
             font.pixelSize: Style.resize(16)
@@ -96,6 +126,7 @@ Rectangle {
                     spacing: Style.resize(6)
                     visible: listDelegate.visible
 
+                    // Circulo de color que identifica la categoria visualmente
                     Rectangle {
                         Layout.preferredWidth: Style.resize(10)
                         Layout.preferredHeight: width

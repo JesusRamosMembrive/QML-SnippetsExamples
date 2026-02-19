@@ -1,3 +1,31 @@
+// =============================================================================
+// StaggeredList.qml — Animacion escalonada de entrada para listas
+// =============================================================================
+// Demuestra el patron "staggered entrance": los elementos de una lista
+// aparecen uno tras otro con un pequenio retraso entre cada uno, creando
+// un efecto de cascada visual muy usado en apps modernas.
+//
+// PATRON DE ANIMACION ESCALONADA:
+//   No se usa SequentialAnimation — en su lugar, un Timer incrementa un
+//   contador (animStep) cada 80ms. Cada elemento del Repeater compara su
+//   index contra animStep para saber si ya le toca aparecer:
+//     property bool shown: index <= staggerSection.animStep
+//   Cuando shown cambia de false a true, Behavior on opacity y Behavior on x
+//   se encargan de la animacion de entrada (fade-in + slide desde la derecha).
+//
+// POR QUE ESTE PATRON (Timer) Y NO SequentialAnimation:
+//   - SequentialAnimation requiere conocer de antemano todos los elementos.
+//   - Con Timer + indice, funciona con listas dinamicas de cualquier tamanio.
+//   - Cada item controla su propia animacion con Behavior, lo que es mas
+//     modular y facil de mantener.
+//
+// EFECTO DE ENTRADA: los items comienzan en opacity: 0 y x: 60 (desplazados
+// a la derecha) y transicionan a opacity: 1, x: 0 con easing OutCubic.
+// OutCubic desacelera al final, creando un "aterrizaje suave".
+//
+// El hover effect (containsMouse) en cada item demuestra como combinar
+// animaciones de entrada con interactividad posterior.
+// =============================================================================
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -19,6 +47,8 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.resize(320)
 
+        // animStep comienza en -1 (ningun item visible). El Timer lo incrementa
+        // a 0, 1, 2... revelando los items progresivamente.
         property bool animating: false
         property int animStep: -1
 
@@ -70,11 +100,16 @@ ColumnLayout {
                     color: staggerItemMa.containsMouse
                            ? Qt.rgba(1, 1, 1, 0.06) : "transparent"
 
+                    // shown se vuelve true cuando animStep alcanza este index.
+                    // El cambio a true dispara ambos Behaviors simultaneamente.
                     property bool shown: staggerItem.index <= staggerSection.animStep
 
                     opacity: shown ? 1 : 0
                     x: shown ? 0 : Style.resize(60)
 
+                    // Behavior on opacity/x: animan la transicion automaticamente.
+                    // Duraciones ligeramente distintas (350 vs 400ms) crean un
+                    // efecto mas organico que si fueran identicas.
                     Behavior on opacity {
                         NumberAnimation { duration: 350; easing.type: Easing.OutCubic }
                     }
@@ -142,7 +177,8 @@ ColumnLayout {
             }
         }
 
-        // Play button
+        // Boton de reproduccion: resetea animStep a -1 (oculta todo)
+        // y arranca el Timer para revelar los items uno a uno.
         Button {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter

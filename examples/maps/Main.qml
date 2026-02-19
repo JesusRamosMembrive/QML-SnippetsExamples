@@ -1,3 +1,22 @@
+// =============================================================================
+// Main.qml — Demo de OpenStreetMap con simulacion de vuelo animada
+// =============================================================================
+// Ejemplo completo de integracion con QtLocation: muestra un mapa OSM real
+// con una ruta de vuelo sobre Madrid, un avion animado que recorre la ruta,
+// controles de simulacion (play/pause/reset/velocidad) y overlays informativos.
+//
+// Patrones y conceptos clave:
+// - QtLocation.Map + Plugin "osm" para mapas OpenStreetMap sin API key.
+// - MapPolyline, MapItemView y MapQuickItem para superponer graficos
+//   vectoriales y widgets QML sobre el mapa.
+// - Motor de simulacion con Timer: avanza la posicion del avion interpolando
+//   entre waypoints. La velocidad es configurable (1x/2x/4x).
+// - PinchHandler + WheelHandler + DragHandler para interaccion tactil
+//   y de raton con el mapa (zoom, pan, pinch-to-zoom).
+// - Calculo de bearing (rumbo) con formula de esfera usando atan2.
+// - Componentes overlay (MapCompassOverlay, MapInfoPanel, MapControlsBar)
+//   posicionados sobre el mapa con anchors.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,6 +29,7 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // Patron de visibilidad del dashboard
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -20,19 +40,24 @@ Item {
 
     anchors.fill: parent
 
-    // ── Simulation state ──────────────────────────────────────
+    // ── Estado de la simulacion ─────────────────────────────────
+    // La simulacion interpola la posicion del avion entre segmentos
+    // de waypoints. currentSegment indica que segmento se recorre,
+    // segmentProgress (0.0-1.0) indica cuanto se ha avanzado en el.
     property bool playing: false
     property real simSpeed: 1.0
     property int currentSegment: 0
     property real segmentProgress: 0.0
     property bool followAircraft: true
 
-    // Computed aircraft position / heading
+    // Posicion y rumbo calculados del avion (actualizados por el timer)
     property real aircraftLat: waypoints[0].lat
     property real aircraftLon: waypoints[0].lon
     property real aircraftHeading: 0.0
 
-    // Route over Madrid landmarks
+    // Ruta sobre puntos de referencia de Madrid.
+    // Cada waypoint tiene coordenadas reales (lat/lon) y un nombre.
+    // La ruta empieza y termina en LEMD (aeropuerto de Barajas).
     property var waypoints: [
         { lat: 40.4936, lon: -3.5668, name: "LEMD" },
         { lat: 40.4530, lon: -3.6883, name: "CHAMARTIN" },
@@ -47,7 +72,10 @@ Item {
         { lat: 40.4936, lon: -3.5668, name: "LEMD" }
     ]
 
-    // ── Bearing calculation ───────────────────────────────────
+    // ── Calculo de rumbo (bearing) ──────────────────────────────
+    // Formula de navegacion esferica: calcula el rumbo inicial desde
+    // un punto a otro usando la formula de Haversine simplificada.
+    // Retorna grados (0-360) donde 0=norte, 90=este, etc.
     function calcBearing(lat1, lon1, lat2, lon2) {
         var toRad = Math.PI / 180
         var dLon = (lon2 - lon1) * toRad
@@ -58,7 +86,10 @@ Item {
         return (brng + 360) % 360
     }
 
-    // ── Simulation engine ─────────────────────────────────────
+    // ── Motor de simulacion ─────────────────────────────────────
+    // Timer a 50ms (20 fps) que llama advanceSimulation() en cada tick.
+    // Solo corre cuando playing=true Y la pagina esta visible (fullSize).
+    // Esto evita consumir CPU cuando la pagina no esta activa.
     Timer {
         id: simTimer
         interval: 50
@@ -67,6 +98,9 @@ Item {
         onTriggered: root.advanceSimulation()
     }
 
+    // Avanza la simulacion un paso. Interpola linealmente lat/lon entre
+    // el waypoint actual y el siguiente. Cuando segmentProgress llega a 1.0,
+    // pasa al siguiente segmento. Si es el ultimo, para la simulacion.
     function advanceSimulation() {
         if (currentSegment >= waypoints.length - 1) {
             playing = false
@@ -91,10 +125,12 @@ Item {
         var wp2 = waypoints[currentSegment + 1]
         var t = segmentProgress
 
+        // Interpolacion lineal entre waypoints
         aircraftLat = wp1.lat + (wp2.lat - wp1.lat) * t
         aircraftLon = wp1.lon + (wp2.lon - wp1.lon) * t
         aircraftHeading = calcBearing(wp1.lat, wp1.lon, wp2.lat, wp2.lon)
 
+        // Si followAircraft esta activo, el mapa sigue al avion
         if (followAircraft) {
             map.center = QtPositioning.coordinate(aircraftLat, aircraftLon)
         }
@@ -113,7 +149,7 @@ Item {
         map.zoomLevel = 13
     }
 
-    // ── UI ────────────────────────────────────────────────────
+    // ── Interfaz de usuario ─────────────────────────────────────
     Rectangle {
         anchors.fill: parent
         color: Style.bgColor
@@ -131,7 +167,7 @@ Item {
                 Layout.fillWidth: true
             }
 
-            // Map container
+            // ── Contenedor del mapa ─────────────────────────────
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -144,6 +180,10 @@ Item {
                     anchors.fill: parent
                     anchors.margins: Style.resize(4)
 
+                    // ── Mapa OSM ────────────────────────────────
+                    // Plugin "osm" proporciona tiles de OpenStreetMap gratis.
+                    // El parametro providersrepository.disabled evita consultas
+                    // a repositorios de proveedores externos (solo usa el default).
                     Map {
                         id: map
                         anchors.fill: parent
@@ -159,14 +199,19 @@ Item {
                         center: QtPositioning.coordinate(40.4936, -3.5668)
                         zoomLevel: 13
 
-                        // Route polyline
+                        // Linea de ruta: MapPolyline dibuja la ruta completa.
+                        // El path se establece en Component.onCompleted.
                         MapPolyline {
                             id: routeLine
                             line.width: 3
                             line.color: Style.mainColor
                         }
 
-                        // Waypoint markers
+                        // ── Marcadores de waypoints ─────────────
+                        // MapItemView funciona como un Repeater para el mapa:
+                        // genera un MapQuickItem por cada waypoint.
+                        // Los waypoints ya visitados se muestran en mainColor,
+                        // los pendientes en gris.
                         MapItemView {
                             model: root.waypoints.length
 
@@ -192,6 +237,8 @@ Item {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                     }
 
+                                    // Etiqueta del waypoint: solo visible con
+                                    // zoom >= 12 para evitar solapamiento a niveles bajos
                                     Rectangle {
                                         color: Qt.rgba(0, 0, 0, 0.6)
                                         radius: 3
@@ -213,7 +260,11 @@ Item {
                             }
                         }
 
-                        // Aircraft marker
+                        // ── Marcador del avion ──────────────────
+                        // MapQuickItem posiciona un Canvas con forma de flecha
+                        // en las coordenadas del avion. La propiedad rotation
+                        // del Canvas se vincula al heading para que apunte
+                        // en la direccion de vuelo.
                         MapQuickItem {
                             id: aircraftMarker
                             coordinate: QtPositioning.coordinate(root.aircraftLat, root.aircraftLon)
@@ -235,7 +286,6 @@ Item {
                                         var cx = width / 2
                                         var cy = height / 2
 
-                                        // Aircraft arrow shape
                                         ctx.fillStyle = "#FF3333"
                                         ctx.beginPath()
                                         ctx.moveTo(cx, cy - 14)
@@ -256,7 +306,13 @@ Item {
                         }
                     }
 
-                    // Interaction handlers
+                    // ── Handlers de interaccion con el mapa ─────
+                    // Estos handlers NO son hijos del Map, sino del mapContainer.
+                    // Esto evita conflictos con los gestos internos del Map.
+
+                    // PinchHandler: zoom con pellizco tactil.
+                    // Guarda la coordenada central al inicio y la usa con
+                    // alignCoordinateToPoint para mantener el punto de enfoque.
                     PinchHandler {
                         target: null
                         grabPermissions: PointerHandler.TakeOverForbidden
@@ -275,6 +331,7 @@ Item {
                         }
                     }
 
+                    // WheelHandler: zoom con rueda del raton centrado en el cursor
                     WheelHandler {
                         onWheel: function(event) {
                             var loc = map.toCoordinate(point.position)
@@ -285,6 +342,8 @@ Item {
                         }
                     }
 
+                    // DragHandler: panning con arrastre. Desactiva followAircraft
+                    // cuando el usuario mueve el mapa manualmente.
                     DragHandler {
                         target: null
                         grabPermissions: PointerHandler.TakeOverForbidden
@@ -294,7 +353,9 @@ Item {
                         }
                     }
 
-                    // Overlays
+                    // ── Overlays sobre el mapa ──────────────────
+                    // Componentes posicionados con anchors sobre el contenedor
+                    // del mapa. Cada uno tiene su propio archivo QML.
                     MapCompassOverlay {
                         heading: root.aircraftHeading
                     }
@@ -329,7 +390,8 @@ Item {
         }
     }
 
-    // Set route polyline path on load and initialize heading
+    // Inicializacion: construye el path de la ruta como array de coordenadas
+    // QtPositioning y calcula el heading inicial del avion.
     Component.onCompleted: {
         var coords = []
         for (var i = 0; i < waypoints.length; i++) {

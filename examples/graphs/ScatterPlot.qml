@@ -1,3 +1,28 @@
+// =============================================================================
+// ScatterPlot.qml — Grafica de dispersion (scatter plot) con Canvas 2D
+// =============================================================================
+// Dibuja un grafico de dispersion con 3 clusters de puntos, cada uno con su
+// propio color y centro. Es tipico en visualizacion de datos para mostrar
+// correlaciones, agrupamientos o distribuciones bidimensionales.
+//
+// Patrones clave:
+//   - Generacion procedural de clusters: la funcion regenerate() crea 3 grupos
+//     de 18 puntos cada uno, distribuidos aleatoriamente alrededor de un centro
+//     (cx, cy) con un radio de dispersion de 0.22. Esto simula datos reales
+//     con agrupamiento natural (clustering).
+//   - Coordenadas normalizadas (0-1): los puntos se almacenan en espacio
+//     normalizado y se escalan a pixeles al pintar (pt.x * w, pt.y * h).
+//     Esto hace que la grafica se adapte a cualquier tamano de Canvas.
+//   - Transparencia con sufijo hex: cl.color + "80" agrega 50% de opacidad
+//     al color del relleno (80 hex = 128/255), creando un efecto de
+//     superposicion donde se ven los puntos que se solapan.
+//   - Cuadricula de fondo: lineas verticales (10) y horizontales (8) dan
+//     referencia visual sin datos numericos en los ejes — estilo minimalista.
+//   - Boton Randomize: permite al usuario regenerar los datos y ver como
+//     cambian los clusters. Llama a regenerate() que reemplaza el array
+//     completo de clusters y solicita repintado.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

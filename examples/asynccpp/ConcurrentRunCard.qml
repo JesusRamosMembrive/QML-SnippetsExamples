@@ -1,3 +1,20 @@
+// =============================================================================
+// ConcurrentRunCard.qml — Tarjeta de ejemplo: QtConcurrent::run
+// =============================================================================
+// Muestra como ejecutar operaciones CPU-intensivas (contar primos, Fibonacci,
+// ordenar arreglos) en un hilo secundario usando QtConcurrent::run, sin
+// bloquear la interfaz de usuario.
+//
+// La clase C++ AsyncComputer (registrada con QML_ELEMENT) expone metodos
+// Q_INVOKABLE y propiedades Q_PROPERTY (running, result, elapsedMs). QML
+// simplemente vincula la UI a esas propiedades — el sistema de bindings
+// reactivos actualiza la interfaz automaticamente cuando C++ emite senales.
+//
+// Aprendizaje clave: la UI nunca se congela porque el trabajo pesado ocurre
+// en otro hilo. El patron enabled: !computer.running previene multiples
+// invocaciones simultaneas.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +25,9 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // AsyncComputer es la clase C++ expuesta via QML_ELEMENT.
+    // Sus propiedades (running, result, elapsedMs) se usan como bindings
+    // declarativos en toda esta tarjeta.
     AsyncComputer { id: computer }
 
     ColumnLayout {
@@ -29,6 +49,10 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Grilla de botones de accion: cada boton invoca un metodo diferente
+        // de AsyncComputer. Todos se deshabilitan mientras computer.running
+        // es true, evitando que el usuario lance multiples tareas a la vez.
+        // GridLayout de 3 columnas distribuye los botones uniformemente.
         GridLayout {
             Layout.fillWidth: true
             columns: 3
@@ -79,6 +103,9 @@ Rectangle {
             }
         }
 
+        // BusyIndicator nativo de Qt Quick Controls: gira mientras
+        // computer.running sea true. Se oculta completamente cuando
+        // no hay tarea activa para no ocupar espacio visual.
         BusyIndicator {
             running: computer.running
             Layout.alignment: Qt.AlignHCenter
@@ -87,6 +114,9 @@ Rectangle {
             visible: computer.running
         }
 
+        // Panel de resultados: muestra el resultado de la ultima operacion
+        // y el tiempo transcurrido. Layout.fillHeight hace que ocupe todo
+        // el espacio restante de la tarjeta, centrado visualmente.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

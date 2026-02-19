@@ -1,3 +1,22 @@
+// =============================================================================
+// DynamicCreationCard.qml — Creación dinámica con Component.createObject()
+// =============================================================================
+// Demuestra la creación imperativa de objetos QML en tiempo de ejecución
+// usando Component.createObject(). A diferencia del Loader (declarativo),
+// createObject() permite crear múltiples instancias del mismo componente
+// posicionándolas libremente.
+//
+// Conceptos clave:
+// - Component.createObject(parent, properties): crea una instancia bajo
+//   el parent dado, con propiedades iniciales.
+// - object.destroy(): elimina el objeto y libera su memoria. Es responsabilidad
+//   del desarrollador gestionar la vida útil de objetos creados dinámicamente.
+// - Las animaciones (on scale, on y) se ejecutan automáticamente al crear
+//   el objeto — no necesitan iniciarse manualmente.
+//
+// Advertencia: crear muchos objetos sin destruirlos causa memory leaks.
+// El contador objectCount y el botón "Clear All" permiten monitorear y limpiar.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,6 +29,12 @@ Rectangle {
 
     property int objectCount: 0
 
+    // ---- Componente "burbuja" ----
+    // Template para las burbujas que se crearán dinámicamente. Cada instancia
+    // tiene color y tamaño aleatorios (Math.random), posición configurable
+    // via targetX/targetY, y dos animaciones automáticas:
+    // 1. Scale de 0 a 1 con easing OutBack (efecto "rebote")
+    // 2. Flotación vertical infinita con SequentialAnimation
     Component {
         id: bubbleComp
 
@@ -32,13 +57,17 @@ Rectangle {
                 color: "#FFFFFF"
             }
 
-            // Appear animation
+            // Animación de aparición: scale de 0→1 con rebote.
+            // "on scale" significa que la animación se ejecuta automáticamente
+            // cuando el objeto se crea y anima la propiedad scale.
             NumberAnimation on scale {
                 from: 0; to: 1; duration: 300
                 easing.type: Easing.OutBack
             }
 
-            // Float animation
+            // Animación de flotación continua: sube y baja alrededor de targetY.
+            // Math.random() en la duración hace que cada burbuja flote a
+            // velocidad ligeramente diferente, creando un efecto orgánico.
             SequentialAnimation on y {
                 loops: Animation.Infinite
                 NumberAnimation {
@@ -53,6 +82,9 @@ Rectangle {
                 }
             }
 
+            // Click en la burbuja la destruye. destroy() es necesario
+            // para objetos creados con createObject() — el garbage collector
+            // de QML NO los recoge automáticamente.
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
@@ -83,6 +115,12 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // ---- Área de generación ----
+        // spawnArea es el contenedor padre de todas las burbujas. clip: true
+        // asegura que las burbujas no se dibujen fuera de los límites.
+        // El MouseArea cubre toda el área — al hacer clic, crea una burbuja
+        // en la posición del cursor usando createObject() con propiedades
+        // iniciales {targetX, targetY}.
         Item {
             id: spawnArea
             Layout.fillWidth: true
@@ -97,7 +135,6 @@ Rectangle {
                 border.width: 1
             }
 
-            // Hint when empty
             Label {
                 anchors.centerIn: parent
                 text: "Click to spawn objects"
@@ -118,6 +155,10 @@ Rectangle {
             }
         }
 
+        // ---- Pie con contador y limpieza ----
+        // "Clear All" itera los hijos de spawnArea en orden inverso
+        // (para no invalidar índices) y destruye todos excepto el primero
+        // (que es el Rectangle de fondo, no una burbuja).
         RowLayout {
             Layout.fillWidth: true
 

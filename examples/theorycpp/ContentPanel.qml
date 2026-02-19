@@ -1,3 +1,29 @@
+// =============================================================================
+// ContentPanel.qml — Panel de contenido con teoria y ejemplos de codigo
+// =============================================================================
+// Panel derecho del visor de teoria C++. Muestra la explicacion teorica
+// (en Markdown) y los bloques de codigo de ejemplo (usando CodeBlock.qml)
+// para el tema seleccionado.
+//
+// Flujo de carga de contenido:
+//   1. ChapterPanel emite topicSelected -> Main.qml actualiza propiedades
+//   2. onChapterDirChanged / onTopicFileChanged disparan loadContent()
+//   3. loadContent() llama a parser.getExplanation() y parser.getCodeSections()
+//   4. Los resultados se asignan a propiedades locales que alimentan la UI
+//   5. contentFlickable.contentY = 0 resetea el scroll al inicio
+//
+// Patrones importantes:
+//   - Flickable en vez de ScrollView: da mas control sobre el comportamiento
+//     del scroll (boundsBehavior, ScrollBar manual). Util cuando se necesita
+//     resetear contentY programaticamente.
+//   - Pantalla de bienvenida condicional: visible cuando chapterDir esta
+//     vacio, se oculta automaticamente al seleccionar un tema.
+//   - Breadcrumb con separador Unicode (\u203A): patron simple y efectivo
+//     para mostrar la ruta de navegacion sin necesitar un componente especial.
+//   - implicitHeight basado en contenido: los TextEdit y CodeBlocks reportan
+//     su altura ideal, y el Flickable la usa como contentHeight.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,18 +34,24 @@ import theoryparser
 Item {
     id: root
 
+    // -- Referencia al parser C++ y propiedades de navegacion.
+    //    Estas se asignan desde Main.qml cuando el usuario selecciona un tema.
     property TheoryParser parser
     property string chapterDir: ""
     property string chapterDisplay: ""
     property string topicFile: ""
     property string topicDisplay: ""
 
+    // -- Contenido cargado: se actualizan en loadContent()
     property string explanationText: ""
     property var codeSections: []
 
+    // -- Recargar contenido cuando cambia el capitulo o tema seleccionado
     onChapterDirChanged: loadContent()
     onTopicFileChanged: loadContent()
 
+    // -- Funcion que llama al parser C++ para obtener el contenido.
+    //    Resetea el scroll para que el nuevo contenido empiece desde arriba.
     function loadContent() {
         if (chapterDir === "" || topicFile === "")
             return
@@ -37,7 +69,8 @@ Item {
             anchors.fill: parent
             spacing: 0
 
-            // Breadcrumb header
+            // -- Breadcrumb: muestra "Capitulo > Tema" o mensaje de instruccion.
+            //    Cambia de estilo segun si hay algo seleccionado o no.
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(50)
@@ -61,6 +94,7 @@ Item {
                     }
                 }
 
+                // -- Linea separadora inferior
                 Rectangle {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
@@ -70,7 +104,9 @@ Item {
                 }
             }
 
-            // Content area
+            // -- Area de contenido scrolleable con Flickable.
+            //    Se usa Flickable (no ScrollView) para poder resetear
+            //    contentY programaticamente al cambiar de tema.
             Flickable {
                 id: contentFlickable
                 Layout.fillWidth: true
@@ -89,7 +125,8 @@ Item {
                     width: contentFlickable.width
                     spacing: Style.resize(16)
 
-                    // Welcome screen when nothing is selected
+                    // -- Pantalla de bienvenida: visible solo cuando no hay
+                    //    ningun tema seleccionado.
                     Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Style.resize(300)
@@ -117,7 +154,8 @@ Item {
                         }
                     }
 
-                    // Theory content (markdown)
+                    // -- Seccion de teoria: TextEdit con Markdown que muestra
+                    //    la explicacion devuelta por parser.getExplanation().
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.leftMargin: Style.resize(20)
@@ -144,7 +182,7 @@ Item {
                         }
                     }
 
-                    // Code sections header
+                    // -- Encabezado de la seccion de codigo con contador
                     Label {
                         Layout.leftMargin: Style.resize(20)
                         text: "Ejemplos de Codigo (" + root.codeSections.length + ")"
@@ -154,7 +192,9 @@ Item {
                         visible: root.codeSections.length > 0
                     }
 
-                    // Code sections
+                    // -- Bloques de codigo: un CodeBlock por cada seccion
+                    //    devuelta por parser.getCodeSections().
+                    //    Cada seccion tiene {title, code, result}.
                     Repeater {
                         model: root.codeSections
 
@@ -171,7 +211,8 @@ Item {
                         }
                     }
 
-                    // Bottom spacer
+                    // -- Espaciador inferior para que el ultimo bloque no
+                    //    quede pegado al borde de la ventana.
                     Item {
                         Layout.preferredHeight: Style.resize(40)
                         Layout.fillWidth: true

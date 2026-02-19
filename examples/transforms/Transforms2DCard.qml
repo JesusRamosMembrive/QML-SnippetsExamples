@@ -1,3 +1,27 @@
+// =============================================================================
+// Transforms2DCard.qml — Transformaciones 2D basicas: rotation, scale, origin
+// =============================================================================
+// Demuestra las dos transformaciones 2D mas comunes de QML y como el punto
+// de origen (transformOrigin) afecta dramaticamente el resultado visual.
+//
+// PROPIEDADES CLAVE DE ITEM:
+//   - rotation: angulo de giro en grados (0-360). Es rotacion 2D pura
+//     (equivale a eje Z). La propiedad es animable y bindable.
+//   - scale: factor de escala (1.0 = tamano original). Valores < 1 encogen,
+//     > 1 agrandan. Escala uniformemente en X e Y.
+//   - transformOrigin: punto alrededor del cual se aplican rotation y scale.
+//     Valores predefinidos: Item.Center, Item.TopLeft, Item.BottomRight, etc.
+//     Por defecto es Item.Center.
+//
+// POR QUE IMPORTA EL ORIGIN: al rotar 45 grados con origin en Center,
+// el objeto gira "en su sitio". Con origin en TopLeft, el objeto orbita
+// alrededor de su esquina superior izquierda. Esto es crucial para
+// animaciones de UI como menus desplegables (origin en top) o puertas
+// que se abren (origin en el lado de la bisagra).
+//
+// INDICADOR VISUAL: un punto naranja muestra donde esta el origin actual,
+// facilitando entender visualmente por que el giro se ve diferente.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -21,7 +45,9 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Rotation slider
+        // Controles: rotation y scale se controlan con sliders.
+        // Los valores se muestran en tiempo real junto al slider gracias
+        // al binding con .value.toFixed(). stepSize controla la granularidad.
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Rotation: " + rotSlider.value.toFixed(0) + "\u00B0"; font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(100) }
@@ -41,7 +67,9 @@ Rectangle {
             }
         }
 
-        // Origin buttons
+        // Selector de origin: tres botones que cambian transformOrigin.
+        // 'highlighted' marca visualmente el boton activo. La property
+        // originMode se propaga al rectangulo transformado via parent chain.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -65,7 +93,9 @@ Rectangle {
             }
         }
 
-        // Preview area
+        // Area de vista previa: el rectangulo teal aplica rotation y scale
+        // vinculados a los sliders. transformOrigin cambia segun originMode
+        // usando un binding condicional (expression binding).
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true

@@ -1,8 +1,29 @@
+// =============================================================================
+// SmartHomeCard.qml — Demo interactiva combinando Switch, CheckBox y RadioButton
+// =============================================================================
+// Esta tarjeta muestra como los tres tipos de controles de seleccion pueden
+// trabajar juntos en un escenario real: un panel de control de hogar inteligente.
+//
+// Patron clave — interdependencia de controles:
+//   - CheckBox "Enable Zone": habilita/deshabilita todos los demas controles
+//     mediante la propiedad 'enabled' (los controles deshabilitados se atenuan)
+//   - Switch "Dark Mode": cambia el tema visual de la tarjeta en tiempo real
+//     usando ColorAnimation para transiciones suaves
+//   - RadioButtons de temperatura: seleccion exclusiva dentro de un ButtonGroup
+//
+// Esto demuestra que los controles de Qt Quick Controls 2 son componibles:
+// la propiedad 'enabled' se propaga visualmente (el estilo muestra los controles
+// atenuados) y funcionalmente (no responden a input del usuario).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import utils
 
+// El color de fondo reacciona al Switch de Dark Mode con ColorAnimation.
+// Esto demuestra que propiedades como 'color' pueden depender de estados
+// de otros componentes, y las animaciones suavizan la transicion.
 Rectangle {
     id: root
     color: darkModeSwitch.checked ? "#1E2028" : Style.cardColor
@@ -24,6 +45,11 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // -----------------------------------------------------------------
+        // CheckBox maestro: controla el 'enabled' de todos los controles
+        // inferiores. Cuando enabled=false, Qt Quick Controls atenua el
+        // componente automaticamente (manejado por el estilo).
+        // -----------------------------------------------------------------
         CheckBox {
             id: enableZoneCheckBox
             text: "Enable Zone"
@@ -85,6 +111,12 @@ Rectangle {
             color: darkModeSwitch.checked ? "#3A3D45" : Style.bgColor
         }
 
+        // -----------------------------------------------------------------
+        // Resumen reactivo: resume el estado de TODOS los controles en una
+        // sola etiqueta. Cada binding se recalcula automaticamente cuando
+        // cualquier control cambia, sin necesidad de handlers manuales.
+        // Los colores del texto tambien reaccionan al modo oscuro.
+        // -----------------------------------------------------------------
         Label {
             text: "Zone: " + (enableZoneCheckBox.checked ? "Enabled" : "Disabled")
                   + "  |  Mode: " + (darkModeSwitch.checked ? "Dark" : "Light")

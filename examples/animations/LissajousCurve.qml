@@ -1,3 +1,29 @@
+// =============================================================================
+// LissajousCurve.qml — Trazador de curvas de Lissajous con trail colorido
+// =============================================================================
+// Las curvas de Lissajous son figuras parametricas definidas por:
+//   x = sin(A * t + fase)
+//   y = sin(B * t)
+// donde A y B son frecuencias y la fase desplaza la senal X respecto a Y.
+//
+// Diferentes relaciones A:B producen distintas figuras:
+//   - 1:1 = elipse o circulo (dependiendo de la fase)
+//   - 1:2 = figura de ocho / parabola
+//   - 3:2 = patron tipo pretzel
+//   - Relaciones irracionales = la curva nunca se cierra
+//
+// TECNICA DEL TRAIL (ESTELA):
+//   En vez de dibujar la curva completa de una vez, se almacenan los ultimos
+//   N puntos en un array y se dibujan como segmentos individuales. Cada
+//   segmento tiene su propio color (variando el hue con hsla) y grosor
+//   (creciente hacia la cabeza), creando un efecto de "serpiente" luminosa.
+//
+// El punto cabeza tiene un glow (gradiente radial transparente) que le da
+// el efecto de ser la "punta" activa del trazado.
+//
+// Los sliders A, B y fase permiten explorar interactivamente el espacio
+// de parametros y ver como cada cambio transforma la figura.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,7 +36,7 @@ ColumnLayout {
     property bool active: false
     property bool sectionActive: false
 
-    // ── Section title ────────────────────────────────
+    // ── Titulo + boton Play/Stop ────────────────────
     RowLayout {
         Layout.fillWidth: true
         Label {
@@ -28,7 +54,10 @@ ColumnLayout {
         }
     }
 
-    // ── Content ──────────────────────────────────────
+    // ── Area de trazado ──────────────────────────────
+    // El trail se almacena como array de puntos {x, y}. maxTrail limita
+    // el largo de la estela — cuando se supera, se eliminan los mas viejos
+    // con splice(). Esto mantiene el consumo de memoria constante.
     Item {
         id: content
         Layout.fillWidth: true
@@ -94,7 +123,8 @@ ColumnLayout {
                     ctx.stroke()
                 }
 
-                // Head dot
+                // Punto cabeza: circulo blanco solido con glow verde alrededor.
+                // Sirve como indicador visual de la posicion actual del trazador.
                 var last = tr[tr.length - 1]
                 ctx.beginPath()
                 ctx.arc(last.x, last.y, 5, 0, 2 * Math.PI)
@@ -112,7 +142,9 @@ ColumnLayout {
             }
         }
 
-        // Controls
+        // Controles de parametros: A y B son frecuencias enteras (producen
+        // curvas cerradas con relaciones racionales), fase va de 0 a PI.
+        // "Clear" resetea el trail y el tiempo para comenzar de nuevo.
         Row {
             anchors.top: parent.top
             anchors.right: parent.right

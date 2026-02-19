@@ -1,3 +1,36 @@
+// =============================================================================
+// NestedDashboard.qml — Dashboard completo con layouts anidados
+// =============================================================================
+// Demuestra como combinar multiples niveles de RowLayout y ColumnLayout para
+// construir un dashboard de negocios completo con:
+//   - Barra superior de KPIs (4 tarjetas en fila)
+//   - Zona central dividida: grafica de barras + panel de actividad reciente
+//   - Barra inferior con contadores de tareas pendientes
+//
+// Este es el patron mas realista del modulo de layouts porque replica una
+// interfaz de produccion tipica. La estructura de anidamiento es:
+//
+//   ColumnLayout (vertical principal)
+//     RowLayout (KPIs horizontales - 4 tarjetas)
+//     RowLayout (centro)
+//       Rectangle (grafica - fillWidth)
+//       Rectangle (panel lateral - preferredWidth fijo)
+//     RowLayout (footer - 3 tarjetas)
+//
+// Patrones clave:
+//   - Repeater con modelo de objetos JS: cada KPI, barra de grafica, evento
+//     y tarea se genera desde un array literal. Esto hace el codigo DRY y
+//     facilita agregar/quitar elementos sin tocar la estructura visual.
+//   - Barras de grafica falsas con Repeater: alturas proporcionales al valor
+//     del modelo, usando anchors.bottom para que crezcan de abajo hacia arriba.
+//   - Qt.hsla() para colores procedurales: las barras de la grafica usan
+//     saturacion y luminosidad calculadas a partir del valor, creando un
+//     gradiente automatico sin definir colores manualmente.
+//   - Layout.fillWidth + fillHeight: el area de la grafica se expande para
+//     ocupar todo el espacio sobrante, mientras que los paneles laterales
+//     y los headers/footers mantienen tamanos fijos.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -30,7 +63,10 @@ ColumnLayout {
                 anchors.margins: Style.resize(8)
                 spacing: Style.resize(6)
 
-                // Top bar
+                // ── Barra superior: KPIs en fila ──
+                // Cada tarjeta KPI usa Layout.fillWidth para repartir el espacio
+                // equitativamente entre las 4. El color del cambio porcentual
+                // (verde/rojo) depende de la propiedad "up" del modelo.
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Style.resize(6)
@@ -80,7 +116,9 @@ ColumnLayout {
                     }
                 }
 
-                // Middle: chart area + side panel
+                // ── Zona central: grafica + panel lateral ──
+                // El area de la grafica usa fillWidth + fillHeight para expandirse,
+                // mientras el panel lateral tiene un ancho fijo (preferredWidth: 160).
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -214,7 +252,10 @@ ColumnLayout {
                     }
                 }
 
-                // Bottom bar
+                // ── Barra inferior: contadores de tareas ──
+                // Misma tecnica que la barra superior pero con menos informacion.
+                // El badge con fondo teal (mainColor con opacidad 0.15) resalta
+                // el conteo numerico.
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Style.resize(6)

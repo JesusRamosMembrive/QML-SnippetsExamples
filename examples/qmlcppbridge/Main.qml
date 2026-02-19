@@ -1,3 +1,30 @@
+// =============================================================================
+// Main.qml — Pagina principal del ejemplo QML / C++ Bridge
+// =============================================================================
+// Pagina contenedora que organiza cuatro tarjetas que demuestran los tres
+// mecanismos principales de comunicacion entre C++ y QML en Qt:
+//
+//   1. Q_PROPERTY (PropertyBindCard): binding bidireccional de propiedades.
+//      QML puede leer, escribir y observar cambios en propiedades C++.
+//
+//   2. Q_INVOKABLE + Q_ENUM (MethodCard): llamar funciones C++ desde QML
+//      con parametros tipados. Incluye enums que QML puede usar directamente.
+//
+//   3. Signals (SignalCard): C++ emite signals que QML escucha con handlers
+//      on<NombreSignal>. Comunicacion asincrona de C++ hacia QML.
+//
+//   4. Combinado (InteractiveBridgeCard): los tres mecanismos trabajando
+//      juntos en una sola tarjeta.
+//
+// A diferencia de customitem/ (que usa QQuickPaintedItem para dibujo 2D),
+// este ejemplo usa QObject puro — no hay componente visual en C++. La
+// logica de negocio vive en C++ y la presentacion vive en QML.
+//
+// Los tipos C++ (PropertyBridge, MethodBridge, SignalBridge) estan definidos
+// en imports/qmlcppbridge/ y registrados con QML_ELEMENT para ser usados
+// como componentes QML normales.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +35,7 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // -- Patron de visibilidad del proyecto (ver Dashboard.qml).
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -43,6 +71,8 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // -- Cuatro tarjetas en grid 2x2, una por cada mecanismo
+                //    de comunicacion C++ <-> QML.
                 GridLayout {
                     columns: 2
                     rows: 2

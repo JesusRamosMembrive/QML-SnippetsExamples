@@ -1,3 +1,24 @@
+// =============================================================================
+// LabelsRangeSliderCard.qml — Tarjeta: Rangos con formato y unidades
+// =============================================================================
+// Demuestra como presentar RangeSliders con contexto significativo para el
+// usuario: rangos de precio ($), edad (anios) y temperatura (°C). Cada slider
+// tiene su propio rango (from/to), paso (stepSize) y formato de etiqueta.
+//
+// El ejemplo de temperatura va mas alla del formato: el color del label
+// cambia dinamicamente segun el promedio del rango (azul < 10°C, teal 10-25,
+// naranja > 25°C). Esto demuestra como usar bindings con logica condicional
+// para crear feedback visual contextual.
+//
+// Patron de layout repetido: cada slider sigue la misma estructura:
+//   ColumnLayout > RowLayout(titulo + valor) > Item > RangeSlider
+// El RowLayout con un Item { fillWidth: true } en medio crea el efecto
+// "titulo a la izquierda, valor a la derecha" (similar a space-between CSS).
+//
+// Aprendizaje clave: "from" no tiene que ser 0 — el slider de temperatura
+// usa from: -20 y to: 50, mostrando que RangeSlider soporta rangos negativos.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +41,8 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Price range
+        // Rango de precio: stepSize: 50 da incrementos de $50.
+        // El formato "$200 -- $800" contextualiza los numeros crudos.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -61,7 +83,8 @@ Rectangle {
             }
         }
 
-        // Age range
+        // Rango de edad: from: 18 (mayoria de edad) a to: 65.
+        // stepSize: 1 permite seleccion precisa anio por anio.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -102,7 +125,13 @@ Rectangle {
             }
         }
 
-        // Temperature range
+        // Rango de temperatura: usa valores negativos (from: -20).
+        // El color del label cambia segun el promedio del rango:
+        //   - Azul (#4FC3F7) para frio (< 10°C)
+        //   - Teal (Style.mainColor) para templado (10-25°C)
+        //   - Naranja (#FF7043) para calor (> 25°C)
+        // Este patron de "color semantico" da informacion adicional
+        // sin necesidad de texto extra.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10

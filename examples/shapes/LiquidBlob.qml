@@ -1,3 +1,26 @@
+// =============================================================================
+// LiquidBlob.qml — Blob organico animado con deformacion sinusoidal
+// =============================================================================
+// Genera una forma organica tipo "gota liquida" que se deforma continuamente
+// usando superposicion de ondas sinusoidales (sintesis aditiva).
+//
+// TECNICA MATEMATICA: el radio del blob en cada angulo theta se calcula como:
+//   r(theta) = baseR + sum( amplitud_i * sin(frecuencia_i * theta + fase_i) )
+// Sumar varias sinusoides con frecuencias diferentes (3, 5, 7, 2) crea una
+// deformacion compleja y organica. Es el mismo principio que la sintesis de
+// Fourier: cualquier forma periodica se puede descomponer en sinusoides.
+//
+// CAPAS VISUALES (de afuera hacia adentro):
+//   1. Blob principal: contorno + relleno con gradiente radial tricolor.
+//   2. Blob interior (highlight): mas pequeno, ligeramente desplazado,
+//      con relleno semitransparente para dar sensacion de volumen.
+//   3. Punto especular: circulo pequeno fijo que simula un reflejo de luz.
+//
+// GRADIENTE RADIAL EN CANVAS: createRadialGradient(x0,y0,r0, x1,y1,r1)
+// define dos circulos (interior y exterior) entre los cuales se interpolan
+// los colores. Desplazar el circulo interior del centro crea un efecto de
+// iluminacion lateral (como una esfera con luz desde arriba-izquierda).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -60,7 +83,10 @@ ColumnLayout {
                 var baseR = Math.min(cx, cy) * 0.55
                 var points = 120
 
-                // Main blob
+                // Blob principal: 120 puntos en coordenadas polares con
+                // radio deformado por 4 sinusoides superpuestas.
+                // Cada sinusoide tiene distinta frecuencia angular (3,5,7,2)
+                // y velocidad temporal, creando un patron no repetitivo.
                 ctx.beginPath()
                 for (var i = 0; i <= points; i++) {
                     var theta = i / points * 2 * Math.PI
@@ -76,7 +102,7 @@ ColumnLayout {
                 }
                 ctx.closePath()
 
-                // Gradient fill
+                // Gradiente radial con centro desplazado: crea iluminacion lateral.
                 var grad = ctx.createRadialGradient(cx - baseR * 0.3, cy - baseR * 0.3, 0, cx, cy, baseR * 1.4)
                 grad.addColorStop(0, "rgba(0,209,169,0.6)")
                 grad.addColorStop(0.5, "rgba(74,144,217,0.4)")
@@ -87,7 +113,8 @@ ColumnLayout {
                 ctx.lineWidth = 2
                 ctx.stroke()
 
-                // Inner highlight blob (smaller, offset, brighter)
+                // Blob interior: mas pequeno, desplazado del centro, con sus
+                // propias sinusoides de deformacion para que no sea concentrico.
                 ctx.beginPath()
                 var innerR = baseR * 0.4
                 for (var j = 0; j <= points; j++) {
@@ -104,7 +131,8 @@ ColumnLayout {
                 ctx.fillStyle = "rgba(0,209,169,0.15)"
                 ctx.fill()
 
-                // Specular highlight
+                // Reflejo especular: punto fijo blanco semitransparente que da
+                // la ilusion de una superficie brillante y reflectante.
                 ctx.beginPath()
                 ctx.arc(cx - baseR * 0.25, cy - baseR * 0.25, baseR * 0.12, 0, 2 * Math.PI)
                 ctx.fillStyle = "rgba(255,255,255,0.15)"

@@ -1,3 +1,20 @@
+// =============================================================================
+// InteractiveImageCard.qml — Propiedades interactivas de imagen
+// =============================================================================
+// Permite experimentar en tiempo real con las propiedades de transformacion
+// de un Item visual: rotation, scale, y mirror (espejo horizontal/vertical).
+// La imagen incluye una flecha con texto "UP" para que el efecto de cada
+// transformacion sea inmediatamente visible.
+//
+// Conceptos clave:
+// - 'transform: Scale' permite espejo independiente en X e Y sin afectar
+//   la propiedad 'scale' global del item. origin.x/y centran la transformacion.
+// - 'Behavior on' anima automaticamente cualquier cambio en la propiedad,
+//   creando transiciones suaves sin necesidad de definir estados.
+// - 'smooth' controla el filtrado bilineal; desactivarlo muestra pixeles
+//   crudos, util para pixel art o para entender el concepto de antialiasing.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,6 +43,8 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // Area de previsualizacion con clip para que las transformaciones
+        // (especialmente scale > 1) no se desborden fuera de la tarjeta.
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -37,7 +56,8 @@ Rectangle {
                 radius: Style.resize(8)
             }
 
-            // Source image generated with Canvas
+            // Imagen generada con Canvas. La flecha "UP" hace evidente
+            // el efecto del espejo y la rotacion.
             Canvas {
                 id: propCanvas
                 anchors.centerIn: parent
@@ -47,6 +67,9 @@ Rectangle {
                 scale: root.imgScale
                 smooth: root.smoothEnabled
 
+                // transform: Scale independiente de la propiedad 'scale'.
+                // xScale: -1 voltea horizontalmente, yScale: -1 verticalmente.
+                // El origin centra la transformacion en el punto medio del Canvas.
                 transform: Scale {
                     origin.x: propCanvas.width / 2
                     origin.y: propCanvas.height / 2
@@ -54,6 +77,7 @@ Rectangle {
                     yScale: root.mirrorV ? -1 : 1
                 }
 
+                // Behavior anima cambios graduales desde los Sliders
                 Behavior on rotation { NumberAnimation { duration: 300 } }
                 Behavior on scale { NumberAnimation { duration: 300 } }
 
@@ -92,7 +116,11 @@ Rectangle {
             }
         }
 
-        // Controls
+        // -----------------------------------------------------------------
+        // Controles interactivos: Sliders para rotacion y escala,
+        // Switches para espejos y suavizado. Cada control esta vinculado
+        // a una propiedad del root, manteniendo la logica desacoplada.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)

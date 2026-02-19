@@ -1,3 +1,34 @@
+// =============================================================================
+// RecordsCard.qml — Lista de coincidencias encontradas por el Collector
+// =============================================================================
+// Muestra los registros que el hilo Collector encontro (bytes que coinciden
+// con el patron de busqueda). Cada registro incluye timestamp, datos hex
+// y tamano en bytes. Los registros mas recientes aparecen arriba.
+//
+// Conexion QML <-> C++:
+//   - ThreadPipeline emite la senal onRecordAdded(timestamp, hexData, size)
+//     cada vez que el Collector encuentra una coincidencia. Esta senal
+//     cruza la frontera de hilos via QueuedConnection: el Collector la
+//     emite en el hilo 3, Qt la encola en el event loop del hilo GUI,
+//     y QML la recibe aqui en Connections.
+//   - Los datos llegan como tipos simples (string, string, int) porque
+//     los tipos complejos requieren registro adicional para cruzar hilos.
+//
+// Patrones clave:
+//   - ListModel como buffer de QML: los registros del C++ se insertan en
+//     un ListModel de QML (no un modelo C++). Esto simplifica la
+//     implementacion porque ListModel tiene insert/remove/clear nativos.
+//   - insert(0, ...) + limite de 500: los registros nuevos se insertan al
+//     inicio (mas recientes arriba). Si superan 500, se eliminan los mas
+//     antiguos. Esto evita que la lista crezca indefinidamente en memoria.
+//   - Empty state pattern: cuando no hay registros, se muestra un Label
+//     centrado con instrucciones. El ListView y el Label usan "visible"
+//     mutuamente excluyente para alternar.
+//   - Connections con funcion nombrada: Connections { function onRecordAdded }
+//     es la sintaxis moderna de Qt 6 para conectar senales a handlers.
+//     Reemplaza al antiguo onRecordAdded: { ... } que es menos type-safe.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,10 +41,17 @@ Rectangle {
 
     required property var pipeline
 
+    // ListModel local de QML como buffer para los registros del Collector.
+    // Se usa un modelo QML en lugar de exponer el vector del C++ porque
+    // es mas simple para una vista de solo lectura con limite de tamano.
     ListModel {
         id: recordsModel
     }
 
+    // ── Conexion con la senal del pipeline ──
+    // onRecordAdded cruza la frontera de hilos: el Collector emite la senal
+    // en su hilo, Qt la encola en el event loop del GUI thread, y QML
+    // la recibe aqui de forma segura.
     Connections {
         target: root.pipeline
         function onRecordAdded(timestamp, hexData, size) {

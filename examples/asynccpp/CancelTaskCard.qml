@@ -1,3 +1,20 @@
+// =============================================================================
+// CancelTaskCard.qml — Tarjeta de ejemplo: Cancelacion cooperativa de tareas
+// =============================================================================
+// Demuestra el patron de cancelacion cooperativa de QFuture/QPromise.
+// La cancelacion en Qt NO es abrupta: QFuture::cancel() solo activa una
+// bandera. El hilo de trabajo debe verificar QPromise::isCanceled()
+// periodicamente y decidir retornar antes de tiempo.
+//
+// Esto es fundamental para entender la concurrencia en Qt: no se puede
+// "matar" un hilo de forma segura. El worker debe cooperar revisando
+// la bandera de cancelacion en cada iteracion de su bucle.
+//
+// Aprendizaje clave: la UI refleja tres estados (running, completed,
+// cancelled) con colores distintos, mostrando como manejar el ciclo de
+// vida completo de una operacion asincrona.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -29,6 +46,10 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Botones complementarios: Start y Cancel tienen logica de enabled
+        // opuesta. Cuando la tarea esta corriendo, solo Cancel esta activo.
+        // Cuando no hay tarea, solo Start esta activo. Esto crea una
+        // maquina de estados implicita controlada por un solo booleano.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -55,6 +76,10 @@ Rectangle {
             value: task.progress
         }
 
+        // Indicador visual de estado: el fondo cambia de color con
+        // transparencia (#1A = 10% alfa) segun el estado de la tarea.
+        // Verde completado, rojo cancelado, teal en progreso, neutro listo.
+        // El uso de colores semitransparentes da contexto sin ser invasivo.
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(40)
@@ -80,6 +105,10 @@ Rectangle {
             }
         }
 
+        // Panel educativo: explica paso a paso como funciona la cancelacion
+        // cooperativa en Qt. Usa un Repeater con un modelo de strings —
+        // un patron sencillo para generar listas estaticas de texto sin
+        // necesidad de un ListModel completo.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

@@ -1,3 +1,23 @@
+// =============================================================================
+// InteractiveMenuCard.qml — Menus que controlan una figura animada
+// =============================================================================
+// Ejemplo avanzado donde la MenuBar actua como panel de control de una figura
+// geometrica. El usuario selecciona forma, color y tamano desde menus, y la
+// figura se actualiza con transiciones animadas.
+//
+// Conceptos clave:
+//   - Behavior on <propiedad>: animacion implicita que se ejecuta cada vez
+//     que la propiedad cambia. Permite transiciones suaves sin logica extra.
+//   - NumberAnimation vs ColorAnimation: QML necesita el tipo de animacion
+//     correcto para cada tipo de propiedad (numeros vs colores).
+//   - Truco del diamante: un rectangulo con rotation: 45 se ve como un rombo.
+//   - Truco del circulo: radius = width/2 convierte un rectangulo en circulo.
+//
+// Este ejemplo demuestra como los menus pueden ser algo mas que navegacion:
+// pueden servir como controles de configuracion que afectan una vista en
+// tiempo real, similar a herramientas de un editor grafico.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +28,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Propiedades que definen el estado de la figura.
+    //    Cada Menu modifica una de estas propiedades.
     property color shapeColor: Style.mainColor
     property string shapeName: "Rectangle"
     property int shapeSize: 60
@@ -24,7 +46,8 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Menu bar for drawing controls
+        // -- MenuBar como panel de control con 3 categorias: forma, color y tamano.
+        //    Cada MenuItem simplemente asigna un valor a la propiedad correspondiente.
         MenuBar {
             Layout.fillWidth: true
 
@@ -52,7 +75,9 @@ Rectangle {
             }
         }
 
-        // Drawing area
+        // -- Area de dibujo con la figura centrada.
+        //    La figura es un solo Rectangle cuyas propiedades (radius, rotation,
+        //    width, height, color) se modifican para simular diferentes formas.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -67,6 +92,8 @@ Rectangle {
                 rotation: root.shapeName === "Diamond" ? 45 : 0
                 color: root.shapeColor
 
+                // -- Behaviors: cada cambio de propiedad se anima automaticamente.
+                //    Esto crea una transicion fluida al cambiar forma/color/tamano.
                 Behavior on width { NumberAnimation { duration: 200 } }
                 Behavior on height { NumberAnimation { duration: 200 } }
                 Behavior on radius { NumberAnimation { duration: 200 } }
@@ -75,6 +102,7 @@ Rectangle {
             }
         }
 
+        // -- Barra de estado con la configuracion actual
         Label {
             text: root.shapeName + " | " + root.shapeColor + " | " + root.shapeSize + "px"
             font.pixelSize: Style.resize(12)

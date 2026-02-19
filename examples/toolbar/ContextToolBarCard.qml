@@ -1,3 +1,24 @@
+// =============================================================================
+// ContextToolBarCard.qml — ToolBar contextual que cambia segun la seleccion
+// =============================================================================
+// Demuestra el patron de "barra contextual" comun en apps como Gmail o
+// editores: cuando no hay items seleccionados se muestran acciones generales
+// (New, Refresh, Settings), y al seleccionar items la barra cambia a acciones
+// de seleccion (Delete, Copy, Clear) con un contador.
+//
+// Conceptos clave:
+//   - Dos RowLayouts con visible condicional: tecnica simple para alternar
+//     entre dos sets de botones. Solo uno es visible a la vez segun el
+//     estado de selectedItems.
+//   - Behavior on color en el background: la transicion de color del fondo
+//     (gris -> azul oscuro) anima suavemente el cambio de contexto.
+//   - CheckBox con contador: onCheckedChanged suma o resta 1 al contador.
+//     Este patron es simple pero tiene una limitacion: si el Repeater se
+//     recrea (por cambio de modelo), el contador se desincroniza.
+//   - Patron visual: el color azul (#1A3A5C, #4FC3F7) indica modo de
+//     seleccion activo, una convencion de Material Design.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +29,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Contador de items seleccionados. Controla que set de botones
+    //    se muestra y el color de fondo de la toolbar.
     property int selectedItems: 0
 
     ColumnLayout {
@@ -28,7 +51,8 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Contextual toolbar
+        // -- ToolBar con fondo animado: cambia de color cuando hay seleccion.
+        //    Contiene dos RowLayouts mutuamente excluyentes.
         ToolBar {
             Layout.fillWidth: true
             background: Rectangle {
@@ -43,7 +67,7 @@ Rectangle {
                 anchors.rightMargin: Style.resize(8)
                 spacing: Style.resize(6)
 
-                // Normal toolbar
+                // -- Modo normal: acciones generales cuando no hay seleccion
                 RowLayout {
                     visible: root.selectedItems === 0
                     spacing: Style.resize(6)
@@ -52,7 +76,8 @@ Rectangle {
                     ToolButton { text: "\u2699 Settings" }
                 }
 
-                // Selection toolbar
+                // -- Modo seleccion: acciones sobre los items seleccionados.
+                //    Delete y Clear resetean el contador a 0.
                 RowLayout {
                     visible: root.selectedItems > 0
                     spacing: Style.resize(6)
@@ -75,7 +100,8 @@ Rectangle {
             }
         }
 
-        // Selectable items
+        // -- Lista de documentos seleccionables con CheckBox.
+        //    Cada cambio de checked incrementa o decrementa el contador.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

@@ -1,3 +1,29 @@
+// =============================================================================
+// PaintedClockCard.qml — Reloj analogico usando QQuickPaintedItem (C++)
+// =============================================================================
+// Demuestra como usar un componente C++ personalizado (AnalogClock) en QML.
+// AnalogClock hereda de QQuickPaintedItem y dibuja un reloj completo con
+// QPainter: esfera, marcas de hora, manecillas y color de acento.
+//
+// Integracion C++ <-> QML:
+//   - "import customitem" importa el modulo C++ que contiene AnalogClock.
+//   - AnalogClock esta registrado con QML_ELEMENT en su header, lo que
+//     permite usarlo como <AnalogClock { ... }> directamente en QML.
+//   - Q_PROPERTY(int hours/minutes/seconds ...): QML puede leer y escribir
+//     estas propiedades como si fueran propiedades QML nativas. Los setters
+//     en C++ llaman update() que dispara un repintado del item.
+//   - Q_PROPERTY(QColor accentColor): QML asigna un string de color ("#00D1A9")
+//     y Qt lo convierte automaticamente a QColor en C++.
+//
+// El Timer de QML actualiza las propiedades cada segundo con la hora real.
+// Cada vez que un setter en C++ detecta un cambio, llama update() para
+// solicitar un repintado. Qt entonces llama paint() pasando un QPainter.
+//
+// Aprendizaje: la logica de dibujo complejo vive en C++ (paint()), pero
+// la configuracion y la logica de la UI viven en QML (Timer, selector de
+// color). Esto separa responsabilidades de manera eficiente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +35,9 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Timer QML que actualiza las propiedades del reloj cada segundo.
+    //    triggeredOnStart: true asegura que se dibuje inmediatamente al
+    //    crear el componente, sin esperar el primer intervalo.
     Timer {
         interval: 1000
         running: true
@@ -41,7 +70,9 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Clock display
+        // -- Area del reloj: AnalogClock es el componente C++.
+        //    Se dimensiona como cuadrado (height: width) tomando el menor
+        //    de ancho/alto del padre para mantener la proporcion circular.
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -54,7 +85,9 @@ Rectangle {
             }
         }
 
-        // Time label
+        // -- Hora digital: lee las Q_PROPERTYs hours/minutes/seconds
+        //    del AnalogClock C++. El binding se actualiza cada vez que
+        //    las propiedades cambian (gracias a las signals NOTIFY).
         Label {
             text: {
                 var h = clock.hours.toString().padStart(2, '0')
@@ -68,7 +101,10 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        // Accent color selector
+        // -- Selector de color de acento: al hacer clic en un circulo,
+        //    se asigna el color a clock.accentColor (Q_PROPERTY de C++).
+        //    El setter en C++ llama update() -> se repinta el reloj
+        //    con el nuevo color de manecilla de segundos.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

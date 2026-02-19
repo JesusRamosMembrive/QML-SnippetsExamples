@@ -1,3 +1,34 @@
+// =============================================================================
+// MatrixShear.qml — Transformacion de cizallamiento (shear) con Matrix4x4
+// =============================================================================
+// Demuestra la transformacion de cizallamiento (shear/skew) que NO tiene
+// propiedad nativa en QML. Para lograrla se usa Matrix4x4, que permite
+// definir cualquier transformacion afin arbitraria via una matriz 4x4.
+//
+// QUE ES SHEAR (CIZALLAMIENTO):
+//   Desplaza las coordenadas de un eje proporcionalmente al valor del otro.
+//   - Shear X: cada fila se desplaza horizontalmente segun su posicion Y.
+//     Resultado: un rectangulo se convierte en un paralelogramo inclinado.
+//   - Shear Y: cada columna se desplaza verticalmente segun su posicion X.
+//
+// LA MATRIZ:
+//   | 1      shearX  0  -shearX*h/2 |
+//   | shearY  1      0  -shearY*w/2 |
+//   | 0       0      1   0          |
+//   | 0       0      0   1          |
+//
+//   Los terminos -shearX*h/2 y -shearY*w/2 son compensaciones para que la
+//   transformacion se aplique centrada (sin ellos, el objeto se desplazaria
+//   lateralmente ademas de deformarse).
+//
+// MATRIX4X4 EN QML: es la transformacion mas poderosa disponible. Puede
+// expresar cualquier combinacion de rotation + scale + translate + shear
+// en una sola operacion. Es util cuando las propiedades individuales de
+// QML (rotation, scale) no cubren el efecto deseado.
+//
+// GHOST OUTLINE: el rectangulo fantasma transparente muestra la posicion
+// original del objeto, facilitando visualizar cuanto se ha deformado.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -36,7 +67,9 @@ ColumnLayout {
         }
     }
 
-    // Matrix display
+    // Visualizacion de la matriz: muestra los valores actuales de la matriz 2x2
+    // relevante (la submatriz superior-izquierda). Fuente monoespaciada para
+    // que los numeros se alineen como en una matriz matematica real.
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.resize(36)
@@ -59,7 +92,8 @@ ColumnLayout {
         radius: Style.resize(6)
         clip: true
 
-        // Grid background for reference
+        // Grilla de fondo: lineas cada 30px que sirven como referencia visual
+        // para apreciar la deformacion del objeto respecto a la cuadricula recta.
         Canvas {
             anchors.fill: parent
             onPaint: {
@@ -116,7 +150,8 @@ ColumnLayout {
             }
         }
 
-        // Ghost outline of original position
+        // Contorno fantasma: muestra la posicion y forma original del rectangulo.
+        // Solo visible cuando hay deformacion activa (shear != 0).
         Rectangle {
             anchors.centerIn: parent
             width: Style.resize(100)

@@ -1,3 +1,22 @@
+// =============================================================================
+// MovingMapCard.qml — Mapa movil con ruta, waypoints y simbolo de avion
+// =============================================================================
+// Componente central del Navigation Display. Dibuja un mapa radar estilo
+// cockpit usando Canvas 2D con multiples capas: arco de brujula, anillos de
+// rango, ruta del plan de vuelo (magenta), waypoints (diamantes verdes/cyan)
+// y simbolo de avion en el centro.
+//
+// Patrones y conceptos clave:
+// - Multiples propiedades disparan requestPaint(): heading, range, mode y
+//   selectedWp. Canvas solo se redibuja cuando algo cambia (eficiente).
+// - Transformaciones 2D para heading-up vs north-up: en modo PLAN la ruta
+//   no rota; en los demas modos rota con el heading negativo.
+// - Conversion de distancia nautica a pixeles: (dist / range) * maxRadius.
+// - Funciones auxiliares extraidas (drawCompassArc, drawAircraftSymbol)
+//   para mantener onPaint legible.
+// - El heading viene de un Slider local y se expone como property para
+//   que otros componentes (CompassRoseCard, ModeRangeCard) lo lean.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +27,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // heading se expone como property publica vinculada al slider.
+    // Otros componentes como CompassRoseCard lo leen directamente.
     property real heading: headingSlider.value
     property real currentRange: 40
     property string ndMode: "ROSE"
@@ -35,6 +56,11 @@ Rectangle {
                 color: "#0a0f0a"
                 radius: Style.resize(6)
 
+                // ── Canvas del mapa movil ───────────────────────────
+                // Propiedades locales (hdg, rng, mode, selWp) crean
+                // bindings con onChanged -> requestPaint(). Esto es mas
+                // eficiente que repintar en un timer: solo se redibuja
+                // cuando un valor realmente cambia.
                 Canvas {
                     id: mapCanvas
                     onAvailableChanged: if (available) requestPaint()
@@ -61,15 +87,19 @@ Rectangle {
 
                         ctx.clearRect(0, 0, w, h);
 
+                        // Colores estandar de aviacion:
+                        // verde=datos activos, magenta=ruta, cyan=seleccion, blanco=referencias
                         var green = "#00FF00";
                         var magenta = "#FF00FF";
                         var cyan = "#00FFFF";
                         var white = "#FFFFFF";
 
-                        // Compass arc around the edge
+                        // Arco de brujula en el borde exterior
                         drawCompassArc(ctx, cx, cy, maxR + 15, hdg, mode);
 
-                        // Range rings
+                        // ── Anillos de rango ────────────────────────
+                        // 4 anillos concentricos que dividen el rango en cuartos.
+                        // Ayudan al piloto a estimar distancias visualmente.
                         ctx.strokeStyle = "#1a3a1a";
                         ctx.lineWidth = 1;
                         for (var i = 1; i <= 4; i++) {
@@ -78,7 +108,7 @@ Rectangle {
                             ctx.stroke();
                         }
 
-                        // Range labels
+                        // Etiquetas de distancia en cada anillo
                         ctx.fillStyle = "#556655";
                         ctx.font = (maxR * 0.07) + "px sans-serif";
                         ctx.textAlign = "left";
@@ -89,13 +119,16 @@ Rectangle {
                             ctx.fillText(rangeVal + "", cx + 4, cy - ringR + 2);
                         }
 
-                        // Draw flight plan (rotated for heading-up or north-up)
+                        // ── Plan de vuelo (ruta + waypoints) ────────
+                        // En heading-up, la ruta rota con el heading para que
+                        // "arriba" siempre sea la proa del avion.
+                        // En modo PLAN, la ruta se muestra con norte arriba (sin rotacion).
                         ctx.save();
                         ctx.translate(cx, cy);
                         var rotAngle = (mode === "PLAN") ? 0 : -hdg;
                         ctx.rotate(rotAngle * Math.PI / 180);
 
-                        // Route lines (magenta)
+                        // Lineas de ruta en magenta (color estandar ARINC para rutas)
                         var plan = root.flightPlan;
                         ctx.strokeStyle = magenta;
                         ctx.lineWidth = 2;
@@ -103,6 +136,8 @@ Rectangle {
                         for (var i = 0; i < plan.length; i++) {
                             var wp = plan[i];
                             var angle = wp.brg * Math.PI / 180;
+                            // Conversion de millas nauticas a pixeles:
+                            // la proporcion dist/rng mapea al radio disponible.
                             var pixDist = (wp.dist / rng) * maxR;
                             var wpx = pixDist * Math.sin(angle);
                             var wpy = -pixDist * Math.cos(angle);
@@ -117,7 +152,8 @@ Rectangle {
                             prevY = wpy;
                         }
 
-                        // Waypoint symbols
+                        // Simbolos de waypoint: diamantes (forma estandar ARINC).
+                        // El waypoint seleccionado se muestra en cyan y mas grande.
                         for (var i = 1; i < plan.length; i++) {
                             var wp = plan[i];
                             var angle = wp.brg * Math.PI / 180;
@@ -131,7 +167,6 @@ Rectangle {
                             var wpColor = isSelected ? cyan : green;
                             var sz = isSelected ? 7 : 5;
 
-                            // Diamond
                             ctx.fillStyle = wpColor;
                             ctx.beginPath();
                             ctx.moveTo(wpx, wpy - sz);
@@ -141,7 +176,6 @@ Rectangle {
                             ctx.closePath();
                             ctx.fill();
 
-                            // Label
                             ctx.fillStyle = wpColor;
                             ctx.font = (maxR * 0.07) + "px sans-serif";
                             ctx.textAlign = "left";
@@ -151,10 +185,12 @@ Rectangle {
 
                         ctx.restore();
 
-                        // Aircraft symbol (always at center, pointing up)
+                        // Simbolo del avion: siempre en el centro, apuntando arriba.
+                        // No rota porque en heading-up el avion siempre "mira" hacia arriba.
                         drawAircraftSymbol(ctx, cx, cy, white);
 
-                        // Heading readout (top center)
+                        // ── HUD (Head-Up Display) del mapa ─────────
+                        // Readout de heading arriba centro
                         var hdgStr = Math.round(hdg).toString().padStart(3, "0");
                         ctx.fillStyle = "#000000";
                         ctx.fillRect(cx - 28, 3, 56, 18);
@@ -167,7 +203,7 @@ Rectangle {
                         ctx.textBaseline = "middle";
                         ctx.fillText("HDG " + hdgStr + "\u00B0", cx, 12);
 
-                        // Mode and range (bottom corners)
+                        // Modo y rango en las esquinas inferiores
                         ctx.fillStyle = green;
                         ctx.font = (maxR * 0.07) + "px sans-serif";
                         ctx.textAlign = "left";
@@ -177,6 +213,9 @@ Rectangle {
                         ctx.fillText(Math.round(rng) + " NM", w - 5, h - 5);
                     }
 
+                    // ── Funcion auxiliar: arco de brujula ───────────
+                    // Dibuja marcas y etiquetas en el borde exterior del mapa.
+                    // Se aplica la misma logica de rotacion heading-up / north-up.
                     function drawCompassArc(ctx, cx, cy, r, hdg, mode) {
                         var arcColor = "#446644";
                         var labelColor = "#88AA88";
@@ -196,7 +235,6 @@ Rectangle {
                             ctx.stroke();
                         }
 
-                        // Labels every 30 degrees
                         ctx.font = "bold " + (r * 0.055) + "px sans-serif";
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
@@ -223,6 +261,9 @@ Rectangle {
                         }
                     }
 
+                    // ── Funcion auxiliar: simbolo de avion ──────────
+                    // Dibuja una silueta simplificada de avion con lineas:
+                    // fuselaje vertical, alas horizontales y estabilizador.
                     function drawAircraftSymbol(ctx, cx, cy, color) {
                         ctx.strokeStyle = color;
                         ctx.lineWidth = 2;
@@ -251,7 +292,10 @@ Rectangle {
             }
         }
 
-        // Heading slider
+        // ── Control de heading ──────────────────────────────────
+        // Slider que simula el selector de heading del autopiloto.
+        // Su valor se propaga automaticamente via la property heading
+        // a todos los componentes que la leen.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

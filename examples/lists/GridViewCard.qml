@@ -1,3 +1,23 @@
+// =============================================================================
+// GridViewCard.qml — Galeria de colores con GridView
+// =============================================================================
+// Demuestra GridView, el componente de Qt Quick para mostrar elementos en
+// formato de grilla (filas y columnas). A diferencia de ListView (lineal),
+// GridView organiza los delegates en una cuadricula definida por cellWidth
+// y cellHeight.
+//
+// Conceptos clave:
+//   - cellWidth/cellHeight: definen el tamanyo de cada celda de la grilla.
+//     Los delegates se posicionan automaticamente dentro de esas celdas.
+//   - currentIndex: indica el item seleccionado. GridView.isCurrentItem
+//     dentro del delegate permite saber si ESE item es el seleccionado.
+//   - ListModel: mismo modelo que se usa con ListView — GridView solo
+//     cambia la disposicion visual, no la fuente de datos.
+//
+// Al hacer clic en un color, se actualiza currentIndex y la etiqueta
+// superior muestra el nombre y hex del color seleccionado.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -33,6 +53,8 @@ Rectangle {
             radius: Style.resize(6)
             clip: true
 
+            // Modelo de colores: cada ListElement tiene nombre y valor hex.
+            // Este mismo modelo podria alimentar un ListView o PathView.
             ListModel {
                 id: colorModel
                 ListElement { colorName: "Coral"; colorHex: "#FF6B6B" }
@@ -49,6 +71,10 @@ Rectangle {
                 ListElement { colorName: "Rose"; colorHex: "#E74C3C" }
             }
 
+            // GridView: cellWidth y cellHeight definen el tamanyo de la celda,
+            // no del delegate. El delegate puede ser mas pequenyo que la celda
+            // (se centra) o mas grande (se corta si hay clip: true).
+            // currentIndex: -1 significa que inicialmente no hay seleccion.
             GridView {
                 id: colorGridView
                 anchors.fill: parent

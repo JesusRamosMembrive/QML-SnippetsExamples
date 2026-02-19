@@ -1,3 +1,32 @@
+// =============================================================================
+// DataDashboardCard.qml — Dashboard de datos agregados con SqlQueryModel
+// =============================================================================
+// Muestra estadisticas agregadas de la base de datos SQLite en multiples
+// widgets visuales: KPIs numericos, desglose por departamento, top salarios
+// y productos con stock bajo.
+//
+// Conexion QML <-> C++:
+//   - SqlQueryModel (C++): hereda de QAbstractListModel y envuelve
+//     QSqlQueryModel. Expone execQuery(sql, connectionName) como Q_INVOKABLE
+//     para ejecutar consultas SQL arbitrarias desde QML.
+//   - getRow(index): metodo Q_INVOKABLE que devuelve un QVariantMap con
+//     los datos de una fila, permitiendo acceso por nombre de columna.
+//   - Cada widget tiene su propio SqlQueryModel porque cada uno ejecuta
+//     una consulta SQL diferente (COUNT, AVG, GROUP BY, etc.).
+//
+// Patrones clave:
+//   - refreshAll(): funcion JS que ejecuta 4 consultas SQL diferentes,
+//     una por cada modelo. Se llama cuando la BD se abre y cuando se
+//     modifican datos en la card CRUD.
+//   - Repeater con ListModel de metadatos: los KPIs se generan desde un
+//     ListModel que define label, field, prefix y suffix. El valor real
+//     se obtiene de statsModel.getRow(0)[field] — patron data-driven.
+//   - Barras de progreso proporcionales: width = parent.width * (count / 6)
+//     crea una barra cuyo ancho es proporcional al conteo del departamento.
+//   - Badge de stock con color condicional: stock < 15 muestra rojo,
+//     stock < 50 muestra naranja. Patron comun para alertas visuales.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -11,7 +40,8 @@ Rectangle {
 
     required property string connectionName
 
-    // Aggregate query models
+    // Cada SqlQueryModel ejecuta una consulta SQL diferente.
+    // Son independientes para que cada widget se actualice por separado.
     SqlQueryModel { id: statsModel }
     SqlQueryModel { id: deptModel }
     SqlQueryModel { id: topSalaryModel }

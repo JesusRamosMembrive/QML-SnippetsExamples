@@ -1,3 +1,36 @@
+// =============================================================================
+// InteractiveNetworkCard.qml — Constructor de peticiones HTTP interactivo
+// =============================================================================
+// Mini-cliente REST tipo Postman que permite al usuario seleccionar metodo
+// HTTP (GET/POST/PUT/DELETE), escribir la URL, enviar la peticion y ver
+// la respuesta con codigo de estado y tiempo de respuesta.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. XMLHttpRequest con multiples metodos HTTP:
+//    - xhr.open(method, url) acepta cualquier metodo HTTP como string.
+//    - Para POST/PUT, se envia un body JSON con xhr.send(bodyText) y se
+//      agrega el header "Content-Type: application/json".
+//    - Para GET/DELETE, xhr.send() se llama sin argumentos.
+//
+// 2. ComboBox para seleccion de metodo:
+//    - ComboBox con model: ["GET", "POST", "PUT", "DELETE"] permite al
+//      usuario elegir el metodo. currentText devuelve la seleccion actual.
+//    - El campo de body solo es visible para POST/PUT (visible: binding).
+//
+// 3. Medicion de tiempo de respuesta:
+//    - Date.now() antes y despues de la peticion calcula el responseTime.
+//    - Esto da feedback al usuario sobre la latencia de la API.
+//
+// 4. Quick endpoints con Repeater:
+//    - Botones de acceso rapido que pre-cargan URLs de ejemplo.
+//    - Parecido al sistema de "saved requests" de Postman.
+//
+// 5. Barra de estado con colores semanticos:
+//    - Verde (200-299): exito. Rojo (400+): error. Amarillo: otros.
+//    - Las expresiones ternarias encadenadas manejan los rangos de status.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,11 +41,16 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // --- Propiedades de estado ---
+    // Controlan la UI reactivamente: loading deshabilita el boton y muestra
+    // BusyIndicator, statusCode colorea la barra de estado, etc.
     property bool loading: false
     property string response: ""
     property int statusCode: 0
     property int responseTime: 0
 
+    // Envia la peticion HTTP segun el metodo y URL seleccionados.
+    // Para POST/PUT incluye body JSON con el header correspondiente.
     function sendRequest() {
         root.loading = true
         root.response = ""
@@ -64,7 +102,8 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Method + URL
+        // Fila de metodo + URL: ComboBox para seleccion de metodo HTTP
+        // y TextField para la URL destino. El layout se adapta al ancho.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -85,7 +124,8 @@ Rectangle {
             }
         }
 
-        // Body (for POST/PUT)
+        // Campo de body: solo visible para POST/PUT.
+        // El binding en "visible" oculta automaticamente este campo para GET/DELETE.
         TextField {
             id: bodyField
             Layout.fillWidth: true
@@ -95,7 +135,8 @@ Rectangle {
             text: '{"title": "test", "body": "hello", "userId": 1}'
         }
 
-        // Quick endpoints
+        // Endpoints rapidos: botones que pre-cargan URLs de ejemplo.
+        // Cada objeto del modelo tiene un label corto y la URL completa.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(4)
@@ -129,7 +170,9 @@ Rectangle {
             onClicked: root.sendRequest()
         }
 
-        // Status bar
+        // Barra de estado: muestra codigo HTTP, tiempo y tamano de respuesta.
+        // Solo visible cuando se ha recibido una respuesta (statusCode > 0).
+        // Los colores indican exito (verde), error (rojo) o redireccion (amarillo).
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(28)
@@ -176,7 +219,9 @@ Rectangle {
             }
         }
 
-        // Response
+        // Area de respuesta: muestra el body de la respuesta HTTP formateado.
+        // Flickable permite scroll vertical para respuestas largas.
+        // BusyIndicator se superpone mientras la peticion esta en curso.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

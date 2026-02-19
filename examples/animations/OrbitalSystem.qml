@@ -1,3 +1,28 @@
+// =============================================================================
+// OrbitalSystem.qml — Sistema planetario animado con Canvas
+// =============================================================================
+// Dibuja un sistema solar simplificado con orbitas circulares, estelas de
+// movimiento (trails) y efectos de brillo (glow) usando Canvas 2D.
+//
+// CONCEPTOS CLAVE DE CANVAS AVANZADO:
+//   - createRadialGradient(): crea gradientes circulares para efectos de
+//     brillo/glow alrededor de planetas y el sol central.
+//   - Trails (estelas): se dibujan multiples circulos semi-transparentes
+//     detras de cada planeta, con opacidad decreciente, creando la ilusion
+//     de movimiento suave.
+//   - Matematica orbital: cada planeta usa cos(t * speed) y sin(t * speed)
+//     para moverse en circulos. Diferentes velocidades crean ritmos variados.
+//
+// PATRON DE ANIMACION CON Timer:
+//   El Timer incrementa content.time cada 30ms. El Canvas observa este
+//   cambio via 'property real t: content.time' + 'onTChanged: requestPaint()'
+//   lo que desencadena el repintado automaticamente cuando cambia t.
+//   Este es un patron alternativo a llamar requestPaint() directamente
+//   desde el Timer — ambos funcionan, pero este hace la dependencia explicita.
+//
+// El slider de velocidad multiplica el incremento de tiempo, permitiendo
+// acelerar o ralentizar la simulacion sin cambiar la logica de dibujo.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,7 +35,7 @@ ColumnLayout {
     property bool active: false
     property bool sectionActive: false
 
-    // ── Section title ────────────────────────────────
+    // ── Titulo + boton Play/Stop ────────────────────
     RowLayout {
         Layout.fillWidth: true
         Label {
@@ -28,7 +53,7 @@ ColumnLayout {
         }
     }
 
-    // ── Content ──────────────────────────────────────
+    // ── Area de simulacion ────────────────────────────
     Item {
         id: content
         Layout.fillWidth: true
@@ -75,7 +100,8 @@ ColumnLayout {
                     { r: 135, speed: 0.5,  size: 7,  color: "#FF3B30", trail: 22 }
                 ]
 
-                // Draw orbit paths
+                // Dibujar las trayectorias orbitales como circulos tenues.
+                // Esto da contexto visual de por donde se mueven los planetas.
                 for (var o = 0; o < orbits.length; o++) {
                     ctx.beginPath()
                     ctx.arc(cx, cy, orbits[o].r, 0, 2 * Math.PI)
@@ -84,7 +110,9 @@ ColumnLayout {
                     ctx.stroke()
                 }
 
-                // Draw trails and planets
+                // Dibujar estelas y planetas. Cada planeta tiene un trail
+                // de puntos semi-transparentes que decrecen en tamanio y opacidad,
+                // creando la ilusion de estela de movimiento.
                 for (var j = 0; j < orbits.length; j++) {
                     var orb = orbits[j]
                     var trailLen = orb.trail
@@ -123,7 +151,8 @@ ColumnLayout {
                     ctx.fill()
                 }
 
-                // Sun
+                // Sol central: gradiente radial de blanco calido a naranja
+                // transparente, creando un efecto de resplandor natural.
                 var sunGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 18)
                 sunGrad.addColorStop(0, "#FFF4D4")
                 sunGrad.addColorStop(0.6, "#FEA601")

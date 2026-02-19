@@ -1,3 +1,32 @@
+// =============================================================================
+// AudioVisualizer.qml — Visualizador de barras tipo ecualizador con Canvas
+// =============================================================================
+// Simula un ecualizador de audio con 32 barras que suben y bajan aleatoriamente,
+// incluyendo indicadores de pico (peak) que caen suavemente.
+//
+// NO USA AUDIO REAL: los niveles se generan proceduralmente con Math.random().
+// El objetivo es demostrar tecnicas de Canvas, no procesamiento de audio.
+// Para audio real se necesitaria QtMultimedia con AudioOutput/MediaPlayer.
+//
+// SISTEMA DE NIVELES CON INTERPOLACION SUAVE:
+//   Tres arrays paralelos controlan cada barra:
+//   - targets[]: nivel objetivo al que la barra quiere llegar (aleatorio)
+//   - levels[]: nivel visual actual (interpola suavemente hacia target)
+//   - peaks[]: marcador de pico que sube instantaneamente y cae despacio
+//
+//   La formula levels[i] += (targets[i] - levels[i]) * 0.2 es interpolacion
+//   lineal (lerp), creando un movimiento suave que "persigue" el target.
+//   Los peaks caen a velocidad constante (0.008/frame) creando el efecto
+//   clasico de indicador de pico de un ecualizador.
+//
+// GRADIENTE VERTICAL EN CADA BARRA:
+//   createLinearGradient de abajo hacia arriba: verde -> amarillo -> rojo,
+//   imitando los VU meters analogicos clasicos donde la zona roja indica
+//   niveles altos/saturacion.
+//
+// El indicador de pico es un rectangulo blanco estrecho (2px) que marca
+// el nivel maximo reciente de cada barra.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -45,6 +74,9 @@ ColumnLayout {
             property var peaks: []
             property int barCount: 32
 
+            // Inicializar los tres arrays con ceros. Se hace en
+            // Component.onCompleted porque no se pueden crear arrays
+            // con tamano especifico directamente en property declarations.
             Component.onCompleted: {
                 var l = [], t = [], p = []
                 for (var i = 0; i < barCount; i++) {
@@ -102,7 +134,7 @@ ColumnLayout {
                     ctx.fillStyle = grad
                     ctx.fillRect(x, y, barW, barH)
 
-                    // Peak indicator
+                    // Indicador de pico: linea blanca fina en el maximo reciente
                     var peakY = h - peaks[i] * h * 0.9
                     ctx.fillStyle = "#FFFFFF"
                     ctx.fillRect(x, peakY - 2, barW, 2)

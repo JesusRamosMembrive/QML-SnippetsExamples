@@ -1,3 +1,19 @@
+// =============================================================================
+// Main.qml — Pagina principal del Head-Up Display (HUD)
+// =============================================================================
+// El HUD (Head-Up Display) es un sistema de visualizacion que proyecta
+// informacion de vuelo directamente en el campo visual del piloto,
+// permitiendole ver datos sin bajar la mirada a los instrumentos.
+//
+// Esta pagina separa la logica en tres componentes:
+//   - HudCanvas: el Canvas que renderiza toda la simbologia en verde fosforo
+//   - HudControlsPanel: panel de sliders para ajustar los parametros de vuelo
+//   - Main.qml: orquestador que conecta ambos y gestiona la visibilidad
+//
+// La separacion canvas/controles es un patron recomendado: mantiene el
+// codigo de renderizado aislado del UI de control, facilitando la reutilizacion.
+// Las propiedades fluyen: Slider -> Panel (readonly) -> Main -> HudCanvas.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +24,11 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // -------------------------------------------------------------------------
+    // Patron de visibilidad del proyecto: fullSize controla si esta pagina
+    // esta activa. La opacidad anima la transicion y visible evita procesar
+    // elementos cuando la pagina esta oculta.
+    // -------------------------------------------------------------------------
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -38,6 +59,11 @@ Item {
                 Layout.leftMargin: Style.resize(20)
             }
 
+            // -----------------------------------------------------------------
+            // HudCanvas ocupa todo el espacio disponible. Las propiedades
+            // de vuelo se conectan desde el panel de controles inferior.
+            // fillHeight: true permite que el canvas crezca con la ventana.
+            // -----------------------------------------------------------------
             HudCanvas {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -49,6 +75,11 @@ Item {
                 fpa: controls.fpa
             }
 
+            // -----------------------------------------------------------------
+            // Panel de controles con altura fija. Expone readonly properties
+            // que Main.qml pasa al HudCanvas. Este patron evita que el
+            // canvas tenga que conocer los sliders directamente.
+            // -----------------------------------------------------------------
             HudControlsPanel {
                 id: controls
                 Layout.fillWidth: true

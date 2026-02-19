@@ -1,3 +1,25 @@
+// =============================================================================
+// HeadingIndicatorCard.qml — Indicador de Rumbo (HSI / Brujula)
+// =============================================================================
+// Simula el indicador de rumbo tipo Navigation Display (ND) de un avion.
+// La rosa de los vientos rota en sentido contrario al rumbo del avion,
+// de modo que el rumbo actual siempre queda alineado con la marca fija
+// superior (lubber line). Incluye un heading bug (marcador de rumbo deseado).
+//
+// Tecnicas Canvas 2D utilizadas:
+//   - Rotacion del contexto para girar toda la rosa de los vientos
+//   - Coordenadas polares para posicionar marcas y etiquetas en el perimetro
+//   - save/restore anidados: se salva el contexto para cada etiqueta
+//     y se contra-rota para que el texto permanezca legible
+//   - Elementos fijos (lubber line, readout) se dibujan DESPUES de restore()
+//
+// Trigonometria clave:
+//   - Cada grado se convierte a radianes: (deg - 90) * PI / 180
+//     (se resta 90 porque en Canvas el angulo 0 es a la derecha, no arriba)
+//   - Posicion en circulo: x = cos(a) * r, y = sin(a) * r
+//   - Las etiquetas se contra-rotan con ctx.rotate(deg * PI/180) para
+//     que el texto no quede al reves al girar la rosa
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -47,17 +69,29 @@ Rectangle {
                     ctx.clearRect(0, 0, w, h);
                     ctx.save();
 
-                    // Background circle
+                    // Fondo circular oscuro del instrumento
                     ctx.fillStyle = "#1a1a1a";
                     ctx.beginPath();
                     ctx.arc(cx, cy, r, 0, 2 * Math.PI);
                     ctx.fill();
 
-                    // Rotate compass card by heading
+                    // ---------------------------------------------------------
+                    // Rotacion de la rosa de los vientos:
+                    // Se rota en sentido contrario al heading (-heading)
+                    // para que el rumbo actual quede arriba. Si el avion
+                    // apunta a 090 (Este), la rosa gira -90 grados y la "E"
+                    // queda alineada con la marca fija superior.
+                    // ---------------------------------------------------------
                     ctx.translate(cx, cy);
                     ctx.rotate(-heading * Math.PI / 180);
 
-                    // Draw tick marks
+                    // ---------------------------------------------------------
+                    // Marcas de la rosa cada 5 grados:
+                    // - Cada 30 grados: marca larga + etiqueta (N, E, S, W o numero)
+                    // - Cada 10 grados: marca mediana
+                    // - Cada 5 grados: marca corta
+                    // La conversion a radianes resta 90 para que 0 grados = arriba.
+                    // ---------------------------------------------------------
                     ctx.strokeStyle = "#FFFFFF";
                     ctx.fillStyle = "#FFFFFF";
                     ctx.textAlign = "center";
@@ -83,7 +117,14 @@ Rectangle {
                         ctx.lineTo(Math.cos(angle) * r * 0.92, Math.sin(angle) * r * 0.92);
                         ctx.stroke();
 
-                        // Labels every 30 degrees
+                        // ---------------------------------------------------------
+                        // Etiquetas cada 30 grados con contra-rotacion:
+                        // Se usa save/translate/rotate/fillText/restore para que
+                        // el texto siempre se lea de forma vertical. Sin la
+                        // contra-rotacion, las letras quedarian giradas con la rosa.
+                        // Los puntos cardinales (N rojo, E/S/W blanco) usan texto
+                        // literal; los intermedios muestran el rumbo/10 (ej: 12 = 120).
+                        // ---------------------------------------------------------
                         if (deg % 30 === 0) {
                             ctx.save();
                             var labelR = r * 0.7;
@@ -107,7 +148,13 @@ Rectangle {
                         }
                     }
 
-                    // Heading bug
+                    // ---------------------------------------------------------
+                    // Heading bug (marcador de rumbo deseado):
+                    // Triangulo cyan en el borde exterior de la rosa, en la
+                    // posicion angular del rumbo seleccionado. Como la rosa
+                    // ya esta rotada, el bug se posiciona en coordenadas
+                    // polares relativas al heading bug absoluto.
+                    // ---------------------------------------------------------
                     var bugAngle = (headingBug - 90) * Math.PI / 180;
                     ctx.fillStyle = "#00FFFF";
                     ctx.beginPath();
@@ -121,7 +168,16 @@ Rectangle {
 
                     ctx.restore();
 
-                    // Fixed aircraft symbol at top (lubber line)
+                    // ---------------------------------------------------------
+                    // Elementos fijos (no rotan con la rosa):
+                    // - Lubber line: linea amarilla desde el borde superior
+                    //   hacia el centro. Indica la direccion actual del avion.
+                    // - Triangulo puntero: refuerzo visual sobre la lubber line.
+                    // - Readout digital: caja negra con el rumbo en grados,
+                    //   formateado a 3 digitos con padStart (ej: "045").
+                    // ---------------------------------------------------------
+
+                    // Lubber line (linea de referencia fija arriba)
                     ctx.strokeStyle = "#FFD600";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -129,7 +185,7 @@ Rectangle {
                     ctx.lineTo(cx, cy - r * 0.6);
                     ctx.stroke();
 
-                    // Fixed triangle pointer at top
+                    // Triangulo puntero fijo arriba
                     ctx.fillStyle = "#FFD600";
                     ctx.beginPath();
                     ctx.moveTo(cx, cy - r - 4);
@@ -138,7 +194,7 @@ Rectangle {
                     ctx.closePath();
                     ctx.fill();
 
-                    // Digital heading readout
+                    // Lectura digital del rumbo
                     ctx.fillStyle = "#000000";
                     ctx.fillRect(cx - r * 0.2, cy + r * 0.35, r * 0.4, r * 0.18);
                     ctx.strokeStyle = "#FFD600";
@@ -152,7 +208,7 @@ Rectangle {
                     var hdgStr = Math.round(heading).toString().padStart(3, '0') + "°";
                     ctx.fillText(hdgStr, cx, cy + r * 0.44);
 
-                    // Outer ring
+                    // Anillo exterior
                     ctx.strokeStyle = "#555";
                     ctx.lineWidth = 2;
                     ctx.beginPath();
@@ -162,7 +218,11 @@ Rectangle {
             }
         }
 
-        // Controls
+        // ---------------------------------------------------------------------
+        // Controles: heading (rumbo actual) y heading bug (rumbo deseado).
+        // El heading bug es independiente del heading — en un avion real,
+        // el piloto lo ajusta para marcar el rumbo objetivo.
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(15)

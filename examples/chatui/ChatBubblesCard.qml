@@ -1,3 +1,19 @@
+// =============================================================================
+// ChatBubblesCard.qml — Tarjeta de ejemplo: burbujas de chat estaticas
+// =============================================================================
+// Muestra un historial de chat con burbujas alineadas a izquierda (recibidas)
+// y derecha (enviadas), un avatar circular para mensajes entrantes y marcas
+// de hora en cada burbuja.
+//
+// Patrones clave para el aprendiz:
+// - ListView con verticalLayoutDirection: BottomToTop para que los mensajes
+//   mas recientes aparezcan abajo (como en apps de mensajeria reales).
+// - required property en delegates para acceso seguro a datos del modelo.
+// - Uso de Math.min() para limitar el ancho de la burbuja al 75% del
+//   espacio disponible, evitando burbujas demasiado anchas.
+// - Colores condicionales (ternario) segun si el mensaje fue enviado o
+//   recibido, patron comun en interfaces de chat.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +36,10 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Chat area
+        // -----------------------------------------------------------------
+        // Area de chat: un Rectangle oscuro como fondo con un ListView
+        // que muestra mensajes de abajo hacia arriba (BottomToTop).
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -33,8 +52,13 @@ Rectangle {
                 anchors.margins: Style.resize(10)
                 clip: true
                 spacing: Style.resize(8)
+                // BottomToTop hace que el indice 0 aparezca abajo,
+                // imitando el scroll natural de apps de mensajeria.
                 verticalLayoutDirection: ListView.BottomToTop
 
+                // Modelo estatico con datos de ejemplo para demostrar
+                // el layout. En una app real, esto seria un modelo C++
+                // o datos de red.
                 model: ListModel {
                     ListElement { msg: "Hey! How's the Qt project going?"; sent: false; time: "10:30" }
                     ListElement { msg: "Great! Just finished the PathView page"; sent: true; time: "10:31" }
@@ -54,7 +78,9 @@ Rectangle {
                     width: bubbleList.width
                     height: bubble.height + Style.resize(4)
 
-                    // Avatar (received only)
+                    // Avatar circular: solo visible en mensajes recibidos.
+                    // Se ancla a la parte inferior de la burbuja para
+                    // alinearse visualmente con la ultima linea del texto.
                     Rectangle {
                         id: avatar
                         width: Style.resize(28)
@@ -74,7 +100,9 @@ Rectangle {
                         }
                     }
 
-                    // Bubble
+                    // Burbuja del mensaje: se ancla a la derecha si fue
+                    // enviado, o a la izquierda (junto al avatar) si fue
+                    // recibido. El ancho se limita al 75% para legibilidad.
                     Rectangle {
                         id: bubble
                         width: Math.min(bubbleDelegate.width * 0.75,

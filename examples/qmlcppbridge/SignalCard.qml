@@ -1,3 +1,39 @@
+// =============================================================================
+// SignalCard.qml — Signals de C++ manejadas en QML
+// =============================================================================
+// Demuestra el mecanismo de signals: la forma en que C++ notifica a QML
+// sobre eventos asincronos. A diferencia de Q_PROPERTY (que es para datos
+// que cambian) y Q_INVOKABLE (que QML llama a C++), las signals permiten
+// que C++ "empuje" eventos hacia QML sin que QML los solicite.
+//
+// Integracion C++ <-> QML:
+//   - SignalBridge emite 4 signals desde C++:
+//       dataReceived(data)    -> onDataReceived: function(data) { ... }
+//       taskCompleted(result) -> onTaskCompleted: function(result) { ... }
+//       errorOccurred(error)  -> onErrorOccurred: function(error) { ... }
+//       customSignal(message) -> onCustomSignal: function(message) { ... }
+//
+//   - Convencion de nombres: la signal "dataReceived" se conecta con el
+//     handler "onDataReceived" (prefijo "on" + primera letra mayuscula).
+//     Qt hace la conexion automaticamente cuando el handler esta dentro
+//     de la declaracion del componente SignalBridge { onDataReceived: ... }.
+//
+//   - Q_INVOKABLE startTask()/stopTask(): QML inicia una tarea simulada
+//     en C++ que usa QTimer para emitir signals periodicamente.
+//   - Q_INVOKABLE emitCustom(msg): QML pide a C++ que emita customSignal.
+//   - Q_PROPERTY running/progress: propiedades de solo lectura que QML
+//     observa para actualizar el boton y la barra de progreso.
+//
+// pragma ComponentBehavior: Bound: directiva de Qt 6.5+ que refuerza el
+// scope de las propiedades en delegados. Con "Bound", las required properties
+// del delegado DEBEN declararse explicitamente (mejor seguridad de tipos).
+//
+// Patron de log visual: un ListModel acumula mensajes de las signals.
+// insert(0, ...) agrega al inicio para que los mas recientes aparezcan
+// primero. Cada tipo de signal tiene un color diferente para facilitar
+// la identificacion visual.
+// =============================================================================
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -10,6 +46,9 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Instancia de SignalBridge con handlers de signals.
+    //    Cada handler recibe el parametro de la signal (string) y lo
+    //    inserta en el modelo del log con su tipo para colorear.
     SignalBridge {
         id: signals
 
@@ -46,7 +85,11 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Progress
+        // -- Control de tarea: el boton llama startTask()/stopTask()
+        //    (Q_INVOKABLE) que inician/detienen un QTimer en C++.
+        //    El Timer emite signals periodicamente que llegan a los
+        //    handlers de arriba. ProgressBar se vincula a signals.progress
+        //    (Q_PROPERTY de solo lectura).
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -70,7 +113,9 @@ Rectangle {
             }
         }
 
-        // Custom signal
+        // -- Signal personalizada: el usuario escribe un mensaje y QML
+        //    llama emitCustom() (Q_INVOKABLE) que hace emit customSignal()
+        //    en C++. La signal viaja de C++ a QML y aparece en el log.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -94,7 +139,10 @@ Rectangle {
             }
         }
 
-        // Event log
+        // -- Log de eventos: ListView con ListModel que acumula los
+        //    mensajes de las signals. Cada delegado se colorea segun
+        //    el tipo de signal (data=teal, success=verde, error=rojo,
+        //    custom=azul). Esto visualiza la comunicacion C++ -> QML.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -117,6 +165,8 @@ Rectangle {
                     width: logList.width
                     height: logText.implicitHeight + Style.resize(8)
                     radius: Style.resize(3)
+
+                    // -- Color de fondo segun tipo de signal.
                     color: {
                         switch (logDelegate.type) {
                         case "data": return "#1A00D1A9"
@@ -149,7 +199,7 @@ Rectangle {
                 }
             }
 
-            // Empty hint
+            // -- Texto de ayuda cuando el log esta vacio.
             Label {
                 anchors.centerIn: parent
                 text: "Press Start Task or Emit to see signals"
@@ -159,7 +209,7 @@ Rectangle {
             }
         }
 
-        // Clear
+        // -- Pie del log: contador de eventos y boton para limpiar.
         RowLayout {
             Layout.fillWidth: true
 

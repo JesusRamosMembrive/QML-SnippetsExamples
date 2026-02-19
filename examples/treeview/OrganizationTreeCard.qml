@@ -1,3 +1,36 @@
+// =============================================================================
+// OrganizationTreeCard.qml — Organigrama empresarial con roles personalizados
+// =============================================================================
+// Muestra un arbol de organizacion (CEO -> directores -> empleados) usando
+// TreeView con roles personalizados definidos en C++: name, title, department.
+// Cada nodo muestra nombre en negrita, cargo en gris y un badge de departamento
+// con color asignado.
+//
+// Conexion QML <-> C++:
+//   - OrganizationTreeModel (C++): hereda de QAbstractItemModel. Ademas de
+//     los metodos estandar (index, parent, rowCount, data), implementa:
+//     - roleNames(): mapea roles numericos a strings QML:
+//       Qt::UserRole + 1 -> "name", +2 -> "title", +3 -> "department", etc.
+//     - nodeCount (Q_PROPERTY): conteo total de nodos en el arbol.
+//   - En el delegate, se accede a los roles como model.name, model.title,
+//     model.department — nombres definidos en roleNames().
+//
+// Patrones clave:
+//   - Funcion deptColor(dept): asigna un color fijo a cada departamento
+//     usando switch/case. Se usa tanto para el texto del badge como para
+//     su fondo (con opacidad reducida via Qt.rgba()).
+//   - Badge de departamento: un Rectangle cuyo ancho depende del texto
+//     interno (implicitWidth + padding). El color de fondo se calcula
+//     convirtiendo el color del departamento a Qt.color() y reduciendo
+//     su opacidad a 0.2.
+//   - RowLayout con indentacion: anchors.leftMargin incluye depth * 20px
+//     para la indentacion jerarquica. El nombre, titulo y badge se
+//     distribuyen horizontalmente con Layout.fillWidth en el titulo.
+//   - Modelo de solo lectura: a diferencia de InteractiveTreeCard, este
+//     organigrama no permite agregar ni eliminar nodos. Son dos instancias
+//     separadas del mismo tipo de modelo (OrganizationTreeModel).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -1,3 +1,35 @@
+// =============================================================================
+// PipelineFlowCard.qml — Diagrama visual del flujo del pipeline
+// =============================================================================
+// Muestra una representacion grafica del pipeline de 3 hilos con cajas
+// conectadas por flechas animadas. Cada caja muestra el nombre del worker,
+// su conteo de datos procesados y el numero de hilo.
+//
+// Conexion QML <-> C++:
+//   - ThreadPipeline expone los contadores como Q_PROPERTYs reactivas:
+//     - generatedCount: arrays producidos por el Generator.
+//     - processedCount: arrays analizados por el Filter.
+//     - matchedCount: coincidencias encontradas por el Collector.
+//     - running: controla si las animaciones deben correr.
+//   - Los contadores se actualizan via señales que cruzan hilos. Los workers
+//     emiten señales en su hilo, ThreadPipeline las recibe en el hilo GUI
+//     via QueuedConnection, actualiza las Q_PROPERTYs y QML reacciona.
+//
+// Patrones clave:
+//   - SequentialAnimation on x: anima un circulo ("packet") de izquierda a
+//     derecha entre las cajas, simulando el flujo de datos. PauseAnimation
+//     agrega una pausa al final antes de repetir, dando ritmo visual.
+//   - Easing.InOutQuad: aceleracion y desaceleracion suave que hace que
+//     el "paquete" parezca moverse fisicamente entre las etapas.
+//   - Animaciones condicionadas a running: las animaciones solo corren
+//     cuando el pipeline esta activo. opacity: 0 oculta los paquetes
+//     cuando esta detenido.
+//   - Hit rate calculado: matchedCount / processedCount * 100 muestra el
+//     porcentaje de coincidencias. Math.max(1, ...) evita division por cero.
+//   - toLocaleString(): formatea numeros grandes con separadores de miles
+//     (ej: 1,234,567) para mejorar la legibilidad.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

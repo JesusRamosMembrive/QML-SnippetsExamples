@@ -1,3 +1,27 @@
+// =============================================================================
+// StepProgress.qml — Indicador de progreso por pasos (stepper)
+// =============================================================================
+// Un componente tipo "wizard" que muestra el avance a través de una
+// secuencia de pasos (Order → Payment → Processing → Shipping → Delivered).
+// Conceptos clave:
+//
+//   - Estado centralizado en una sola propiedad (currentStep): todos los
+//     círculos, líneas y etiquetas reaccionan declarativamente a este valor.
+//     Cambiar currentStep actualiza toda la UI sin lógica imperativa.
+//   - Repeater con modelo entero (model: 5): genera 5 delegates, cada uno
+//     con un círculo + conector. El index determina si es completed, active
+//     o pending mediante comparaciones con currentStep.
+//   - Delegate de tipo Row: cada paso es un Row que contiene un Column
+//     (círculo + label) y un Rectangle (línea conectora). La línea se oculta
+//     en el último paso con `visible: index < 4`.
+//   - Animación de pulso en el paso activo: un Rectangle superpuesto con
+//     SequentialAnimation en scale y opacity crea el efecto de "latido"
+//     (ripple). Se ejecuta solo cuando `running: active`.
+//   - ColorAnimation en Behavior: las transiciones de color entre estados
+//     (completado → activo → pendiente) son suaves gracias a Behavior on color.
+//   - Checkmark Unicode (✓): reemplaza el número cuando el paso está completado.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

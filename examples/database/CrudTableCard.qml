@@ -1,3 +1,36 @@
+// =============================================================================
+// CrudTableCard.qml — Tabla CRUD completa con QSqlTableModel
+// =============================================================================
+// Implementa las 4 operaciones basicas sobre una tabla SQL: Create (agregar),
+// Read (listar), Update (editar) y Delete (eliminar). Los cambios se manejan
+// con estrategia OnManualSubmit (batch), lo que significa que los cambios
+// se acumulan en memoria y solo se guardan en la BD al pulsar "Save".
+//
+// Conexion QML <-> C++:
+//   - QSqlTableModel (via EmployeeTableModel en C++): modelo que conecta
+//     directamente a una tabla SQL. Expone las columnas como roles QML
+//     via roleNames() (id, name, department, salary, hire_date, active).
+//   - setFilterString(filter): Q_INVOKABLE que aplica un filtro SQL
+//     (ej: "department = 'Engineering'") al modelo sin recargar la BD.
+//   - addRecord(QVariantMap): agrega una fila nueva al modelo.
+//   - deleteRecord(row): marca una fila para eliminacion.
+//   - save() / revertChanges(): commitAll() o revertAll() del modelo.
+//   - hasChanges: Q_PROPERTY bool que indica si hay cambios sin guardar.
+//
+// Patrones clave:
+//   - pragma ComponentBehavior: Bound: requerido en Qt 6 cuando un delegate
+//     usa "required property" para acceso type-safe a datos del modelo.
+//   - Indicador de cambios no guardados: un circulo verde/naranja muestra
+//     si hay cambios pendientes, con ToolTip al hacer hover.
+//   - Badges de departamento con color: cada departamento tiene un color
+//     asignado via funcion ternaria encadenada. El badge usa el mismo color
+//     con opacidad 0.2 como fondo y opacidad completa para el texto.
+//   - Popup para agregar registros: un formulario modal con validacion
+//     basica (enabled depende de que los campos tengan contenido).
+//   - ListView con seleccion: currentIndex controla que fila esta
+//     seleccionada para operaciones de Delete.
+// =============================================================================
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -40,7 +73,10 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Toolbar: Filter + Actions
+        // ── Barra de herramientas: Filtro + Estado ──
+        // El ComboBox filtra la tabla por departamento llamando a
+        // setFilterString() del modelo C++. El punto verde/naranja
+        // indica si hay cambios sin guardar (hasChanges).
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -313,7 +349,10 @@ Rectangle {
         }
     }
 
-    // Add record dialog
+    // ── Dialogo modal para agregar registros ──
+    // Popup con modal: true bloquea la interaccion con el contenido detras.
+    // Los campos se limpian al cerrar. addRecord() recibe un QVariantMap
+    // (objeto JS) que se mapea a columnas SQL automaticamente.
     Popup {
         id: addDialog
         anchors.centerIn: parent

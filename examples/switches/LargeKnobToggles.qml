@@ -1,3 +1,22 @@
+// =============================================================================
+// LargeKnobToggles.qml — Botones toggle circulares grandes con feedback tactil
+// =============================================================================
+// Demuestra toggles circulares con retroalimentacion visual completa:
+// hover (agrandamiento sutil), press (encogimiento), y transicion de color
+// e icono al cambiar de estado.
+//
+// Tecnicas clave:
+//   1. Escala interactiva con MouseArea: containsMouse y pressed controlan
+//      'scale' con valores distintos (1.05 hover, 0.9 pressed, 1.0 normal).
+//      hoverEnabled: true es necesario para detectar hover sin clic.
+//   2. Iconos duales: el modelo tiene icon (estado on) y offIcon (estado off),
+//      permitiendo cambiar el emoji segun el estado del toggle.
+//   3. Qt.lighter(): genera un color mas claro a partir del color de acento
+//      para el borde, creando un efecto de "glow" cuando el toggle esta activo.
+//
+// Los Behavior on scale/color aseguran transiciones animadas en todo cambio.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -41,7 +60,9 @@ ColumnLayout {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: Style.resize(8)
 
-                    // Large circular knob
+                    // Knob circular: radius = width/2 lo hace circulo perfecto.
+                    // scale reacciona a tres estados de MouseArea (reposo,
+                    // hover, pressed) con Behavior para animacion suave.
                     Rectangle {
                         id: largeKnob
                         Layout.preferredWidth: Style.resize(64)

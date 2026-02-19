@@ -1,3 +1,21 @@
+// =============================================================================
+// MaskImageCard.qml — Mascaras de imagen con OpacityMask
+// =============================================================================
+// Demuestra como recortar una imagen usando formas arbitrarias mediante
+// OpacityMask de Qt5Compat.GraphicalEffects. La mascara funciona asi:
+// donde la mascara es blanca, la imagen se muestra; donde es transparente,
+// la imagen se oculta.
+//
+// Se ofrecen 4 formas de mascara: circulo (Rectangle con radius=50%),
+// rectangulo redondeado, diamante (Canvas) y estrella (Canvas).
+// La imagen fuente es un paisaje generado con Canvas para no depender
+// de archivos externos.
+//
+// Nota importante: tanto el source como el maskSource deben tener
+// visible: false. OpacityMask los renderiza internamente; si fueran
+// visibles, se verian duplicados.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +27,7 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Indice de la forma de mascara activa (0=circulo, 1=redondeado, 2=diamante, 3=estrella)
     property int maskShape: 0
 
     ColumnLayout {
@@ -27,7 +46,12 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Source image (Canvas-generated landscape)
+            // -----------------------------------------------------------------
+            // Imagen fuente: paisaje generado con Canvas.
+            // visible: false porque OpacityMask la consume como textura interna.
+            // Canvas permite crear graficos procedurales sin archivos de imagen,
+            // ideal para demos y prototipos.
+            // -----------------------------------------------------------------
             Canvas {
                 id: landscape
                 anchors.centerIn: parent
@@ -79,12 +103,19 @@ Rectangle {
                 Component.onCompleted: requestPaint()
             }
 
-            // Mask shape
+            // -----------------------------------------------------------------
+            // Contenedor de mascaras: tambien visible: false.
+            // Contiene multiples formas; solo la activa (segun maskShape)
+            // se muestra internamente. Las formas simples (circulo, redondeado)
+            // usan Rectangle con radius; las complejas (diamante, estrella)
+            // usan Canvas para dibujar paths arbitrarios.
+            // -----------------------------------------------------------------
             Item {
                 id: maskItem
                 anchors.fill: landscape
                 visible: false
 
+                // Circulo (radius = 50%) o rectangulo redondeado
                 Rectangle {
                     anchors.fill: parent
                     radius: root.maskShape === 0 ? width / 2
@@ -94,7 +125,7 @@ Rectangle {
                     visible: root.maskShape <= 1
                 }
 
-                // Diamond mask
+                // Mascara de diamante: 4 vertices en forma de rombo
                 Canvas {
                     anchors.fill: parent
                     visible: root.maskShape === 2
@@ -112,7 +143,9 @@ Rectangle {
                     }
                 }
 
-                // Star mask
+                // Mascara de estrella: alterna entre radio exterior e interior
+                // para crear 5 puntas. La formula trigonometrica genera los
+                // 10 vertices (5 exteriores + 5 interiores) del poligono.
                 Canvas {
                     anchors.fill: parent
                     visible: root.maskShape === 3
@@ -136,6 +169,8 @@ Rectangle {
                 }
             }
 
+            // OpacityMask combina source y maskSource: muestra los pixeles
+            // del source donde el maskSource tiene opacidad (blanco).
             OpacityMask {
                 anchors.fill: landscape
                 source: landscape
@@ -143,7 +178,8 @@ Rectangle {
             }
         }
 
-        // Mask selector
+        // Selector de forma: al cambiar, se fuerza requestPaint() en los
+        // Canvas hijos para que redibujen la mascara correspondiente.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)

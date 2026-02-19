@@ -1,3 +1,33 @@
+// =============================================================================
+// SineWaveBars.qml — Barras oscilantes con onda senoidal y Behavior
+// =============================================================================
+// Crea un ecualizador visual donde 32 barras verticales oscilan siguiendo
+// una funcion seno con desfase progresivo, produciendo una onda viajera.
+//
+// DIFERENCIA CLAVE vs Canvas: aqui NO se usa Canvas para dibujar. Cada barra
+// es un Rectangle QML real, generado por un Repeater. Esto demuestra que
+// las animaciones de tipo "onda" se pueden lograr tanto con Canvas (dibujo
+// imperativo) como con Items QML (declarativo con Behavior).
+//
+// MATEMATICA DE LA ONDA:
+//   wave = sin(time * 3 + index * freq * 0.3) * amplitude
+//   - time * 3: velocidad de la onda
+//   - index * freq * 0.3: desfase entre barras (crea la onda viajera)
+//   - amplitude: magnitud de la oscilacion
+//   La altura de cada barra es Style.resize(20) + |wave| * Style.resize(80),
+//   garantizando un minimo visible incluso cuando wave es 0.
+//
+// COLORES DINAMICOS CON Qt.hsla():
+//   El hue varia por indice (0.47 + index * 0.015) creando un arcoiris sutil.
+//   La luminosidad aumenta con |wave|, haciendo que las barras mas altas
+//   sean tambien mas brillantes — refuerza visualmente la amplitud.
+//
+// Behavior on height con duracion de 50ms suaviza los cambios discretos
+// del Timer (que actualiza cada 30ms), evitando saltos bruscos.
+//
+// 'pragma ComponentBehavior: Bound' obliga a declarar 'required property int
+// index' en el delegate para acceso seguro al indice del Repeater.
+// =============================================================================
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -11,7 +41,7 @@ ColumnLayout {
     property bool active: false
     property bool sectionActive: false
 
-    // ── Section title ────────────────────────────────
+    // ── Titulo + boton Play/Stop ────────────────────
     RowLayout {
         Layout.fillWidth: true
         Label {
@@ -29,7 +59,7 @@ ColumnLayout {
         }
     }
 
-    // ── Content ──────────────────────────────────────
+    // ── Area de visualizacion ──────────────────────────
     Item {
         id: content
         Layout.fillWidth: true
@@ -86,7 +116,8 @@ ColumnLayout {
             }
         }
 
-        // Controls
+        // Controles de frecuencia y amplitud: permiten experimentar
+        // con la forma de la onda en tiempo real.
         Row {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter

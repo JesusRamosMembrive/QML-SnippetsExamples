@@ -1,3 +1,32 @@
+// =============================================================================
+// AnimatedShapesCard.qml — Morphing de formas y animaciones continuas
+// =============================================================================
+// Demuestra como animar formas vectoriales (Shape) en QML con dos tecnicas:
+//
+//   1. MORPHING (izquierda): transforma una forma en otra interpolando
+//      los puntos de control de curvas cubicas. Un triangulo se convierte
+//      en cuadrado y luego en circulo, todo con la misma cantidad de
+//      PathCubic (3 segmentos). La funcion lerp3(a,b,c,t) interpola
+//      entre 3 estados usando un parametro 't' de 0 a 2.
+//
+//   2. ROTACION + ESCALA (derecha): combina rotation y scale animados
+//      sobre un Shape con dos triangulos superpuestos (Estrella de David).
+//      'NumberAnimation on spin' y 'SequentialAnimation on pulse' son
+//      animaciones directas sobre propiedades — no necesitan Behavior.
+//
+// CONCEPTO CLAVE - MORPHING CON CURVAS BEZIER:
+// Para hacer morphing, todas las formas deben tener el MISMO numero de
+// segmentos de curva. Un triangulo, cuadrado y circulo normalmente tienen
+// diferente cantidad de puntos, pero aqui se representan TODOS con 3
+// PathCubic. Los puntos de control determinan la curvatura:
+//   - Triangulo: controles cerca de los vertices (curvas casi rectas).
+//   - Cuadrado: controles alineados con los lados (esquinas marcadas).
+//   - Circulo: controles a 0.55*radio (aproximacion cubica estandar).
+//
+// SequentialAnimation: encadena animaciones en secuencia. Aqui va:
+// triangulo->cuadrado (1.5s), pausa, cuadrado->circulo (1.5s), pausa,
+// circulo->triangulo (1.5s), pausa, y repite infinitamente.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,7 +55,10 @@ Rectangle {
             Layout.fillHeight: true
             spacing: Style.resize(15)
 
-            // Morphing shape
+            // --- Morphing: triangulo -> cuadrado -> circulo ---
+            // La propiedad 'morph' (0 a 2) controla la transicion:
+            //   0 = triangulo, 1 = cuadrado, 2 = circulo.
+            // SequentialAnimation mueve 'morph' por tramos con pausas entre cada uno.
             Item {
                 id: morphItem
                 Layout.fillWidth: true
@@ -134,7 +166,12 @@ Rectangle {
                 }
             }
 
-            // Spinning / pulsing shape
+            // --- Rotacion continua + pulso de escala ---
+            // Dos animaciones independientes corren en paralelo:
+            //   - spin: 0->360 grados en 6 segundos (rotacion constante).
+            //   - pulse: 0.8->1.2->0.8 con easing sinusoidal ("respiracion").
+            // La forma resultante es una Estrella de David (dos triangulos
+            // invertidos) que gira y "respira" simultaneamente.
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true

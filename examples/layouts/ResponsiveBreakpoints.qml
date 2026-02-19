@@ -1,3 +1,28 @@
+// =============================================================================
+// ResponsiveBreakpoints.qml — Simulacion de breakpoints responsivos
+// =============================================================================
+// Demuestra como implementar un layout responsivo en QML usando breakpoints
+// de ancho, similar a las media queries de CSS (@media (min-width: ...)).
+//
+// El concepto: un Slider controla el "ancho simulado" de un contenedor.
+// Segun ese ancho, se recalcula el numero de columnas del GridLayout:
+//   - >= 500px: Desktop (4 columnas)
+//   - >= 350px: Tablet (2 columnas)
+//   - < 350px:  Mobile (1 columna)
+//
+// Patrones clave:
+//   - readonly property con ternario encadenado: "cols" se recalcula
+//     reactivamente cada vez que bpSlider.value cambia. QML re-evalua
+//     la expresion y actualiza el GridLayout automaticamente.
+//   - GridLayout.columns dinamico: cambiar el numero de columnas en
+//     tiempo de ejecucion redistribuye todos los hijos al instante.
+//     Esto es imposible con CSS Grid sin JavaScript.
+//   - Contenedor de ancho variable: el Item interior usa width: bpSlider.value
+//     para simular distintos tamanos de pantalla dentro de un area fija.
+//   - Repeater con array de colores: asigna un color unico a cada tarjeta
+//     usando indice como clave del array, patron conciso para demos visuales.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -48,6 +73,10 @@ ColumnLayout {
         }
     }
 
+    // ── Area de simulacion responsiva ──
+    // bpSection.cols se recalcula reactivamente cada vez que el slider cambia.
+    // GridLayout.columns se vincula a cols, redistribuyendo las tarjetas
+    // al instante sin necesidad de codigo imperativo.
     Item {
         id: bpSection
         Layout.fillWidth: true

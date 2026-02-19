@@ -1,3 +1,35 @@
+// =============================================================================
+// FloatingActionButton.qml — FAB expandible con menu de acciones
+// =============================================================================
+// Implementa un Floating Action Button (FAB) tipo Material Design que se
+// expande para revelar sub-acciones. El FAB principal rota 45 grados al
+// abrirse (el "+" se convierte en "x"), y los botones secundarios se
+// despliegan hacia arriba con animaciones escalonadas.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Animacion de expansion con multiples propiedades:
+//    - Cada boton secundario anima anchors.bottomMargin, opacity y scale
+//      simultaneamente con Behaviors individuales.
+//    - bottomMargin se calcula desde un "offset" en el modelo: cada boton
+//      tiene una posicion final diferente, creando la separacion vertical.
+//    - Easing.OutBack genera un rebote sutil al final de la animacion.
+//
+// 2. Rotacion del FAB principal:
+//    - rotation: fabOpen ? 45 : 0 convierte el "+" en una "x" visual.
+//    - Es un truco elegante: en lugar de cambiar el texto, se rota el
+//      caracter, lo que es mas fluido visualmente.
+//
+// 3. Overlay para cerrar:
+//    - Un Rectangle semitransparente captura clics fuera del menu.
+//    - Esto sigue el patron de "light dismiss" comun en componentes modales.
+//
+// 4. Label chip + circulo de color:
+//    - Cada sub-accion combina una etiqueta de texto (chip) con un boton
+//      circular de color. El chip tiene fondo de cardColor para legibilidad
+//      sobre el overlay oscurecido.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -37,7 +69,7 @@ ColumnLayout {
             color: Style.fontSecondaryColor
         }
 
-        // Dim overlay
+        // Overlay de oscurecimiento para "light dismiss" (cerrar al tocar fuera)
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(0, 0, 0, 0.3)
@@ -52,7 +84,9 @@ ColumnLayout {
             }
         }
 
-        // FAB menu items
+        // Sub-acciones del FAB: cada una tiene un offset diferente que define
+        // su posicion final al expandirse. La animacion OutBack da el efecto
+        // de "brotar" desde la posicion del FAB principal.
         Repeater {
             model: [
                 { label: "Camera", icon: "📷", clr: "#FF3B30", offset: 180 },
@@ -134,7 +168,8 @@ ColumnLayout {
             }
         }
 
-        // Main FAB button
+        // Boton FAB principal: circulo con "+" que rota a "x" al abrirse.
+        // Usa Style.mainColor como fondo para destacar como accion primaria.
         Rectangle {
             id: fabButton
             anchors.right: parent.right

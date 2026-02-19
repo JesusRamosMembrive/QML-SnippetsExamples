@@ -1,3 +1,23 @@
+// =============================================================================
+// FolderDialogCard.qml — FolderDialog con historial de carpetas
+// =============================================================================
+// Demuestra FolderDialog, el selector nativo de carpetas. A diferencia de
+// FileDialog, solo permite elegir directorios, no archivos individuales.
+//
+// Caracteristicas de este ejemplo:
+// - Muestra la carpeta seleccionada con feedback visual (borde verde
+//   cuando hay seleccion, gris cuando no).
+// - Mantiene un historial de las 5 carpetas mas recientes usando un array JS.
+//   unshift() agrega al inicio; pop() elimina el ultimo si excede 5.
+//
+// Patron importante: las propiedades 'url' en QML almacenan rutas como
+// "file:///C:/Users/...". Para mostrarlas al usuario, se limpia el prefijo
+// con .toString().replace(/^file:\/\/\//, "").
+//
+// Nota: FolderDialog no tiene nameFilters porque los directorios no
+// tienen extension. Solo se configura title y opcionalmente currentFolder.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -12,6 +32,11 @@ Rectangle {
     property url selectedFolder: ""
     property var folderHistory: []
 
+    // -------------------------------------------------------------------------
+    // FolderDialog: similar a FileDialog pero para directorios.
+    // onAccepted guarda la seleccion y actualiza el historial.
+    // unshift() inserta al inicio del array (las mas recientes primero).
+    // -------------------------------------------------------------------------
     FolderDialog {
         id: folderDialog
         title: "Select Folder"
@@ -42,7 +67,9 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Current selection
+        // Indicador de seleccion actual: cambia de color segun haya
+        // o no una carpeta seleccionada. Usa expresiones ternarias
+        // para alternar entre estados "seleccionado" y "vacio".
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(60)
@@ -83,7 +110,9 @@ Rectangle {
             }
         }
 
-        // History
+        // Historial de carpetas recientes (maximo 5).
+        // Patron: Repeater sobre un array JS que se actualiza cada vez
+        // que el usuario selecciona una nueva carpeta.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

@@ -1,3 +1,20 @@
+// =============================================================================
+// TypingIndicatorCard.qml — Tarjeta de ejemplo: indicadores de escritura
+// =============================================================================
+// Presenta 4 estilos distintos de animacion "escribiendo..." usados en apps
+// de mensajeria: rebote, desvanecimiento, escalado y barras de onda.
+//
+// Patrones clave para el aprendiz:
+// - SequentialAnimation "on <propiedad>" para animaciones declarativas que
+//   se vinculan directamente a una propiedad (y, opacity, scale, height).
+// - PauseAnimation con duracion basada en `index` para crear el efecto
+//   de onda escalonada (cada punto/barra arranca con un retardo diferente).
+// - Repeater + index: el truco `index * N` al inicio y `(max - index) * N`
+//   al final mantiene la duracion total constante para todos los elementos,
+//   evitando que la animacion se desincronice.
+// - Switch para activar/desactivar todas las animaciones a la vez mediante
+//   la propiedad `running` vinculada a root.showTyping.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +25,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Controla si las animaciones estan activas. El Switch inferior
+    // permite al usuario pausarlas para inspeccionar el estado final.
     property bool showTyping: true
 
     ColumnLayout {
@@ -30,7 +49,12 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: Style.resize(25)
 
-                // Style 1: Bouncing dots
+                // ---------------------------------------------------------
+                // Estilo 1: Puntos con rebote vertical (Bouncing Dots)
+                // Anima la propiedad `y` con easing OutQuad/InQuad para
+                // simular un rebote suave. Cada punto empieza con un
+                // retardo de index * 150 ms para crear el efecto cascada.
+                // ---------------------------------------------------------
                 ColumnLayout {
                     spacing: Style.resize(6)
                     Layout.alignment: Qt.AlignHCenter
@@ -76,7 +100,11 @@ Rectangle {
                     }
                 }
 
-                // Style 2: Fading dots
+                // ---------------------------------------------------------
+                // Estilo 2: Puntos con desvanecimiento (Fading Dots)
+                // Anima `opacity` entre 0.3 y 1.0. El efecto visual es
+                // mas sutil que el rebote, ideal para interfaces minimalistas.
+                // ---------------------------------------------------------
                 ColumnLayout {
                     spacing: Style.resize(6)
                     Layout.alignment: Qt.AlignHCenter
@@ -122,7 +150,11 @@ Rectangle {
                     }
                 }
 
-                // Style 3: Scaling dots
+                // ---------------------------------------------------------
+                // Estilo 3: Puntos con escalado (Scaling Dots)
+                // Anima `scale` con Easing.OutBack que genera un pequeno
+                // "rebote" al agrandar, dando sensacion de elasticidad.
+                // ---------------------------------------------------------
                 ColumnLayout {
                     spacing: Style.resize(6)
                     Layout.alignment: Qt.AlignHCenter
@@ -168,7 +200,12 @@ Rectangle {
                     }
                 }
 
-                // Style 4: Wave bar
+                // ---------------------------------------------------------
+                // Estilo 4: Barras de onda (Wave Bars)
+                // Usa 5 rectangulos estrechos que animan su `height` en
+                // secuencia. El efecto visual recuerda a un ecualizador
+                // de audio o las barras de grabacion de voz.
+                // ---------------------------------------------------------
                 ColumnLayout {
                     spacing: Style.resize(6)
                     Layout.alignment: Qt.AlignHCenter
@@ -217,6 +254,8 @@ Rectangle {
             }
         }
 
+        // Switch global: al desactivarlo, todas las animaciones se detienen
+        // porque cada SequentialAnimation tiene `running: root.showTyping`.
         Switch {
             text: "Animate"
             font.pixelSize: Style.resize(12)

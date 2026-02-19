@@ -1,3 +1,32 @@
+// =============================================================================
+// FractalTree.qml — Arbol fractal recursivo dibujado con Canvas
+// =============================================================================
+// Genera un arbol binario fractal donde cada rama se bifurca en dos ramas
+// mas cortas, rotadas por un angulo configurable. La recursion produce la
+// estructura autosimilar caracteristica de los fractales.
+//
+// ALGORITMO RECURSIVO drawBranch():
+//   1. Desde un punto (x, y), dibujar una linea de longitud 'len' en
+//      direccion 'angle' hasta un nuevo punto (x2, y2).
+//   2. Desde (x2, y2), llamar recursivamente con:
+//      - Rama izquierda: angle - branchAngle + wind
+//      - Rama derecha:   angle + branchAngle + wind
+//      - Longitud reducida: len * 0.72 (cada nivel es 72% del anterior)
+//   3. Condicion de parada: depth > maxDepth o len < 2
+//
+// COLORES POR PROFUNDIDAD:
+//   El color interpola de marron (tronco, depth=0) a verde (hojas, depth=max)
+//   usando interpolacion lineal RGB manual. Esto crea la transicion natural
+//   madera -> follaje. Las hojas se dibujan como circulos verdes pequenios
+//   en las puntas de las ramas mas finas.
+//
+// PARAMETROS INTERACTIVOS:
+//   - Angle: angulo de bifurcacion. Valores bajos = arbol estrecho y alto.
+//     Valores altos = arbol ancho y denso.
+//   - Depth: profundidad de recursion. Cada nivel duplica las ramas, asi
+//     que depth=12 produce ~4000 ramas (cuidado con el rendimiento).
+//   - Wind: sesga los angulos asimetricamente, inclinando el arbol.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -16,6 +45,8 @@ ColumnLayout {
         color: Style.fontPrimaryColor
     }
 
+    // Controles: angulo, profundidad y viento. onValueChanged redibuja
+    // inmediatamente, creando interactividad en tiempo real.
     RowLayout {
         Layout.fillWidth: true
         spacing: Style.resize(15)
@@ -50,6 +81,9 @@ ColumnLayout {
             anchors.margins: Style.resize(4)
             onAvailableChanged: if (available) requestPaint()
 
+            // Funcion recursiva: dibuja una rama y se llama a si misma
+            // para las dos sub-ramas. Es una funcion de Canvas (definida
+            // dentro del componente) que se invoca desde onPaint.
             function drawBranch(ctx, x, y, len, angle, depth, maxDepth) {
                 if (depth > maxDepth || len < 2)
                     return

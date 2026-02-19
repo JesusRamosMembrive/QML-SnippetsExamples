@@ -100,14 +100,22 @@ void AsyncComputer::countPrimes(int limit)
 void AsyncComputer::computeFibonacci(int n)
 {
     start([n]() -> QString {
-        if (n <= 0) return QStringLiteral("fib(0) = 0");
+        if (n < 0)
+            return QStringLiteral("Invalid input: n must be >= 0");
+        if (n > 92)
+            return QString("fib(%1) overflows 64-bit (max supported n is 92)").arg(n);
+        if (n == 0)
+            return QStringLiteral("fib(0) = 0");
+        if (n == 1)
+            return QStringLiteral("fib(1) = 1");
+
         long long a = 0, b = 1;
         for (int i = 2; i <= n; i++) {
             long long c = a + b;
             a = b;
             b = c;
         }
-        return QString("fib(%1) = %2").arg(n).arg(b);
+        return QString("fib(%1) = %2").arg(n).arg(QLocale().toString(b));
     });
 }
 
@@ -117,11 +125,17 @@ void AsyncComputer::computeFibonacci(int n)
 void AsyncComputer::sortRandom(int count)
 {
     start([count]() -> QString {
+        if (count <= 0)
+            return QStringLiteral("Invalid input: count must be > 0");
+
         std::vector<int> data(count);
         auto *rng = QRandomGenerator::global();
         for (int i = 0; i < count; i++)
             data[i] = rng->bounded(1000000);
         std::sort(data.begin(), data.end());
+        if (data.empty())
+            return QStringLiteral("Sorted 0 numbers");
+
         return QString("Sorted %1 numbers (min: %2, max: %3)")
             .arg(QLocale().toString(count))
             .arg(data.front()).arg(data.back());

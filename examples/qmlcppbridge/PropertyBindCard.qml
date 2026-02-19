@@ -1,3 +1,36 @@
+// =============================================================================
+// PropertyBindCard.qml — Binding bidireccional con Q_PROPERTY de C++
+// =============================================================================
+// Demuestra el mecanismo Q_PROPERTY: la forma principal de compartir datos
+// entre C++ y QML. Cada Q_PROPERTY tiene READ (getter), WRITE (setter) y
+// NOTIFY (signal de cambio). QML puede leer, escribir y hacer binding
+// reactivo con estas propiedades como si fueran propiedades QML nativas.
+//
+// Integracion C++ <-> QML:
+//   - "import qmlcppbridge" importa el modulo que contiene PropertyBridge.
+//   - PropertyBridge { id: bridge } crea una instancia del QObject C++.
+//     Cada propiedad (counter, userName, temperature, active, tags, summary)
+//     es una Q_PROPERTY declarada en propertybridge.h.
+//
+// Tipos de propiedades demostradas:
+//   - int counter: lectura/escritura. Botones +/- llaman Q_INVOKABLE
+//     increment()/decrement() que modifican el valor en C++ y emiten
+//     counterChanged. QML actualiza el Label automaticamente.
+//   - QString userName: binding bidireccional con TextField. onTextChanged
+//     escribe en C++; el binding de text lee de C++.
+//   - double temperature: Slider vinculado con onMoved -> setter de C++.
+//   - bool active: Switch vinculado al getter/setter de C++.
+//   - QStringList tags: propiedad de solo lectura (sin WRITE). Los metodos
+//     Q_INVOKABLE addTag()/removeTag() modifican la lista internamente.
+//   - QString summary: propiedad computada de solo lectura. En C++ se
+//     calcula a partir de las demas propiedades. Se actualiza cuando
+//     cualquier dependencia cambia.
+//
+// Aprendizaje: Q_PROPERTY es la columna vertebral del data binding en Qt.
+// Sin las signals NOTIFY, QML no detectaria cambios y la UI se quedaria
+// desactualizada.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +42,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -- Instancia del QObject C++. Todas las propiedades y metodos
+    //    de PropertyBridge estan accesibles a traves de "bridge".
     PropertyBridge { id: bridge }
 
     ColumnLayout {
@@ -30,7 +65,9 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Counter
+        // -- Counter (int): los botones llaman Q_INVOKABLE increment()/
+        //    decrement() en C++. El Label lee bridge.counter, que se
+        //    actualiza automaticamente gracias a la signal counterChanged.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -66,7 +103,12 @@ Rectangle {
             }
         }
 
-        // Username
+        // -- userName (QString): binding bidireccional.
+        //    text: bridge.userName lee de C++ (via READ getter).
+        //    onTextChanged: bridge.userName = text escribe en C++ (via WRITE setter).
+        //    Esto crea un ciclo reactivo: C++ -> QML -> C++ -> QML...
+        //    No hay loop infinito porque el setter en C++ solo emite la signal
+        //    si el valor realmente cambio (patron guard: if (m_val == val) return).
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -86,7 +128,8 @@ Rectangle {
             }
         }
 
-        // Temperature
+        // -- temperature (double): Slider con onMoved (no onValueChanged)
+        //    para evitar loops de binding circular.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -112,7 +155,7 @@ Rectangle {
             }
         }
 
-        // Active
+        // -- active (bool): Switch vinculado a Q_PROPERTY bool.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -136,7 +179,9 @@ Rectangle {
             }
         }
 
-        // Tags
+        // -- tags (QStringList): propiedad de solo lectura (sin WRITE).
+        //    QML la lee para generar badges con Repeater. Los cambios
+        //    llegan via la signal tagsChanged emitida por addTag/removeTag.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -174,6 +219,9 @@ Rectangle {
                                 color: Style.mainColor
                             }
 
+                            // -- Boton "x" que llama removeTag(index):
+                            //    Q_INVOKABLE en C++ que elimina el tag
+                            //    por indice y emite tagsChanged.
                             Label {
                                 text: "x"
                                 font.pixelSize: Style.resize(10)
@@ -189,7 +237,8 @@ Rectangle {
             }
         }
 
-        // Add tag
+        // -- Agregar tag: TextField + boton que llaman addTag() (Q_INVOKABLE).
+        //    onAccepted se dispara cuando el usuario presiona Enter.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -217,7 +266,11 @@ Rectangle {
             }
         }
 
-        // Summary (read-only computed property)
+        // -- summary (QString): propiedad computada de solo lectura.
+        //    En C++, summary() genera un resumen a partir de counter,
+        //    userName, temperature, active y tags. Cuando cualquiera
+        //    de estas cambia, C++ emite summaryChanged y QML actualiza
+        //    este binding automaticamente.
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(30)

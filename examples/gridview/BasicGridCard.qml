@@ -1,3 +1,20 @@
+// =============================================================================
+// BasicGridCard.qml — GridView básico con selección y highlight
+// =============================================================================
+// Demuestra las propiedades fundamentales de GridView:
+// - cellWidth / cellHeight: tamaño fijo de cada celda
+// - model: puede ser un número entero (genera 0..N-1 automáticamente)
+// - highlight: componente visual que se dibuja detrás del item seleccionado
+// - highlightFollowsCurrentItem: el highlight se mueve automáticamente
+// - currentIndex: índice del item seleccionado
+//
+// El color de cada celda se genera con Qt.hsla() distribuyendo el hue
+// uniformemente (index / 24.0), creando un arcoíris de colores sin
+// necesidad de definir colores manualmente para cada celda.
+//
+// Behavior on scale en el delegate da un efecto de "zoom" sutil al
+// seleccionar, proporcionando feedback visual inmediato al usuario.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -36,8 +53,15 @@ Rectangle {
                 clip: true
                 cellWidth: Style.resize(70)
                 cellHeight: Style.resize(70)
+                // modelo entero: GridView genera automáticamente
+                // items con index 0, 1, 2, ..., 23
                 model: 24
 
+                // ---- Highlight ----
+                // Componente que se dibuja DETRÁS del item seleccionado.
+                // highlightFollowsCurrentItem hace que el highlight se
+                // mueva suavemente al cambiar currentIndex. Es un patrón
+                // nativo de GridView/ListView — no requiere lógica manual.
                 highlight: Rectangle {
                     color: Style.mainColor
                     opacity: 0.3
@@ -45,6 +69,10 @@ Rectangle {
                 }
                 highlightFollowsCurrentItem: true
 
+                // ---- Delegate ----
+                // Cada celda tiene tamaño exacto cellWidth×cellHeight.
+                // El Item exterior actúa como "slot" del grid, y el Rectangle
+                // interior tiene margins para crear separación visual entre celdas.
                 delegate: Item {
                     id: gridDelegate
                     required property int index

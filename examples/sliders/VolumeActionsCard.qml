@@ -1,3 +1,30 @@
+// =============================================================================
+// VolumeActionsCard.qml — Slider con botones de accion preestablecidos
+// =============================================================================
+// Combina un Slider con botones especializados (GradientButton, PulseButton,
+// GlowButton) que establecen valores predefinidos. Demuestra la interaccion
+// entre controles: los botones modifican el valor del slider programaticamente.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Modificacion programatica del valor:
+//    - onClicked: volumeSlider.value = 0/50/100 establece el valor del
+//      slider desde codigo. El handle se mueve automaticamente a la nueva
+//      posicion y el label se actualiza via binding.
+//    - Esto es bidireccional: el usuario puede mover el slider manualmente
+//      O usar los botones de acceso rapido.
+//
+// 2. Reutilizacion de componentes custom en contexto:
+//    - GradientButton, PulseButton y GlowButton se usan como botones de
+//      accion real, no solo como demo visual. Esto refuerza que los
+//      componentes custom del proyecto son verdaderamente reutilizables.
+//
+// 3. Patron de preset + ajuste fino:
+//    - Los botones dan acceso rapido a valores comunes (0%, 50%, 100%)
+//      mientras el slider permite ajuste fino entre esos valores.
+//    - Es un patron de UX comun en controles de volumen y brillo.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -21,6 +48,7 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // Slider de volumen con label que muestra el porcentaje actual.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -48,6 +76,8 @@ Rectangle {
             }
         }
 
+        // Botones de presets: cada uno establece un valor fijo en el slider.
+        // Usan tres componentes custom diferentes para variedad visual.
         RowLayout {
             spacing: Style.resize(10)
             Layout.fillWidth: true

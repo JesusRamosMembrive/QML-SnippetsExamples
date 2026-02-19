@@ -1,3 +1,22 @@
+// =============================================================================
+// VerticalRangeSliderCard.qml — Tarjeta: RangeSliders verticales
+// =============================================================================
+// Demuestra como usar orientation: Qt.Vertical en RangeSlider. Tres sliders
+// se presentan uno al lado del otro en un RowLayout, cada uno con una
+// configuracion diferente:
+//   1. Continuo (rango amplio: 20-80)
+//   2. Con pasos de 5 y snap (rango estrecho: 40-60)
+//   3. Continuo (rango maximo: 10-90)
+//
+// A diferencia de Slider normal, en RangeSlider vertical el handle "first"
+// esta abajo (valor minimo) y "second" arriba (valor maximo). Qt maneja
+// automaticamente esta inversion cuando se cambia la orientacion.
+//
+// Aprendizaje clave: RowLayout + ColumnLayout anidados permiten colocar
+// cada slider vertical con su label debajo, y luego alinearlos lado a lado.
+// Layout.preferredHeight controla la altura del track del slider.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,12 +39,14 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // RowLayout horizontal que contiene los tres sliders verticales
+        // y un Label explicativo a la derecha.
         RowLayout {
             spacing: Style.resize(30)
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Vertical RangeSlider 1
+            // Slider 1: continuo, rango amplio
             ColumnLayout {
                 spacing: Style.resize(10)
 
@@ -48,7 +69,10 @@ Rectangle {
                 }
             }
 
-            // Vertical RangeSlider 2
+            // Slider 2: con stepSize y snap, rango estrecho.
+            // Notar como stepSize: 5 funciona igual en vertical que
+            // en horizontal — la orientacion solo cambia la direccion
+            // visual, no el comportamiento logico.
             ColumnLayout {
                 spacing: Style.resize(10)
 
@@ -73,7 +97,7 @@ Rectangle {
                 }
             }
 
-            // Vertical RangeSlider 3
+            // Slider 3: continuo, rango casi completo (10-90)
             ColumnLayout {
                 spacing: Style.resize(10)
 

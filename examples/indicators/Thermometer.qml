@@ -1,3 +1,26 @@
+// =============================================================================
+// Thermometer.qml — Termómetro analógico con bulbo y escala
+// =============================================================================
+// Simula un termómetro clásico de mercurio usando Rectangles. Conceptos clave:
+//
+//   - Normalización lineal para el relleno: la altura del "mercurio" se calcula
+//     como fraction = (temp - minTemp) / (maxTemp - minTemp), mapeando el rango
+//     [-20, 50] al rango [0, 1] del rectángulo. Es el mismo principio que usan
+//     barras de progreso, VU meters y cualquier indicador lineal.
+//   - Math.max() como guardián: garantiza una altura mínima de 6px incluso
+//     cuando temp = minTemp, evitando que el relleno desaparezca completamente.
+//   - Color semántico con ternario: rojo (>35°), naranja (>20°), verde (>5°),
+//     azul (<=5°). Centralizado en thermoColor para usarlo en bulbo y relleno.
+//   - Behavior on height + Behavior on color: doble animación que hace que
+//     tanto el nivel como el color cambien suavemente al mover el Slider.
+//   - Escala con Repeater: genera 8 marcas (-20° a 50° cada 10°). La posición Y
+//     de cada marca usa la misma fórmula de normalización que el relleno,
+//     garantizando que marcas y nivel estén siempre alineados.
+//   - Bulbo circular: un Rectangle con radius: width/2 posicionado con
+//     topMargin negativo (-10) para que se superponga con el tubo, creando
+//     la ilusión de un termómetro continuo.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -1,3 +1,37 @@
+// =============================================================================
+// DialCard.qml — Control rotatorio Dial con propiedades custom del estilo
+// =============================================================================
+// Presenta el componente Dial de Qt Quick Controls con las propiedades custom
+// definidas en el estilo del proyecto (qmlsnippetsstyle). Tres diales con
+// diferentes configuraciones demuestran la versatilidad del componente.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Dial como alternativa al Slider:
+//    - Dial permite seleccionar valores girando un control circular, ideal
+//      para representar magnitudes rotatorias (temperatura, volumen, velocidad).
+//    - Soporta interaccion por drag, rueda del mouse y teclas de flecha.
+//
+// 2. Propiedades custom del estilo:
+//    - progressColor: color del arco de progreso (no es nativo de Dial,
+//      lo implementa el estilo qmlsnippetsstyle).
+//    - trackWidth: grosor del arco.
+//    - showTicks/tickCount: marcas de division.
+//    - suffix: unidad mostrada junto al valor ("°C", "%", "km/h").
+//    - valueDecimals: precision decimal del valor mostrado.
+//    - Estas propiedades existen porque el Dial.qml del estilo las define
+//      como "property" adicionales.
+//
+// 3. Color dinamico basado en posicion:
+//    - El dial de temperatura usa un binding que calcula progressColor
+//      segun la posicion (0-1): azul para frio, verde para medio, naranja
+//      para caliente. Esto demuestra como los colores pueden ser reactivos.
+//
+// 4. Comparacion de configuraciones:
+//    - Tres diales con diferentes trackWidth, colores y precision muestran
+//      como un mismo componente se adapta a distintos contextos de uso.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -25,7 +59,8 @@ Rectangle {
             Layout.fillHeight: true
             spacing: Style.resize(30)
 
-            // Temperature dial
+            // Dial de temperatura: progressColor dinamico segun la posicion.
+            // Azul (< 35%) -> verde (35-65%) -> naranja (> 65%).
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: Style.resize(8)
@@ -57,7 +92,8 @@ Rectangle {
                 }
             }
 
-            // Volume dial
+            // Dial de volumen: trackWidth grueso y color fijo purpura.
+            // Demuestra una configuracion tipica de control de audio.
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: Style.resize(8)
@@ -83,7 +119,8 @@ Rectangle {
                 }
             }
 
-            // Speed dial (no ticks, thin)
+            // Dial de velocidad: track fino (6px), sin ticks.
+            // showTicks: false da un aspecto minimalista y limpio.
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: Style.resize(8)
@@ -110,7 +147,8 @@ Rectangle {
                 }
             }
 
-            // Info column
+            // Panel informativo: lista las propiedades custom disponibles.
+            // Sirve como referencia rapida para el desarrollador.
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter

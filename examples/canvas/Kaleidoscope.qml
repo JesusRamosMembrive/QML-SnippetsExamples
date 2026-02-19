@@ -1,3 +1,35 @@
+// =============================================================================
+// Kaleidoscope.qml — Caleidoscopio animado con simetria rotacional
+// =============================================================================
+// Simula un caleidoscopio real: formas coloreadas se reflejan y repiten en
+// multiples segmentos simetricos alrededor de un punto central, creando
+// patrones mandala que evolucionan continuamente.
+//
+// TECNICA DE SIMETRIA CON Canvas:
+//   El canvas se divide en 'segments' sectores angulares (por defecto 8).
+//   Para cada segmento:
+//   1. ctx.translate(cx, cy) mueve el origen al centro
+//   2. ctx.rotate(seg * segAngle) rota al angulo del segmento
+//   3. Los segmentos pares se dibujan normal; los impares se reflejan
+//      con ctx.scale(1, -1), creando simetria de espejo
+//   4. Se dibujan las mismas formas en cada segmento
+//   ctx.save()/ctx.restore() preserva y restaura el estado de transformacion.
+//
+// EFECTO DE ESPEJO (seg % 2 === 1 -> scale(1, -1)):
+//   En un caleidoscopio real, los espejos crean reflexiones alternas.
+//   scale(1, -1) invierte el eje Y, produciendo exactamente ese efecto.
+//   Sin la inversion, tendriamos simple rotacion; CON ella, la simetria
+//   es mas rica y se parece mas a un caleidoscopio real.
+//
+// COLORES CICLICOS CON ONDAS SENO:
+//   RGB se calculan con sin() desfasados 2.1 radianes entre si (~120 grados),
+//   lo que produce un ciclo de colores que recorre todo el espectro suavemente.
+//   El desfase por segmento (seg * 0.3) hace que segmentos adyacentes tengan
+//   colores ligeramente distintos, enriqueciendo el patron.
+//
+// Clip circular: ctx.arc() + ctx.clip() recorta el dibujo a un circulo,
+// evitando que las formas de los segmentos se salgan del area del radar.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -64,7 +96,9 @@ ColumnLayout {
 
                 ctx.clearRect(0, 0, w, h)
 
-                // Clip to circle
+                // Recorte circular: todo lo que se dibuje fuera del circulo
+                // sera invisible. ctx.save() preserva el estado sin clip
+                // para poder restaurarlo al final.
                 ctx.save()
                 ctx.beginPath()
                 ctx.arc(cx, cy, r, 0, 2 * Math.PI)
@@ -75,6 +109,8 @@ ColumnLayout {
 
                 var segAngle = 2 * Math.PI / segments
 
+                // Iterar por cada segmento del caleidoscopio. translate + rotate
+                // posiciona cada sector. Los impares se reflejan con scale(1,-1).
                 for (var seg = 0; seg < segments; seg++) {
                     ctx.save()
                     ctx.translate(cx, cy)
@@ -101,7 +137,7 @@ ColumnLayout {
                         ctx.fillStyle = "rgb(" + cr + "," + cg + "," + cb + ")"
                         ctx.fill()
 
-                        // Connecting lines between dots
+                        // Lineas conectoras entre puntos adyacentes del segmento
                         if (i > 0) {
                             var prevPhase = time + (i - 1) * 0.8
                             var prevDist = 20 + 40 * Math.sin(prevPhase * 0.7) + (i - 1) * 15

@@ -1,3 +1,18 @@
+// =============================================================================
+// KeyValueCard.qml — CRUD genérico de claves con QSettings
+// =============================================================================
+// Demuestra la API más fundamental de QSettings: setValue(), value() y remove().
+// El usuario escribe una clave (con ruta tipo "Group/subkey") y un valor,
+// luego puede guardarlo, cargarlo o eliminarlo. Todas las claves existentes
+// se muestran en un ListView.
+//
+// Patrón importante: las claves usan "/" como separador de grupo, igual que
+// QSettings nativo (ej. "Custom/myKey" → grupo "Custom", clave "myKey").
+//
+// pragma ComponentBehavior: Bound refuerza que las propiedades `required` del
+// delegate se resuelvan en tiempo de compilación, mejorando la seguridad de
+// tipos y el rendimiento.
+// =============================================================================
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -10,8 +25,15 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // keysList almacena un array JS de objetos {key, val}. Se usa un array
+    // JS en vez de ListModel porque se reconstruye completamente en cada
+    // refresco — más simple y sin problemas de sincronización.
     property var keysList: []
 
+    // ---- Integración C++ ----
+    // SettingsManager es un QObject registrado desde C++ que envuelve QSettings.
+    // La señal onKeysChanged notifica cuando cualquier clave cambia, lo que
+    // permite actualizar la UI de forma reactiva sin polling.
     SettingsManager {
         id: settings
         onKeysChanged: root.refreshKeys()
@@ -19,6 +41,10 @@ Rectangle {
 
     Component.onCompleted: refreshKeys()
 
+    // refreshKeys() reconstruye la lista completa de claves.
+    // Se itera allKeys() y se crea un array plano — este enfoque es adecuado
+    // para un número moderado de claves. Para miles de claves, sería mejor
+    // usar un QAbstractListModel desde C++.
     function refreshKeys() {
         var all = settings.allKeys()
         var arr = []
@@ -50,7 +76,9 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Input
+        // ---- Campos de entrada ----
+        // Dos TextFields lado a lado: clave y valor. El formato de clave
+        // soporta notación con "/" para organizar en grupos de QSettings.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -70,6 +98,10 @@ Rectangle {
             }
         }
 
+        // ---- Botones de acción ----
+        // Save → setValue, Load → getValue, Remove → removeKey.
+        // Todos deshabilitados si el campo de clave está vacío (enabled binding).
+        // Después de Save/Remove se refresca la lista para reflejar el cambio.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -107,7 +139,10 @@ Rectangle {
             }
         }
 
-        // Keys list
+        // ---- Lista de claves almacenadas ----
+        // ListView con modelo JS array. El delegate usa filas alternadas
+        // (index % 2) con un blanco semitransparente para mejorar la
+        // legibilidad — un patrón clásico de tablas tipo "zebra striping".
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -156,6 +191,9 @@ Rectangle {
                 }
             }
 
+            // Estado vacío: mensaje visible solo cuando no hay claves.
+            // Este patrón de "empty state" mejora la experiencia del usuario
+            // al indicar claramente que la lista está vacía, no rota.
             Label {
                 anchors.centerIn: parent
                 text: "No settings stored yet"

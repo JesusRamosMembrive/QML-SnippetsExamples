@@ -1,3 +1,19 @@
+// =============================================================================
+// BorderImageCard.qml — Ejemplo de BorderImage (9-patch) en QML
+// =============================================================================
+// BorderImage divide una imagen en 9 regiones: 4 esquinas que no se escalan,
+// 4 bordes que se estiran en una sola direccion, y un centro que se estira
+// en ambas. Es el mismo concepto que "9-patch" en Android.
+//
+// Este ejemplo muestra la misma imagen 9-patch en tres tamanos diferentes
+// (Original, Wide, Tall) para que el usuario vea como las esquinas se
+// mantienen intactas mientras los bordes y el centro se adaptan.
+// Un Slider permite ajustar el grosor del borde en tiempo real.
+//
+// Caso de uso real: marcos de botones, burbujas de chat, paneles que
+// necesitan esquinas redondeadas que no se deformen al redimensionar.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +24,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Grosor del borde en pixeles. Controla cuanto de la imagen se
+    // considera "esquina" (no escalable) vs "centro" (escalable).
     property int borderSize: 20
 
     ColumnLayout {
@@ -32,7 +50,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Show three sizes side by side
+            // Tres variantes lado a lado para comparar visualmente
+            // como BorderImage adapta la misma imagen a distintas proporciones.
             Row {
                 anchors.centerIn: parent
                 spacing: Style.resize(15)
@@ -48,6 +67,9 @@ Rectangle {
                         required property var modelData
                         spacing: Style.resize(4)
 
+                        // border.left/right/top/bottom definen cuantos pixeles
+                        // desde cada borde se consideran zona fija (esquinas).
+                        // Valores iguales en los 4 lados = esquinas simetricas.
                         BorderImage {
                             source: "qrc:/assets/images/ninepatch.png"
                             width: Style.resize(modelData.w)
@@ -70,6 +92,8 @@ Rectangle {
             }
         }
 
+        // Slider para experimentar: valores muy bajos deforman las esquinas,
+        // valores muy altos hacen que casi toda la imagen sea "esquina".
         RowLayout {
             Layout.fillWidth: true
             Label {

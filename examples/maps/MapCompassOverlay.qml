@@ -1,3 +1,20 @@
+// =============================================================================
+// MapCompassOverlay.qml — Brujula miniatura como overlay del mapa
+// =============================================================================
+// Version compacta de la rosa de los vientos, posicionada en la esquina
+// inferior izquierda del mapa. Muestra el heading actual del avion con
+// la misma estetica de instrumentacion aeronautica que CompassRoseCard
+// pero adaptada a un tamano reducido.
+//
+// Patrones y conceptos clave:
+// - Reutilizacion de logica Canvas: mismo algoritmo de dibujo que
+//   CompassRoseCard pero con dimensiones ajustadas al overlay.
+//   En un proyecto real se podria extraer a un componente compartido.
+// - Fondo circular semitransparente (Qt.rgba con alpha 0.65) para que
+//   el mapa sea visible detras pero la brujula sea legible.
+// - Repintado reactivo: solo se redibuja cuando cambia el heading,
+//   no en cada frame.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import utils
@@ -7,6 +24,8 @@ Rectangle {
 
     property real heading: 0
 
+    // Posicionamiento como overlay circular en la esquina inferior izquierda.
+    // bottomMargin extra para no solaparse con la MapControlsBar.
     anchors.left: parent.left
     anchors.bottom: parent.bottom
     anchors.leftMargin: Style.resize(15)
@@ -18,6 +37,14 @@ Rectangle {
     border.color: Qt.rgba(1, 1, 1, 0.25)
     border.width: 1
 
+    // ── Canvas de la brujula ────────────────────────────────────
+    // Dibuja los mismos elementos que CompassRoseCard:
+    // 1. Anillo exterior fijo
+    // 2. Tarjeta giratoria con marcas y etiquetas (rota con -heading)
+    // 3. Flecha norte roja (gira con la tarjeta)
+    // 4. Lubber line amarilla fija arriba
+    // 5. Punto central
+    // 6. Readout digital del heading
     Canvas {
         id: compassCanvas
         onAvailableChanged: if (available) requestPaint()
@@ -41,19 +68,21 @@ Rectangle {
             var green = "#00FF00"
             var white = "#FFFFFF"
 
-            // Outer ring
+            // Anillo exterior fijo
             ctx.strokeStyle = "#666666"
             ctx.lineWidth = 1.5
             ctx.beginPath()
             ctx.arc(cx, cy, r + 4, 0, 2 * Math.PI)
             ctx.stroke()
 
-            // Rotating compass card
+            // Tarjeta giratoria: todo lo que esta entre save/restore
+            // gira inversamente al heading del avion.
             ctx.save()
             ctx.translate(cx, cy)
             ctx.rotate(-hdg * Math.PI / 180)
 
-            // Tick marks every 5 degrees
+            // Marcas cada 5 grados con jerarquia visual:
+            // cardinales > mayores (cada 10) > menores
             for (var deg = 0; deg < 360; deg += 5) {
                 var rad = (deg - 90) * Math.PI / 180
                 var isCardinal = (deg % 90 === 0)
@@ -71,7 +100,7 @@ Rectangle {
                 ctx.stroke()
             }
 
-            // Labels every 30 degrees
+            // Etiquetas cada 30 grados (convencion aeronautica)
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
             ctx.font = "bold " + (r * 0.13) + "px sans-serif"
@@ -101,7 +130,7 @@ Rectangle {
                     Math.sin(lrad) * labelR)
             }
 
-            // North arrow (red triangle)
+            // Flecha norte (triangulo rojo, gira con la tarjeta)
             ctx.fillStyle = "#FF4444"
             var nRad = -Math.PI / 2
             var nR = r + 1
@@ -116,7 +145,8 @@ Rectangle {
 
             ctx.restore()
 
-            // Fixed lubber line (yellow triangle at top)
+            // ── Elementos fijos (no rotan) ──────────────────────
+            // Lubber line amarilla: marca la proa del avion
             ctx.fillStyle = "#FFFF00"
             ctx.beginPath()
             ctx.moveTo(cx, cy - r - 6)
@@ -125,13 +155,13 @@ Rectangle {
             ctx.closePath()
             ctx.fill()
 
-            // Center dot
+            // Punto central
             ctx.fillStyle = white
             ctx.beginPath()
             ctx.arc(cx, cy, 2.5, 0, 2 * Math.PI)
             ctx.fill()
 
-            // Heading readout box
+            // Readout digital del heading (formato 3 digitos)
             var hdgStr = Math.round(hdg).toString().padStart(3, "0")
             ctx.fillStyle = "#000000"
             ctx.fillRect(cx - 20, 3, 40, 16)

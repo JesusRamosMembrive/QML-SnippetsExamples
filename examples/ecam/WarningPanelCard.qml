@@ -1,3 +1,34 @@
+// =============================================================================
+// WarningPanelCard.qml — Panel de Alertas ECAM (Warning/Caution)
+// =============================================================================
+// Simula el sistema de alertas del ECAM con dos niveles de prioridad:
+//
+// 1. MASTER WARNING (rojo): emergencias que requieren accion inmediata
+//    (fuego, falla de motor, despresurización). Parpadea a 400ms.
+//
+// 2. MASTER CAUTION (ambar): precauciones que requieren atencion pero no
+//    son emergencias inmediatas (nivel bajo de combustible, falla de bleed).
+//    Parpadea a 500ms (ritmo mas lento que warning).
+//
+// En un avion real, el piloto presiona el boton Master Warning/Caution para
+// reconocer la alerta y detener el parpadeo. Aqui se simula con MouseArea.
+//
+// Tecnicas QML utilizadas (sin Canvas, todo declarativo):
+//   - ListModel dinamico: se agregan/eliminan mensajes en runtime con
+//     append() y clear(). Esto demuestra modelos mutables.
+//   - SequentialAnimation on opacity: crea el efecto de parpadeo alternando
+//     entre dos valores de opacidad en bucle infinito
+//   - Repeater con ListModel: renderiza los mensajes de alerta dinamicamente
+//   - required property var model: acceso tipado al modelo en delegates
+//     (patron de Qt 6 con ComponentBehavior: Bound)
+//
+// Patron de interaccion:
+//   - Botones "+ Warning" / "+ Caution" agregan alertas al modelo
+//   - Click en Master Warning/Caution limpia sus respectivas listas
+//   - "Clear All" limpia ambas listas
+//   - Los botones master solo estan activos (brillantes) cuando hay alertas
+//     en su modelo. Sin alertas, se muestran atenuados.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,12 +50,20 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Master buttons
+        // =====================================================================
+        // Botones Master WARNING y CAUTION:
+        // - El color de fondo depende de si hay alertas (model.count > 0):
+        //   con alertas = color brillante, sin alertas = color apagado
+        // - SequentialAnimation crea el parpadeo cuando running = true
+        //   (solo cuando hay alertas). Alterna opacity entre 0.5 y 1.0
+        //   en un bucle infinito, imitando las luces reales del cockpit.
+        // - MouseArea: click para "reconocer" y limpiar las alertas
+        // =====================================================================
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
 
-            // Master WARNING
+            // MASTER WARNING (rojo)
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(50)
@@ -33,6 +72,7 @@ Rectangle {
                 border.color: "#F44336"
                 border.width: 2
 
+                // Parpadeo: alterna opacidad a 400ms por ciclo
                 SequentialAnimation on opacity {
                     running: warningModel.count > 0
                     loops: Animation.Infinite
@@ -55,7 +95,7 @@ Rectangle {
                 }
             }
 
-            // Master CAUTION
+            // MASTER CAUTION (ambar)
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(50)
@@ -64,6 +104,7 @@ Rectangle {
                 border.color: "#FF9800"
                 border.width: 2
 
+                // Parpadeo mas lento que warning (500ms vs 400ms)
                 SequentialAnimation on opacity {
                     running: cautionModel.count > 0
                     loops: Animation.Infinite
@@ -87,10 +128,17 @@ Rectangle {
             }
         }
 
+        // =====================================================================
+        // Modelos de datos dinamicos:
+        // ListModel permite agregar y eliminar elementos en runtime.
+        // Cada elemento tiene una propiedad "msg" con el texto de la alerta.
+        // Los Repeaters de abajo se vinculan a estos modelos y se actualizan
+        // automaticamente cuando cambia el modelo (binding reactivo de QML).
+        // =====================================================================
         ListModel { id: warningModel }
         ListModel { id: cautionModel }
 
-        // Message list
+        // Lista de mensajes activos
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -102,7 +150,12 @@ Rectangle {
                 anchors.margins: Style.resize(8)
                 spacing: Style.resize(2)
 
-                // Warnings section
+                // ---------------------------------------------------------
+                // Mensajes de WARNING (rojo, con icono de peligro):
+                // \u26A0 es el unicode del triangulo de advertencia.
+                // Los mensajes usan required property var model para
+                // acceder a los datos del ListModel de forma tipada.
+                // ---------------------------------------------------------
                 Repeater {
                     model: warningModel
                     Label {
@@ -115,7 +168,10 @@ Rectangle {
                     }
                 }
 
-                // Cautions section
+                // ---------------------------------------------------------
+                // Mensajes de CAUTION (ambar, con icono de triangulo):
+                // \u25B3 es un triangulo sin relleno, mas sutil que \u26A0.
+                // ---------------------------------------------------------
                 Repeater {
                     model: cautionModel
                     Label {
@@ -127,7 +183,7 @@ Rectangle {
                     }
                 }
 
-                // Status messages
+                // Mensajes de estado fijos (informativos, verde)
                 Label {
                     text: "\u2022 SLATS RETRACTED"
                     font.pixelSize: Style.resize(12)
@@ -145,7 +201,14 @@ Rectangle {
             }
         }
 
-        // Add warning/caution buttons
+        // =====================================================================
+        // Botones para simular alertas:
+        // Cada click agrega un mensaje diferente al modelo correspondiente.
+        // Se usa modulo (%) para ciclar entre los mensajes predefinidos.
+        // Mensajes realistas de aviacion:
+        //   Warning: ENG FIRE, ENG FAIL, CABIN PRESS, etc.
+        //   Caution: FUEL LO LVL, BLEED FAULT, AIR PACK OFF, etc.
+        // =====================================================================
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

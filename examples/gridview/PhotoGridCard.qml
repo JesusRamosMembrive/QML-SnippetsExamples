@@ -1,3 +1,19 @@
+// =============================================================================
+// PhotoGridCard.qml — Galería de fotos con celdas adaptativas al ancho
+// =============================================================================
+// Demuestra un GridView con celdas cuadradas que se adaptan al ancho del
+// contenedor: cellWidth = width / 3 hace que siempre haya exactamente 3
+// columnas, y cellHeight = cellWidth garantiza celdas cuadradas.
+//
+// Conceptos clave:
+// - ListModel con roles personalizados (icon, clr, title): más estructurado
+//   que un modelo entero, permite datos ricos por cada celda.
+// - required property en el delegate: acceso tipado a los roles del modelo.
+//   Es el patrón recomendado en Qt 6 (reemplaza el acceso directo model.xxx).
+// - photoModel.get(index): acceso programático al ListModel para mostrar
+//   datos del item seleccionado fuera del delegate.
+// - Doble animación (opacity + scale) para feedback de selección visual.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +24,7 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -1 = ningún item seleccionado
     property int selectedIndex: -1
 
     ColumnLayout {
@@ -30,9 +47,15 @@ Rectangle {
                 id: photoGrid
                 anchors.fill: parent
                 clip: true
+                // ---- Celdas adaptativas ----
+                // width / 3 asegura exactamente 3 columnas sin importar
+                // el ancho del contenedor. cellHeight = cellWidth hace
+                // celdas cuadradas. Este patrón es perfecto para galerías.
                 cellWidth: width / 3
                 cellHeight: cellWidth
 
+                // ListModel con datos de cada "foto" (aquí simuladas con
+                // iconos Unicode). Cada ListElement define roles tipados.
                 model: ListModel {
                     id: photoModel
                     ListElement { icon: "\u2600"; clr: "#FEA601"; title: "Sunset" }
@@ -60,6 +83,10 @@ Rectangle {
                         anchors.margins: Style.resize(3)
                         radius: Style.resize(8)
                         color: photoDelegate.clr
+                        // ---- Feedback de selección ----
+                        // El item seleccionado tiene opacity 1.0 y escala 1.05,
+                        // mientras los demás están a 0.7 y 1.0. Los Behavior
+                        // animan la transición para que el cambio sea suave.
                         opacity: root.selectedIndex === photoDelegate.index ? 1.0 : 0.7
                         scale: root.selectedIndex === photoDelegate.index ? 1.05 : 1.0
 
@@ -94,6 +121,10 @@ Rectangle {
             }
         }
 
+        // ---- Label de selección ----
+        // Accede al ListModel con photoModel.get(index) para mostrar el
+        // título y color del item seleccionado. El operador ternario cambia
+        // entre texto de ayuda (gris) y datos del item (con su color propio).
         Label {
             text: root.selectedIndex >= 0
                   ? photoModel.get(root.selectedIndex).title

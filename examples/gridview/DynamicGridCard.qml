@@ -1,3 +1,20 @@
+// =============================================================================
+// DynamicGridCard.qml — GridView dinámico con agregar/eliminar y transiciones
+// =============================================================================
+// Demuestra la modificación dinámica de un ListModel y cómo GridView anima
+// automáticamente las inserciones y eliminaciones usando Transition.
+//
+// Conceptos clave:
+// - ListModel.append() / remove(): añadir y quitar items del modelo.
+//   GridView detecta estos cambios automáticamente y actualiza la vista.
+// - add Transition / remove Transition: animaciones que GridView ejecuta
+//   cuando se insertan o eliminan items. Son opcionales pero mejoran
+//   mucho la experiencia de usuario.
+// - cellWidth vinculado a un Slider: demuestra que GridView se re-distribuye
+//   dinámicamente cuando cambian las dimensiones de celda.
+// - Component.onCompleted en el modelo: inicialización imperativa del
+//   ListModel, útil cuando los datos iniciales se generan con lógica.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +25,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Contador para asignar IDs únicos a cada item nuevo.
+    // Empieza en 13 porque el modelo inicial tiene 12 items.
     property int nextId: 13
 
     ColumnLayout {
@@ -30,9 +49,15 @@ Rectangle {
                 id: dynGrid
                 anchors.fill: parent
                 clip: true
+                // ---- Tamaño de celda dinámico ----
+                // Vinculado al Slider, permite cambiar el tamaño en tiempo
+                // real. GridView recalcula el layout automáticamente.
                 cellWidth: Style.resize(cellSlider.value)
                 cellHeight: cellWidth
 
+                // Modelo inicial generado con un bucle en Component.onCompleted.
+                // Se usa un array de colores predefinidos para un resultado
+                // visual atractivo.
                 model: ListModel {
                     id: dynModel
                     Component.onCompleted: {
@@ -44,6 +69,12 @@ Rectangle {
                     }
                 }
 
+                // ---- Transiciones de inserción/eliminación ----
+                // add: los items nuevos aparecen con fade-in + scale-up.
+                // remove: los items eliminados desaparecen con fade-out + scale-down.
+                // GridView ejecuta estas transiciones automáticamente cuando
+                // el ListModel cambia. Ambas animaciones corren en paralelo
+                // (opacity y scale al mismo tiempo).
                 add: Transition {
                     NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: 200 }
                     NumberAnimation { properties: "scale"; from: 0.5; to: 1; duration: 200 }
@@ -75,7 +106,10 @@ Rectangle {
                             color: "#FFFFFF"
                         }
 
-                        // Remove button
+                        // ---- Botón de eliminar por item ----
+                        // Pequeño círculo rojo en la esquina superior derecha.
+                        // dynModel.remove(index) elimina el item del modelo,
+                        // lo que dispara la remove Transition automáticamente.
                         Rectangle {
                             width: Style.resize(16)
                             height: Style.resize(16)
@@ -102,11 +136,13 @@ Rectangle {
             }
         }
 
-        // Controls
+        // ---- Controles ----
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
 
+            // Slider para ajustar el tamaño de las celdas en tiempo real.
+            // Rango 50–120 px (escalado con Style.resize).
             RowLayout {
                 Layout.fillWidth: true
                 Label {
@@ -122,6 +158,8 @@ Rectangle {
                 }
             }
 
+            // Botón para agregar items. El color se selecciona cíclicamente
+            // con el operador módulo (%) sobre un array de colores.
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Style.resize(10)

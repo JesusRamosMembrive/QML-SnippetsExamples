@@ -1,3 +1,26 @@
+// =============================================================================
+// SwipeToActionList.qml — Lista con gesto swipe para revelar acciones
+// =============================================================================
+// Implementa el patron "swipe to reveal" comun en apps moviles (iOS Mail,
+// Android notificaciones): al deslizar un item hacia la izquierda, se
+// revelan botones de accion (favorito y eliminar) debajo.
+//
+// Tecnica clave — capas superpuestas:
+// Cada delegate tiene dos capas: una capa de fondo (background) con los
+// botones de accion, y una capa frontal (foreground) con el contenido.
+// El swipe se implementa moviendo la capa frontal en X con MouseArea:
+//   - onPressed: guarda la posicion inicial del toque
+//   - onPositionChanged: calcula el delta X y mueve la capa (solo izquierda)
+//   - onReleased: si el desplazamiento supera un umbral, "engancha" la
+//     posicion; si no, vuelve a X=0 con animacion
+//
+// swipeModel.remove(index) en el boton eliminar quita el item del modelo,
+// lo que automaticamente destruye el delegate (QML gestiona el ciclo de vida).
+//
+// Este patron NO usa SwipeDelegate de Qt Controls (que seria mas simple)
+// para demostrar como construirlo manualmente con MouseArea y animaciones.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -55,7 +78,9 @@ ColumnLayout {
                 property real swipeX: 0
                 property bool swiped: false
 
-                // Background actions
+                // Capa de fondo: siempre presente pero oculta debajo de la
+                // capa frontal. Solo se ve cuando swipeX < 0 (desplazamiento).
+                // Contiene los botones de accion alineados a la derecha.
                 Rectangle {
                     anchors.fill: parent
                     radius: Style.resize(8)
@@ -111,7 +136,8 @@ ColumnLayout {
                     }
                 }
 
-                // Foreground card
+                // Capa frontal: se desplaza en X segun el gesto del usuario.
+                // Behavior on x anima el "enganche" y el retorno a la posicion.
                 Rectangle {
                     id: swipeFg
                     width: parent.width

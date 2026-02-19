@@ -1,3 +1,24 @@
+// =============================================================================
+// DayNightSwitch.qml — Switch tematico dia/noche con animaciones decorativas
+// =============================================================================
+// Ejemplo avanzado de un switch completamente custom que va mucho mas alla
+// de un simple toggle: incluye estrellas, rayos de sol, crateres de luna,
+// y transiciones visuales coordinadas entre todos los elementos.
+//
+// Tecnicas clave demostradas:
+//   1. Composicion visual: multiples Rectangles pequenyos simulan estrellas
+//      y crateres, posicionados con coordenadas relativas (0.0 a 1.0)
+//   2. Transform + Rotation: los rayos del sol usan un Repeater de 8 items
+//      con angulos de 45 grados, rotados desde un punto de origen desplazado
+//   3. Animaciones coordinadas: todas las propiedades (x, color, opacity)
+//      usan la misma duracion (400ms) para que la transicion sea coherente
+//   4. Easing.InOutCubic en el movimiento del knob da sensacion de peso
+//
+// Patron de estado: isNight vive en el Item padre y se accede como
+// dayNightTrack.parent.isNight desde los hijos. Un diseno mas limpio
+// usaria un id dedicado, pero este patron demuestra la cadena de padres.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -21,6 +42,8 @@ ColumnLayout {
 
         property bool isNight: true
 
+        // Track: el fondo del switch cambia entre azul oscuro (noche)
+        // y azul cielo (dia) con ColorAnimation de 500ms.
         Rectangle {
             id: dayNightTrack
             anchors.centerIn: parent
@@ -31,7 +54,10 @@ ColumnLayout {
 
             Behavior on color { ColorAnimation { duration: 500 } }
 
-            // Stars (visible at night)
+            // Estrellas: Repeater de 5 Rectangles circulares posicionados con
+            // coordenadas relativas (sx, sy). opacity anima a 0 de dia.
+            // Este patron de "particulas manuales" es mas ligero que usar
+            // el modulo Particles para elementos decorativos simples.
             Repeater {
                 model: [
                     { sx: 0.2, sy: 0.25, size: 3 },
@@ -55,7 +81,9 @@ ColumnLayout {
                 }
             }
 
-            // Knob (sun / moon)
+            // Knob (sol/luna): se desplaza horizontalmente entre los extremos
+            // del track. x usa un ternario para la posicion, con Easing.InOutCubic
+            // que da sensacion de aceleracion/desaceleracion natural.
             Rectangle {
                 id: dayNightKnob
                 width: Style.resize(48)
@@ -100,7 +128,12 @@ ColumnLayout {
                     Behavior on opacity { NumberAnimation { duration: 300 } }
                 }
 
-                // Sun rays (day only)
+                // Rayos del sol: 8 rectangulos finos distribuidos cada 45 grados.
+                // transform: Rotation rota cada rayo alrededor de un punto de
+                // origen desplazado (origin.y = knob.width * 0.55), lo que crea
+                // el efecto de rayos emanando del centro del knob.
+                // anchors.verticalCenterOffset desplaza el rayo hacia arriba
+                // antes de rotar, creando la distancia desde el centro.
                 Repeater {
                     model: 8
 

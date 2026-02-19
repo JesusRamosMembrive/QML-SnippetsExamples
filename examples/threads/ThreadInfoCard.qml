@@ -1,3 +1,35 @@
+// =============================================================================
+// ThreadInfoCard.qml — Identidad de hilos y patron moveToThread()
+// =============================================================================
+// Muestra los IDs de los 4 hilos del sistema (GUI, Generator, Filter,
+// Collector) para demostrar visualmente que cada worker corre en un hilo
+// diferente del sistema operativo. Incluye una explicacion del patron
+// moveToThread() como referencia educativa.
+//
+// Conexion QML <-> C++:
+//   - ThreadPipeline expone los IDs de hilo como Q_PROPERTYs string:
+//     - mainThreadId: el hilo GUI donde corre QML.
+//     - generatorThreadId: hilo del worker Generator.
+//     - filterThreadId: hilo del worker Filter.
+//     - collectorThreadId: hilo del worker Collector.
+//   - Estos IDs se obtienen con QThread::currentThreadId() dentro de cada
+//     worker y se envian al hilo principal via senal. Son punteros
+//     convertidos a string hexadecimal.
+//
+// Patrones clave:
+//   - Acceso dinamico a propiedades: root.pipeline[propName] usa bracket
+//     notation de JavaScript para acceder a propiedades de un QObject por
+//     nombre string. Esto permite usar un Repeater con un ListModel que
+//     tiene el nombre de la propiedad como dato.
+//   - SequentialAnimation on opacity: los puntos coloreados de cada hilo
+//     parpadean mientras el pipeline esta corriendo, dando feedback visual
+//     de actividad. El hilo GUI (mainThreadId) no parpadea porque siempre
+//     esta activo.
+//   - Panel educativo: el Rectangle inferior con fondo surfaceColor contiene
+//     una explicacion paso a paso del patron moveToThread() con formato
+//     monospace, sirviendo como referencia rapida para el aprendiz.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

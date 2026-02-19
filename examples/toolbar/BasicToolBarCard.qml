@@ -1,3 +1,23 @@
+// =============================================================================
+// BasicToolBarCard.qml — Barra de herramientas basica con ToolButtons
+// =============================================================================
+// Ejemplo introductorio de ToolBar con botones de navegacion tipo navegador
+// web (Home, Back, Forward, Refresh, Settings). Cada boton usa un caracter
+// Unicode como icono y muestra un ToolTip al pasar el mouse.
+//
+// Conceptos clave:
+//   - ToolBar: contenedor con fondo tematico para agrupar herramientas.
+//     A diferencia de MenuBar, no tiene comportamiento de menu desplegable.
+//   - ToolButton: variante de Button optimizada para toolbars (mas compacta,
+//     sin borde por defecto en muchos estilos).
+//   - ToolTip.text + ToolTip.visible: propiedades attached que agregan tooltips
+//     a cualquier control sin necesidad de un componente ToolTip separado.
+//   - Item { Layout.fillWidth: true }: espaciador invisible que empuja el
+//     boton Settings hacia la derecha, creando la distribucion tipica de
+//     "acciones principales a la izquierda, ajustes a la derecha".
+//   - background: override del fondo del ToolBar para personalizar su aspecto.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -22,7 +42,9 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // ToolBar with ToolButtons
+        // -- ToolBar con fondo personalizado.
+        //    El RowLayout interior distribuye los ToolButtons horizontalmente.
+        //    Los iconos Unicode evitan dependencias de imagenes externas.
         ToolBar {
             Layout.fillWidth: true
             background: Rectangle {
@@ -41,13 +63,14 @@ Rectangle {
                 ToolButton { text: "\u2192"; onClicked: root.lastAction = "Forward"; ToolTip.text: "Forward"; ToolTip.visible: hovered }
                 ToolButton { text: "\u21BB"; onClicked: root.lastAction = "Refresh"; ToolTip.text: "Refresh"; ToolTip.visible: hovered }
 
+                // -- Espaciador flexible: empuja todo lo que sigue hacia la derecha
                 Item { Layout.fillWidth: true }
 
                 ToolButton { text: "\u2699"; onClicked: root.lastAction = "Settings"; ToolTip.text: "Settings"; ToolTip.visible: hovered }
             }
         }
 
-        // Content area
+        // -- Area de contenido que muestra la ultima accion ejecutada
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

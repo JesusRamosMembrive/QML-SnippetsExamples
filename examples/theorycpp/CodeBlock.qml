@@ -1,3 +1,32 @@
+// =============================================================================
+// CodeBlock.qml — Bloque expandible de codigo con resultado
+// =============================================================================
+// Componente reutilizable que muestra un ejemplo de codigo C++ con su
+// resultado esperado. Funciona como un "accordion": colapsado muestra solo
+// el titulo, expandido muestra el codigo fuente y opcionalmente la salida.
+//
+// Estructura visual (expandido):
+//   +-------------------------------+
+//   | ▼ Titulo del ejemplo          |  <- Header (siempre visible)
+//   +-------------------------------+
+//   | codigo fuente en Markdown     |  <- Code content (solo expandido)
+//   +-------------------------------+
+//   | Resultado:                    |  <- Result section (solo si hay result)
+//   | salida del programa           |
+//   +-------------------------------+
+//
+// Patrones importantes:
+//   - textFormat: TextEdit.MarkdownText permite mostrar codigo con formato
+//     Markdown, incluyendo bloques de codigo con syntax.
+//   - implicitHeight basado en contenido: el Rectangle padre ajusta su
+//     altura segun el contenido del TextEdit, permitiendo que el layout
+//     padre (ColumnLayout) distribuya el espacio correctamente.
+//   - Esquinas redondeadas selectivas: se usan Rectangles superpuestos
+//     para redondear solo las esquinas deseadas (arriba siempre, abajo
+//     solo cuando esta colapsado o en la seccion de resultado).
+//   - selectByMouse: true permite al usuario seleccionar y copiar codigo.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -22,14 +51,16 @@ Rectangle {
         anchors.right: parent.right
         spacing: 0
 
-        // Header
+        // -- Header clickeable: muestra titulo y flecha de expand/collapse.
+        //    Las esquinas redondeadas se ajustan segun el estado expandido.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(40)
             color: "#2D2D3D"
             radius: root.expanded ? 0 : Style.resize(8)
 
-            // Top corners always rounded
+            // -- Truco para esquinas selectivas: Rectangle superpuesto en
+            //    la parte superior asegura esquinas redondeadas arriba siempre.
             Rectangle {
                 anchors.top: parent.top
                 anchors.left: parent.left
@@ -39,7 +70,7 @@ Rectangle {
                 radius: Style.resize(8)
             }
 
-            // Bottom corners flat when expanded
+            // -- Esquinas inferiores redondeadas solo cuando esta colapsado
             Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
@@ -78,7 +109,9 @@ Rectangle {
             }
         }
 
-        // Code content
+        // -- Seccion de codigo: TextEdit con formato Markdown.
+        //    Usar Markdown permite que el parser C++ envie el codigo
+        //    envuelto en bloques ``` para resaltado basico.
         Rectangle {
             Layout.fillWidth: true
             color: "#1E1E2E"
@@ -102,7 +135,8 @@ Rectangle {
             }
         }
 
-        // Result section
+        // -- Seccion de resultado: solo visible si hay resultado Y esta expandido.
+        //    Color verde (#A0D0A0) para diferenciar la salida del codigo fuente.
         Rectangle {
             Layout.fillWidth: true
             color: "#252535"
@@ -110,7 +144,7 @@ Rectangle {
             implicitHeight: resultColumn.implicitHeight + Style.resize(16)
             radius: Style.resize(8)
 
-            // Only bottom corners rounded
+            // -- Solo esquinas inferiores redondeadas (cierra el bloque)
             Rectangle {
                 anchors.top: parent.top
                 anchors.left: parent.left
@@ -127,6 +161,7 @@ Rectangle {
                 anchors.margins: Style.resize(12)
                 spacing: Style.resize(4)
 
+                // -- Linea separadora entre codigo y resultado
                 Rectangle {
                     Layout.fillWidth: true
                     height: 1

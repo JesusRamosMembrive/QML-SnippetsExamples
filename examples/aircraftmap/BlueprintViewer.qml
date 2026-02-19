@@ -1,3 +1,23 @@
+// =============================================================================
+// BlueprintViewer.qml — Visor de plano con zoom, pan y marcadores interactivos
+// =============================================================================
+// Visor avanzado que muestra una imagen de plano tecnico con marcadores
+// superpuestos, zoom con rueda del raton, panning con Flickable y un popup
+// de informacion al hacer clic en marcadores.
+//
+// Patrones y conceptos clave:
+// - Flickable + scale: la imagen y sus marcadores se escalan con
+//   transformOrigin TopLeft para que el contentWidth/contentHeight del
+//   Flickable coincida con el tamano visual escalado.
+// - Marcadores con tamano inverso al zoom (/ currentZoom): mantienen
+//   tamano visual constante independiente del nivel de zoom.
+// - SequentialAnimation con loops infinitos para el efecto "pulse"
+//   del marcador seleccionado.
+// - Popup no-modal con closePolicy para mostrar detalles sin bloquear
+//   la interaccion con el mapa.
+// - Binding bidireccional entre WheelHandler y Slider de zoom.
+// - Component.onCompleted: fitToView() ajusta el zoom inicial.
+// =============================================================================
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -19,6 +39,7 @@ Rectangle {
     property bool showFuel:      true
     property bool showAvionics:  true
 
+    // Estado del zoom. readonly en min/max evita modificacion accidental.
     property real currentZoom: 1.0
     readonly property real minZoom: 0.4
     readonly property real maxZoom: 3.5
@@ -35,6 +56,9 @@ Rectangle {
         return true
     }
 
+    // Centra el Flickable en un marcador especifico.
+    // Calcula la posicion absoluta del marcador en la imagen escalada
+    // y ajusta contentX/contentY para que quede en el centro de la vista.
     function centerOnMarker(idx) {
         var m = root.markerModel.get(idx)
         var imgW = blueprintImage.implicitWidth * currentZoom
@@ -52,6 +76,7 @@ Rectangle {
         flickable.contentY = 0
     }
 
+    // Calcula el zoom optimo para que toda la imagen quepa en el area visible.
     function fitToView() {
         var scaleW = flickable.width / blueprintImage.implicitWidth
         var scaleH = flickable.height / blueprintImage.implicitHeight
@@ -64,7 +89,9 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // Zoom toolbar
+        // ── Barra de herramientas de zoom ───────────────────────
+        // Combina indicador de porcentaje, slider, botones y nombre
+        // del marcador seleccionado en una sola fila compacta.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(40)
@@ -120,7 +147,12 @@ Rectangle {
             }
         }
 
-        // Flickable image area
+        // ── Area de imagen con Flickable ────────────────────────
+        // Flickable proporciona scroll nativo. La imagen se escala con
+        // transform.scale en vez de cambiar width/height, lo que es mas
+        // eficiente porque el GPU maneja la transformacion.
+        // contentWidth/Height se calcula manualmente para que las
+        // scrollbars reflejen el tamano escalado.
         Flickable {
             id: flickable
             Layout.fillWidth: true
@@ -130,6 +162,9 @@ Rectangle {
             contentWidth:  imageItem.width * root.currentZoom
             contentHeight: imageItem.height * root.currentZoom
 
+            // MouseArea para deseleccionar al hacer clic en area vacia.
+            // propagateComposedEvents + mouse.accepted = false permite
+            // que los clics pasen al Flickable para el panning.
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
@@ -154,7 +189,10 @@ Rectangle {
                     fillMode: Image.PreserveAspectFit
                 }
 
-                // Markers overlay
+                // ── Capa de marcadores ──────────────────────────
+                // Repeater genera un Item por cada marcador del modelo.
+                // Cada marcador se posiciona usando coordenadas normalizadas
+                // (posX * ancho imagen), asi se adaptan al tamano de la imagen.
                 Repeater {
                     model: root.markerModel
 
@@ -174,7 +212,10 @@ Rectangle {
                         height: width
                         visible: root.isCategoryVisible(category)
 
-                        // Pulse animation for selected marker
+                        // Animacion de pulso: circulo que se expande y desvanece
+                        // cuando el marcador esta seleccionado. SequentialAnimation
+                        // con loops infinitos crea un efecto de atencion continuo.
+                        // Se divide entre currentZoom para mantener tamano visual constante.
                         Rectangle {
                             id: pulseCircle
                             anchors.centerIn: parent
@@ -195,7 +236,8 @@ Rectangle {
                             }
                         }
 
-                        // Marker circle
+                        // Circulo del marcador con numero. Se divide entre currentZoom
+                        // para que no crezca/encoja con el zoom de la imagen.
                         Rectangle {
                             id: markerCircle
                             anchors.centerIn: parent
@@ -230,6 +272,8 @@ Rectangle {
                 }
             }
 
+            // Zoom con rueda del raton: multiplica por un factor (1.15 o 0.87)
+            // para conseguir zoom exponencial suave. Se limita entre min y max.
             WheelHandler {
                 onWheel: function(event) {
                     var factor = event.angleDelta.y > 0 ? 1.15 : 0.87
@@ -243,7 +287,10 @@ Rectangle {
         }
     }
 
-    // Info Popup
+    // ── Popup de informacion del marcador ────────────────────────
+    // Popup no-modal que se posiciona en la esquina superior derecha.
+    // Muestra cabecera con color de categoria, badge de categoria y
+    // descripcion detallada. Se cierra con Escape o clic fuera.
     Popup {
         id: infoPopup
         property int markerIndex: -1
@@ -271,7 +318,9 @@ Rectangle {
             spacing: Style.resize(8)
             visible: infoPopup.markerIndex >= 0
 
-            // Header bar with category color
+            // Cabecera con color de categoria. El rectangulo inferior
+            // cubre el radius de la esquina inferior para que la cabecera
+            // tenga esquinas redondeadas solo arriba.
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.resize(36)
@@ -298,7 +347,7 @@ Rectangle {
                 }
             }
 
-            // Category badge
+            // Badge de categoria
             RowLayout {
                 Layout.leftMargin: Style.resize(12)
                 spacing: Style.resize(6)
@@ -322,7 +371,7 @@ Rectangle {
                 }
             }
 
-            // Description
+            // Descripcion detallada del marcador
             Label {
                 Layout.fillWidth: true
                 Layout.leftMargin: Style.resize(12)
@@ -339,7 +388,9 @@ Rectangle {
         }
     }
 
-    // Sync zoom slider
+    // Binding explicito para sincronizar el slider de zoom con el valor actual.
+    // Necesario porque el WheelHandler modifica currentZoom directamente,
+    // y queremos que el slider refleje ese cambio sin crear un bucle de binding.
     Binding {
         target: zoomSlider
         property: "value"

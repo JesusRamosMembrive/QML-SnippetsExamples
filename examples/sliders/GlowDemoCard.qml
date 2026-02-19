@@ -1,3 +1,32 @@
+// =============================================================================
+// GlowDemoCard.qml — Demo interactiva de reutilizacion de componentes
+// =============================================================================
+// Demuestra un principio clave del desarrollo en QML: la reutilizacion de
+// componentes entre modulos. El GlowButton (definido en qmlsnippetsstyle)
+// se controla en tiempo real con sliders, mostrando como las propiedades
+// publicas de un componente custom permiten personalizacion flexible.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Reutilizacion cross-module:
+//    - GlowButton esta definido en styles/qmlsnippetsstyle/ pero se usa
+//      aqui en examples/sliders/. import qmlsnippetsstyle lo hace disponible.
+//    - Esto demuestra que los componentes QML son verdaderamente portables
+//      entre modulos del proyecto.
+//
+// 2. Propiedades publicas como API:
+//    - GlowButton expone glowIntensity y glowRadius como property.
+//    - Los sliders controlan estas propiedades via bindings directos:
+//      glowIntensity: glowIntensitySlider.value
+//    - Este patron de "control externo via propiedades" es la base del
+//      diseno de componentes reutilizables en QML.
+//
+// 3. Feedback visual en tiempo real:
+//    - Cada cambio en los sliders se refleja instantaneamente en el
+//      GlowButton gracias al sistema de bindings reactivos de QML.
+//    - No hay handlers ni callbacks — solo declaraciones de dependencia.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -27,7 +56,8 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Interactive GlowButton
+        // GlowButton controlado por sliders: glowIntensity y glowRadius
+        // se vinculan directamente a los valores de los sliders.
         GlowButton {
             id: demoGlowButton
             text: "Glow Button"
@@ -39,7 +69,9 @@ Rectangle {
             height: Style.resize(50)
         }
 
-        // Glow Intensity Control
+        // Control de intensidad del glow: rango 0-1 con pasos de 0.1.
+        // El binding glowIntensity: glowIntensitySlider.value conecta
+        // este slider directamente con la propiedad del GlowButton.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -68,7 +100,8 @@ Rectangle {
             }
         }
 
-        // Glow Radius Control
+        // Control del radio del glow: define el tamano del halo luminoso.
+        // Valores altos crean un resplandor amplio y difuso.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10

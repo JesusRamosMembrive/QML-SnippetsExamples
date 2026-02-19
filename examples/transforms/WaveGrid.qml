@@ -1,3 +1,33 @@
+// =============================================================================
+// WaveGrid.qml — Grilla de cuadrados con onda propagandose (wave effect)
+// =============================================================================
+// 60 cuadrados (6x10) se deforman como una onda que se propaga en diagonal.
+// Cada cuadrado cambia de escala, color y posicion Y segun una funcion
+// sinusoidal que depende de su posicion en la grilla (col + row).
+//
+// COMO SE CREA LA ONDA:
+//   wave = sin(phase + (col + row) * 0.4)
+//   - 'phase' avanza con el Timer, creando movimiento temporal.
+//   - '(col + row) * 0.4' desfasa cada celda segun su posicion, creando
+//     la propagacion espacial de la onda en diagonal.
+//   - 't = (wave + 1) / 2' normaliza wave de [-1,1] a [0,1] para usar
+//     como factor de interpolacion en scale y color.
+//
+// TRANSFORM: TRANSLATE:
+//   'transform: Translate { y: wave * 12 }' desplaza cada cuadrado
+//   verticalmente. A diferencia de modificar 'y' directamente, Translate
+//   se aplica DESPUES del layout, asi que no afecta el calculo de
+//   posiciones del Grid. Si modificaramos 'y', el Grid recalcularia
+//   las posiciones de todos los elementos en cada frame (costoso).
+//
+// COLOR DINAMICO: Qt.rgba() con expresiones crea una transicion suave
+// de color rojo-calido (t=0) a verde-azulado (t=1), sincronizada con
+// la onda. Esto refuerza visualmente el patron ondulatorio.
+//
+// REPEATER + GRID: Grid posiciona los items en filas/columnas automaticamente.
+// Repeater genera los 60 items. col/row se calculan a partir del index
+// usando aritmetica modular (% y Math.floor).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

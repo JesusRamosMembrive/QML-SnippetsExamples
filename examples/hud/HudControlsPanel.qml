@@ -1,3 +1,25 @@
+// =============================================================================
+// HudControlsPanel.qml — Panel de controles del HUD
+// =============================================================================
+// Panel compacto con 6 sliders organizados en un GridLayout de 6 columnas
+// (2 filas x 3 pares label+slider). Expone las propiedades de vuelo como
+// readonly properties para que Main.qml las conecte al HudCanvas.
+//
+// Patron de diseno:
+//   Los sliders definen los valores, y las readonly properties los exponen
+//   al exterior. Esto encapsula la implementacion (sliders) y permite que
+//   el componente padre solo vea la interfaz publica (pitch, roll, etc.).
+//   Si en el futuro se reemplazaran los sliders por entrada de teclado
+//   o datos reales, la interfaz publica no cambiaria.
+//
+// Parametros de vuelo:
+//   - Pitch: -20 a +20 grados (cabeceo)
+//   - Roll: -45 a +45 grados (alabeo)
+//   - Heading: 0 a 359 grados (rumbo)
+//   - Speed: 100 a 600 nudos (velocidad)
+//   - Altitude: 0 a 50000 pies (altitud)
+//   - FPA: -10 a +10 grados (angulo de trayectoria de vuelo)
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -6,6 +28,11 @@ import utils
 Rectangle {
     id: root
 
+    // -------------------------------------------------------------------------
+    // Interfaz publica: readonly properties vinculadas a los sliders.
+    // readonly asegura que solo este componente puede modificar los valores;
+    // el padre solo puede leerlos. Es una forma de encapsulacion en QML.
+    // -------------------------------------------------------------------------
     readonly property real pitch: pitchSlider.value
     readonly property real roll: rollSlider.value
     readonly property real heading: headingSlider.value
@@ -16,6 +43,11 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -------------------------------------------------------------------------
+    // GridLayout de 6 columnas: cada parametro ocupa 2 columnas (label + slider).
+    // Esto permite organizar 6 parametros en 2 filas de forma compacta.
+    // El unicode \u00B0 es el simbolo de grados (°).
+    // -------------------------------------------------------------------------
     GridLayout {
         anchors.fill: parent
         anchors.margins: Style.resize(10)
@@ -23,7 +55,7 @@ Rectangle {
         rowSpacing: Style.resize(4)
         columnSpacing: Style.resize(10)
 
-        // Row 1
+        // Fila 1: Pitch, Roll, Heading
         Label {
             text: "Pitch"
             font.pixelSize: Style.resize(12)
@@ -84,7 +116,7 @@ Rectangle {
             }
         }
 
-        // Row 2
+        // Fila 2: Speed, Altitude, FPA
         Label {
             text: "Speed"
             font.pixelSize: Style.resize(12)

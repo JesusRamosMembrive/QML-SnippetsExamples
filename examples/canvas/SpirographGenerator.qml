@@ -1,3 +1,29 @@
+// =============================================================================
+// SpirographGenerator.qml — Generador interactivo de espirografos
+// =============================================================================
+// Dibuja curvas de espirografo (hipotrocoides) que se generan al rodar un
+// circulo de radio 'r' dentro de otro de radio 'R', con un punto de dibujo
+// a distancia 'd' del centro del circulo interior.
+//
+// MATEMATICA DEL ESPIROGRAFO (hipotrocoide):
+//   x(t) = (R - r) * cos(t) + d * cos((R - r) / r * t)
+//   y(t) = (R - r) * sin(t) - d * sin((R - r) / r * t)
+// Donde t recorre multiples vueltas (20 * 2PI) para cerrar la figura.
+//
+// Diferentes combinaciones de R, r, d producen figuras completamente distintas:
+//   - R/r entero: la figura se cierra en pocas vueltas, patron simple
+//   - R/r no entero: necesita mas vueltas, patron complejo
+//   - d < r: curva sin lazos (curtate)
+//   - d > r: curva con lazos (prolate)
+//   - d = r: caso especial llamado hipocicloide
+//
+// El dibujo se hace de una vez (no animado) usando 2000 puntos conectados
+// con lineTo(). Un gradiente lineal de 4 colores se aplica al trazo completo,
+// coloreando la curva segun su posicion en el canvas.
+//
+// onValueChanged en cada Slider llama requestPaint() para redibujar
+// inmediatamente cuando el usuario ajusta los parametros.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -16,6 +42,8 @@ ColumnLayout {
         color: Style.fontPrimaryColor
     }
 
+    // Controles de parametros: R (radio exterior), r (radio interior), d (distancia
+    // del lapiz al centro). Cada cambio re-renderiza el espirografo inmediatamente.
     RowLayout {
         Layout.fillWidth: true
         spacing: Style.resize(15)
@@ -50,6 +78,9 @@ ColumnLayout {
             anchors.margins: Style.resize(4)
             onAvailableChanged: if (available) requestPaint()
 
+            // Dibujar la curva completa como un unico path continuo.
+            // scale ajusta la figura al tamanio del canvas, garantizando
+            // que siempre quepa sin importar los valores de los parametros.
             onPaint: {
                 var ctx = getContext("2d")
                 var w = width

@@ -1,3 +1,32 @@
+// =============================================================================
+// GradientsPieCard.qml — Gradientes declarativos y grafico circular con Canvas
+// =============================================================================
+// Combina dos enfoques de dibujo en una sola tarjeta:
+//   1. Shape con fillGradient (declarativo): gradientes lineales y radiales
+//   2. Canvas con arcos (imperativo): grafico de pastel interactivo
+//
+// GRADIENTES EN SHAPE (declarativo):
+//   fillGradient reemplaza el fillColor uniforme con un gradiente. Hay dos tipos:
+//   - LinearGradient: transicion lineal entre puntos (x1,y1) y (x2,y2).
+//     Los GradientStop definen colores en posiciones de 0 a 1.
+//   - RadialGradient: transicion circular desde un punto focal hacia afuera.
+//     focalX/focalY define el centro del brillo (desplazado del centro
+//     geometrico para crear efecto de iluminacion 3D).
+//
+// CIRCULO CON PathArc EN SHAPE:
+//   No existe PathCircle en QtQuick.Shapes. Para hacer un circulo se usan
+//   dos PathArcs de 180 grados cada uno (useLargeArc: true) que juntos
+//   forman un circulo completo. Es el patron estandar.
+//
+// GRAFICO DE PASTEL CON CANVAS:
+//   Cada sector se dibuja con moveTo(centro) + arc() + closePath().
+//   startAngle comienza en -PI/2 (las 12 del reloj) y cada sector avanza
+//   su proporcion del circulo completo (2*PI * valor/total).
+//   El stroke con Style.cardColor entre sectores crea la separacion visual.
+//
+// La leyenda usa Repeater con el array de slices como modelo,
+// accediendo al color y label de cada sector por indice.
+// =============================================================================
 pragma ComponentBehavior: Bound
 
 import QtQuick
@@ -27,7 +56,8 @@ Rectangle {
             Layout.fillHeight: true
             spacing: Style.resize(10)
 
-            // Linear gradient shape
+            // Gradiente lineal: transicion diagonal de teal a azul.
+            // x1,y1 -> x2,y2 define la direccion del gradiente.
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: Style.resize(4)
@@ -69,7 +99,9 @@ Rectangle {
                 }
             }
 
-            // Radial gradient shape (circle via PathArc)
+            // Gradiente radial dentro de un circulo. focalX/focalY desplazado
+            // del centro crea la ilusion de una esfera iluminada desde arriba.
+            // Dos PathArcs de 180 grados forman el circulo completo.
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: Style.resize(4)
@@ -121,7 +153,8 @@ Rectangle {
             }
         }
 
-        // Pie chart
+        // Grafico circular (pie chart) dibujado con Canvas.
+        // Cada sector usa moveTo(centro) + arc() para crear la "rebanada".
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -170,7 +203,8 @@ Rectangle {
                 }
             }
 
-            // Legend
+            // Leyenda: Repeater genera un indicador por sector con un
+            // rectangulo coloreado y el label correspondiente.
             Column {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter

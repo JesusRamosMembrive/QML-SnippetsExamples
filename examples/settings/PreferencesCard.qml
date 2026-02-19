@@ -1,3 +1,18 @@
+// =============================================================================
+// PreferencesCard.qml — Preferencias con Q_PROPERTY respaldadas por QSettings
+// =============================================================================
+// Demuestra el patrón más robusto para settings en Qt: Q_PROPERTY en C++ con
+// lectura/escritura automática a QSettings. Cada propiedad (theme, fontSize,
+// userName, notifications, volume) persiste entre reinicios de la app.
+//
+// La ventaja de este enfoque sobre setValue/getValue directo es que:
+// 1. Los bindings QML funcionan nativamente (no se necesita refresh manual)
+// 2. Se tiene validación de tipos en tiempo de compilación
+// 3. Se pueden definir valores por defecto en el constructor C++
+//
+// El preview en la parte inferior refleja los cambios en tiempo real,
+// mostrando la reactividad del sistema de bindings de QML.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -30,7 +45,10 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Theme
+        // ---- Selector de tema ----
+        // ComboBox vinculado a settings.theme (Q_PROPERTY QString).
+        // currentIndex se inicializa buscando el valor actual en el modelo,
+        // y onCurrentTextChanged lo escribe de vuelta al C++.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -50,7 +68,10 @@ Rectangle {
             }
         }
 
-        // Font size
+        // ---- Tamaño de fuente ----
+        // Slider con stepSize: 1 para valores enteros. Se usa onMoved en vez
+        // de onValueChanged para evitar escrituras durante la inicialización
+        // (onMoved solo se emite por interacción del usuario).
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -76,7 +97,10 @@ Rectangle {
             }
         }
 
-        // Username
+        // ---- Nombre de usuario ----
+        // TextField vinculado bidireccionalmente: lee de settings.userName
+        // y escribe en cada cambio. En producción se usaría un debounce
+        // para no escribir a disco en cada tecla.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -96,7 +120,10 @@ Rectangle {
             }
         }
 
-        // Notifications
+        // ---- Notificaciones ----
+        // Switch con indicador visual de estado (color verde/rojo).
+        // El binding bidireccional checked <-> settings.notifications
+        // demuestra cómo un bool Q_PROPERTY se mapea naturalmente a Switch.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -120,7 +147,9 @@ Rectangle {
             }
         }
 
-        // Volume
+        // ---- Volumen ----
+        // Slider continuo (0.0–1.0) mostrado como porcentaje.
+        // toFixed(0) elimina decimales para la presentación al usuario.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -146,9 +175,14 @@ Rectangle {
             }
         }
 
+        // Spacer flexible para empujar el preview hacia abajo
         Item { Layout.fillHeight: true }
 
-        // Preview
+        // ---- Vista previa en tiempo real ----
+        // Muestra el efecto combinado de todas las preferencias: el nombre,
+        // el tema (que cambia colores de fondo/texto) y el tamaño de fuente
+        // (font.pixelSize lee directamente settings.fontSize). Esto demuestra
+        // la potencia de los bindings reactivos de QML.
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(50)

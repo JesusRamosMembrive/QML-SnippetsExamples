@@ -1,3 +1,29 @@
+// =============================================================================
+// InteractiveDrawCard.qml — Lienzo de dibujo libre (QQuickPaintedItem + mouse)
+// =============================================================================
+// Demuestra DrawCanvas, un QQuickPaintedItem interactivo que captura eventos
+// del mouse para permitir dibujo a mano alzada. A diferencia de los otros
+// items pintados (AnalogClock, GaugeItem, WaveformItem) que solo se observan,
+// DrawCanvas recibe input del usuario.
+//
+// Integracion C++ <-> QML:
+//   - DrawCanvas sobreescribe mousePressEvent/mouseMoveEvent/mouseReleaseEvent
+//     para capturar trazos. En el constructor llama setAcceptedMouseButtons()
+//     para indicar a Qt que quiere recibir eventos de click izquierdo.
+//   - Q_PROPERTY penColor/penWidth: QML controla el color y grosor del trazo
+//     a traves de estas propiedades. Los valores se aplican al siguiente trazo.
+//   - Q_PROPERTY strokeCount (solo lectura): informa a QML cuantos trazos
+//     hay, sin que QML pueda modificar el valor directamente.
+//   - Q_INVOKABLE clear(): metodo C++ que limpia el lienzo. QML lo llama
+//     como drawCanvas.clear() — Q_INVOKABLE es la forma de exponer metodos
+//     C++ al sistema de meta-objetos de Qt para que QML pueda invocarlos.
+//
+// Patron de selector de color con Repeater:
+//   Un Repeater sobre un array de strings de color genera los circulos
+//   de seleccion. selectedColor se almacena en una propiedad QML del root
+//   y se vincula a drawCanvas.penColor (Q_PROPERTY de C++).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -28,7 +54,10 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Canvas area
+        // -- Area de dibujo: DrawCanvas es el componente C++ que captura
+        //    eventos del mouse y dibuja los trazos con QPainter.
+        //    clip: true en el Rectangle padre evita que los trazos se
+        //    dibujen fuera del area visible.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -40,11 +69,17 @@ Rectangle {
                 id: drawCanvas
                 anchors.fill: parent
                 anchors.margins: Style.resize(4)
+
+                // -- penColor y penWidth son Q_PROPERTYs de C++.
+                //    Vinculadas a propiedades QML que el usuario controla
+                //    con el selector de color y el slider de grosor.
                 penColor: root.selectedColor
                 penWidth: widthSlider.value
             }
 
-            // Hint when empty
+            // -- Texto de ayuda visible solo cuando no hay trazos.
+            //    strokeCount es una Q_PROPERTY de solo lectura que C++
+            //    actualiza cada vez que se agrega o limpia un trazo.
             Label {
                 anchors.centerIn: parent
                 text: "Draw here with the mouse"
@@ -54,7 +89,9 @@ Rectangle {
             }
         }
 
-        // Color selector
+        // -- Selector de color: Repeater genera circulos clicables.
+        //    La propiedad selectedColor del root actua como "estado"
+        //    del color actual, conectando la UI con el DrawCanvas C++.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -87,7 +124,9 @@ Rectangle {
             }
         }
 
-        // Width + controls
+        // -- Grosor del trazo + boton Clear que llama drawCanvas.clear()
+        //    (Q_INVOKABLE en C++). strokeCount se actualiza automaticamente
+        //    gracias a la signal strokeCountChanged emitida por C++.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -125,5 +164,7 @@ Rectangle {
         }
     }
 
+    // -- Propiedad QML que almacena el color seleccionado actualmente.
+    //    Se vincula a drawCanvas.penColor (Q_PROPERTY de C++).
     property string selectedColor: "#00D1A9"
 }

@@ -1,3 +1,21 @@
+// =============================================================================
+// InteractiveRangeCard.qml — Tarjeta: Demo interactivo con gradientes y opacidad
+// =============================================================================
+// Muestra usos creativos del RangeSlider mas alla de seleccionar numeros:
+//   1. Control de gradiente: los handles definen las posiciones de los
+//      GradientStops, cambiando la visualizacion del degradado en tiempo real.
+//   2. Ventana de opacidad: el rango define que bloques de un Repeater se
+//      muestran opacos vs transparentes, creando un efecto de "spotlight".
+//
+// Esto demuestra que el valor de un RangeSlider no tiene que mostrarse
+// como texto — puede controlar CUALQUIER propiedad visual gracias a los
+// bindings declarativos de QML.
+//
+// Aprendizaje clave: los GradientStops usan "position" (0.0-1.0), asi que
+// dividimos el valor del slider (0-100) entre 100. El Repeater calcula la
+// posicion central de cada bloque para determinar si esta dentro del rango.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,7 +44,11 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Gradient preview
+        // Preview del gradiente: 4 GradientStops crean un efecto de
+        // "foco de luz" donde el color emerge del fondo oscuro (#1A1D23)
+        // y vuelve a desvanecerse. Los stops centrales se vinculan a
+        // los valores del RangeSlider, asi que mover los handles
+        // desplaza las zonas de color en tiempo real.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(80)
@@ -41,7 +63,8 @@ Rectangle {
             }
         }
 
-        // Gradient range control
+        // Control del gradiente: slider continuo (sin stepSize) para
+        // posicionamiento suave de los GradientStops.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -79,7 +102,9 @@ Rectangle {
             }
         }
 
-        // Opacity range control
+        // Control de opacidad: define una "ventana" de visibilidad.
+        // Los bloques cuya posicion central cae dentro del rango se
+        // muestran completamente opacos; los demas se atenuan a 0.15.
         ColumnLayout {
             Layout.fillWidth: true
             Layout.maximumWidth: root.width - 10
@@ -116,7 +141,12 @@ Rectangle {
                 }
             }
 
-            // Opacity preview boxes
+            // Visualizacion de la ventana de opacidad: 10 rectangulos
+            // representan segmentos del 0% al 100%. Cada uno calcula su
+            // posicion central (index + 0.5) * 10 y compara contra el rango
+            // del slider para decidir si esta "iluminado" (opacity 1.0)
+            // o "apagado" (opacity 0.15). Esto crea un efecto visual de
+            // spotlight que responde en tiempo real al slider.
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Style.resize(4)

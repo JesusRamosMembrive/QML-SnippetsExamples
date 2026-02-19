@@ -1,3 +1,18 @@
+// =============================================================================
+// BasicLoaderCard.qml — Loader con cambio de sourceComponent
+// =============================================================================
+// Demuestra el uso más básico del Loader: cambiar sourceComponent para
+// intercambiar entre distintas vistas. Cuando sourceComponent cambia, el
+// Loader destruye el componente anterior, libera su memoria y crea el nuevo.
+//
+// Conceptos clave:
+// - Component {} define un "template" que no se instancia hasta que se asigna
+//   al Loader. Esto es carga diferida (lazy loading).
+// - onStatusChanged permite detectar cuándo el componente está listo y
+//   aplicar animaciones de entrada.
+// - Qt.hsla() genera colores dinámicamente usando el modelo HSL, ideal para
+//   crear paletas de colores programáticas (variando el hue).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,7 +25,13 @@ Rectangle {
 
     property int selectedIndex: 0
 
-    // Inline components to load
+    // ---- Componentes inline para cargar ----
+    // Se definen tres Component {} como "templates" reutilizables.
+    // No se instancian hasta que el Loader los necesita.
+    // Cada uno muestra un patrón visual diferente para que el cambio
+    // sea visualmente evidente.
+
+    // Componente 1: Fila de círculos con colores HSL
     Component {
         id: circlesComp
 
@@ -37,6 +58,7 @@ Rectangle {
         }
     }
 
+    // Componente 2: Grid 3×3 de cuadrados coloreados
     Component {
         id: squaresComp
 
@@ -57,6 +79,7 @@ Rectangle {
         }
     }
 
+    // Componente 3: Layout de texto centrado
     Component {
         id: textComp
 
@@ -105,6 +128,12 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // ---- Área del Loader ----
+        // El Loader ocupa todo el espacio disponible. sourceComponent se
+        // selecciona con un operador ternario encadenado basado en selectedIndex.
+        // Cuando el componente cambia, onStatusChanged dispara una animación
+        // de fade-in: primero se pone opacity = 0 al item recién creado,
+        // y luego se anima a 1. Esto da feedback visual del cambio.
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -132,6 +161,9 @@ Rectangle {
             }
         }
 
+        // ---- Botones de selección ----
+        // Repeater genera un botón por cada opción. "highlighted" marca
+        // visualmente cuál está seleccionado (usa el estilo del proyecto).
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

@@ -1,3 +1,35 @@
+// =============================================================================
+// SystemStatusCard.qml — Estado de Sistemas del Avion (ECAM System Display)
+// =============================================================================
+// Simula el panel de estado de sistemas del ECAM con tres subsistemas:
+//
+// 1. HYD (Hidraulica): tres circuitos independientes (Green, Blue, Yellow)
+//    con barras de presion. Cada avion Airbus tiene triple redundancia
+//    hidraulica. Si un circuito cae por debajo de 20%, se marca en rojo.
+//
+// 2. ELEC (Electrica): buses de corriente alterna (AC) y bateria DC.
+//    Los buses AC alimentan la mayoria de los sistemas. Indicador LED
+//    verde/rojo con texto ON/OFF.
+//
+// 3. BLEED/PRESS (Sangrado/Presion): sistema de aire acondicionado.
+//    BLEED extrae aire caliente de los motores, PACK lo enfria para la cabina.
+//    PACK sigue el estado de su BLEED correspondiente.
+//
+// Tecnicas QML utilizadas (sin Canvas, todo declarativo):
+//   - Repeater con modelo de array de objetos: cada elemento del modelo
+//     es un objeto JS con propiedades (name, color, value, on)
+//   - pragma ComponentBehavior: Bound: requerido en Qt 6.5+ para acceder
+//     a modelData dentro de delegates con required property
+//   - Barras de progreso animadas: Rectangle con width vinculado al valor
+//     y Behavior on width para animacion suave (200ms)
+//   - Indicadores LED: circulo pequeno (radius: width/2) con color condicional
+//   - Switch de Qt Quick Controls: interruptores toggle para simular fallas
+//
+// Patron de datos reactivos:
+//   Los modelos del Repeater referencian directamente los valores de los
+//   sliders/switches. Cuando un slider cambia, el modelo se reevalua
+//   automaticamente y el Repeater actualiza los delegates.
+// =============================================================================
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -36,7 +68,17 @@ Rectangle {
                     rowSpacing: Style.resize(12)
                     columnSpacing: Style.resize(15)
 
-                    // HYD System
+                    // =========================================================
+                    // SISTEMA HIDRAULICO (HYD)
+                    // Tres circuitos independientes con nombre y color unico:
+                    //   Green: mando de vuelo primario
+                    //   Blue: normalmente alimentado por bomba electrica
+                    //   Yellow: sistemas auxiliares (tren, frenos, cargo)
+                    //
+                    // Cada delegate muestra: nombre coloreado + barra + porcentaje.
+                    // La barra cambia a rojo si la presion cae bajo 20%
+                    // (umbral critico en hidraulica aeronautica).
+                    // =========================================================
                     Label {
                         text: "HYD"
                         font.pixelSize: Style.resize(14)
@@ -66,6 +108,12 @@ Rectangle {
                                 Layout.preferredWidth: Style.resize(60)
                             }
 
+                            // -------------------------------------------------
+                            // Barra de presion: Rectangle interior cuyo width
+                            // es proporcional al valor. El color cambia a rojo
+                            // si el valor es menor o igual a 20%.
+                            // Behavior on width anima el cambio suavemente.
+                            // -------------------------------------------------
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: Style.resize(16)
@@ -90,7 +138,16 @@ Rectangle {
                         }
                     }
 
-                    // ELEC System
+                    // =========================================================
+                    // SISTEMA ELECTRICO (ELEC)
+                    // Buses AC (corriente alterna) y bateria DC.
+                    // Los switches controlan AC BUS 1 y AC BUS 2.
+                    // DC BAT siempre esta encendida (ultima linea de defensa).
+                    //
+                    // Cada delegate muestra: nombre + LED (circulo) + estado.
+                    // LED verde = ON, LED rojo = OFF.
+                    // El circulo se logra con radius: width / 2 en un cuadrado.
+                    // =========================================================
                     Label {
                         text: "ELEC"
                         font.pixelSize: Style.resize(14)
@@ -138,7 +195,16 @@ Rectangle {
                         }
                     }
 
-                    // BLEED & PRESS
+                    // =========================================================
+                    // SISTEMA BLEED / PRESION (BLEED / PRESS)
+                    // BLEED: valvulas de sangrado que extraen aire de los motores
+                    // PACK: unidad de aire acondicionado que procesa el bleed air
+                    //
+                    // Los PACKs dependen de sus BLEEDs respectivos:
+                    //   PACK 1 sigue a BLEED 1, PACK 2 sigue a BLEED 2.
+                    // Colores: verde = ON, ambar = OFF (no rojo, porque
+                    // perder bleed/pack es una precaucion, no emergencia).
+                    // =========================================================
                     Label {
                         text: "BLEED / PRESS"
                         font.pixelSize: Style.resize(14)
@@ -192,7 +258,12 @@ Rectangle {
             }
         }
 
-        // System controls
+        // =====================================================================
+        // Controles de sistemas:
+        // Sliders para presion hidraulica y switches para electrica/bleed.
+        // Los switches usan scale: 0.6 para hacerlos mas compactos y caber
+        // todos en una sola fila.
+        // =====================================================================
         GridLayout {
             Layout.fillWidth: true
             columns: 4
@@ -219,7 +290,6 @@ Rectangle {
                 from: 0; to: 100; value: 85
             }
 
-            // Switches
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Style.resize(4)

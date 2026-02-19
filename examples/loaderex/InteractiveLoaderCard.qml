@@ -1,3 +1,21 @@
+// =============================================================================
+// InteractiveLoaderCard.qml — View Switcher tipo tabs con Loader
+// =============================================================================
+// Implementa un patrón de navegación por pestañas donde cada pestaña carga
+// un componente diferente a través de un Loader. Es el patrón más común
+// para interfaces con múltiples vistas donde solo una está activa a la vez.
+//
+// Diferencia con BasicLoaderCard: aquí se permite estado "vacío" (ningún
+// componente cargado, sourceComponent = null), lo cual es útil para
+// interfaces donde el usuario puede cerrar la vista activa.
+//
+// Patrón toggle: al hacer clic en la pestaña activa, se deselecciona
+// (currentView vuelve a -1). Esto permite al usuario "cerrar" la vista
+// sin necesidad de un botón de cierre explícito.
+//
+// Cada componente simula una vista real (Profile, Settings, Stats)
+// demostrando que el Loader puede cargar contenido arbitrariamente complejo.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,8 +26,15 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // -1 = ninguna vista seleccionada → sourceComponent será null
     property int currentView: -1
 
+    // ---- Componentes de vista ----
+    // Tres componentes que simulan paneles de una app real.
+    // Están definidos como Component {} inline para mantener todo
+    // autocontenido en este archivo de ejemplo.
+
+    // Vista de perfil de usuario
     Component {
         id: profileComp
         Rectangle {
@@ -31,6 +56,7 @@ Rectangle {
         }
     }
 
+    // Vista de configuración con Switches
     Component {
         id: settingsComp
         Rectangle {
@@ -54,6 +80,7 @@ Rectangle {
         }
     }
 
+    // Vista de estadísticas con Grid 2×2
     Component {
         id: statsComp
         Rectangle {
@@ -97,7 +124,10 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Tab bar
+        // ---- Barra de pestañas ----
+        // ListModel con label e idx. El onClick implementa toggle: si la
+        // pestaña ya está seleccionada, la deselecciona (idx → -1).
+        // highlighted marca visualmente la pestaña activa.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -125,6 +155,10 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            // ---- Loader principal ----
+            // sourceComponent puede ser null (cuando currentView === -1),
+            // lo cual descarga el componente actual. El operador ternario
+            // encadenado mapea cada índice a su componente correspondiente.
             Loader {
                 id: viewLoader
                 anchors.fill: parent
@@ -134,7 +168,10 @@ Rectangle {
                                : null
             }
 
-            // Empty state
+            // ---- Estado vacío ----
+            // Placeholder visible solo cuando no hay ninguna vista cargada.
+            // Está fuera del Loader porque cuando sourceComponent = null,
+            // el Loader no tiene contenido que mostrar.
             ColumnLayout {
                 anchors.centerIn: parent
                 visible: root.currentView === -1
@@ -145,7 +182,9 @@ Rectangle {
             }
         }
 
-        // Status bar
+        // ---- Barra de estado ----
+        // Muestra si el Loader tiene un item cargado. El color cambia
+        // dinámicamente según el estado (verde si hay item, gris si no).
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(28)

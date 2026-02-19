@@ -1,3 +1,22 @@
+// =============================================================================
+// StateMachineCard.qml — Maquina de estados: semaforo con Timer
+// =============================================================================
+// Simula un semaforo como ejemplo clasico de maquina de estados finitos.
+// Tres estados (red, yellow, green) ciclan automaticamente con un Timer,
+// o se pueden activar manualmente con botones.
+//
+// Conceptos clave:
+// - Los estados aqui no usan PropertyChanges; en su lugar, cada luz
+//   (Rectangle) usa expresiones ternarias que reaccionan a lightBody.state.
+//   Ambos enfoques son validos; este es mas conciso para cambios de color simples.
+// - Behavior on color anima el cambio de color de cada luz individualmente.
+// - El Timer tiene interval dinamico: amarillo dura menos que rojo/verde,
+//   simulando un semaforo real. QML re-evalua 'interval' automaticamente
+//   cuando cambia lightBody.state gracias al binding.
+// - enabled: !root.autoMode desactiva los botones manuales cuando el
+//   ciclo automatico esta activo, evitando conflictos.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,7 +45,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Traffic light body
+            // Cuerpo del semaforo: contiene las tres luces en un ColumnLayout
             Rectangle {
                 id: lightBody
                 anchors.centerIn: parent
@@ -41,7 +60,9 @@ Rectangle {
                     anchors.centerIn: parent
                     spacing: Style.resize(12)
 
-                    // Red light
+                    // Cada luz usa un ternario para decidir su color:
+                    // si el estado coincide, color brillante; si no, color apagado.
+                    // Behavior on color anima la transicion suavemente.
                     Rectangle {
                         id: redLight
                         width: Style.resize(50)
@@ -55,7 +76,6 @@ Rectangle {
                         Behavior on color { ColorAnimation { duration: 300 } }
                     }
 
-                    // Yellow light
                     Rectangle {
                         id: yellowLight
                         width: Style.resize(50)
@@ -69,7 +89,6 @@ Rectangle {
                         Behavior on color { ColorAnimation { duration: 300 } }
                     }
 
-                    // Green light
                     Rectangle {
                         id: greenLight
                         width: Style.resize(50)
@@ -84,6 +103,8 @@ Rectangle {
                     }
                 }
 
+                // Estados minimos: solo definen el nombre, sin PropertyChanges.
+                // El color de cada luz se calcula por binding, no por estado.
                 states: [
                     State { name: "red" },
                     State { name: "yellow" },
@@ -93,7 +114,7 @@ Rectangle {
                 state: "red"
             }
 
-            // State label
+            // Etiqueta que refleja el estado activo con color correspondiente
             Label {
                 anchors.top: lightBody.bottom
                 anchors.topMargin: Style.resize(10)
@@ -107,7 +128,12 @@ Rectangle {
             }
         }
 
-        // Auto timer
+        // -----------------------------------------------------------------
+        // Timer automatico: simula el ciclo real de un semaforo.
+        // 'interval' usa un binding: 1500ms para amarillo, 3000ms para los demas.
+        // QML re-evalua el binding cuando cambia lightBody.state.
+        // 'running' esta vinculado a autoMode para activar/desactivar el ciclo.
+        // -----------------------------------------------------------------
         Timer {
             id: autoTimer
             interval: lightBody.state === "yellow" ? 1500 : 3000
@@ -120,7 +146,7 @@ Rectangle {
             }
         }
 
-        // Controls
+        // Botones manuales: deshabilitados en modo automatico
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)

@@ -1,3 +1,26 @@
+// =============================================================================
+// EngineGaugesCard.qml — Indicadores de Motor N1 (ECAM Upper Display)
+// =============================================================================
+// Simula los indicadores de empuje N1 (rotacion del fan) de un bimotor Airbus.
+// En el ECAM real, N1 es el parametro principal de empuje y se muestra con
+// arcos de color que indican el rango operativo:
+//   - Verde (0-80%): rango normal
+//   - Ambar (80-95%): empuje alto, atencion
+//   - Rojo (95-100%): limite, posible excedencia
+//
+// Tecnicas Canvas 2D utilizadas:
+//   - Arcos coloreados: segmentos de arco con ctx.arc() y diferentes colores
+//   - Aguja rotativa: linea desde cerca del centro hasta el perimetro
+//   - Funcion reutilizable: drawEngineGauge() se usa para ambos motores
+//   - Reutilizacion cross-Canvas: eng2Canvas llama a eng1Canvas.drawEngineGauge()
+//     pasando su propio contexto. Esto evita duplicar la funcion de dibujo.
+//
+// Trigonometria del arco:
+//   arcStart = 135 grados (abajo-izquierda)
+//   sweep = 270 grados (3/4 de circulo, sentido horario)
+//   angulo_de_marca = arcStart + sweep * (porcentaje / 100)
+//   Esto mapea linealmente 0-100% al arco de 135 a 405 (=45) grados.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -33,7 +56,14 @@ Rectangle {
                     anchors.margins: Style.resize(10)
                     spacing: Style.resize(10)
 
-                    // Engine 1
+                    // =========================================================
+                    // MOTOR 1 (izquierda)
+                    // Contiene la funcion drawEngineGauge() que es reutilizada
+                    // por el Motor 2. El patron de "definir la funcion en un
+                    // Canvas y llamarla desde otro" es util para evitar
+                    // duplicacion cuando ambos instrumentos son identicos
+                    // pero con datos diferentes.
+                    // =========================================================
                     Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -51,6 +81,11 @@ Rectangle {
                                 drawEngineGauge(getContext("2d"), width, height, n1, "ENG 1");
                             }
 
+                            // -------------------------------------------------
+                            // Funcion principal de dibujo del indicador N1.
+                            // Parametros: ctx, dimensiones, valor, etiqueta.
+                            // Se define aqui y se reutiliza en eng2Canvas.
+                            // -------------------------------------------------
                             function drawEngineGauge(ctx, w, h, value, label) {
                                 var cx = w / 2;
                                 var cy = h * 0.5;
@@ -58,21 +93,36 @@ Rectangle {
 
                                 ctx.clearRect(0, 0, w, h);
 
+                                // Arco de 270 grados (3/4 de circulo)
+                                // arcStart = 135 (abajo-izquierda), sweep = 270
                                 var arcStart = 135;
                                 var arcEnd = 45;
                                 var sweep = 270;
 
-                                // Green zone: 0-80%
+                                // -------------------------------------------------
+                                // Zonas de color del arco:
+                                // Cada zona es un segmento de arco dibujado con
+                                // drawArcSegment(). Los rangos porcentuales se
+                                // convierten a angulos: arcStart + sweep * fraccion
+                                //   Verde:  0% a 80% del arco
+                                //   Ambar: 80% a 95% del arco
+                                //   Rojo:  95% a 100% del arco
+                                // -------------------------------------------------
                                 drawArcSegment(ctx, cx, cy, r, arcStart, arcStart + sweep * 0.80, "#4CAF50", 6);
-                                // Amber zone: 80-95%
                                 drawArcSegment(ctx, cx, cy, r, arcStart + sweep * 0.80, arcStart + sweep * 0.95, "#FF9800", 6);
-                                // Red zone: 95-100%
                                 drawArcSegment(ctx, cx, cy, r, arcStart + sweep * 0.95, arcStart + sweep, "#F44336", 6);
 
-                                // Background arc (dim)
+                                // Arco de fondo tenue (referencia visual)
                                 drawArcSegment(ctx, cx, cy, r * 0.85, arcStart, arcStart + sweep, "#333333", 3);
 
-                                // Tick marks
+                                // -------------------------------------------------
+                                // Marcas de escala cada 10%:
+                                // Marcas mayores (cada 20%) son mas largas y llevan
+                                // etiqueta numerica. La posicion se calcula con:
+                                //   angulo = (arcStart + sweep * pct/100) en radianes
+                                //   x = cx + cos(angulo) * radio
+                                //   y = cy + sin(angulo) * radio
+                                // -------------------------------------------------
                                 ctx.strokeStyle = "#AAAAAA";
                                 ctx.fillStyle = "#AAAAAA";
                                 ctx.font = (r * 0.14) + "px sans-serif";
@@ -95,7 +145,14 @@ Rectangle {
                                     }
                                 }
 
-                                // Needle
+                                // -------------------------------------------------
+                                // Aguja del indicador:
+                                // Se clampea el valor a 0-100, se convierte a angulo
+                                // dentro del arco y se dibuja una linea desde r*0.3
+                                // (cerca del centro) hasta r*0.85 (perimetro).
+                                // No empieza en el centro exacto para dejar espacio
+                                // al hub central.
+                                // -------------------------------------------------
                                 var needlePct = Math.max(0, Math.min(100, value));
                                 var needleAngle = (arcStart + sweep * needlePct / 100) * Math.PI / 180;
                                 ctx.strokeStyle = "#FFFFFF";
@@ -105,13 +162,17 @@ Rectangle {
                                 ctx.lineTo(cx + Math.cos(needleAngle) * r * 0.85, cy + Math.sin(needleAngle) * r * 0.85);
                                 ctx.stroke();
 
-                                // Center hub
+                                // Hub central
                                 ctx.fillStyle = "#555";
                                 ctx.beginPath();
                                 ctx.arc(cx, cy, r * 0.08, 0, 2 * Math.PI);
                                 ctx.fill();
 
-                                // Digital readout
+                                // -------------------------------------------------
+                                // Lectura digital: el color cambia segun la zona
+                                // (verde/ambar/rojo) para reforzar la indicacion
+                                // visual del arco.
+                                // -------------------------------------------------
                                 var valueColor = value > 95 ? "#F44336" : (value > 80 ? "#FF9800" : "#4CAF50");
                                 ctx.fillStyle = valueColor;
                                 ctx.font = "bold " + (r * 0.28) + "px sans-serif";
@@ -122,12 +183,14 @@ Rectangle {
                                 ctx.font = (r * 0.13) + "px sans-serif";
                                 ctx.fillText("% N1", cx, cy + r * 0.52);
 
-                                // Engine label
+                                // Etiqueta del motor
                                 ctx.fillStyle = "#FFFFFF";
                                 ctx.font = "bold " + (r * 0.15) + "px sans-serif";
                                 ctx.fillText(label, cx, h - r * 0.15);
                             }
 
+                            // Funcion auxiliar para dibujar un segmento de arco
+                            // con color y grosor especificos
                             function drawArcSegment(ctx, cx, cy, r, startDeg, endDeg, color, lineWidth) {
                                 ctx.strokeStyle = color;
                                 ctx.lineWidth = lineWidth;
@@ -138,7 +201,13 @@ Rectangle {
                         }
                     }
 
-                    // Engine 2
+                    // =========================================================
+                    // MOTOR 2 (derecha)
+                    // Reutiliza la funcion drawEngineGauge() definida en
+                    // eng1Canvas pero con su propio contexto 2D y datos.
+                    // Este patron demuestra que las funciones de un Canvas
+                    // son accesibles desde otros componentes por su id.
+                    // =========================================================
                     Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -161,7 +230,7 @@ Rectangle {
             }
         }
 
-        // Controls
+        // Controles de empuje
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(15)

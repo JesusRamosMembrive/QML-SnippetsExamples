@@ -1,3 +1,28 @@
+// =============================================================================
+// WaveformCard.qml — Visualizador de onda sinusoidal (QQuickPaintedItem)
+// =============================================================================
+// Demuestra el uso de WaveformItem, un QQuickPaintedItem que dibuja una
+// onda seno parametrizable con cuadricula tipo osciloscopio usando QPainter
+// y QPainterPath en C++.
+//
+// Integracion C++ <-> QML:
+//   - WaveformItem expone Q_PROPERTYs: frequency, amplitude, phase,
+//     lineWidth, showGrid. QML controla estas propiedades con Sliders
+//     y Switch, y cada cambio dispara un repintado en C++.
+//   - La animacion se logra incrementando "phase" con un Timer QML.
+//     Cada 50ms phase += 0.15, lo que desplaza la onda horizontalmente.
+//     El setter de phase en C++ llama update() -> repintado continuo.
+//
+// Patron Timer para animacion:
+//   En vez de usar NumberAnimation (que es declarativa y no permite
+//   incrementos infinitos), se usa un Timer imperativo que modifica
+//   la propiedad phase repetidamente. Esto es apropiado para animaciones
+//   ciclicas que no tienen un "destino" fijo.
+//
+// La propiedad "animating" del root controla si el Timer esta running,
+// permitiendo pausar/reanudar la animacion con un boton.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -11,6 +36,9 @@ Rectangle {
 
     property bool animating: false
 
+    // -- Timer de animacion: incrementa la fase de la onda cada 50ms.
+    //    running esta vinculado a root.animating, asi que se activa/
+    //    desactiva con el boton "Animate"/"Stop".
     Timer {
         interval: 50
         running: root.animating
@@ -37,7 +65,9 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Waveform display
+        // -- Area de visualizacion: WaveformItem es el componente C++ que
+        //    dibuja la onda con QPainter. Se envuelve en un Rectangle con
+        //    clip: true para que la onda no se dibuje fuera de los limites.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -49,13 +79,18 @@ Rectangle {
                 id: waveform
                 anchors.fill: parent
                 anchors.margins: Style.resize(8)
+
+                // -- Bindings directos a Q_PROPERTYs de C++.
+                //    Cuando freqSlider.value cambia, frequency se actualiza
+                //    automaticamente -> el setter en C++ llama update() ->
+                //    paint() redibuja la onda con la nueva frecuencia.
                 frequency: freqSlider.value
                 amplitude: ampSlider.value
                 lineWidth: 2
             }
         }
 
-        // Frequency
+        // -- Control de frecuencia: cuantos ciclos de la onda se muestran.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -81,7 +116,7 @@ Rectangle {
             }
         }
 
-        // Amplitude
+        // -- Control de amplitud: altura de la onda (0-100%).
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -107,7 +142,9 @@ Rectangle {
             }
         }
 
-        // Controls
+        // -- Controles de animacion y cuadricula.
+        //    El boton "Reset" restaura todos los parametros a sus valores
+        //    iniciales, demostrando asignacion imperativa de Q_PROPERTYs.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -137,6 +174,8 @@ Rectangle {
                 color: Style.fontSecondaryColor
             }
 
+            // -- Switch vinculado a waveform.showGrid (Q_PROPERTY bool).
+            //    Demuestra binding bidireccional con propiedad booleana de C++.
             Switch {
                 checked: waveform.showGrid
                 onCheckedChanged: waveform.showGrid = checked

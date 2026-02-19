@@ -1,3 +1,21 @@
+// =============================================================================
+// SegmentedToggle.qml — Selector segmentado tipo iOS / Material Tabs
+// =============================================================================
+// Implementa un control segmentado donde un grupo de opciones mutuamente
+// excluyentes se presenta en una barra horizontal, con un indicador visual
+// que resalta el segmento seleccionado.
+//
+// Diferencia con RadioButton: aqui la seleccion es visual — un rectangulo
+// coloreado se mueve al segmento activo con ColorAnimation. No se usa
+// ButtonGroup; en su lugar, un entero 'selectedSegment' identifica la
+// opcion activa y cada segmento compara su idx con ese valor.
+//
+// Patron clave — Repeater con RowLayout + Layout.fillWidth:
+// Al usar fillWidth en cada delegate del Repeater, los segmentos se
+// distribuyen equitativamente en el espacio disponible, sin importar
+// cuantos haya. Esto crea un control que se adapta al contenido.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,6 +38,9 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.resize(50)
 
+        // selectedSegment: indice del segmento activo. Cada segmento
+        // del Repeater compara su modelData.idx con este valor para
+        // decidir si mostrarse coloreado o transparente.
         property int selectedSegment: 1
 
         Rectangle {

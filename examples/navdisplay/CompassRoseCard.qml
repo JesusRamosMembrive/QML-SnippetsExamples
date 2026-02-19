@@ -1,3 +1,18 @@
+// =============================================================================
+// CompassRoseCard.qml — Rosa de los vientos con Canvas 2D
+// =============================================================================
+// Dibuja una brujula giratoria completa de 360 grados usando Canvas (API 2D
+// de HTML5). La tarjeta de brujula rota segun el heading del avion, mientras
+// la linea de referencia (lubber line) permanece fija arriba.
+//
+// Demuestra:
+// - Canvas para graficos vectoriales dinamicos en QML.
+// - Transformaciones 2D: translate + rotate para girar la brujula.
+// - Repintado reactivo: onHdgChanged llama requestPaint() para que el
+//   Canvas se redibuje solo cuando cambia el heading.
+// - Elementos clasicos de instrumentacion: tick marks, etiquetas cardinales,
+//   flecha norte (roja), lubber line (amarilla) y readout digital.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -31,6 +46,12 @@ Rectangle {
                 color: "#1a1a1a"
                 radius: Style.resize(6)
 
+                // ── Canvas de la brujula ────────────────────────────
+                // Canvas usa la API 2D del contexto HTML5. Se redibuja
+                // completamente en cada frame porque los graficos vectoriales
+                // necesitan recalcularse con cada cambio de heading.
+                // onAvailableChanged asegura el primer pintado cuando
+                // el Canvas esta listo en el scene graph.
                 Canvas {
                     id: compassCanvas
                     onAvailableChanged: if (available) requestPaint()
@@ -54,19 +75,24 @@ Rectangle {
                         var green = "#00FF00";
                         var white = "#FFFFFF";
 
-                        // Outer ring
+                        // Anillo exterior: marco fijo de referencia
                         ctx.strokeStyle = "#444444";
                         ctx.lineWidth = 2;
                         ctx.beginPath();
                         ctx.arc(cx, cy, r + 5, 0, 2 * Math.PI);
                         ctx.stroke();
 
-                        // Rotating compass card
+                        // ── Tarjeta giratoria de la brujula ─────────
+                        // Se traslada al centro y se rota con el heading negativo
+                        // porque la brujula gira en sentido contrario al avion:
+                        // si el avion gira a la derecha, la brujula gira a la izquierda.
                         ctx.save();
                         ctx.translate(cx, cy);
                         ctx.rotate(-hdg * Math.PI / 180);
 
-                        // Tick marks every 5 degrees
+                        // Marcas cada 5 grados: cardinales (largas), mayores (medianas),
+                        // menores (cortas). El offset de -90 convierte la convencion
+                        // matematica (0=este) a la aeronautica (0=norte).
                         for (var deg = 0; deg < 360; deg += 5) {
                             var rad = (deg - 90) * Math.PI / 180;
                             var isCardinal = (deg % 90 === 0);
@@ -84,7 +110,10 @@ Rectangle {
                             ctx.stroke();
                         }
 
-                        // Labels every 30 degrees
+                        // Etiquetas cada 30 grados. Convencion aeronautica:
+                        // los numeros son decenas (3=030, 12=120, etc.).
+                        // Los puntos cardinales (N,E,S,W) se muestran en blanco
+                        // y los demas en verde para diferenciarse visualmente.
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
                         ctx.font = "bold " + (r * 0.11) + "px sans-serif";
@@ -112,7 +141,8 @@ Rectangle {
                             ctx.fillText(l.text, Math.cos(rad) * labelR, Math.sin(rad) * labelR);
                         }
 
-                        // North arrow (red triangle)
+                        // Flecha norte: triangulo rojo que gira con la brujula
+                        // para indicar siempre donde esta el norte magnetico.
                         ctx.fillStyle = "#FF4444";
                         var nRad = -Math.PI / 2;
                         var nR = r + 2;
@@ -125,7 +155,9 @@ Rectangle {
 
                         ctx.restore();
 
-                        // Fixed lubber line (yellow triangle at top)
+                        // ── Elementos fijos (no rotan) ──────────────
+                        // Lubber line: triangulo amarillo fijo en la parte superior.
+                        // En un instrumento real, marca la proa del avion.
                         ctx.fillStyle = "#FFFF00";
                         ctx.beginPath();
                         ctx.moveTo(cx, cy - r - 8);
@@ -134,13 +166,14 @@ Rectangle {
                         ctx.closePath();
                         ctx.fill();
 
-                        // Center dot
+                        // Punto central de referencia
                         ctx.fillStyle = white;
                         ctx.beginPath();
                         ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
                         ctx.fill();
 
-                        // Heading readout box
+                        // Readout digital del heading: caja negra con borde verde
+                        // y texto en formato de 3 digitos (ej: 045, 270, 000).
                         var hdgStr = Math.round(hdg).toString().padStart(3, "0");
                         ctx.fillStyle = "#000000";
                         ctx.fillRect(cx - 25, 5, 50, 20);

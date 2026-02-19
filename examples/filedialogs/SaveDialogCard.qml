@@ -1,3 +1,22 @@
+// =============================================================================
+// SaveDialogCard.qml — FileDialog en modo guardado con seleccion de formato
+// =============================================================================
+// FileDialog con fileMode: FileDialog.SaveFile muestra el dialogo nativo
+// de "Guardar como...", permitiendo al usuario elegir ubicacion y nombre.
+//
+// Este ejemplo agrega un selector de formato (txt, json, csv, qml) que
+// ajusta dinamicamente los nameFilters del dialogo. Tambien incluye un
+// TextField para escribir el nombre del archivo y una previsualizacion
+// que muestra el nombre completo (nombre + extension).
+//
+// Conceptos clave:
+// - FileDialog.SaveFile: el dialogo permite escribir un nombre nuevo,
+//   no solo seleccionar archivos existentes.
+// - nameFilters se actualiza dinamicamente al cambiar formatIndex,
+//   gracias al binding sobre root.formats[root.formatIndex].filter.
+// - selectedFile (singular, no plural) retorna la URL del archivo guardado.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -13,6 +32,8 @@ Rectangle {
     property string fileName: "untitled"
     property int formatIndex: 0
 
+    // Array de formatos disponibles: cada uno tiene extension, filtro
+    // para el dialogo nativo, y un icono unicode representativo.
     readonly property var formats: [
         { ext: ".txt",  filter: "Text files (*.txt)",     icon: "\u2759" },
         { ext: ".json", filter: "JSON files (*.json)",    icon: "\u007B" },
@@ -20,6 +41,8 @@ Rectangle {
         { ext: ".qml",  filter: "QML files (*.qml)",      icon: "\u25C8" }
     ]
 
+    // FileDialog en modo SaveFile: el primer filtro es el formato
+    // seleccionado, el segundo es "All files" como fallback.
     FileDialog {
         id: saveDialog
         title: "Save File As"
@@ -48,7 +71,9 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // File name input
+        // Campo de texto para el nombre del archivo.
+        // onTextChanged actualiza root.fileName en tiempo real,
+        // lo que se refleja inmediatamente en la previsualizacion.
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -68,7 +93,8 @@ Rectangle {
             }
         }
 
-        // Format selector
+        // Selector de formato: botones con highlighted para indicar
+        // el formato activo. Cada boton muestra icono + extension.
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -99,7 +125,8 @@ Rectangle {
             }
         }
 
-        // Preview
+        // Previsualizacion: muestra el nombre completo del archivo
+        // y la ruta de guardado (si ya se guardo).
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -125,6 +152,8 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                 }
 
+                // wrapMode: Text.WrapAnywhere permite que rutas largas
+                // se partan en cualquier caracter, no solo en espacios.
                 Label {
                     text: root.savedFile.toString()
                           ? "Saved to: " + root.savedFile.toString().replace(/^file:\/\/\//, "")

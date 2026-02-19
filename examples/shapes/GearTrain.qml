@@ -1,3 +1,28 @@
+// =============================================================================
+// GearTrain.qml — Sistema de engranajes animados con Canvas 2D
+// =============================================================================
+// Simula un tren de tres engranajes que giran sincronizados, demostrando:
+//
+//   - Canvas 2D para dibujo procedural complejo (engranajes con dientes,
+//     radios y cubo central).
+//   - Trigonometria aplicada: cada diente se dibuja como un trapezoide
+//     usando sin/cos para calcular vertices en coordenadas polares.
+//   - Relacion de transmision: cuando dos engranajes engranan, sus
+//     velocidades angulares son inversamente proporcionales al numero
+//     de dientes. El engranaje de 10 dientes gira 16/10 = 1.6x mas
+//     rapido que el de 16 dientes, y en sentido OPUESTO.
+//
+// PATRON ACTIVE/SECTIONACTIVE:
+//   - 'active' viene del padre (Main.qml) y es true cuando la pagina
+//     Shapes es visible. Controla si el Timer PUEDE correr.
+//   - 'sectionActive' es local, controlada por el boton Start/Pause.
+//   Ambas deben ser true para que la animacion corra. Este patron de
+//   doble condicion evita consumo de CPU cuando la pagina no es visible.
+//
+// TECNICA DE DIBUJO: La funcion drawGear() usa ctx.save()/restore()
+// para aislar las transformaciones de cada engranaje (translate + rotate).
+// Esto es esencial cuando se dibujan multiples objetos rotados en Canvas.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -33,6 +58,9 @@ ColumnLayout {
         radius: Style.resize(6)
         clip: true
 
+        // Canvas para dibujo procedural. A diferencia de Shape (vectorial GPU),
+        // Canvas rasteriza en CPU, pero permite algoritmos de dibujo complejos
+        // como este donde la geometria se calcula matematicamente en cada frame.
         Canvas {
             id: gearCanvas
             anchors.fill: parent
@@ -40,6 +68,9 @@ ColumnLayout {
 
             property real gearAngle: 0
 
+            // Timer a 40ms (~25 FPS). El angulo avanza 1.5 grados por frame.
+            // requestPaint() marca el Canvas como "sucio" para que onPaint
+            // se ejecute en el proximo ciclo de renderizado.
             Timer {
                 interval: 40
                 repeat: true
@@ -50,6 +81,11 @@ ColumnLayout {
                 }
             }
 
+            // drawGear: dibuja un engranaje completo (dientes + cubo + radios).
+            // - pitchR: radio primitivo (donde engranan los dientes).
+            // - teeth: numero de dientes (determina la velocidad de giro relativa).
+            // - toothH: altura del diente (18% del radio primitivo).
+            // Cada diente es un trapezoide definido por 4 angulos (a0..a3).
             function drawGear(ctx, gx, gy, pitchR, teeth, angleDeg, fillCol, strokeCol) {
                 var toothH = pitchR * 0.18
                 var outerR = pitchR + toothH
@@ -97,6 +133,12 @@ ColumnLayout {
                 ctx.restore()
             }
 
+            // Posicionamiento y relacion de transmision de los 3 engranajes.
+            // Los radios se calculan proporcionalmente al numero de dientes
+            // para que los dientes engranen correctamente: r2/r1 = teeth2/teeth1.
+            // El angulo de cada engranaje se calcula con la relacion inversa de
+            // dientes, mas un offset de medio diente (180/teeth) para que los
+            // dientes se intercalen en lugar de chocar.
             onPaint: {
                 var ctx = getContext("2d")
                 ctx.clearRect(0, 0, width, height)

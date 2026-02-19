@@ -1,3 +1,30 @@
+// =============================================================================
+// AnalogClock.qml — Reloj analogico en tiempo real con Canvas
+// =============================================================================
+// Dibuja un reloj analogico completo con esfera, marcas de hora/minuto,
+// numeros, tres manecillas (hora, minuto, segundo) y lectura digital.
+//
+// PATRON Timer + Canvas PARA ACTUALIZACION PERIODICA:
+//   El Timer se ejecuta cada 1000ms (1 segundo). En cada tick:
+//   1. Lee la hora actual con new Date()
+//   2. Almacena horas, minutos y segundos en properties del Canvas
+//   3. Llama requestPaint() para redibujar
+//   triggeredOnStart: true asegura que el reloj se dibuje inmediatamente
+//   al iniciar, sin esperar el primer intervalo.
+//
+// TECNICAS DE DIBUJO:
+//   - Marcas de hora vs minuto: se distinguen por grosor y longitud,
+//     usando el modulo i % 5 === 0 para identificar las posiciones horarias.
+//   - Manecillas: cada una tiene diferente longitud, grosor y color.
+//     La manecilla de hora avanza suavemente (hours + minutes/60) para que
+//     no salte en incrementos de 30 grados.
+//   - lineCap "round" da extremos redondeados a las manecillas.
+//   - El punto central rojo y la manecilla de segundo roja crean un
+//     acento visual sobre la estetica gris/blanca del reloj.
+//
+// La lectura digital al pie usa formato monospace para que los digitos
+// no "bailen" al cambiar (todos los caracteres tienen el mismo ancho).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -66,7 +93,8 @@ ColumnLayout {
 
                 ctx.clearRect(0, 0, width, height)
 
-                // Face background
+                // Fondo de la esfera: circulo oscuro con borde verde teal.
+                // El anillo interior sutil agrega profundidad visual.
                 ctx.beginPath()
                 ctx.arc(cx, cy, r, 0, 2 * Math.PI)
                 ctx.fillStyle = "#1E2128"
@@ -82,7 +110,10 @@ ColumnLayout {
                 ctx.lineWidth = 1
                 ctx.stroke()
 
-                // Tick marks
+                // Marcas: 60 ticks (uno por segundo). Cada 5to es mas largo
+                // y grueso (marca de hora). El angulo se calcula restando 90
+                // grados porque 0 grados en Canvas apunta a la derecha, pero
+                // el 12 del reloj esta arriba.
                 for (var i = 0; i < 60; i++) {
                     var tickAngle = (i * 6 - 90) * Math.PI / 180
                     var isHour = (i % 5 === 0)
@@ -107,7 +138,8 @@ ColumnLayout {
                     ctx.fillText(h.toString(), cx + hR * Math.cos(hAngle), cy + hR * Math.sin(hAngle))
                 }
 
-                // Hour hand
+                // Manecilla de hora: (hours + minutes/60) crea movimiento
+                // suave entre horas. * 30 convierte a grados (360/12 = 30).
                 var hourAngle = ((hours + minutes / 60) * 30 - 90) * Math.PI / 180
                 ctx.lineCap = "round"
                 ctx.beginPath()

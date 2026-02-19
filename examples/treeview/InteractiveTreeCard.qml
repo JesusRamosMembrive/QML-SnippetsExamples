@@ -1,3 +1,37 @@
+// =============================================================================
+// InteractiveTreeCard.qml — Arbol dinamico con operaciones CRUD
+// =============================================================================
+// Permite agregar nodos hijo, eliminar nodos y editar sus datos en un
+// TreeView. Demuestra las operaciones de modificacion estructural de un
+// QAbstractItemModel en C++.
+//
+// Conexion QML <-> C++:
+//   - OrganizationTreeModel (C++) expone estas operaciones como Q_INVOKABLEs:
+//     - addNode(parentIndex, name, title, dept, email): inserta un hijo
+//       bajo el nodo seleccionado. Internamente llama beginInsertRows() y
+//       endInsertRows() para que TreeView se entere del cambio.
+//     - removeNode(index): elimina el nodo y todos sus hijos. Usa
+//       beginRemoveRows() / endRemoveRows().
+//     - editNode(index, name, title, dept, email): modifica los datos del
+//       nodo y emite dataChanged() para actualizar la vista.
+//     - nameAt(index), titleAt(index), etc.: metodos de lectura que extraen
+//       datos de un QModelIndex. Necesarios porque desde QML no se puede
+//       acceder a data(index, role) directamente con un QModelIndex.
+//
+// Patrones clave:
+//   - ItemSelectionModel.onCurrentChanged: cuando la seleccion cambia, se
+//     rellenan los TextFields con los datos del nodo seleccionado usando
+//     nameAt(), titleAt(), etc. Esto permite editar y luego guardar con
+//     el boton "Edit".
+//   - GridLayout con 4 columnas: organiza Label + TextField en pares,
+//     creando un formulario compacto de 2 columnas visuales.
+//   - Modelo independiente: orgEditModel es una instancia SEPARADA de
+//     OrganizationTreeModel, distinta de orgModel que usa OrganizationTreeCard.
+//     Esto permite que las operaciones CRUD no afecten la vista de solo lectura.
+//   - enabled: editSelModel.hasSelection: los botones de accion solo se
+//     activan cuando hay un nodo seleccionado, previniendo errores.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

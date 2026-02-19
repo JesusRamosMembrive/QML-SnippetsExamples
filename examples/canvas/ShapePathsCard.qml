@@ -1,3 +1,30 @@
+// =============================================================================
+// ShapePathsCard.qml — Formas vectoriales declarativas con Shape y ShapePath
+// =============================================================================
+// Demuestra el modulo QtQuick.Shapes, la alternativa DECLARATIVA a Canvas
+// para dibujar graficos vectoriales en QML.
+//
+// SHAPE vs CANVAS:
+//   - Shape se define declarativamente (como cualquier Item QML), se renderiza
+//     con GPU, y se puede animar con las herramientas estandar de QML.
+//   - Canvas es imperativo (codigo JS en onPaint), mas flexible pero mas
+//     costoso y sin aceleracion GPU por defecto.
+//   Para formas estaticas o animaciones simples, Shape es preferible.
+//
+// ELEMENTOS DE TRAZADO (Path elements):
+//   - PathLine: segmento recto entre dos puntos. Basico para poligonos.
+//   - PathArc: arco de elipse definido por punto destino y radios.
+//     useLargeArc controla si se dibuja el arco mayor o menor.
+//   - PathQuad: curva cuadratica de Bezier con un punto de control.
+//     Ideal para formas organicas (corazones, hojas, ondas).
+//
+// ShapePath define el trazo completo: strokeWidth/strokeColor para el borde,
+// fillColor para el relleno (sufijo hex "30" = ~19% alpha para transparencia).
+// startX/startY establece el punto inicial del trazado.
+//
+// Las cuatro figuras (triangulo, estrella, rectangulo redondeado, corazon)
+// muestran progresivamente elementos mas complejos de trazado.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +47,7 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Shapes area
+        // Area de formas: cuatro columnas con Shape + PathElements distintos
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -33,7 +60,8 @@ Rectangle {
                 anchors.margins: Style.resize(10)
                 spacing: Style.resize(10)
 
-                // Triangle
+                // Triangulo: tres PathLine forman un poligono cerrado.
+                // El ultimo PathLine vuelve al punto de inicio para cerrar la forma.
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -69,7 +97,9 @@ Rectangle {
                     }
                 }
 
-                // Star
+                // Estrella de 5 puntas: 10 PathLine alternando entre puntos
+                // exteriores e interiores. Las coordenadas estan precalculadas
+                // para simplificar el codigo (vs calcularlas con trigonometria).
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -113,7 +143,9 @@ Rectangle {
                     }
                 }
 
-                // Rounded shape with arcs
+                // Rectangulo redondeado con PathArc: demuestra como combinar
+                // PathLine (lados rectos) con PathArc (esquinas curvas).
+                // Cada arco tiene radiusX/radiusY de 10, creando esquinas suaves.
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -155,7 +187,10 @@ Rectangle {
                     }
                 }
 
-                // Heart shape
+                // Corazon con PathQuad: 4 curvas cuadraticas de Bezier.
+                // Cada PathQuad tiene un punto de control (controlX/controlY)
+                // que "atrae" la curva. Los puntos de control en las esquinas
+                // exteriores crean los lobulos superiores del corazon.
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true

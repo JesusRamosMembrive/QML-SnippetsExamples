@@ -1,3 +1,22 @@
+// =============================================================================
+// ArtificialHorizonCard.qml — Horizonte Artificial (ADI)
+// =============================================================================
+// El ADI (Attitude Director Indicator) es el instrumento central del PFD.
+// Muestra la actitud del avion: pitch (cabeceo) y roll (alabeo).
+//
+// Tecnicas Canvas 2D utilizadas:
+//   - Clipping circular: ctx.arc() + ctx.clip() para limitar el dibujo al disco
+//   - Transformacion de coordenadas: translate + rotate para rotar cielo/tierra
+//   - Gradientes lineales: createLinearGradient para cielo azul y tierra marron
+//   - Escalera de pitch (pitch ladder): marcas a intervalos de 5 grados
+//   - Arco de roll: marcas fijas con puntero triangular que rota
+//   - Simbolo del avion: referencia fija en el centro (amarillo)
+//
+// Trigonometria clave:
+//   - ppd (pixels per degree): convierte grados de pitch a pixeles
+//   - roll se aplica como rotacion del contexto en radianes: deg * PI / 180
+//   - Las marcas de roll usan coordenadas polares: cos(angulo)*radio, sin(angulo)*radio
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -30,6 +49,9 @@ Rectangle {
                 width: Math.min(parent.width, parent.height) - Style.resize(10)
                 height: width
 
+                // Propiedades reactivas: cualquier cambio dispara requestPaint()
+                // para redibujar el Canvas completo. Este es el patron estandar
+                // de animacion interactiva con Canvas 2D en QML.
                 property real pitch: pitchSlider.value
                 property real roll: rollSlider.value
 
@@ -47,20 +69,38 @@ Rectangle {
                     ctx.clearRect(0, 0, w, h);
                     ctx.save();
 
-                    // Clip to circle
+                    // ---------------------------------------------------------
+                    // Clipping circular: todo el dibujo del horizonte se limita
+                    // a un circulo. Esto simula la ventana redonda del instrumento
+                    // real y evita que cielo/tierra se dibujen fuera del disco.
+                    // ---------------------------------------------------------
                     ctx.beginPath();
                     ctx.arc(cx, cy, r, 0, 2 * Math.PI);
                     ctx.clip();
 
-                    // Rotate for roll
+                    // ---------------------------------------------------------
+                    // Transformacion de coordenadas para roll:
+                    // 1. translate(cx, cy) mueve el origen al centro del canvas
+                    // 2. rotate(-roll * PI/180) rota todo el contenido
+                    //    (negativo porque roll positivo = inclinacion derecha = rotacion
+                    //     antihoraria visual del horizonte)
+                    // Despues de esto, el pitch simplemente desplaza verticalmente.
+                    // ---------------------------------------------------------
                     ctx.translate(cx, cy);
                     ctx.rotate(-roll * Math.PI / 180);
 
-                    // Pitch offset: pixels per degree
+                    // ppd = pixels per degree: cuantos pixeles equivalen a 1 grado
+                    // de pitch. El rango visible es +-30 grados dentro del radio r.
                     var ppd = r / 30;
                     var pitchOffset = pitch * ppd;
 
-                    // Sky gradient
+                    // ---------------------------------------------------------
+                    // Gradientes de cielo y tierra:
+                    // El cielo usa un degradado azul oscuro (horizonte lejano) a
+                    // azul claro (cerca del horizonte). La tierra va de marron
+                    // claro a oscuro. pitchOffset desplaza la linea divisoria
+                    // verticalmente segun el angulo de cabeceo.
+                    // ---------------------------------------------------------
                     var skyGrad = ctx.createLinearGradient(0, -r * 2, 0, pitchOffset);
                     skyGrad.addColorStop(0, "#0a1e5e");
                     skyGrad.addColorStop(0.6, "#1565C0");
@@ -68,7 +108,6 @@ Rectangle {
                     ctx.fillStyle = skyGrad;
                     ctx.fillRect(-r * 2, -r * 2, r * 4, r * 2 + pitchOffset);
 
-                    // Ground gradient
                     var gndGrad = ctx.createLinearGradient(0, pitchOffset, 0, r * 2);
                     gndGrad.addColorStop(0, "#8B6914");
                     gndGrad.addColorStop(0.4, "#6B4400");
@@ -76,7 +115,7 @@ Rectangle {
                     ctx.fillStyle = gndGrad;
                     ctx.fillRect(-r * 2, pitchOffset, r * 4, r * 2);
 
-                    // Horizon line
+                    // Linea del horizonte: separacion visual entre cielo y tierra
                     ctx.strokeStyle = "#FFFFFF";
                     ctx.lineWidth = 2;
                     ctx.beginPath();
@@ -84,7 +123,16 @@ Rectangle {
                     ctx.lineTo(r * 2, pitchOffset);
                     ctx.stroke();
 
-                    // Pitch ladder
+                    // ---------------------------------------------------------
+                    // Escalera de pitch (pitch ladder):
+                    // Lineas horizontales a intervalos de 5 grados que permiten
+                    // al piloto estimar visualmente el angulo de cabeceo.
+                    // Las marcas de 10 grados son mas largas y llevan etiqueta
+                    // numerica a ambos lados. La posicion Y de cada marca se
+                    // calcula como: pitchOffset - grados * ppd
+                    // (resta porque pitch positivo = nariz arriba = desplazamiento
+                    // hacia abajo del horizonte en pantalla)
+                    // ---------------------------------------------------------
                     ctx.fillStyle = "#FFFFFF";
                     ctx.strokeStyle = "#FFFFFF";
                     ctx.lineWidth = 1.5;
@@ -112,7 +160,18 @@ Rectangle {
                     ctx.restore();
                     ctx.save();
 
-                    // Roll arc (fixed, not rotated with pitch/roll)
+                    // ---------------------------------------------------------
+                    // Arco de roll (fijo, no rota con pitch/roll):
+                    // Semicirculo superior con marcas a angulos estandar de aviacion
+                    // (-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60 grados).
+                    // Las marcas de 30 grados son mas largas para mayor visibilidad.
+                    //
+                    // La conversion angulo -> posicion usa coordenadas polares:
+                    //   x = cos(angulo) * radio
+                    //   y = sin(angulo) * radio
+                    // donde angulo se mide desde el eje horizontal y se ajusta
+                    // restando 90 grados para que 0 quede arriba.
+                    // ---------------------------------------------------------
                     ctx.translate(cx, cy);
                     ctx.strokeStyle = "#FFFFFF";
                     ctx.lineWidth = 2;
@@ -120,7 +179,6 @@ Rectangle {
                     ctx.arc(0, 0, r * 0.85, -Math.PI * 5/6, -Math.PI * 1/6);
                     ctx.stroke();
 
-                    // Roll tick marks
                     var rollMarks = [-60, -45, -30, -20, -10, 0, 10, 20, 30, 45, 60];
                     for (var j = 0; j < rollMarks.length; j++) {
                         var angle = (-90 + rollMarks[j]) * Math.PI / 180;
@@ -131,7 +189,11 @@ Rectangle {
                         ctx.stroke();
                     }
 
-                    // Roll pointer (triangle at current roll)
+                    // ---------------------------------------------------------
+                    // Puntero de roll: triangulo blanco que rota con el alabeo.
+                    // Se dibuja en la posicion -90 grados (arriba) y se rota
+                    // con ctx.rotate(-roll) para que apunte al angulo actual.
+                    // ---------------------------------------------------------
                     ctx.save();
                     ctx.rotate(-roll * Math.PI / 180);
                     ctx.fillStyle = "#FFFFFF";
@@ -143,33 +205,40 @@ Rectangle {
                     ctx.fill();
                     ctx.restore();
 
-                    // Fixed aircraft symbol (wings + center dot)
+                    // ---------------------------------------------------------
+                    // Simbolo fijo del avion (amarillo):
+                    // Dos "alas" horizontales y un punto central que representan
+                    // la referencia de la aeronave. Este simbolo NO rota —
+                    // permanece fijo mientras el horizonte se mueve detras.
+                    // Esto simula lo que el piloto ve: el avion esta fijo,
+                    // el mundo se mueve.
+                    // ---------------------------------------------------------
                     ctx.strokeStyle = "#FFD600";
                     ctx.fillStyle = "#FFD600";
                     ctx.lineWidth = 3;
 
-                    // Left wing
+                    // Ala izquierda
                     ctx.beginPath();
                     ctx.moveTo(-r * 0.4, 0);
                     ctx.lineTo(-r * 0.15, 0);
                     ctx.lineTo(-r * 0.15, r * 0.05);
                     ctx.stroke();
 
-                    // Right wing
+                    // Ala derecha
                     ctx.beginPath();
                     ctx.moveTo(r * 0.4, 0);
                     ctx.lineTo(r * 0.15, 0);
                     ctx.lineTo(r * 0.15, r * 0.05);
                     ctx.stroke();
 
-                    // Center dot
+                    // Punto central
                     ctx.beginPath();
                     ctx.arc(0, 0, r * 0.03, 0, 2 * Math.PI);
                     ctx.fill();
 
                     ctx.restore();
 
-                    // Outer ring
+                    // Anillo exterior: borde estetico del instrumento
                     ctx.strokeStyle = "#333";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -179,7 +248,12 @@ Rectangle {
             }
         }
 
-        // Controls
+        // ---------------------------------------------------------------------
+        // Controles interactivos: sliders para pitch y roll.
+        // Los valores se vinculan a las propiedades del Canvas, que disparan
+        // requestPaint() en cada cambio. Esto demuestra el ciclo reactivo:
+        // Slider -> property -> onChanged -> requestPaint() -> onPaint
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(15)

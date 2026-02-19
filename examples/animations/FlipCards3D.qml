@@ -1,3 +1,26 @@
+// =============================================================================
+// FlipCards3D.qml — Efecto de volteo 3D con Rotation y Behavior
+// =============================================================================
+// Simula tarjetas que giran en 3D al hacer clic, mostrando una cara frontal
+// y una trasera. Aunque QML no tiene un motor 3D completo, el elemento
+// Rotation con axis { y: 1 } crea una perspectiva convincente de giro
+// sobre el eje Y.
+//
+// TRUCO CLAVE - Simular dos caras:
+//   Se usan dos Rectangles superpuestos (front y back). La visibilidad
+//   se controla con el angulo de rotacion:
+//   - Front visible cuando flipAngle < 90 (cara hacia el usuario)
+//   - Back visible cuando flipAngle >= 90 (cara opuesta)
+//   El back se rota flipAngle - 180 para que el texto NO aparezca espejado.
+//
+// Behavior on flipAngle anima la transicion entre 0 y 180 grados con
+// easing InOutQuad, creando un movimiento natural de volteo.
+//
+// El Repeater genera las 4 tarjetas a partir de un array de objetos JS,
+// lo cual demuestra como usar modelos inline con delegates personalizados.
+// 'required property var modelData' y 'required property int index' son
+// obligatorios para acceder a los datos dentro del delegate.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -37,6 +60,8 @@ ColumnLayout {
                 property bool flipped: false
                 property real flipAngle: 0
 
+                // Behavior automatiza la animacion: al asignar flipAngle = 180,
+                // el valor interpola suavemente de 0 a 180 en 600ms.
                 Behavior on flipAngle {
                     NumberAnimation {
                         duration: 600
@@ -44,7 +69,9 @@ ColumnLayout {
                     }
                 }
 
-                // Front face
+                // Cara frontal: visible solo cuando el angulo < 90 grados.
+                // La Rotation transforma visualmente el rectangulo sin moverlo
+                // de su posicion en el layout. origin define el centro de giro.
                 Rectangle {
                     anchors.fill: parent
                     radius: Style.resize(12)
@@ -79,7 +106,9 @@ ColumnLayout {
                     }
                 }
 
-                // Back face
+                // Cara trasera: visible cuando flipAngle >= 90. Se rota
+                // flipAngle - 180 para compensar y que el texto sea legible
+                // (sin esto, el texto apareceria espejado horizontalmente).
                 Rectangle {
                     anchors.fill: parent
                     radius: Style.resize(12)

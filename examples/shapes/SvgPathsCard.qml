@@ -1,3 +1,26 @@
+// =============================================================================
+// SvgPathsCard.qml — Formas complejas con PathSvg (formato SVG path data)
+// =============================================================================
+// Demuestra el uso de PathSvg para renderizar formas definidas con la sintaxis
+// estandar de "path data" de SVG. Esta es la misma sintaxis que usan:
+//   - Herramientas de diseno (Figma, Illustrator, Inkscape) al exportar SVG.
+//   - Fuentes de iconos (Font Awesome, Material Icons).
+//   - Estandar W3C SVG (atributo 'd' del elemento <path>).
+//
+// COMANDOS SVG MAS USADOS (los que aparecen en este archivo):
+//   M x y    — Mover a (sin dibujar). Equivale a startX/startY.
+//   L x y    — Linea recta hasta (x,y). Equivale a PathLine.
+//   A rx ry  — Arco eliptico. Equivale a PathArc.
+//   Z        — Cerrar camino (linea de vuelta al inicio). Equivale a closePath.
+//
+// POR QUE PATHSVG: permite copiar directamente los path data de herramientas
+// de diseno sin tener que descomponerlos manualmente en PathLine, PathArc, etc.
+// Es la forma mas rapida de integrar iconos y siluetas vectoriales en QML.
+//
+// EJEMPLO DEL ENGRANAJE: usa el comando 'A' para arcos (el agujero central)
+// combinado con 'M' para crear un "sub-path" interno que actua como recorte,
+// usando la regla de relleno por defecto (OddEvenFill) para crear el hueco.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,7 +49,9 @@ Rectangle {
             Layout.fillHeight: true
             spacing: Style.resize(20)
 
-            // Airplane silhouette
+            // Avion: silueta vista desde arriba, definida enteramente con
+            // lineas rectas (comandos M, L, Z). Todas las coordenadas son
+            // absolutas dentro del espacio 0-100 del Shape.
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -58,7 +83,10 @@ Rectangle {
                 }
             }
 
-            // Gear / cog
+            // Engranaje con agujero central: combina un poligono exterior (dientes)
+            // con un sub-path circular interior (comando A = arco). El motor de
+            // relleno OddEvenFill interpreta el circulo interior como "exterior",
+            // creando el hueco sin necesidad de clipPath o mascaras.
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -87,7 +115,9 @@ Rectangle {
                 }
             }
 
-            // Lightning bolt
+            // Rayo: forma con relleno solido (fillColor = strokeColor).
+            // Demuestra que PathSvg sirve tanto para contornos como para
+            // siluetas completamente rellenas.
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true

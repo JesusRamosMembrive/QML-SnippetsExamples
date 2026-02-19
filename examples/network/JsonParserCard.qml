@@ -1,3 +1,36 @@
+// =============================================================================
+// JsonParserCard.qml — Parser y formateador de JSON en tiempo real
+// =============================================================================
+// Herramienta interactiva que parsea JSON introducido por el usuario y lo
+// muestra formateado con indentacion. Incluye validacion en tiempo real
+// con indicador de estado (valido/error).
+//
+// CONCEPTOS CLAVE:
+//
+// 1. JSON.parse() y JSON.stringify() en QML:
+//    - QML incluye el motor de JavaScript completo, por lo que JSON.parse()
+//      y JSON.stringify() estan disponibles sin dependencias externas.
+//    - JSON.parse() convierte string a objeto JS. Si el JSON es invalido,
+//      lanza una excepcion que se captura con try/catch.
+//
+// 2. Renderizado recursivo de valores:
+//    - renderValue() es una funcion recursiva que formatea cualquier tipo
+//      JS (string, number, boolean, array, object) con indentacion.
+//    - Los arrays y objetos se recorren recursivamente, acumulando niveles
+//      de indentacion. Esto genera la salida "pretty-printed".
+//
+// 3. Validacion reactiva con onTextChanged:
+//    - Cada cambio en el TextArea dispara onTextChanged -> parseInput().
+//    - parseInput() actualiza parsedData o parseError, lo que actualiza
+//      automaticamente la barra de estado y el output formateado.
+//    - Component.onCompleted hace el parseo inicial con el JSON de ejemplo.
+//
+// 4. TextArea vs TextField:
+//    - TextArea soporta multiples lineas (ideal para editar JSON).
+//    - wrapMode: TextEdit.Wrap evita scroll horizontal.
+//    - font.family: "Consolas" usa fuente monoespaciada para alineacion.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,12 +41,18 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // --- Estado del parser ---
+    // parsedData contiene el objeto JS parseado (o null si hay error).
+    // rawJson guarda el texto original. parseError contiene el mensaje
+    // de error de JSON.parse() si el input es invalido.
     property var parsedData: null
     property string rawJson: ""
     property string parseError: ""
 
+    // JSON de ejemplo: demuestra strings, numeros, arrays y objetos anidados.
     readonly property string sampleJson: '{\n  "name": "Qt Framework",\n  "version": "6.10",\n  "languages": ["C++", "QML", "JS"],\n  "features": {\n    "cross_platform": true,\n    "modules": 42\n  }\n}'
 
+    // Parsea el texto y actualiza el estado. try/catch maneja JSON invalido.
     function parseInput(text) {
         root.parseError = ""
         root.parsedData = null
@@ -25,6 +64,8 @@ Rectangle {
         }
     }
 
+    // Funcion recursiva que formatea un valor JS con indentacion.
+    // Maneja todos los tipos: null, boolean, number, string, array, object.
     function renderValue(val, indent) {
         if (val === null) return "null"
         if (val === undefined) return "undefined"
@@ -59,7 +100,8 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Input area
+        // Area de entrada: TextArea multilinea con fuente monoespaciada.
+        // Cada cambio en el texto dispara parseInput() via onTextChanged.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(120)
@@ -83,7 +125,8 @@ Rectangle {
             }
         }
 
-        // Parse status
+        // Barra de estado: verde si el JSON es valido, rojo si hay error.
+        // El texto muestra el mensaje de error o "Valid JSON" + el tipo del dato.
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(28)
@@ -111,7 +154,8 @@ Rectangle {
             }
         }
 
-        // Formatted output
+        // Salida formateada: muestra el JSON parseado con indentacion visual.
+        // Flickable permite scroll vertical para outputs largos.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

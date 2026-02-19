@@ -1,3 +1,19 @@
+// =============================================================================
+// ProgressTaskCard.qml — Tarjeta de ejemplo: Reporte de progreso con QPromise
+// =============================================================================
+// Demuestra como un hilo de trabajo en C++ puede reportar progreso
+// incremental a QML usando QPromise::setProgressValue(). La clase AsyncTask
+// expone una propiedad "progress" (0.0 a 1.0) que se actualiza en cada paso,
+// y QML reacciona automaticamente gracias a los bindings declarativos.
+//
+// El Slider permite al usuario elegir cuantos pasos tendra la tarea,
+// mostrando como parametrizar operaciones asincronas desde QML.
+//
+// Aprendizaje clave: la comunicacion hilo_trabajo -> UI es unidireccional
+// y segura gracias al mecanismo de senales de Qt. QML nunca necesita
+// hacer polling — simplemente se vincula a las propiedades.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +24,9 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // AsyncTask expone: running (bool), progress (real 0-1), status (string).
+    // Cada vez que el hilo en C++ llama setProgressValue(), la propiedad
+    // progress cambia y todos los bindings se re-evaluan automaticamente.
     AsyncTask { id: task }
 
     ColumnLayout {
@@ -29,6 +48,9 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        // Control de parametro: el Slider permite configurar la cantidad
+        // de pasos antes de iniciar la tarea. Esto muestra como pasar
+        // datos de QML a C++ a traves de metodos Q_INVOKABLE.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -61,6 +83,9 @@ Rectangle {
             onClicked: task.runSteps(stepSlider.value)
         }
 
+        // ProgressBar vinculada directamente a task.progress (0.0-1.0).
+        // No hace falta logica adicional: el binding reactivo se encarga
+        // de actualizar la barra cada vez que C++ emite progressChanged().
         ProgressBar {
             Layout.fillWidth: true
             value: task.progress
@@ -74,6 +99,10 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
         }
 
+        // Panel de estado con color condicional: verde para completado,
+        // rojo para cancelado, teal para en progreso, y semitransparente
+        // para estado inicial. Este patron de coloreo por estado es
+        // comun en interfaces que muestran el ciclo de vida de una tarea.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

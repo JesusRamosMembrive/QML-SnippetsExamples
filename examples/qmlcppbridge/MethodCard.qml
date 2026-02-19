@@ -1,3 +1,33 @@
+// =============================================================================
+// MethodCard.qml — Llamadas a metodos C++ con Q_INVOKABLE y Q_ENUM
+// =============================================================================
+// Demuestra como QML puede llamar funciones definidas en C++ y usar enums
+// de C++ para pasar parametros tipados. Cada funcion retorna un valor que
+// QML puede usar directamente gracias a la conversion automatica de tipos.
+//
+// Integracion C++ <-> QML:
+//   - MethodBridge { id: methods } crea una instancia del QObject C++.
+//   - Q_INVOKABLE: marca un metodo C++ como invocable desde QML/JavaScript.
+//     Sin esta macro, QML no puede llamar al metodo (seria invisible).
+//   - Q_ENUM(TextTransform): registra un enum C++ con el sistema de
+//     meta-objetos de Qt. QML puede usar los valores como enteros (0, 1, 2, 3)
+//     o como MethodBridge.Uppercase, MethodBridge.Lowercase, etc.
+//
+// Funciones demostradas:
+//   - transformText(text, mode): recibe un string y un enum, retorna
+//     el texto transformado. Qt convierte automaticamente entre tipos:
+//     QString <-> string, TextTransform <-> int.
+//   - fibonacci(n): calculo puro en C++. Demuestra que operaciones
+//     computacionales pesadas deben vivir en C++, no en JavaScript QML.
+//   - validateEmail(text): retorna bool. QML usa el resultado directamente
+//     en bindings condicionales (color, texto) sin variables intermedias.
+//   - analyzeText(text): retorna QVariantMap, que QML recibe como un
+//     objeto JavaScript {}. Permite retornar multiples valores con claves.
+//
+// Aprendizaje: Q_INVOKABLE es ideal para logica de negocio que necesita
+// la velocidad de C++ o acceso a APIs de C++ que QML no tiene.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -11,6 +41,7 @@ Rectangle {
 
     property string resultText: ""
 
+    // -- Instancia del QObject C++ con los metodos Q_INVOKABLE.
     MethodBridge { id: methods }
 
     ColumnLayout {
@@ -32,7 +63,10 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Text transform (Q_ENUM demo)
+        // -- Seccion 1: Transformacion de texto con Q_ENUM.
+        //    ComboBox.currentIndex corresponde directamente al valor
+        //    del enum C++ TextTransform (0=Uppercase, 1=Lowercase, etc.).
+        //    QML pasa el entero y C++ lo interpreta como el enum.
         Label {
             text: "Text Transform (Q_ENUM)"
             font.pixelSize: Style.resize(13)
@@ -56,6 +90,9 @@ Rectangle {
                 model: ["Uppercase", "Lowercase", "TitleCase", "Reverse"]
                 implicitWidth: Style.resize(110)
 
+                // -- Llamada a Q_INVOKABLE: methods.transformText() llama
+                //    al metodo C++ y retorna un QString que QML recibe
+                //    como string. La conversion es automatica.
                 onCurrentIndexChanged: {
                     root.resultText = methods.transformText(
                         transformInput.text, currentIndex)
@@ -77,7 +114,10 @@ Rectangle {
             }
         }
 
-        // Fibonacci
+        // -- Seccion 2: Fibonacci — demuestra calculo numerico en C++.
+        //    El binding methods.fibonacci(fibSlider.value) se re-evalua
+        //    cada vez que el Slider cambia. Es un binding declarativo
+        //    que llama a C++ de forma reactiva.
         Label {
             text: "Fibonacci (Q_INVOKABLE)"
             font.pixelSize: Style.resize(13)
@@ -117,7 +157,10 @@ Rectangle {
             }
         }
 
-        // Email validator
+        // -- Seccion 3: Validacion de email — retorna bool.
+        //    El resultado se usa directamente en bindings condicionales
+        //    sin almacenar en variable: methods.validateEmail(emailInput.text)
+        //    se evalua cada vez que el texto cambia.
         Label {
             text: "Email Validator"
             font.pixelSize: Style.resize(13)
@@ -152,7 +195,10 @@ Rectangle {
             }
         }
 
-        // Text analyzer (returns QVariantMap)
+        // -- Seccion 4: Analisis de texto — retorna QVariantMap.
+        //    QVariantMap en C++ se convierte en un objeto JavaScript en QML.
+        //    El Repeater genera badges para cada estadistica (length, words,
+        //    vowels, digits) accediendo a las propiedades del objeto retornado.
         Label {
             text: "Text Analyzer (returns QVariantMap)"
             font.pixelSize: Style.resize(13)
@@ -167,6 +213,9 @@ Rectangle {
             font.pixelSize: Style.resize(11)
         }
 
+        // -- Flow + Repeater: el modelo es un array JS construido a partir
+        //    del QVariantMap retornado por analyzeText(). Cada badge
+        //    muestra una estadistica con su clave y valor.
         Flow {
             Layout.fillWidth: true
             spacing: Style.resize(6)

@@ -1,3 +1,29 @@
+// =============================================================================
+// RoseCurve.qml — Curva rosa (rhodonea) parametrica con Canvas 2D
+// =============================================================================
+// Dibuja la curva polar r = cos(k * theta), conocida como "curva rosa" o
+// "rhodonea" en matematicas. Es una de las curvas polares mas esteticas.
+//
+// MATEMATICA:
+//   - Si k es impar, la curva tiene exactamente k petalos.
+//   - Si k es par, la curva tiene 2*k petalos.
+//   Esta propiedad se muestra dinamicamente en el label de la esquina.
+//   La curva se dibuja con 1000 puntos (steps) para suavidad.
+//
+// CONVERSION POLAR -> CARTESIANO:
+//   x = r * cos(theta),  y = r * sin(theta)
+//   donde r = maxR * cos(k * theta). Cuando r es negativo, el punto se
+//   dibuja en la direccion opuesta, creando los petalos adicionales.
+//
+// GRADIENTE EN CANVAS: createLinearGradient() crea un gradiente diagonal
+// que se usa como strokeStyle. Esto colorea la curva con una transicion
+// de 3 colores (teal -> violeta -> rojo) a lo largo de la diagonal,
+// haciendo que distintas partes de la curva tengan colores diferentes.
+//
+// PATRON onAvailableChanged: Canvas no puede pintarse hasta que su contexto
+// 2D este disponible. onAvailableChanged dispara el primer requestPaint()
+// para asegurar que la curva se dibuje al cargarse el componente.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

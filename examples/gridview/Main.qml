@@ -1,3 +1,18 @@
+// =============================================================================
+// Main.qml — Página principal del módulo GridView Examples
+// =============================================================================
+// Punto de entrada de la sección "GridView" del dashboard. Presenta cuatro
+// tarjetas en un grid 2×2 que demuestran distintos usos de GridView:
+//   - BasicGridCard:       GridView con selección y highlight
+//   - PhotoGridCard:       galería de "fotos" con celdas adaptativas al ancho
+//   - DynamicGridCard:     agregar/eliminar items con transiciones animadas
+//   - InteractiveGridCard: filtrado en tiempo real con modelo secundario
+//
+// GridView vs Grid: GridView es un view con modelo/delegado que recicla
+// delegates eficientemente (solo crea los visibles), ideal para muchos items.
+// Grid es un posicionador simple que instancia todos los hijos — solo útil
+// para pocos elementos estáticos.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +23,9 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // ---- Patrón de navegación del dashboard ----
+    // fullSize controla la visibilidad con animación de opacidad.
+    // Todas las páginas Main.qml del proyecto comparten este mismo patrón.
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -24,6 +42,8 @@ Item {
         anchors.fill: parent
         color: Style.bgColor
 
+        // ScrollView para hacer scrollable todo el contenido.
+        // contentWidth: availableWidth desactiva el scroll horizontal.
         ScrollView {
             id: scrollView
             anchors.fill: parent
@@ -43,6 +63,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // Grid 2×2 con las cuatro tarjetas de ejemplo.
                 GridLayout {
                     columns: 2
                     rows: 2

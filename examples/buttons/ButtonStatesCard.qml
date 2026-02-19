@@ -1,3 +1,32 @@
+// =============================================================================
+// ButtonStatesCard.qml — Estados interactivos del componente Button
+// =============================================================================
+// Demuestra las tres propiedades de estado mas importantes de Button en Qt
+// Quick Controls: down (presionado), hovered (cursor encima) y checkable
+// (toggle on/off). Estos estados son la base para crear interacciones
+// de usuario ricas y responsivas.
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Propiedades de estado reactivas:
+//    - Button.down: true mientras el boton esta fisicamente presionado.
+//      Se usa para feedback visual inmediato ("Press Me" -> "Pressed!").
+//    - Button.hovered: true cuando el cursor esta sobre el boton.
+//      No requiere MouseArea — Button lo maneja internamente.
+//    - Button.checkable: convierte el boton en un toggle (on/off).
+//      Button.checked refleja el estado actual.
+//
+// 2. Bindings reactivos en text:
+//    - text: button.down ? "Pressed!" : "Press Me" cambia el texto
+//      automaticamente segun el estado, sin necesidad de handlers.
+//    - Este patron declarativo es preferible a cambiar text en onClicked.
+//
+// 3. Timer para feedback temporal:
+//    - Tras un click, statusLabel muestra "Button clicked!" durante 2
+//      segundos y luego se restaura. El Timer evita tener que manejar
+//      el reset manualmente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,10 +49,13 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // Tres botones que demuestran diferentes estados interactivos.
+        // Cada uno usa bindings declarativos para reflejar su estado actual.
         RowLayout {
             spacing: Style.resize(15)
             Layout.fillWidth: true
 
+            // Boton con feedback de presion: text cambia mientras esta down.
             Button {
                 id: clickableButton
                 text: clickableButton.down ? "Pressed!" : "Press Me"

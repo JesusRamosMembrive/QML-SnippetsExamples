@@ -1,3 +1,25 @@
+// =============================================================================
+// ExpandableAccordion.qml — Lista acordeon con secciones expandibles
+// =============================================================================
+// Implementa el patron "accordion" donde cada item tiene un encabezado
+// clicable y un cuerpo que se expande/colapsa con animacion.
+//
+// Tecnica clave — altura dinamica del delegate:
+// La altura del delegate depende de si 'expanded' es true o false:
+//   height = header.height + (expanded ? body.height + padding : 0)
+// Behavior on height anima este cambio, creando el efecto de expansion.
+// clip: true en el delegate es CRITICO — sin el, el cuerpo se veria
+// desbordando hacia abajo durante el colapso.
+//
+// El estado 'expanded' se guarda en el propio ListModel como un rol.
+// setProperty(index, "expanded", value) modifica el modelo y QML
+// reactivamente actualiza el delegate correspondiente.
+//
+// El indicador de flecha (triangulo) usa una animacion SequentialAnimation:
+// primero se encoge (scale 0.6) y luego crece con rebote (OutBack a 1.0),
+// dando un efecto elastico sutil al cambiar de direccion.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -63,6 +85,9 @@ ColumnLayout {
                 }
             }
 
+            // Cada delegate calcula su altura en funcion de 'expanded'.
+            // clip: true evita que el contenido del cuerpo se vea durante
+            // la animacion de colapso (mientras height se reduce).
             delegate: Rectangle {
                 id: accordionItem
                 width: accordionList.width

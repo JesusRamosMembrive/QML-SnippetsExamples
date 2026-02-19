@@ -1,3 +1,30 @@
+// =============================================================================
+// GaugeCard.qml — Medidores circulares tipo velocimetro (QQuickPaintedItem)
+// =============================================================================
+// Demuestra el uso de GaugeItem, un QQuickPaintedItem que dibuja un medidor
+// semicircular con arco de progreso, marcas de graduacion (ticks), aguja
+// indicadora y valor numerico, todo renderizado con QPainter en C++.
+//
+// Integracion C++ <-> QML:
+//   - GaugeItem expone Q_PROPERTYs: value, minValue, maxValue, label,
+//     gaugeColor, backgroundColor.
+//   - value se vincula directamente al Slider: rpmGauge.value = rpmSlider.value.
+//     Cada movimiento del Slider actualiza la propiedad en C++, que repinta
+//     el arco y reposiciona la aguja instantaneamente.
+//   - gaugeColor acepta un string de color que Qt convierte a QColor en C++.
+//
+// Patron de dos instancias con configuracion diferente:
+//   Se crean dos GaugeItem con el mismo componente C++ pero parametros
+//   distintos (RPM vs km/h), demostrando la reutilizacion de componentes
+//   C++ personalizados. Cada uno mantiene su estado independiente porque
+//   son instancias separadas del QObject.
+//
+// Dimensionamiento cuadrado:
+//   Math.min(parent.width, parent.height) asegura que el gauge sea siempre
+//   un cuadrado perfecto, necesario para que los arcos de QPainter se
+//   dibujen proporcionalmente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -28,12 +55,15 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Gauges side by side
+        // -- Dos medidores lado a lado: cada GaugeItem es una instancia
+        //    independiente del mismo componente C++, configurada con
+        //    diferentes rangos, etiquetas y colores.
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: Style.resize(10)
 
+            // -- Medidor de RPM (tacometro)
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -51,6 +81,7 @@ Rectangle {
                 }
             }
 
+            // -- Medidor de velocidad (velocimetro)
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -69,7 +100,7 @@ Rectangle {
             }
         }
 
-        // RPM slider
+        // -- Slider de RPM vinculado a rpmGauge.value via binding directo.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -95,7 +126,7 @@ Rectangle {
             }
         }
 
-        // Speed slider
+        // -- Slider de velocidad vinculado a speedGauge.value.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

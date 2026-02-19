@@ -1,3 +1,26 @@
+// =============================================================================
+// Carousel3D.qml — Carrusel 3D simulado con trigonometria y z-order
+// =============================================================================
+// Crea la ilusion de un carrusel 3D usando solo transformaciones 2D.
+// 5 tarjetas orbitan en un circulo "visto de lado" (perspectiva).
+//
+// TECNICA DE PERSPECTIVA FALSA:
+//   - Posicion X: Math.sin(angle) * radio. Mueve las tarjetas izquierda-derecha.
+//   - Profundidad: Math.cos(angle) normalizado a 0..1. Cuando cos=1 la tarjeta
+//     esta "al frente", cuando cos=-1 esta "atras".
+//   - La profundidad controla: scale (0.55 a 1.0), opacity (0.3 a 1.0),
+//     y posicion Y levemente (tarjetas traseras un poco mas abajo).
+//   - CLAVE: 'z: depth * 10' asegura que las tarjetas frontales se dibujen
+//     encima de las traseras. Sin esto, el orden de dibujado seria el del
+//     Repeater (indice 0,1,2...) y la ilusion 3D se romperia.
+//
+// REPEATER CON MODELO LITERAL: el model es un array de objetos JS.
+// Cada objeto se accede via 'modelData' en el delegate. Los 5 items
+// se distribuyen equidistantemente (72 grados = 360/5 entre cada uno).
+//
+// PATRON ACTIVE/SECTIONACTIVE: Timer solo corre si la pagina esta visible
+// (active) Y el usuario ha presionado Start (carouselActive).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -46,6 +69,9 @@ ColumnLayout {
                 onTriggered: carouselArea.carouselAngle += 0.8
             }
 
+            // Cada tarjeta calcula su posicion orbital usando su indice (idx * 72 grados)
+            // mas el angulo global rotante (carouselAngle). La propiedad 'depth'
+            // (derivada de cos) determina escala, opacidad y z-order.
             Repeater {
                 model: [
                     { color: "#00D1A9", label: "Qt", idx: 0 },

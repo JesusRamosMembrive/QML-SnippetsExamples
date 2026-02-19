@@ -1,3 +1,14 @@
+// =============================================================================
+// Main.qml — Pagina principal del Primary Flight Display (PFD)
+// =============================================================================
+// El PFD es el instrumento mas critico de la cabina de un avion moderno.
+// Muestra horizonte artificial, velocidad, altitud, rumbo y velocidad vertical.
+//
+// Esta pagina organiza cuatro tarjetas en un GridLayout 2x2, cada una conteniendo
+// un instrumento Canvas independiente. Sigue el patron estandar del proyecto:
+// fullSize controla la visibilidad con animacion de opacidad (200ms),
+// y ScrollView permite scroll si el contenido excede la pantalla.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +19,11 @@ import qmlsnippetsstyle
 Item {
     id: root
 
+    // -------------------------------------------------------------------------
+    // Patron de visibilidad del proyecto: el Dashboard asigna fullSize = true
+    // cuando esta pagina esta activa. La opacidad anima suavemente la transicion.
+    // visible se vincula a opacity > 0 para evitar procesar un item invisible.
+    // -------------------------------------------------------------------------
     property bool fullSize: false
 
     opacity: fullSize ? 1.0 : 0.0
@@ -43,6 +59,15 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // -------------------------------------------------------------
+                // Grid 2x2 con los cuatro instrumentos del PFD:
+                // - Horizonte artificial (ADI): actitud del avion
+                // - Cintas de velocidad/altitud: datos primarios de vuelo
+                // - Indicador de rumbo: brujula HSI
+                // - VSI + coordinador de viraje: velocidad vertical y equilibrio
+                // Cada tarjeta tiene minimumHeight para garantizar que Canvas
+                // tenga suficiente espacio para dibujar los instrumentos.
+                // -------------------------------------------------------------
                 GridLayout {
                     columns: 2
                     rows: 2

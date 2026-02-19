@@ -1,3 +1,27 @@
+// =============================================================================
+// ArcsAnglesCard.qml — Arcos interactivos con PathAngleArc y PathArc
+// =============================================================================
+// Demuestra las dos formas de crear arcos en QtQuick.Shapes:
+//
+//   - PathAngleArc: define arcos por angulo de inicio y barrido (sweep).
+//     Mas intuitivo para graficas tipo "pie chart" o indicadores circulares.
+//     Los angulos se miden en GRADOS, 0 = derecha (3 en punto), positivo = horario.
+//     Aqui startAngle: -90 pone el inicio arriba (12 en punto).
+//
+//   - PathArc: define arcos por punto final y radios (estilo SVG).
+//     Mas util cuando se conocen los puntos extremos pero no los angulos.
+//     useLargeArc controla si se toma el arco mayor o menor de los dos
+//     posibles entre dos puntos (con radios dados, siempre hay 2 arcos).
+//
+// INTERACTIVIDAD: el slider controla sweepAngle en tiempo real. QML recalcula
+// la geometria del Shape automaticamente gracias al binding declarativo.
+// No hace falta requestPaint() como en Canvas — el motor vectorial de Shape
+// actualiza el path cuando cambia cualquier propiedad vinculada.
+//
+// POR QUE DOS TIPOS DE ARCO: PathAngleArc es exclusivo de Qt y muy conveniente
+// para angulos conocidos. PathArc es compatible con el formato SVG path data,
+// util para importar formas desde herramientas de diseno (Figma, Inkscape).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -44,7 +68,10 @@ Rectangle {
             Layout.fillHeight: true
             spacing: Style.resize(15)
 
-            // PathAngleArc with sweep control
+            // PathAngleArc: arco definido por angulo de barrido.
+            // El relleno semitransparente se crea con Qt.rgba() aplicando
+            // alfa 0.1 al color principal, creando un efecto de "sector" visual.
+            // La linea va del centro al borde del arco porque startX/Y es el centro.
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -84,7 +111,10 @@ Rectangle {
                 }
             }
 
-            // Various arc examples
+            // PathArc: dos variantes para comparar useLargeArc.
+            // - Semicirculo naranja: useLargeArc: false toma el arco corto.
+            // - Arco violeta: useLargeArc: true toma el arco largo, y con
+            //   radiusX != radiusY se obtiene un arco ELIPTICO (no circular).
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true

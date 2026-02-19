@@ -1,3 +1,34 @@
+// =============================================================================
+// RadarSweep.qml — Pantalla de radar con barrido rotatorio y blips
+// =============================================================================
+// Simula una pantalla de radar con barrido circular, anillos de distancia,
+// crucetas, etiquetas de rango y contactos (blips) que aparecen y se
+// desvanecen. Todo se dibuja con Canvas 2D.
+//
+// ESTRUCTURA VISUAL DEL RADAR:
+//   - Fondo circular oscuro con borde verde
+//   - 4 anillos concentricos (range rings) que indican distancia
+//   - Crucetas horizontal y vertical para referencia
+//   - Linea de barrido rotante con trail degradado (30 lineas atenuandose)
+//   - Blips: puntos que aparecen aleatoriamente y se desvanecen
+//   - Etiquetas de rango en millas nauticas
+//
+// EFECTO DE BARRIDO (sweep):
+//   En vez de dibujar una sola linea rotante, se dibujan 30 lineas con
+//   angulos ligeramente anteriores y opacidad decreciente. Esto crea un
+//   "abanico" semi-transparente que simula la persistencia del fosforo
+//   en una pantalla de radar CRT real.
+//
+// SISTEMA DE BLIPS:
+//   Los blips se generan con probabilidad 3% por frame en posiciones
+//   aleatorias (angulo + distancia). Su propiedad 'life' decrece
+//   constantemente (0.005/frame), y se eliminan cuando llega a 0.
+//   El glow alrededor de cada blip usa un segundo circulo mas grande
+//   con opacidad reducida.
+//
+// NOTA: el radar usa coordenadas polares (angulo + distancia al centro)
+// que se convierten a cartesianas (x, y) con cos/sin para dibujar.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -83,7 +114,7 @@ ColumnLayout {
 
                 ctx.clearRect(0, 0, w, h)
 
-                // Background circle
+                // Fondo del radar: circulo oscuro con borde verde
                 ctx.beginPath()
                 ctx.arc(cx, cy, r, 0, 2 * Math.PI)
                 ctx.fillStyle = "#0A1A0A"
@@ -109,7 +140,9 @@ ColumnLayout {
                 ctx.lineTo(cx, cy + r)
                 ctx.stroke()
 
-                // Sweep beam with gradient trail
+                // Barrido con trail: 30 lineas desde el centro hacia el borde,
+                // cada una con angulo ligeramente anterior y opacidad decreciente.
+                // Esto simula la persistencia del fosforo del CRT.
                 var sweepRad = (sweepAngle - 90) * Math.PI / 180
                 for (var s = 0; s < 30; s++) {
                     var trailAngle = sweepRad - s * Math.PI / 180 * 1.5
@@ -130,7 +163,8 @@ ColumnLayout {
                 ctx.lineWidth = 2
                 ctx.stroke()
 
-                // Blips
+                // Blips: coordenadas polares (angulo, distancia) convertidas
+                // a cartesianas. Cada blip tiene glow semi-transparente.
                 for (var b = 0; b < blips.length; b++) {
                     var blip = blips[b]
                     var bRad = (blip.angle - 90) * Math.PI / 180

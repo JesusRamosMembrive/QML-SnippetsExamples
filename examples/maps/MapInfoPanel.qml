@@ -1,3 +1,19 @@
+// =============================================================================
+// MapInfoPanel.qml — Panel de informacion de vuelo (overlay HUD)
+// =============================================================================
+// Panel semitransparente posicionado en la esquina superior derecha del mapa.
+// Muestra datos de vuelo en tiempo real: heading, coordenadas, waypoint
+// actual, segmento y velocidad de simulacion.
+//
+// Patrones y conceptos clave:
+// - Overlay con fondo semitransparente: Qt.rgba(0,0,0,0.7) sobre el mapa.
+// - Fuente monoespaciada (font.family: "monospace") para que los datos
+//   numericos se alineen correctamente en columnas.
+// - implicitHeight basado en el contenido: el panel se autoajusta segun
+//   cuantas filas de datos tiene, sin necesidad de altura fija.
+// - Todas las properties son de solo lectura (recibidas del padre),
+//   haciendo este componente puramente presentacional.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -13,6 +29,9 @@ Rectangle {
     property var waypoints: []
     property real simSpeed: 1.0
 
+    // Posicionamiento como overlay en la esquina superior derecha.
+    // Usa anchors al parent (mapContainer) para mantenerse en su lugar
+    // independientemente del tamano del mapa.
     anchors.top: parent.top
     anchors.right: parent.right
     anchors.margins: Style.resize(12)
@@ -21,6 +40,10 @@ Rectangle {
     color: Qt.rgba(0, 0, 0, 0.7)
     radius: Style.resize(8)
 
+    // ── Datos de vuelo ──────────────────────────────────────────
+    // Formato estilo cockpit: etiqueta de 3-4 caracteres + valor alineado.
+    // padStart(3, "0") formatea el heading como 001, 045, 270 (estandar aeronautico).
+    // toFixed(4) para coordenadas muestra precision de ~11 metros.
     ColumnLayout {
         id: infoColumn
         anchors.fill: parent
