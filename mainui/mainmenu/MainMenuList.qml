@@ -34,6 +34,7 @@ Item {
         ListElement { name: "Loader" }
         ListElement { name: "Images" }
         ListElement { name: "States" }
+        ListElement { name: "FileDialogs" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

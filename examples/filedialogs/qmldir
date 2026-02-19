@@ -1,0 +1,7 @@
+module filedialogs
+prefer :/qt/qml/filedialogs/
+Main 1.0 Main.qml
+FileDialogCard 1.0 FileDialogCard.qml
+FolderDialogCard 1.0 FolderDialogCard.qml
+SaveDialogCard 1.0 SaveDialogCard.qml
+InteractiveDialogCard 1.0 InteractiveDialogCard.qml

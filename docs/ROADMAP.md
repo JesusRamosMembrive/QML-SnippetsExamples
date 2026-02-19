@@ -75,7 +75,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 ### Multimedia y red
 - [ ] **Multimedia** — Video player, audio waveform, camara (Qt Multimedia)
 - [ ] **Network** — XMLHttpRequest, REST API, JSON parsing, descarga con progreso
-- [ ] **FileDialogs** — FileDialog, FolderDialog, guardar/abrir, filtros
+- [x] **FileDialogs** — FileDialog, FolderDialog, guardar/abrir, filtros
 
 ### Integracion C++ avanzada
 - [ ] **CustomItem** — QQuickPaintedItem, rendering custom desde C++
