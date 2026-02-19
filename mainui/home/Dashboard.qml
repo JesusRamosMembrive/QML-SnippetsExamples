@@ -24,6 +24,7 @@ Item {
         "ScrollView":   "qrc:/qt/qml/scrollview/Main.qml",
         "MenuBar":      "qrc:/qt/qml/menubar/Main.qml",
         "PathView":     "qrc:/qt/qml/pathview/Main.qml",
+        "GridView":     "qrc:/qt/qml/gridview/Main.qml",
         "Switches":     "qrc:/qt/qml/switches/Main.qml",
         "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
@@ -154,7 +155,7 @@ Item {
                         }
 
                         Label {
-                            text: "37 pages"
+                            text: "38 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -180,6 +181,7 @@ Item {
                             ListElement { name: "ScrollView"; desc: "Custom ScrollBar, 2D Flickable, infinite scroll" }
                             ListElement { name: "MenuBar";    desc: "MenuBar, context menus, checkable items, submenus" }
                             ListElement { name: "PathView";   desc: "Circular path, arc carousel, coverflow, configurable path" }
+                            ListElement { name: "GridView";   desc: "Photo gallery, dynamic items, filterable grid, cell sizing" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }

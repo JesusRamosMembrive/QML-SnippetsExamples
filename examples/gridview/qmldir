@@ -1,0 +1,7 @@
+module gridview
+prefer :/qt/qml/gridview/
+Main 1.0 Main.qml
+BasicGridCard 1.0 BasicGridCard.qml
+PhotoGridCard 1.0 PhotoGridCard.qml
+DynamicGridCard 1.0 DynamicGridCard.qml
+InteractiveGridCard 1.0 InteractiveGridCard.qml
