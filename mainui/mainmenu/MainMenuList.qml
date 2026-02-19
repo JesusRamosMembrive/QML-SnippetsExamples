@@ -29,6 +29,7 @@ Item {
         ListElement { name: "MenuBar" }
         ListElement { name: "PathView" }
         ListElement { name: "GridView" }
+        ListElement { name: "Flickable" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

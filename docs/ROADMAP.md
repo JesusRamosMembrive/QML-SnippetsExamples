@@ -66,7 +66,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 ### Patrones QML
 - [x] **PathView** — Vista circular/path, coverflow, selector carrusel 3D
 - [x] **GridView** — GridView con delegates, photo gallery, masonry layout
-- [ ] **Flickable** — Flickable custom, pinch-to-zoom, zoom de imagen, snap
+- [x] **Flickable** — Flickable custom, pinch-to-zoom, zoom de imagen, snap
 - [ ] **Shaders** — ShaderEffect, fragmento GLSL, transiciones custom, filtros
 - [ ] **Loader** — Component/Loader, creacion dinamica, lazy loading, Instantiator
 - [ ] **Images** — Image, AnimatedImage, BorderImage, image providers

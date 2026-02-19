@@ -1,0 +1,7 @@
+module flickable
+prefer :/qt/qml/flickable/
+Main 1.0 Main.qml
+BasicFlickableCard 1.0 BasicFlickableCard.qml
+PinchZoomCard 1.0 PinchZoomCard.qml
+SnapFlickableCard 1.0 SnapFlickableCard.qml
+InteractiveFlickableCard 1.0 InteractiveFlickableCard.qml
