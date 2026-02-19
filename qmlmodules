@@ -67,4 +67,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     imagespluginplugin
     statespluginplugin
     filedialogspluginplugin
+    networkpluginplugin
 )

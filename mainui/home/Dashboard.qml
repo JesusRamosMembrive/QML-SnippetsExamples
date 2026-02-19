@@ -31,6 +31,7 @@ Item {
         "Images":       "qrc:/qt/qml/images/Main.qml",
         "States":       "qrc:/qt/qml/states/Main.qml",
         "FileDialogs":  "qrc:/qt/qml/filedialogs/Main.qml",
+        "Network":      "qrc:/qt/qml/network/Main.qml",
         "Switches":     "qrc:/qt/qml/switches/Main.qml",
         "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
@@ -161,7 +162,7 @@ Item {
                         }
 
                         Label {
-                            text: "44 pages"
+                            text: "45 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -194,6 +195,7 @@ Item {
                             ListElement { name: "Images";    desc: "FillMode, BorderImage 9-patch, OpacityMask shapes, transform properties" }
                             ListElement { name: "States";    desc: "PropertyChanges, easing transitions, traffic light, when conditions" }
                             ListElement { name: "FileDialogs"; desc: "FileDialog open/save, FolderDialog, multi-select, action log" }
+                            ListElement { name: "Network";    desc: "XMLHttpRequest, REST API, JSON parser, request builder" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }

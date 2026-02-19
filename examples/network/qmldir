@@ -1,0 +1,7 @@
+module network
+prefer :/qt/qml/network/
+Main 1.0 Main.qml
+XHRCard 1.0 XHRCard.qml
+RestApiCard 1.0 RestApiCard.qml
+JsonParserCard 1.0 JsonParserCard.qml
+InteractiveNetworkCard 1.0 InteractiveNetworkCard.qml
