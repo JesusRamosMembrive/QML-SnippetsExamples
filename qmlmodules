@@ -23,6 +23,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     comboboxpluginplugin
     tabbarpluginplugin
     swipeviewpluginplugin
+    splitviewpluginplugin
     switchespluginplugin
     textinputspluginplugin
     indicatorspluginplugin

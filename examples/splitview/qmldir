@@ -1,0 +1,6 @@
+module splitview
+Main 1.0 Main.qml
+HorizontalSplitCard 1.0 HorizontalSplitCard.qml
+VerticalSplitCard 1.0 VerticalSplitCard.qml
+NestedSplitCard 1.0 NestedSplitCard.qml
+InteractiveSplitCard 1.0 InteractiveSplitCard.qml

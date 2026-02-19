@@ -23,6 +23,7 @@ Item {
         ListElement { name: "ComboBox" }
         ListElement { name: "TabBar" }
         ListElement { name: "SwipeView" }
+        ListElement { name: "SplitView" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

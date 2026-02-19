@@ -58,7 +58,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **SwipeView** — SwipeView paginado, PageIndicator, carrusel de imagenes
 
 ### Controles avanzados
-- [ ] **SplitView** — SplitView horizontal/vertical, paneles redimensionables
+- [x] **SplitView** — SplitView horizontal/vertical, paneles redimensionables
 - [ ] **ToolBar** — ToolBar con acciones, toolbar flotante, toolbar contextual
 - [ ] **ScrollView** — ScrollBar custom, pull-to-refresh, infinite scroll
 - [ ] **MenuBar** — Menu de aplicacion, context menus avanzados, keyboard shortcuts
