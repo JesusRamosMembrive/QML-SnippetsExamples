@@ -64,6 +64,7 @@ Item {
         ListElement { name: "TreeView" }
         ListElement { name: "Database" }
         ListElement { name: "Multimedia" }
+        ListElement { name: "CustomItem" }
     }
 
     ListView {

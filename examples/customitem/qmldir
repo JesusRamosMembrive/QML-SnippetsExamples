@@ -1,0 +1,7 @@
+module customitemex
+prefer :/qt/qml/customitemex/
+Main 1.0 Main.qml
+PaintedClockCard 1.0 PaintedClockCard.qml
+WaveformCard 1.0 WaveformCard.qml
+GaugeCard 1.0 GaugeCard.qml
+InteractiveDrawCard 1.0 InteractiveDrawCard.qml

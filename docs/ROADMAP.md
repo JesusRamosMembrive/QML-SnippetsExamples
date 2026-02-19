@@ -78,7 +78,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **FileDialogs** — FileDialog, FolderDialog, guardar/abrir, filtros
 
 ### Integracion C++ avanzada
-- [ ] **CustomItem** — QQuickPaintedItem, rendering custom desde C++
+- [x] **CustomItem** — QQuickPaintedItem, rendering custom desde C++
 - [ ] **QMLCppBridge** — Q_PROPERTY, Q_INVOKABLE, senales C++ a QML
 - [ ] **AsyncCpp** — QFuture, QtConcurrent, async C++ con UI
 - [ ] **Settings** — QSettings, preferencias persistentes, tema claro/oscuro

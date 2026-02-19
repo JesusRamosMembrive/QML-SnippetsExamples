@@ -73,6 +73,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/network.png
         icons/chatui.png
         icons/multimedia.png
+        icons/customitem.png
         images/particle.png
         images/Qt_logo_2016.svg
         images/ninepatch.png
