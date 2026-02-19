@@ -28,6 +28,8 @@ Item {
         "Flickable":    "qrc:/qt/qml/flickable/Main.qml",
         "Shaders":      "qrc:/qt/qml/shaders/Main.qml",
         "Loader":       "qrc:/qt/qml/loaderex/Main.qml",
+        "Images":       "qrc:/qt/qml/images/Main.qml",
+        "States":       "qrc:/qt/qml/states/Main.qml",
         "Switches":     "qrc:/qt/qml/switches/Main.qml",
         "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
@@ -158,7 +160,7 @@ Item {
                         }
 
                         Label {
-                            text: "41 pages"
+                            text: "43 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -188,6 +190,8 @@ Item {
                             ListElement { name: "Flickable";  desc: "Scroll, pinch-to-zoom, snap pages, configurable physics" }
                             ListElement { name: "Shaders";    desc: "GaussianBlur, Glow, DropShadow, ColorOverlay, effect combiner" }
                             ListElement { name: "Loader";     desc: "Component switching, load/unload, dynamic creation, view switcher" }
+                            ListElement { name: "Images";    desc: "FillMode, BorderImage 9-patch, OpacityMask shapes, transform properties" }
+                            ListElement { name: "States";    desc: "PropertyChanges, easing transitions, traffic light, when conditions" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }

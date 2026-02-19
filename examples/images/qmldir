@@ -1,0 +1,7 @@
+module images
+prefer :/qt/qml/images/
+Main 1.0 Main.qml
+FillModeCard 1.0 FillModeCard.qml
+BorderImageCard 1.0 BorderImageCard.qml
+MaskImageCard 1.0 MaskImageCard.qml
+InteractiveImageCard 1.0 InteractiveImageCard.qml

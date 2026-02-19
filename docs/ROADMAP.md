@@ -69,8 +69,8 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **Flickable** — Flickable custom, pinch-to-zoom, zoom de imagen, snap
 - [x] **Shaders** — ShaderEffect, fragmento GLSL, transiciones custom, filtros
 - [x] **Loader** — Component/Loader, creacion dinamica, lazy loading, Instantiator
-- [ ] **Images** — Image, AnimatedImage, BorderImage, image providers
-- [ ] **States** — States avanzados, transiciones complejas, state machines
+- [x] **Images** — Image, AnimatedImage, BorderImage, image providers
+- [x] **States** — States avanzados, transiciones complejas, state machines
 
 ### Multimedia y red
 - [ ] **Multimedia** — Video player, audio waveform, camara (Qt Multimedia)

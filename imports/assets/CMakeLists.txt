@@ -67,7 +67,11 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/flickable.png
         icons/shaders.png
         icons/loader.png
+        icons/images.png
+        icons/states.png
         images/particle.png
+        images/Qt_logo_2016.svg
+        images/ninepatch.png
         images/card.png
         images/dark-texture-background.png
         images/dropdown.png

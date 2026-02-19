@@ -32,6 +32,8 @@ Item {
         ListElement { name: "Flickable" }
         ListElement { name: "Shaders" }
         ListElement { name: "Loader" }
+        ListElement { name: "Images" }
+        ListElement { name: "States" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

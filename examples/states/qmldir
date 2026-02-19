@@ -1,0 +1,7 @@
+module states
+prefer :/qt/qml/states/
+Main 1.0 Main.qml
+BasicStatesCard 1.0 BasicStatesCard.qml
+TransitionCard 1.0 TransitionCard.qml
+StateMachineCard 1.0 StateMachineCard.qml
+InteractiveStatesCard 1.0 InteractiveStatesCard.qml

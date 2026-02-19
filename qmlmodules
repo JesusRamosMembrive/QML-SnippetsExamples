@@ -64,4 +64,6 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     flickablepluginplugin
     shaderspluginplugin
     loaderexpluginplugin
+    imagespluginplugin
+    statespluginplugin
 )
