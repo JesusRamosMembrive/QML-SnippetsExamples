@@ -1,0 +1,6 @@
+module toolbar
+Main 1.0 Main.qml
+BasicToolBarCard 1.0 BasicToolBarCard.qml
+ActionToolBarCard 1.0 ActionToolBarCard.qml
+ContextToolBarCard 1.0 ContextToolBarCard.qml
+InteractiveToolBarCard 1.0 InteractiveToolBarCard.qml
