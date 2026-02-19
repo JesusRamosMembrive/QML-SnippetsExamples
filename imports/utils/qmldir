@@ -1,3 +1,23 @@
+# =============================================================================
+# imports/utils/qmldir — Manifiesto del modulo "utils"
+# =============================================================================
+#
+# ─── Declaracion de Singleton en qmldir ───
+# La palabra clave "singleton" antes del nombre del tipo es la declaracion
+# a nivel de qmldir. Combinada con "pragma Singleton" en Style.qml y
+# QT_QML_SINGLETON_TYPE en CMakeLists.txt, se crea un verdadero singleton.
+#
+# ─── Singleton vs tipo normal ───
+# - Tipo normal (Tracer): cada vez que escribes Tracer {} se crea una
+#   instancia nueva e independiente.
+# - Tipo singleton (Style): una unica instancia compartida globalmente.
+#   Se accede como Style.mainColor, Style.resize(x), etc.
+#
+# Sin la palabra "singleton" aqui, cada "import utils" crearia una instancia
+# separada de Style, rompiendo el sistema de tema global (colores, fuentes,
+# dimensiones inconsistentes entre componentes).
+# =============================================================================
+
 module utils
 singleton Style 1.0 Style.qml
 Tracer 1.0 Tracer.qml

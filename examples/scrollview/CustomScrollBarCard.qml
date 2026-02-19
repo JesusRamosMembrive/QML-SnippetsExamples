@@ -1,3 +1,22 @@
+// =============================================================================
+// CustomScrollBarCard.qml — ScrollBar personalizado con Flickable
+// =============================================================================
+// Demuestra cómo crear una barra de scroll completamente personalizada usando
+// Flickable + ScrollBar independiente, en lugar del ScrollView con barras
+// automáticas. Este enfoque da control total sobre la apariencia y el
+// comportamiento del indicador de scroll.
+//
+// Patrón importante: Flickable maneja la física del desplazamiento (inercia,
+// rebote, velocidad), mientras que ScrollBar es solo un control visual que
+// se sincroniza bidireccionalmente con el Flickable.
+//
+// Aprendizaje clave:
+// - Flickable requiere contentHeight explícito (no lo calcula automáticamente)
+// - ScrollBar.size y .position se vinculan a visibleArea del Flickable
+// - contentItem y background permiten reemplazar completamente la apariencia
+// - Los estados pressed/hovered permiten retroalimentación visual interactiva
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -33,6 +52,9 @@ Rectangle {
             radius: Style.resize(4)
             clip: true
 
+            // Flickable en vez de ScrollView: esto nos permite colocar un
+            // ScrollBar personalizado fuera del Flickable. El margen derecho
+            // reserva espacio para la barra de scroll custom.
             Flickable {
                 id: customFlickable
                 anchors.fill: parent
@@ -46,6 +68,9 @@ Rectangle {
                     width: parent.width
                     spacing: Style.resize(8)
 
+                    // Cada fila simula una entrada de datos con una barra de
+                    // progreso visual. Math.random() genera variedad visual
+                    // (nota: se evalúa una sola vez al crear el componente).
                     Repeater {
                         model: 30
                         Rectangle {
@@ -79,7 +104,11 @@ Rectangle {
                 }
             }
 
-            // Custom vertical ScrollBar
+            // ScrollBar personalizado: se posiciona manualmente con anchors
+            // en lugar de usar ScrollBar.vertical (que usaría el estilo por
+            // defecto). La sincronización bidireccional se logra así:
+            // - size/position leen del Flickable (Flickable -> ScrollBar)
+            // - onPositionChanged escribe al Flickable (ScrollBar -> Flickable)
             ScrollBar {
                 id: customScrollBar
                 anchors.right: parent.right
@@ -91,6 +120,8 @@ Rectangle {
                 size: customFlickable.visibleArea.heightRatio
                 position: customFlickable.visibleArea.yPosition
 
+                // contentItem: el "thumb" (indicador arrastrable). Cambia de
+                // color según el estado de interacción para dar feedback visual.
                 contentItem: Rectangle {
                     implicitWidth: Style.resize(8)
                     radius: Style.resize(4)
@@ -102,6 +133,7 @@ Rectangle {
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
+                // background: la pista (track) sobre la que se mueve el thumb
                 background: Rectangle {
                     implicitWidth: Style.resize(8)
                     radius: Style.resize(4)
@@ -109,10 +141,14 @@ Rectangle {
                     opacity: 0.3
                 }
 
+                // Sincronización inversa: cuando el usuario arrastra el
+                // ScrollBar, actualizamos la posición del Flickable.
                 onPositionChanged: customFlickable.contentY = position * customFlickable.contentHeight
             }
         }
 
+        // Indicador de posición en texto: muestra el porcentaje de scroll
+        // actual usando visibleArea.yPosition del Flickable.
         Label {
             text: "Position: " + (customFlickable.visibleArea.yPosition * 100).toFixed(0) + "%"
             font.pixelSize: Style.resize(12)

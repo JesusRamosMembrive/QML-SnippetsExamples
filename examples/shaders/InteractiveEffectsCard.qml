@@ -1,3 +1,26 @@
+// =============================================================================
+// InteractiveEffectsCard.qml — Combinador de efectos en cadena
+// =============================================================================
+// Demuestra como encadenar multiples efectos graficos en un pipeline
+// secuencial: Source -> DropShadow -> GaussianBlur -> Glow. Cada efecto
+// se puede activar/desactivar independientemente con switches.
+//
+// Conceptos clave para el aprendiz:
+//   - Pipeline de efectos: cada efecto toma como source la salida del
+//     anterior, formando una cadena. El orden importa — por ejemplo, aplicar
+//     blur despues de shadow difumina tambien la sombra. Cambiar el orden
+//     produce resultados diferentes.
+//   - visible: false en capas intermedias: solo la ultima capa del pipeline
+//     (Glow) es visible. Las demas estan ocultas porque son pasos intermedios.
+//   - Radius 0 = efecto desactivado: cuando un efecto tiene radius 0,
+//     efectivamente "pasa" la imagen sin modificarla. Esto permite mantener
+//     el pipeline intacto sin crear/destruir componentes.
+//   - Behavior on radius: anima la transicion al activar/desactivar cada
+//     efecto, dando un resultado visual suave en lugar de un cambio abrupto.
+//   - Costo acumulativo: cada efecto adicional es un pase de renderizado
+//     extra. Tres efectos encadenados = 3 texturas offscreen adicionales.
+//     En una app real, hay que ser consciente del impacto en rendimiento.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +32,9 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Propiedades booleanas que controlan la activacion de cada efecto.
+    // Estan a nivel de root para que tanto los switches como los efectos
+    // puedan acceder a ellas sin acoplamiento directo.
     property bool enableBlur: false
     property bool enableGlow: false
     property bool enableShadow: false
@@ -29,7 +55,11 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Base source
+            // ---------------------------------------------------------------
+            // Escena fuente: rectangulo con gradiente y un icono centrado.
+            // El gradiente (teal a azul) hace que los efectos de color
+            // sean mas apreciables que con un color solido.
+            // ---------------------------------------------------------------
             Item {
                 id: comboSource
                 anchors.centerIn: parent
@@ -66,7 +96,16 @@ Rectangle {
                 }
             }
 
-            // DropShadow layer (bottom)
+            // ---------------------------------------------------------------
+            // Pipeline de efectos encadenados:
+            //   comboSource -> DropShadow -> GaussianBlur -> Glow
+            //
+            // Cuando un efecto tiene radius 0, simplemente pasa la imagen
+            // a la siguiente capa sin modificarla. Esto evita tener que
+            // reconectar la cadena al activar/desactivar efectos.
+            // ---------------------------------------------------------------
+
+            // Capa 1: DropShadow — agrega sombra proyectada si esta activa
             DropShadow {
                 id: shadowLayer
                 anchors.fill: comboSource
@@ -81,7 +120,8 @@ Rectangle {
                 Behavior on radius { NumberAnimation { duration: 300 } }
             }
 
-            // Blur layer
+            // Capa 2: GaussianBlur — difumina todo lo que viene de la capa
+            // anterior (incluyendo la sombra si esta activa)
             GaussianBlur {
                 id: blurLayer
                 anchors.fill: shadowLayer
@@ -93,7 +133,8 @@ Rectangle {
                 Behavior on radius { NumberAnimation { duration: 300 } }
             }
 
-            // Glow layer (top)
+            // Capa 3: Glow — la capa final (unica visible). Agrega brillo
+            // al resultado acumulado de las capas anteriores.
             Glow {
                 anchors.fill: blurLayer
                 source: blurLayer
@@ -106,7 +147,11 @@ Rectangle {
             }
         }
 
-        // Toggle controls
+        // -------------------------------------------------------------------
+        // Panel de control: switches para activar/desactivar cada capa
+        // del pipeline, y un slider para ajustar la intensidad del blur.
+        // El slider solo aparece cuando el blur esta activo (visible binding).
+        // -------------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -153,7 +198,9 @@ Rectangle {
             }
         }
 
-        // Active effects label
+        // Etiqueta resumen: muestra que efectos estan activos actualmente.
+        // La propiedad computada "active" construye la lista dinaminamente
+        // y join(" + ") la formatea como "Blur + Glow + Shadow".
         Label {
             property var active: {
                 var list = []

@@ -1,3 +1,20 @@
+// =============================================================================
+// InteractiveSplitCard.qml — Mezclador de colores RGB con SplitView
+// =============================================================================
+// Ejemplo creativo que reutiliza SplitView como control interactivo: en lugar
+// de dividir paneles de contenido, los handles sirven para ajustar la
+// proporción de los canales Rojo, Verde y Azul de un color.
+//
+// La idea es que el ancho de cada panel (relativo al ancho total) determina
+// la intensidad del canal RGB correspondiente. El resultado mezclado se
+// muestra en tiempo real en la barra inferior.
+//
+// Demuestra que SplitView no está limitado a layouts estáticos — se puede
+// usar como mecanismo de entrada donde el usuario "arrastra para ajustar".
+// También ilustra el binding reactivo de QML: al mover un handle, el color
+// de los paneles y la vista previa se actualizan automáticamente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,6 +43,11 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
+        // -- SplitView como control de mezcla RGB --
+        // Tres paneles de colores primarios. Al arrastrar los handles,
+        // cambian las proporciones de ancho y, por tanto, la intensidad
+        // de cada canal. El truco está en usar la razón
+        // panel.width / colorSplit.width como valor normalizado (0..1).
         SplitView {
             id: colorSplit
             Layout.fillWidth: true
@@ -47,6 +69,10 @@ Rectangle {
                 }
             }
 
+            // -- Canal Rojo --
+            // La opacidad (alpha) del color rojo se vincula al ancho relativo
+            // del panel: más ancho = más intenso. El Label muestra el valor
+            // equivalente en escala 0-255 para referencia.
             Rectangle {
                 id: redPanel
                 SplitView.preferredWidth: colorSplit.width / 3
@@ -64,6 +90,7 @@ Rectangle {
                 }
             }
 
+            // -- Canal Verde --
             Rectangle {
                 id: greenPanel
                 SplitView.preferredWidth: colorSplit.width / 3
@@ -81,6 +108,9 @@ Rectangle {
                 }
             }
 
+            // -- Canal Azul --
+            // fillWidth: true para que ocupe el espacio restante.
+            // Es el último panel, así que no necesita preferredWidth.
             Rectangle {
                 id: bluePanel
                 SplitView.fillWidth: true
@@ -99,7 +129,11 @@ Rectangle {
             }
         }
 
-        // Mixed color preview
+        // -- Vista previa del color mezclado --
+        // Combina los tres canales usando Qt.rgba() con los valores
+        // normalizados de cada panel. El binding reactivo de QML garantiza
+        // que esta barra se actualice en cada frame mientras el usuario
+        // arrastra un handle.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(35)

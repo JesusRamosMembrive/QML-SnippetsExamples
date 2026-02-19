@@ -1,3 +1,35 @@
+# =============================================================================
+# imports/assets/CMakeLists.txt — Recursos binarios embebidos en el ejecutable
+# =============================================================================
+#
+# Este archivo NO crea un modulo QML. En su lugar, usa qt_add_resources para
+# embeber recursos binarios (iconos, imagenes, fuentes, meshes 3D) directamente
+# dentro del ejecutable.
+#
+# ─── Funcionamiento del sistema de recursos Qt ───
+# PREFIX "/assets" significa que todos los archivos son accesibles bajo la
+# ruta "qrc:/assets/" en QML. Por ejemplo:
+#   icons/buttons.png → "qrc:/assets/icons/buttons.png"
+#   fonts/Quicksand_Bold.otf → "qrc:/assets/fonts/Quicksand_Bold.otf"
+#
+# ─── Tipos de recursos incluidos ───
+#   - icons/    → PNGs de 25x26px en color teal (#00D1A9), uno por pagina
+#                 de ejemplo. Se usan en el menu lateral y se tiñen de blanco
+#                 con ColorOverlay cuando estan seleccionados.
+#   - images/   → Graficos de UI (fondo de tarjeta, dropdown, textura de
+#                 particulas, logos, blueprint del avion, etc.)
+#   - fonts/    → Quicksand Book y Bold, cargadas por el singleton Style
+#   - mesh/     → Archivos de objetos 3D (.obj, .mesh) para Qt Quick 3D
+#
+# ─── Diferencia con modulos QML ───
+# A diferencia de los modulos QML, los recursos no necesitan qmldir — se
+# acceden por ruta (qrc:/assets/...), no por nombre de tipo.
+#
+# ─── Target ───
+# qt_add_resources agrega los recursos al target EXISTENTE
+# "QMLSnippetsExamples" (el ejecutable), no crea una biblioteca separada.
+# =============================================================================
+
 qt_add_resources(QMLSnippetsExamples "assets"
     PREFIX "/assets"
     FILES

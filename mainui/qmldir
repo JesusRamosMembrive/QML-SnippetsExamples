@@ -1,3 +1,22 @@
+# =============================================================================
+# qmldir — Declaración de tipos exportados del módulo "mainui"
+# =============================================================================
+#
+# Cada línea declara un tipo público con el formato:
+#     NombreTipo  Versión  ruta/al/archivo.qml
+#
+# El NombreTipo (columna izquierda) es como otros archivos QML referencian
+# estos componentes. Ejemplo: después de "import mainui", se usa "HomePage {}"
+# directamente, sin prefijo de subdirectorio.
+#
+# La ruta (columna derecha) es la ubicación real del archivo .qml relativa
+# a este qmldir. Los archivos en subdirectorios (home/Dashboard.qml) obtienen
+# un nombre de tipo plano (Dashboard), no hace falta escribir "home.Dashboard".
+#
+# Esto permite organizar los archivos en carpetas por funcionalidad (home/,
+# mainmenu/) manteniendo una API pública limpia y sin jerarquía innecesaria.
+# =============================================================================
+
 module mainui
 Header 1.0 home/Header.qml
 Dashboard 1.0 home/Dashboard.qml

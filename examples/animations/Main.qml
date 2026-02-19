@@ -1,3 +1,32 @@
+// =============================================================================
+// Main.qml — Pagina principal de ejemplos de animaciones
+// =============================================================================
+// Punto de entrada de la seccion "Animations" del dashboard. Organiza todos los
+// ejemplos de animacion en dos zonas:
+//
+// 1. GridLayout superior (2x2): cuatro tarjetas didacticas que ensenan los
+//    conceptos fundamentales de animacion en QML:
+//    - EasingCurvesCard:         curvas de aceleracion/desaceleracion
+//    - SequentialParallelCard:   animaciones secuenciales vs paralelas
+//    - BehaviorSpringCard:       Behavior + SpringAnimation reactiva
+//    - StatesTransitionsCard:    sistema de estados y transiciones
+//
+// 2. Card grande inferior: animaciones avanzadas basadas en Canvas + Timer
+//    (particulas, orbitas, ondas, Lissajous, pendulo, flip 3D, etc.)
+//    Cada sub-seccion tiene controles Start/Stop individuales y un boton
+//    global "Start All / Stop All" para activarlas todas a la vez.
+//
+// Patron de visibilidad de pagina:
+//    fullSize controla si esta pagina esta activa en el Dashboard. La opacidad
+//    se anima con Behavior, y visible se vincula a opacity > 0 para que QML
+//    no renderice la pagina cuando esta completamente oculta.
+//
+// Patron de activacion de animaciones:
+//    Cada sub-componente recibe 'active: root.fullSize' para que sus Timers
+//    solo corran cuando la pagina es visible, evitando consumo de CPU en
+//    segundo plano. Ademas, 'sectionActive' permite control individual.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +37,11 @@ Item {
 
     property bool fullSize: false
 
+    // ── Patron de visibilidad animada ──────────────────────────────────────
+    // opacity + visible trabajan juntas: la opacidad se anima suavemente con
+    // Behavior, y visible se desactiva cuando opacity llega a 0 para que el
+    // motor de renderizado no procese este arbol de componentes cuando no
+    // esta en pantalla. Esto es un patron comun en todas las paginas del app.
     opacity: fullSize ? 1.0 : 0.0
     visible: opacity > 0.0
     Behavior on opacity {
@@ -42,6 +76,10 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // ── Zona 1: Tarjetas conceptuales basicas ──────────────
+                // GridLayout 2x2 con las cuatro tarjetas didacticas. Cada
+                // tarjeta es un componente autocontenido que demuestra un
+                // concepto fundamental de animacion en QML.
                 GridLayout {
                     columns: 2
                     rows: 2
@@ -76,8 +114,15 @@ Item {
                 } // End of GridLayout
 
                 // ════════════════════════════════════════════════════════
-                // Card 5: Custom Complex Animations
+                // Zona 2: Animaciones complejas con Canvas
                 // ════════════════════════════════════════════════════════
+                // Esta seccion contiene animaciones avanzadas que usan el
+                // patron Timer + Canvas: un Timer dispara actualizaciones
+                // periodicas del estado (posicion, fisica, tiempo) y llama
+                // a requestPaint() para redibujar el Canvas. Este enfoque
+                // es necesario cuando se animan muchos elementos a la vez
+                // (particulas, trazados, etc.) donde crear Items QML
+                // individuales seria demasiado costoso en rendimiento.
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(3800)
@@ -89,6 +134,11 @@ Item {
                         anchors.margins: Style.resize(20)
                         spacing: Style.resize(25)
 
+                        // ── Controles globales Start/Stop ──────────────
+                        // Modifican sectionActive de cada sub-componente.
+                        // sectionActive es independiente de 'active' (que
+                        // depende de fullSize): ambos deben ser true para
+                        // que la animacion corra (running: active && sectionActive).
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: Style.resize(15)
@@ -130,6 +180,11 @@ Item {
                             }
                         }
 
+                        // ── Sub-secciones de animaciones avanzadas ─────
+                        // Cada componente recibe active: root.fullSize para
+                        // que solo consuma CPU cuando la pagina esta visible.
+                        // Los Rectangle delgados entre secciones actuan como
+                        // separadores visuales.
                         ParticleFountain { id: particleSection; active: root.fullSize }
 
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: Style.resize(1); color: Style.bgColor }

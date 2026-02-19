@@ -1,3 +1,42 @@
+// =============================================================================
+// PopupCard.qml — Ejemplos de Popup basico y modal
+// =============================================================================
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Popup en Qt Quick Controls:
+//    - Popup es el componente base para contenido emergente (overlays).
+//    - A diferencia de Dialog, no tiene titulo ni botones estandar — es una
+//      "ventana flotante" generica que el desarrollador llena con lo que necesite.
+//    - Se controla con open() y close().
+//
+// 2. Popup basico vs modal:
+//    - modal: false (por defecto) — el popup aparece sin overlay y el usuario
+//      puede interactuar con el resto de la UI. Se cierra con Esc o clic fuera.
+//    - modal: true — oscurece el fondo (Overlay.modal) y BLOQUEA toda
+//      interaccion con la UI subyacente hasta que se cierre.
+//    - closePolicy define como se puede cerrar: CloseOnEscape, CloseOnPressOutside,
+//      o combinaciones con el operador |.
+//
+// 3. parent: Overlay.overlay:
+//    - IMPORTANTE: asignar Overlay.overlay como parent hace que el Popup se
+//      renderice sobre TODA la ventana, no solo sobre su padre visual.
+//    - Sin esto, el Popup quedaria limitado al area de su padre y podria
+//      quedar cortado (clipped) o detras de otros elementos.
+//
+// 4. Transiciones enter/exit:
+//    - enter y exit son Transition que animan la aparicion y desaparicion.
+//    - Se animan multiples propiedades en paralelo (opacity + scale) para
+//      crear un efecto natural de "zoom in" al aparecer.
+//    - Easing.OutBack genera un ligero rebote al final, dando sensacion de
+//      que el popup "se asoma".
+//
+// 5. background vs contentItem:
+//    - background define el fondo visual del Popup (rectangulo, sombra, etc.)
+//    - contentItem define el contenido interior. Ambos son personalizables.
+//
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -7,7 +46,9 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
-    // Basic Popup
+    // --- Popup basico (no modal) ---
+    // Aparece centrado sobre el overlay sin oscurecer el fondo.
+    // El usuario puede cerrar haciendo clic fuera o pulsando Esc.
     Popup {
         id: basicPopup
         parent: Overlay.overlay
@@ -49,18 +90,23 @@ Rectangle {
             }
         }
 
+        // Transicion de entrada: fade in + escala con rebote (OutBack).
+        // Al combinar opacity y scale se logra un efecto de "brotar".
         enter: Transition {
             NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 150 }
             NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: 200; easing.type: Easing.OutBack }
         }
 
+        // Transicion de salida: mas rapida que la entrada para sensacion responsiva.
         exit: Transition {
             NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 100 }
             NumberAnimation { property: "scale"; from: 1.0; to: 0.8; duration: 100 }
         }
     }
 
-    // Modal Popup
+    // --- Popup modal ---
+    // Oscurece el fondo y bloquea la interaccion con la UI inferior.
+    // Overlay.modal personaliza el rectangulo semitransparente del fondo.
     Popup {
         id: modalPopup
         anchors.centerIn: parent
@@ -70,6 +116,9 @@ Rectangle {
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         parent: Overlay.overlay
 
+        // Overlay.modal define el aspecto del fondo oscurecido.
+        // Sin esto, Qt usa un overlay por defecto que puede no coincidir
+        // con el tema oscuro de la app.
         Overlay.modal: Rectangle {
             color: Qt.rgba(0, 0, 0, 0.4)
         }
@@ -116,6 +165,9 @@ Rectangle {
         }
     }
 
+    // --- Contenido visible de la card ---
+    // Botones para abrir cada tipo de Popup y panel informativo que
+    // resume las diferencias clave entre basico y modal.
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Style.resize(20)
@@ -142,6 +194,7 @@ Rectangle {
 
         Item { Layout.fillHeight: true }
 
+        // Panel informativo: resumen visual de las diferencias entre ambos modos.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: infoColumn.implicitHeight + Style.resize(20)

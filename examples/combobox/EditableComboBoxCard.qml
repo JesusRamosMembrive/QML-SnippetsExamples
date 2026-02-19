@@ -1,3 +1,23 @@
+// =============================================================================
+// EditableComboBoxCard.qml — Tarjeta de ComboBox editable
+// =============================================================================
+// Explora la propiedad editable de ComboBox, que permite al usuario escribir
+// texto libre ademas de seleccionar de la lista desplegable.
+//
+// Se cubren tres escenarios progresivos:
+//   1. Editable basico: el usuario puede teclear un valor personalizado.
+//   2. Modelo dinamico: se agregan nuevos items al presionar Enter (onAccepted).
+//   3. Validador: IntValidator restringe la entrada a numeros en un rango.
+//
+// Aprendizaje clave:
+//   - editable: true convierte el ComboBox en un campo de texto + desplegable.
+//   - editText (no currentText) refleja lo que el usuario ha escrito.
+//   - onAccepted se emite cuando el usuario presiona Enter; ideal para agregar
+//     elementos dinamicos al modelo.
+//   - find() busca un texto en el modelo y devuelve -1 si no existe.
+//   - validator restringe los caracteres que el usuario puede ingresar.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +40,13 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Editable combo
+        // -----------------------------------------------------------------
+        // Ejemplo 1: ComboBox editable basico
+        // editable: true permite escribir libremente. editText contiene
+        // lo que el usuario escribe (puede diferir de currentText si el
+        // texto escrito no coincide con ningun elemento de la lista).
+        // Caso de uso tipico: selector de tamano de fuente.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -46,7 +72,14 @@ Rectangle {
             }
         }
 
-        // Editable with accepted signal
+        // -----------------------------------------------------------------
+        // Ejemplo 2: Agregar items dinamicamente con onAccepted
+        // Cuando el usuario escribe un texto nuevo y presiona Enter,
+        // onAccepted se dispara. Usamos find() para verificar que el
+        // texto no exista ya en el modelo antes de agregarlo con append().
+        // Necesitamos un ListModel (no un array JS) porque los arrays
+        // no soportan append() para modificacion dinamica.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -82,7 +115,14 @@ Rectangle {
             }
         }
 
-        // Editable with validator
+        // -----------------------------------------------------------------
+        // Ejemplo 3: Validador numerico
+        // IntValidator restringe la entrada para que el usuario solo pueda
+        // escribir numeros enteros entre 0 y 999. Esto es util cuando el
+        // ComboBox necesita aceptar valores numericos personalizados pero
+        // dentro de un rango valido. El validador actua a nivel de
+        // caracteres: impide escribir letras o numeros fuera de rango.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

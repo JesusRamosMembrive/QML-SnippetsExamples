@@ -1,3 +1,29 @@
+// =============================================================================
+// SequentialParallelCard.qml
+// Concepto: SequentialAnimation vs ParallelAnimation — composicion de animaciones.
+//
+// QML permite combinar animaciones simples en secuencias complejas usando dos
+// contenedores fundamentales:
+//
+//   - SequentialAnimation: ejecuta animaciones UNA TRAS OTRA. Ideal para
+//     coreografiar pasos donde cada efecto depende del anterior (mover,
+//     luego cambiar color, luego escalar). Duracion total = suma de todas.
+//
+//   - ParallelAnimation: ejecuta animaciones AL MISMO TIEMPO. Ideal para
+//     efectos compuestos donde todo ocurre simultaneamente (mover + cambiar
+//     color + escalar a la vez). Duracion total = la mas larga.
+//
+// Ambas se pueden anidar entre si para crear coreografias complejas:
+// SequentialAnimation { ParallelAnimation { ... } NumberAnimation { ... } }
+//
+// En este ejemplo, los tres mismos cambios (posicion, color, escala) se aplican
+// a dos rectangulos identicos — uno secuencial, otro paralelo — para que el
+// usuario vea y compare visualmente la diferencia entre ambos enfoques.
+//
+// restart() reinicia la animacion desde el inicio incluso si ya estaba corriendo,
+// a diferencia de start() que no hace nada si ya esta activa.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,6 +45,10 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // El boton resetea manualmente las propiedades antes de reiniciar porque
+        // las animaciones standalone (con id) no definen 'from' — solo 'to'.
+        // Sin el reset, la segunda ejecucion empezaria desde donde termino la
+        // anterior, no desde el estado inicial.
         Button {
             text: "Play"
             onClicked: {
@@ -34,13 +64,18 @@ Rectangle {
             }
         }
 
-        // Animation area
+        // ── Area de comparacion lado a lado ────────────────────────────────
+        // Dos columnas identicas muestran el mismo conjunto de cambios
+        // (mover, colorear, escalar) pero con distinta estrategia temporal.
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: Style.resize(15)
 
-            // Sequential column
+            // ── Columna Sequential ─────────────────────────────────────
+            // Las tres animaciones corren en serie: primero el movimiento
+            // (600ms), luego el color (400ms), luego la escala (400ms).
+            // Duracion total: 600 + 400 + 400 = 1400ms.
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -73,10 +108,13 @@ Rectangle {
                         radius: Style.resize(6)
                         color: "#4A90D9"
 
+                        // SequentialAnimation ejecuta cada hijo en orden.
+                        // Cada NumberAnimation/ColorAnimation espera a que
+                        // la anterior termine antes de empezar.
                         SequentialAnimation {
                             id: seqAnim
 
-                            // Step 1: Move right
+                            // Paso 1: Mover a la derecha con aceleracion natural
                             NumberAnimation {
                                 target: seqRect
                                 property: "x"
@@ -85,7 +123,7 @@ Rectangle {
                                 easing.type: Easing.InOutQuad
                             }
 
-                            // Step 2: Change color
+                            // Paso 2: Cambiar color (solo empieza cuando el movimiento termina)
                             ColorAnimation {
                                 target: seqRect
                                 property: "color"
@@ -93,7 +131,7 @@ Rectangle {
                                 duration: 400
                             }
 
-                            // Step 3: Scale up
+                            // Paso 3: Escalar con efecto "resorte" (OutBack sobrepasa y vuelve)
                             NumberAnimation {
                                 target: seqRect
                                 property: "scale"
@@ -106,14 +144,17 @@ Rectangle {
                 }
 
                 Label {
-                    text: "Move → Color → Scale"
+                    text: "Move \u2192 Color \u2192 Scale"
                     font.pixelSize: Style.resize(11)
                     color: Style.fontSecondaryColor
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
 
-            // Parallel column
+            // ── Columna Parallel ───────────────────────────────────────
+            // Los tres mismos cambios ocurren a la vez en 800ms.
+            // El resultado visual es muy distinto: el objeto se transforma
+            // de forma fluida y simultanea, en vez de paso a paso.
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -146,6 +187,10 @@ Rectangle {
                         radius: Style.resize(6)
                         color: "#4A90D9"
 
+                        // ParallelAnimation ejecuta todos sus hijos simultaneamente.
+                        // Todas las animaciones comparten la misma duracion (800ms)
+                        // para que terminen sincronizadas, pero podrian tener
+                        // duraciones distintas — Parallel termina cuando termina la mas larga.
                         ParallelAnimation {
                             id: parAnim
 

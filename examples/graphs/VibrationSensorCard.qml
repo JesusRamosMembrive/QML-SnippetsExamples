@@ -1,3 +1,25 @@
+// =============================================================================
+// VibrationSensorCard.qml — Simulación de sensor de vibración en tiempo real
+// =============================================================================
+// Demuestra cómo crear una visualización de datos en tiempo real de alto
+// rendimiento usando QtGraphs (LineSeries) + FrameAnimation.
+//
+// Conceptos clave:
+// - FrameAnimation: Se ejecuta en cada frame (~60fps), mucho más fluido que
+//   Timer. Ideal para animaciones de datos continuas.
+// - LineSeries.replace(): Modifica puntos existentes sin recrear la serie.
+//   Esto es CRÍTICO para rendimiento — append/remove cada frame sería lento.
+// - LineSeries.removeMultiple() / append(): Para cambiar la resolución
+//   (cantidad de puntos) dinámicamente.
+// - Sliders de control: Amplitud, frecuencia y resolución modifican la onda
+//   en tiempo real gracias al binding declarativo de QML.
+// - Patrón active: La animación solo corre cuando la página es visible
+//   (root.active) Y el usuario ha pulsado Start (root.animRunning).
+//
+// La fórmula de vibración combina sin, cos y random para simular un sensor
+// real con ruido y modulación de envolvente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -32,7 +54,13 @@ Rectangle {
             }
         }
 
-        // Amplitude slider
+        // -------------------------------------------------------------------
+        // Controles deslizantes: cada slider tiene su label con valor actual.
+        // El patrón Item + Slider con anchors.fill es necesario porque Slider
+        // dentro de un Layout no siempre respeta fillWidth correctamente.
+        // -------------------------------------------------------------------
+
+        // Slider de amplitud: controla la intensidad de la onda
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Amplitude: " + vibAmpSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
@@ -42,7 +70,7 @@ Rectangle {
             }
         }
 
-        // Frequency slider
+        // Slider de frecuencia: controla qué tan "apretada" es la onda
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Frequency: " + vibFreqSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
@@ -52,7 +80,8 @@ Rectangle {
             }
         }
 
-        // Resolution slider
+        // Slider de resolución: controla la cantidad de puntos de datos.
+        // onValueChanged llama a vibLine.change() para agregar o quitar puntos.
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Points: " + vibResSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
@@ -64,7 +93,12 @@ Rectangle {
             }
         }
 
-        // Graph area
+        // -------------------------------------------------------------------
+        // Área de la gráfica
+        // Patrón: Rectangle oscuro como fondo + GraphsView con tema transparente.
+        // clip: true evita que la línea se dibuje fuera del área cuando los
+        // valores exceden el rango visible.
+        // -------------------------------------------------------------------
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -85,6 +119,8 @@ Rectangle {
                     plotAreaBackgroundColor: "transparent"
                 }
 
+                // Ejes ocultos: en este caso no necesitamos mostrar valores,
+                // solo la forma de onda. max: 8 define el rango de coordenadas.
                 axisX: ValueAxis {
                     visible: false
                     lineVisible: false
@@ -112,6 +148,10 @@ Rectangle {
                     color: Style.mainColor
                     width: 2
 
+                    // FrameAnimation reemplaza a Timer para animaciones fluidas.
+                    // Se dispara cada frame de renderizado (~16ms a 60fps).
+                    // La fórmula combina sin * cos * sin * random para simular
+                    // vibración con modulación de envolvente y ruido.
                     FrameAnimation {
                         running: root.active && root.animRunning
                         onTriggered: {
@@ -124,11 +164,16 @@ Rectangle {
                         }
                     }
 
+                    // Inicialización: crea todos los puntos en la línea central (y=4).
                     Component.onCompleted: {
                         for (let i = 1; i <= divisions; ++i)
                             append((i / divisions) * 8.0, 4.0)
                     }
 
+                    // Función para cambiar la resolución dinámicamente.
+                    // Si se reduce, elimina puntos con removeMultiple().
+                    // Si se aumenta, agrega nuevos puntos con append().
+                    // Esto es más eficiente que recrear toda la serie.
                     function change(newDivs) {
                         let delta = newDivs - divisions
                         if (delta < 0) {

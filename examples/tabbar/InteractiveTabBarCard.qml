@@ -1,3 +1,20 @@
+// =============================================================================
+// InteractiveTabBarCard.qml — TabBar que controla propiedades visuales
+// =============================================================================
+// Demuestra un caso de uso avanzado donde cada pestana del TabBar presenta
+// controles (Sliders) que modifican propiedades de un elemento visual en
+// tiempo real. Es un ejemplo de como combinar TabBar + StackLayout con
+// controles interactivos para crear un panel de configuracion.
+//
+// La arquitectura es: un Rectangle de vista previa arriba cuyas propiedades
+// (color, opacity, border.width) estan vinculadas a los Sliders de cada
+// pestana. Al cambiar de pestana se accede a un control diferente, pero
+// todos afectan al mismo Rectangle simultaneamente.
+//
+// Aprendizaje clave: los bindings de QML permiten que multiples controles
+// en distintas pestanas afecten al mismo elemento sin logica imperativa.
+// Behavior on color crea transiciones suaves entre valores.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,7 +43,12 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
-        // Preview rectangle
+        // ---------------------------------------------------------------------
+        // Rectangle de vista previa: refleja en tiempo real los valores de los
+        // tres Sliders (color, opacity, border). Se usa una expresion ternaria
+        // encadenada para mapear el rango 0-1 del Slider a tres colores
+        // discretos. Behavior on color suaviza la transicion al cambiar.
+        // ---------------------------------------------------------------------
         Rectangle {
             id: previewRect
             Layout.fillWidth: true
@@ -50,7 +72,12 @@ Rectangle {
             }
         }
 
-        // TabBar for controls
+        // ---------------------------------------------------------------------
+        // TabBar de controles: cada pestana da acceso a un Slider diferente.
+        // Aunque las pestanas muestran un Slider a la vez, todos los Sliders
+        // estan siempre instanciados (dentro del StackLayout), por lo que
+        // mantienen su valor cuando se cambia de pestana.
+        // ---------------------------------------------------------------------
         TabBar {
             id: controlTabBar
             Layout.fillWidth: true
@@ -65,7 +92,7 @@ Rectangle {
             Layout.fillHeight: true
             currentIndex: controlTabBar.currentIndex
 
-            // Color tab
+            // Pestana Color: Slider que mapea 0-1 a tres colores
             Rectangle {
                 color: Style.bgColor
                 radius: Style.resize(6)
@@ -98,7 +125,7 @@ Rectangle {
                 }
             }
 
-            // Opacity tab
+            // Pestana Opacity: Slider de 10% a 100%
             Rectangle {
                 color: Style.bgColor
                 radius: Style.resize(6)
@@ -122,7 +149,7 @@ Rectangle {
                 }
             }
 
-            // Border tab
+            // Pestana Border: Slider de 0 a 8px con stepSize de 1
             Rectangle {
                 color: Style.bgColor
                 radius: Style.resize(6)

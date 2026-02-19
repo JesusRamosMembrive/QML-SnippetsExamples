@@ -1,3 +1,35 @@
+// =============================================================================
+// Header.qml — Barra superior de la aplicación
+// =============================================================================
+//
+// Muestra el nombre de la página actual y controles opcionales (selector de tema).
+//
+// -- property alias menuItemText --
+// "alias" expone la propiedad text del Label interno (menuTextLabel) hacia afuera.
+// Un alias es una REFERENCIA, no una copia: cuando el padre cambia menuItemText,
+// se modifica directamente el texto del Label sin intermediarios.
+//
+// -- DropShadow debajo del rectángulo --
+// Crea una sombra que da efecto de "elevación" (Material Design), separando
+// visualmente el header del contenido que está debajo. verticalOffset controla
+// qué tan abajo cae la sombra; samples define la calidad del difuminado.
+//
+// -- Loader para dropDownMenuLoader --
+// Carga de forma diferida (lazy-load) el selector de temas. Con active: false,
+// el componente NO se instancia hasta que se necesite, ahorrando recursos.
+// Usa el mismo patrón opacity/visible para animar su aparición con fade.
+//
+// -- Selector de tema con RadioButtons --
+// Respaldado por Style.setGreenTheme() y Style.setOrangeTheme(). Al hacer clic,
+// el sistema reactivo de bindings propaga el cambio de color a TODA la app
+// automáticamente, porque todos los componentes leen colores de Style.
+//
+// -- Frame con Image como background --
+// En lugar de un Rectangle estándar, usa una imagen personalizada
+// (Style.gfx("dropdown")) como fondo del dropdown, permitiendo formas y
+// diseños que no son posibles con un simple rectángulo.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import Qt5Compat.GraphicalEffects

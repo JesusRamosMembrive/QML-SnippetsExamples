@@ -1,3 +1,24 @@
+// =============================================================================
+// RadarChart.qml — Gráfica de radar (araña) con Canvas 2D
+// =============================================================================
+// Dibuja un gráfico de radar/araña pentagonal comparando dos conjuntos de datos
+// (Player vs Enemy), típico de juegos RPG para mostrar estadísticas.
+//
+// Conceptos clave:
+// - Geometría polar: Todos los puntos se calculan con coordenadas polares
+//   (ángulo + radio) y se convierten a cartesianas con cos/sin.
+//   El offset -PI/2 hace que el primer eje apunte hacia arriba.
+// - Función reutilizable drawDataset(): Encapsula la lógica de dibujar un
+//   polígono de datos + puntos. Se llama dos veces con diferentes colores.
+// - Capas de dibujo: Se dibuja en orden de atrás a adelante —
+//   cuadrícula > radios > dataset enemigo > dataset jugador > etiquetas.
+//   El jugador se dibuja ÚLTIMO para que quede encima del enemigo.
+// - onAvailableChanged: Canvas necesita que su contexto GL esté listo antes
+//   de pintar. Este signal asegura el primer pintado en el momento correcto.
+// - Transparencia con rgba(): Los rellenos usan baja opacidad (0.15, 0.2)
+//   para que las áreas superpuestas sean visibles.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -17,6 +38,8 @@ ColumnLayout {
             color: Style.fontPrimaryColor
         }
         Item { Layout.fillWidth: true }
+        // Randomize genera valores nuevos y llama requestPaint() manualmente.
+        // En Canvas, los cambios de propiedades NO disparan repintado automático.
         Button {
             text: "Randomize"
             onClicked: {
@@ -32,7 +55,7 @@ ColumnLayout {
         }
     }
 
-    // Legend
+    // Leyenda manual con rectángulos de color + texto
     RowLayout {
         spacing: Style.resize(15)
         Row { spacing: Style.resize(4); Rectangle { width: Style.resize(12); height: Style.resize(3); color: "#00D1A9"; anchors.verticalCenter: parent.verticalCenter } Label { text: "Player"; font.pixelSize: Style.resize(10); color: Style.fontSecondaryColor } }
@@ -49,14 +72,23 @@ ColumnLayout {
         Canvas {
             id: radarCanvas
             onAvailableChanged: if (available) requestPaint()
+            // El canvas se centra y su tamaño se limita al menor entre el ancho
+            // disponible y 270px, manteniendo forma cuadrada (height: width).
             anchors.centerIn: parent
             width: Math.min(parent.width - Style.resize(20), Style.resize(270))
             height: width
 
+            // Datos: arrays de 5 valores (0-100) para cada estadística
             property var playerStats: [85, 70, 60, 90, 55]
             property var enemyStats: [60, 80, 75, 45, 70]
             property var labels: ["ATK", "DEF", "SPD", "HP", "MP"]
 
+            // -----------------------------------------------------------
+            // Función auxiliar para dibujar un dataset como polígono.
+            // Recibe centro (cx,cy), radio máximo, datos y colores.
+            // Cada valor se normaliza a 0-1 (data[i]/100) y se escala al radio.
+            // Primero dibuja el polígono relleno, luego los puntos individuales.
+            // -----------------------------------------------------------
             function drawDataset(ctx, cx, cy, r, data, strokeColor, fillColor) {
                 ctx.beginPath()
                 for (var i = 0; i < data.length; i++) {
@@ -73,7 +105,7 @@ ColumnLayout {
                 ctx.lineWidth = 2
                 ctx.stroke()
 
-                // Data point dots
+                // Puntos circulares en cada vértice del polígono de datos
                 for (var i = 0; i < data.length; i++) {
                     var angle = i * 2 * Math.PI / data.length - Math.PI / 2
                     var val = data[i] / 100 * r
@@ -93,7 +125,12 @@ ColumnLayout {
                 var r = Math.min(cx, cy) - 30
                 var N = 5
 
-                // Grid pentagons
+                // -----------------------------------------------------------
+                // Cuadrícula: 5 pentágonos concéntricos como líneas de referencia.
+                // El pentágono exterior (ring=5) tiene trazo más grueso y visible.
+                // Cada pentágono se dibuja conectando N puntos equidistantes
+                // a distancia proporcional al anillo (ring/5 * radio_total).
+                // -----------------------------------------------------------
                 for (var ring = 1; ring <= 5; ring++) {
                     var rr = r * ring / 5
                     ctx.beginPath()
@@ -109,7 +146,7 @@ ColumnLayout {
                     ctx.stroke()
                 }
 
-                // Spokes
+                // Radios (spokes): líneas del centro a cada vértice
                 for (var i = 0; i < N; i++) {
                     var angle = i * 2 * Math.PI / N - Math.PI / 2
                     ctx.beginPath()
@@ -120,11 +157,11 @@ ColumnLayout {
                     ctx.stroke()
                 }
 
-                // Datasets
+                // Datasets: el enemigo se dibuja primero (queda debajo)
                 drawDataset(ctx, cx, cy, r, enemyStats, "#FF5900", "rgba(255,89,0,0.15)")
                 drawDataset(ctx, cx, cy, r, playerStats, "#00D1A9", "rgba(0,209,169,0.2)")
 
-                // Axis labels
+                // Etiquetas de ejes: posicionadas más allá del radio máximo
                 ctx.font = "bold 12px sans-serif"
                 ctx.textAlign = "center"
                 ctx.textBaseline = "middle"

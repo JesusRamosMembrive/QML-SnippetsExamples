@@ -1,3 +1,27 @@
+// ============================================================================
+// BezierCurvesCard.qml
+// Demuestra curvas Bezier interactivas usando QtQuick.Shapes.
+//
+// CONCEPTO CLAVE: Las curvas Bezier son la base de todo dibujo vectorial
+// (SVG, fuentes TrueType, herramientas como Figma/Illustrator). Se definen
+// por puntos de anclaje (inicio/fin) y puntos de control que "jalan" la
+// curva hacia ellos sin que la curva pase por esos puntos.
+//
+// TIPOS DE CURVAS BEZIER EN QT:
+//   - PathQuad: curva cuadratica con 1 punto de control. Mas simple pero
+//     limitada: no puede hacer curvas en "S".
+//   - PathCubic: curva cubica con 2 puntos de control. Mas versatil, puede
+//     crear cualquier forma suave incluyendo curvas en "S".
+//
+// Shape vs Canvas: Shape usa el pipeline de renderizado vectorial de Qt
+// (acelerado por GPU), mientras que Canvas rasteriza en CPU. Shape es mejor
+// para formas que se animan frecuentemente porque Qt puede optimizar el
+// renderizado sin redibujar toda la superficie.
+//
+// DragHandler: handler declarativo de Qt 6 para arrastrar elementos.
+// A diferencia de MouseArea + drag, DragHandler es mas limpio, soporta
+// multi-touch, y se puede limitar por ejes con xAxis/yAxis.
+// ============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,11 +50,16 @@ Rectangle {
             Layout.fillHeight: true
             spacing: Style.resize(15)
 
-            // PathQuad — 1 control point
+            // =============================================
+            // PathQuad: curva cuadratica (1 punto de control)
+            // La curva se "jala" hacia el punto de control unico.
+            // Matematicamente: B(t) = (1-t)^2*P0 + 2(1-t)t*CP + t^2*P1
+            // =============================================
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
+                // Calcula un tamano cuadrado que quepa en el espacio disponible
                 property real bSize: Math.min(width, height - Style.resize(20))
 
                 Item {
@@ -48,6 +77,10 @@ Rectangle {
                         border.width: 1
                     }
 
+                    // Canvas auxiliar para dibujar las lineas guia discontinuas
+                    // que conectan los puntos de anclaje con el punto de control.
+                    // Estas guias ayudan a visualizar como el punto de control
+                    // influye en la forma de la curva.
                     Canvas {
                         id: quadGuides
                         anchors.fill: parent
@@ -66,6 +99,10 @@ Rectangle {
                         }
                     }
 
+                    // Shape + ShapePath: renderizado vectorial declarativo.
+                    // ShapePath define un camino con punto de inicio (startX/Y)
+                    // y segmentos (PathQuad, PathLine, PathCubic, PathArc...).
+                    // fillColor con alfa bajo crea un relleno semitransparente.
                     Shape {
                         anchors.fill: parent
                         ShapePath {
@@ -78,6 +115,8 @@ Rectangle {
                             startX: pad
                             startY: quadArea.height - pad
 
+                            // PathQuad: controlX/Y define el unico punto de control.
+                            // x/y es el punto final de la curva.
                             PathQuad {
                                 x: quadArea.width - Style.resize(15)
                                 y: quadArea.height - Style.resize(15)
@@ -87,7 +126,7 @@ Rectangle {
                         }
                     }
 
-                    // Endpoint dots
+                    // Puntos de anclaje (inicio y fin) - circulos semitransparentes
                     Rectangle {
                         x: Style.resize(15) - width/2
                         y: quadArea.height - Style.resize(15) - height/2
@@ -101,7 +140,10 @@ Rectangle {
                         color: Style.mainColor; opacity: 0.5
                     }
 
-                    // Draggable control point
+                    // Punto de control arrastrable.
+                    // DragHandler permite arrastrarlo dentro del area delimitada.
+                    // Al cambiar x/y, se actualizan las guias (Canvas) y la curva
+                    // (Shape) automaticamente gracias a los bindings de QML.
                     Rectangle {
                         id: quadCp
                         x: quadArea.width / 2 - width / 2
@@ -118,6 +160,7 @@ Rectangle {
                             yAxis.maximum: quadArea.height - quadCp.height
                         }
 
+                        // Solicitar repintado del Canvas de guias cuando se mueve
                         onXChanged: quadGuides.requestPaint()
                         onYChanged: quadGuides.requestPaint()
                     }
@@ -132,7 +175,13 @@ Rectangle {
                 }
             }
 
-            // PathCubic — 2 control points
+            // =============================================
+            // PathCubic: curva cubica (2 puntos de control)
+            // Con dos puntos de control se pueden crear formas mas complejas,
+            // incluyendo curvas en "S" y bucles.
+            // Matematicamente: B(t) = (1-t)^3*P0 + 3(1-t)^2*t*CP1
+            //                         + 3(1-t)*t^2*CP2 + t^3*P1
+            // =============================================
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -154,6 +203,9 @@ Rectangle {
                         border.width: 1
                     }
 
+                    // Guias para ambos puntos de control:
+                    // - Linea del punto de inicio al punto de control 1 (CP1)
+                    // - Linea del punto final al punto de control 2 (CP2)
                     Canvas {
                         id: cubicGuides
                         anchors.fill: parent
@@ -164,12 +216,12 @@ Rectangle {
                             ctx.setLineDash([4, 4])
                             ctx.strokeStyle = "#bbb"
                             ctx.lineWidth = 1
-                            // Guide line from start to cp1
+                            // Guia: inicio -> CP1
                             ctx.beginPath()
                             ctx.moveTo(pad, cubicArea.height - pad)
                             ctx.lineTo(cubicCp1.x + cubicCp1.width/2, cubicCp1.y + cubicCp1.height/2)
                             ctx.stroke()
-                            // Guide line from end to cp2
+                            // Guia: fin -> CP2
                             ctx.beginPath()
                             ctx.moveTo(cubicArea.width - pad, cubicArea.height - pad)
                             ctx.lineTo(cubicCp2.x + cubicCp2.width/2, cubicCp2.y + cubicCp2.height/2)
@@ -187,6 +239,9 @@ Rectangle {
                             startX: pad
                             startY: cubicArea.height - pad
 
+                            // PathCubic: usa control1X/Y y control2X/Y para los
+                            // dos puntos de control. CP1 influye en la salida
+                            // desde el punto de inicio, CP2 en la llegada al final.
                             PathCubic {
                                 x: cubicArea.width - Style.resize(15)
                                 y: cubicArea.height - Style.resize(15)
@@ -198,7 +253,7 @@ Rectangle {
                         }
                     }
 
-                    // Endpoint dots
+                    // Puntos de anclaje (inicio y fin)
                     Rectangle {
                         x: Style.resize(15) - width/2
                         y: cubicArea.height - Style.resize(15) - height/2
@@ -212,6 +267,8 @@ Rectangle {
                         color: "#7C4DFF"; opacity: 0.5
                     }
 
+                    // Punto de control 1 (naranja) - controla la curvatura
+                    // cerca del punto de inicio
                     Rectangle {
                         id: cubicCp1
                         x: cubicArea.width * 0.25 - width / 2
@@ -228,6 +285,8 @@ Rectangle {
                         onYChanged: cubicGuides.requestPaint()
                     }
 
+                    // Punto de control 2 (azul) - controla la curvatura
+                    // cerca del punto final
                     Rectangle {
                         id: cubicCp2
                         x: cubicArea.width * 0.75 - width / 2

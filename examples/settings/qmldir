@@ -1,0 +1,7 @@
+module settingsex
+prefer :/qt/qml/settingsex/
+Main 1.0 Main.qml
+KeyValueCard 1.0 KeyValueCard.qml
+PreferencesCard 1.0 PreferencesCard.qml
+RecentFilesCard 1.0 RecentFilesCard.qml
+SettingsInfoCard 1.0 SettingsInfoCard.qml

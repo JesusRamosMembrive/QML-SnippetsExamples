@@ -1,3 +1,25 @@
+// =============================================================================
+// RowColumnLayoutCard.qml — Demo interactiva de RowLayout y ColumnLayout
+// =============================================================================
+// Muestra los dos layouts lineales fundamentales de Qt Quick Layouts:
+//
+// - RowLayout: distribuye hijos horizontalmente (izquierda a derecha).
+// - ColumnLayout: distribuye hijos verticalmente (arriba a abajo).
+//
+// Conceptos clave que se ensenan aqui:
+// 1. Layout.preferredWidth/Height vs Layout.fillWidth/fillHeight:
+//    los elementos "Fixed" tienen un tamano preferido fijo, mientras que
+//    los elementos "fillWidth" se expanden para ocupar el espacio sobrante.
+//    Cuando hay multiples fillWidth, el espacio se reparte equitativamente.
+//
+// 2. spacing reactivo: un Slider controla el spacing del layout en tiempo
+//    real, permitiendo al usuario ver como el espaciado afecta la
+//    distribucion sin cambiar el codigo.
+//
+// 3. Patron de contenedor: Rectangle con bgColor envuelve cada layout
+//    para dar contexto visual (simula un area de trabajo).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +41,12 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Spacing control
+        // ---------------------------------------------------------------------
+        // Control interactivo de spacing
+        // El slider esta vinculado (binding) al spacing de ambos layouts.
+        // Esto demuestra la reactividad de QML: al cambiar el valor del
+        // slider, ambos layouts se redistribuyen automaticamente.
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -45,7 +72,12 @@ Rectangle {
             }
         }
 
-        // RowLayout demo
+        // ---------------------------------------------------------------------
+        // Demo de RowLayout (disposicion horizontal)
+        // Mezcla elementos de ancho fijo (preferredWidth) con elementos que
+        // se expanden (fillWidth). Los dos elementos "fillWidth" se reparten
+        // el espacio restante despues de reservar los anchos fijos.
+        // ---------------------------------------------------------------------
         Label {
             text: "RowLayout"
             font.pixelSize: Style.resize(13)
@@ -98,7 +130,12 @@ Rectangle {
             }
         }
 
-        // ColumnLayout demo
+        // ---------------------------------------------------------------------
+        // Demo de ColumnLayout (disposicion vertical)
+        // Misma logica pero en eje vertical: preferredHeight fija la altura
+        // de algunos hijos, mientras que fillHeight expande el hijo restante
+        // para llenar el espacio vertical sobrante.
+        // ---------------------------------------------------------------------
         Label {
             text: "ColumnLayout"
             font.pixelSize: Style.resize(13)

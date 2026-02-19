@@ -1,5 +1,16 @@
+// =============================================================================
+// FileSystemTreeModel - Implementacion del modelo jerarquico de archivos
+// =============================================================================
+//
+// Este archivo implementa los metodos obligatorios de QAbstractItemModel.
+// La logica central se basa en navegar el arbol de TreeItems usando
+// createIndex() e internalPointer().
+// =============================================================================
+
 #include "filesystemtreemodel.h"
 
+// Constructor: crea el nodo raiz invisible y puebla datos de ejemplo.
+// El nodo raiz nunca se muestra en la vista — es el "contenedor" del nivel 0.
 FileSystemTreeModel::FileSystemTreeModel(QObject *parent)
     : QAbstractItemModel(parent)
     , m_rootItem(std::make_unique<TreeItem>(QVariantList{QString("root"), false, QString()}))
@@ -9,6 +20,17 @@ FileSystemTreeModel::FileSystemTreeModel(QObject *parent)
 
 FileSystemTreeModel::~FileSystemTreeModel() = default;
 
+// index(): dado un padre + fila + columna, devuelve el QModelIndex del hijo.
+//
+// Flujo:
+//   1. Si el padre es invalido (QModelIndex vacio), usamos el nodo raiz
+//   2. Extraemos el TreeItem del padre con internalPointer()
+//   3. Obtenemos el hijo en la fila solicitada
+//   4. Creamos un QModelIndex con createIndex(row, column, puntero_al_hijo)
+//
+// createIndex() almacena el puntero al TreeItem DENTRO del QModelIndex.
+// Esto permite que cualquier metodo posterior recupere el TreeItem directamente
+// con index.internalPointer(), sin tener que buscar en todo el arbol.
 QModelIndex FileSystemTreeModel::index(int row, int column,
                                         const QModelIndex &parent) const
 {
@@ -25,6 +47,12 @@ QModelIndex FileSystemTreeModel::index(int row, int column,
     return {};
 }
 
+// parent(): dado el indice de un nodo, devuelve el indice de su padre.
+//
+// REGLA CRITICA: si el padre es el nodo raiz (o no existe), DEBEMOS retornar
+// QModelIndex{} (indice vacio/invalido). Asi es como Qt sabe que un elemento
+// esta en el nivel superior del arbol. Si retornamos un indice valido para
+// el nodo raiz, Qt entra en recursion infinita o muestra datos incorrectos.
 QModelIndex FileSystemTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -33,12 +61,15 @@ QModelIndex FileSystemTreeModel::parent(const QModelIndex &index) const
     auto *childItem = static_cast<TreeItem *>(index.internalPointer());
     TreeItem *parentItem = childItem->parentItem();
 
+    // Si el padre es nullptr o es el nodo raiz → retornar indice invalido
     if (!parentItem || parentItem == m_rootItem.get())
         return {};
 
     return createIndex(parentItem->row(), 0, parentItem);
 }
 
+// rowCount(): cuantos hijos tiene el nodo indicado por 'parent'.
+// Si parent es invalido → contar hijos del nodo raiz (elementos del nivel 0).
 int FileSystemTreeModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.column() > 0)
@@ -56,6 +87,9 @@ int FileSystemTreeModel::columnCount(const QModelIndex &) const
     return 1;
 }
 
+// data(): devuelve el dato segun el rol solicitado.
+// Extraemos el TreeItem del indice y consultamos la columna correspondiente.
+// Cada rol mapea a una columna del TreeItem: 0=nombre, 1=esCarptea, 2=tamano.
 QVariant FileSystemTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -76,6 +110,10 @@ QVariant FileSystemTreeModel::data(const QModelIndex &index, int role) const
     }
 }
 
+// roleNames(): mapea los enteros de rol a nombres de cadena para QML.
+// Sin esto, QML no podria hacer `model.fileName` — solo veria `model.display`.
+// Este patron es OBLIGATORIO para cualquier modelo que quiera exponer datos
+// con nombres personalizados a delegates de QML.
 QHash<int, QByteArray> FileSystemTreeModel::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractItemModel::roleNames();
@@ -90,6 +128,9 @@ int FileSystemTreeModel::totalNodes() const
     return m_totalNodes;
 }
 
+// Helpers para construir el arbol: crean TreeItems y los agregan como hijos.
+// Guardan una copia del puntero raw antes de hacer std::move() porque despues
+// del move, el unique_ptr original queda vacio (nullptr).
 TreeItem *FileSystemTreeModel::addFolder(TreeItem *parent, const QString &name)
 {
     auto item = std::make_unique<TreeItem>(

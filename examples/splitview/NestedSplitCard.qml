@@ -1,3 +1,18 @@
+// =============================================================================
+// NestedSplitCard.qml — SplitViews anidados (layout estilo IDE)
+// =============================================================================
+// Demuestra cómo anidar un SplitView dentro de otro para crear layouts
+// complejos como los de un IDE: explorador de archivos a la izquierda,
+// editor principal en el centro y terminal en la parte inferior.
+//
+// La técnica clave es colocar un SplitView vertical DENTRO de un panel
+// del SplitView horizontal externo. Cada SplitView puede tener su propio
+// handle personalizado, aunque aquí ambos comparten un estilo minimalista.
+//
+// Este patrón es muy común en aplicaciones de escritorio (VS Code, Qt Creator)
+// y demuestra que SplitView se compone de forma natural con sí mismo.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,6 +35,9 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // -- SplitView externo (horizontal) --
+        // Divide la interfaz en: explorador de archivos | área principal.
+        // El handle es minimalista (solo cambia de color al presionar).
         SplitView {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -31,7 +49,10 @@ Rectangle {
                 color: SplitHandle.pressed ? Style.mainColor : Style.inactiveColor
             }
 
-            // File tree panel
+            // -- Panel izquierdo: Explorador de archivos --
+            // Simula un árbol de archivos con Labels estáticos. En una app
+            // real, se usaría un TreeView o ListView con un modelo de archivos.
+            // El Item con fillHeight al final empuja todo el contenido arriba.
             Rectangle {
                 SplitView.preferredWidth: root.width * 0.25
                 SplitView.minimumWidth: Style.resize(60)
@@ -53,7 +74,11 @@ Rectangle {
                 }
             }
 
-            // Center: editor + terminal (vertical split)
+            // -- SplitView interno (vertical) --
+            // Anidado dentro del panel derecho del SplitView externo.
+            // Divide verticalmente en: editor (arriba) y terminal (abajo).
+            // SplitView.fillWidth: true hace que este SplitView ocupe
+            // todo el espacio restante después del explorador.
             SplitView {
                 SplitView.fillWidth: true
                 orientation: Qt.Vertical
@@ -64,6 +89,7 @@ Rectangle {
                     color: SplitHandle.pressed ? Style.mainColor : Style.inactiveColor
                 }
 
+                // Área del editor — ocupa el espacio restante
                 Rectangle {
                     SplitView.fillHeight: true
                     color: Style.surfaceColor
@@ -77,6 +103,10 @@ Rectangle {
                     }
                 }
 
+                // -- Panel de terminal --
+                // Color oscuro (#0D0F12) para simular una terminal real.
+                // Usa font.family: "Consolas" para tipografía monoespaciada,
+                // reforzando la apariencia de línea de comandos.
                 Rectangle {
                     SplitView.preferredHeight: root.height * 0.25
                     SplitView.minimumHeight: Style.resize(40)

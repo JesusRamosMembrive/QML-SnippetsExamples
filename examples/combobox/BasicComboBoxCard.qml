@@ -1,3 +1,16 @@
+// =============================================================================
+// BasicComboBoxCard.qml — Tarjeta de ComboBox basico
+// =============================================================================
+// Muestra los usos mas fundamentales de ComboBox: alimentarlo con un array
+// de strings, establecer un indice inicial con currentIndex, y deshabilitarlo.
+//
+// Conceptos clave para el aprendiz:
+//   - La forma mas sencilla de usar ComboBox: model con un array JS de strings.
+//   - currentText devuelve el texto del elemento seleccionado (binding reactivo).
+//   - currentIndex permite preseleccionar un elemento al inicializar.
+//   - enabled: false deshabilita la interaccion (util para estados de la UI).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -13,6 +26,7 @@ Rectangle {
         anchors.margins: Style.resize(20)
         spacing: Style.resize(20)
 
+        // Titulo de la tarjeta
         Label {
             text: "Basic ComboBox"
             font.pixelSize: Style.resize(20)
@@ -20,7 +34,13 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Simple string list
+        // -----------------------------------------------------------------
+        // Ejemplo 1: Lista simple de strings
+        // La forma mas directa de usar ComboBox: pasar un array JS como
+        // modelo. QML convierte cada string en un elemento seleccionable.
+        // El Label inferior muestra currentText, que se actualiza
+        // automaticamente gracias al sistema de bindings de QML.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -44,7 +64,12 @@ Rectangle {
             }
         }
 
-        // With currentIndex
+        // -----------------------------------------------------------------
+        // Ejemplo 2: Indice preseleccionado
+        // currentIndex: 2 hace que el ComboBox arranque con "Large" activo
+        // en vez del primer elemento. El Label muestra tanto el indice
+        // numerico como el texto, demostrando ambas propiedades reactivas.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -69,7 +94,12 @@ Rectangle {
             }
         }
 
-        // Disabled
+        // -----------------------------------------------------------------
+        // Ejemplo 3: ComboBox deshabilitado
+        // enabled: false impide toda interaccion del usuario. El estilo
+        // personalizado (qmlsnippetsstyle) se encarga de mostrar la
+        // apariencia visual atenuada automaticamente.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)

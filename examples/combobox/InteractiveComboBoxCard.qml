@@ -1,3 +1,24 @@
+// =============================================================================
+// InteractiveComboBoxCard.qml — Demo interactiva con multiples ComboBox
+// =============================================================================
+// Tarjeta que combina tres ComboBox (forma, color, tamano) para modificar
+// en tiempo real un rectangulo de previsualizacion. Demuestra el poder de
+// los bindings declarativos de QML: la figura se actualiza automaticamente
+// sin necesidad de codigo imperativo cuando el usuario cambia cualquier
+// ComboBox.
+//
+// Patrones destacados:
+//   - Bindings entre ComboBox y propiedades visuales (width, color, radius).
+//   - Behavior para animar transiciones suaves al cambiar selecciones.
+//   - Uso de currentIndex para logica condicional (forma -> radio/rotacion).
+//   - Uso de currentValue con valueRole para obtener valores tipados
+//     (colores hex, tamanos numericos) desde modelos estructurados.
+//
+// Aprendizaje clave: los bindings declarativos eliminan la necesidad de
+// callbacks o codigo de sincronizacion manual — la UI se mantiene coherente
+// automaticamente.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -28,7 +49,18 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        // Preview
+        // -----------------------------------------------------------------
+        // Area de previsualizacion
+        // El rectangulo interior (previewShape) esta enlazado directamente
+        // a los tres ComboBox. La logica de forma funciona asi:
+        //   - Square:  radius=0, rotation=0
+        //   - Circle:  radius=width/2 (circulo perfecto)
+        //   - Rounded: radius=8 (esquinas redondeadas)
+        //   - Diamond: radius=0, rotation=45 (cuadrado rotado)
+        //
+        // Los Behavior en cada propiedad crean animaciones suaves de 200ms.
+        // Nota: ColorAnimation para color, NumberAnimation para el resto.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(120)
@@ -52,7 +84,11 @@ Rectangle {
             }
         }
 
-        // Shape selector
+        // -----------------------------------------------------------------
+        // Selector de forma (modelo simple de strings)
+        // Usa currentIndex para determinar la forma — cada indice mapea
+        // a un tipo de forma en la logica del rectangulo de preview.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -71,7 +107,12 @@ Rectangle {
             }
         }
 
-        // Color selector
+        // -----------------------------------------------------------------
+        // Selector de color (ListModel con textRole/valueRole)
+        // textRole muestra el nombre del color al usuario ("Teal"), pero
+        // valueRole proporciona el valor hex ("#00D1A9") que se enlaza
+        // directamente a la propiedad color del rectangulo de preview.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -99,7 +140,11 @@ Rectangle {
             }
         }
 
-        // Size selector
+        // -----------------------------------------------------------------
+        // Selector de tamano (ListModel con valores numericos)
+        // valueRole: "size" devuelve un numero que se enlaza al width/height
+        // del rectangulo. currentIndex: 1 preselecciona "Medium" (60px).
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -126,6 +171,7 @@ Rectangle {
             }
         }
 
+        // Resumen textual de la seleccion actual
         Label {
             text: shapeCombo.currentText + " | " + colorCombo.currentText + " | " + sizeCombo.currentText
             font.pixelSize: Style.resize(13)

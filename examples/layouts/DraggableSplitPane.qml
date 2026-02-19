@@ -1,3 +1,33 @@
+// =============================================================================
+// DraggableSplitPane.qml — Panel dividido con separador arrastrable
+// =============================================================================
+// Implementa un "split pane" donde el usuario puede arrastrar un divisor
+// para redistribuir el espacio entre dos paneles. Este patron es comun
+// en IDEs, editores de texto y exploradores de archivos.
+//
+// Conceptos clave demostrados:
+// 1. splitPos como proporcion (0.0 a 1.0): en lugar de usar pixeles
+//    absolutos, la posicion del divisor se almacena como fraccion del
+//    ancho total. Esto hace que el layout sea proporcional y se adapte
+//    si el contenedor cambia de tamano.
+//
+// 2. MouseArea con drag manual: NO se usa drag.target porque necesitamos
+//    controlar la logica (limites min/max). En su lugar, se captura la
+//    posicion inicial en onPressed y se calcula el delta en
+//    onPositionChanged para actualizar splitPos.
+//
+// 3. Math.max/Math.min para limites: evita que el usuario arrastre el
+//    divisor mas alla del 15% o 85%, garantizando que ambos paneles
+//    siempre sean visibles.
+//
+// 4. Retroalimentacion visual: el divisor cambia de color al hacer hover
+//    o al arrastrar, con ColorAnimation para suavizar la transicion.
+//    Los puntos ("grip dots") indican que el elemento es arrastrable.
+//
+// 5. anchors.margins negativo: agranda el area clickeable del divisor
+//    mas alla de sus limites visuales, facilitando el arrastre.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,6 +50,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.resize(200)
 
+        // Proporcion del espacio que ocupa el panel izquierdo (0.0 - 1.0)
         property real splitPos: 0.5
 
         Rectangle {
@@ -28,7 +59,7 @@ ColumnLayout {
             radius: Style.resize(8)
             clip: true
 
-            // Left panel
+            // Panel izquierdo: su ancho es proporcional a splitPos
             Rectangle {
                 anchors.left: parent.left
                 anchors.top: parent.top
@@ -58,7 +89,7 @@ ColumnLayout {
                 }
             }
 
-            // Right panel
+            // Panel derecho: ocupa el espacio restante (1 - splitPos)
             Rectangle {
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -88,7 +119,12 @@ ColumnLayout {
                 }
             }
 
-            // Divider handle
+            // -----------------------------------------------------------------
+            // Divisor arrastrable
+            // Su posicion x esta vinculada a splitPos. El divisor no usa
+            // drag.target nativo porque necesitamos calcular la posicion
+            // relativa al contenedor padre, no un movimiento absoluto.
+            // -----------------------------------------------------------------
             Rectangle {
                 id: splitDivider
                 x: parent.width * splitSection.splitPos - width / 2
@@ -101,7 +137,7 @@ ColumnLayout {
 
                 Behavior on color { ColorAnimation { duration: 150 } }
 
-                // Handle grip dots
+                // Puntos de agarre: indican visualmente que se puede arrastrar
                 Column {
                     anchors.centerIn: parent
                     spacing: Style.resize(3)
@@ -118,6 +154,9 @@ ColumnLayout {
                     }
                 }
 
+                // MouseArea con margenes negativos para ampliar el area de
+                // arrastre. cursorShape: Qt.SplitHCursor cambia el cursor
+                // al icono de redimensionamiento horizontal.
                 MouseArea {
                     id: splitDragMa
                     anchors.fill: parent

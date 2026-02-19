@@ -1,3 +1,7 @@
+// =============================================================================
+// SqlQueryModel - Implementacion del wrapper de QSqlQueryModel para QML
+// =============================================================================
+
 #include "sqlquerymodel.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -14,6 +18,9 @@ QHash<int, QByteArray> SqlQueryModel::roleNames() const
     return m_roleNames;
 }
 
+// data(): traduce roles personalizados a columnas del resultado SQL.
+// Misma formula que SqlTableModel: columna = rol - Qt::UserRole - 1.
+// Para roles estandar, delega a la implementacion base de QSqlQueryModel.
 QVariant SqlQueryModel::data(const QModelIndex &index, int role) const
 {
     if (role < Qt::UserRole)
@@ -34,6 +41,14 @@ QString SqlQueryModel::lastError() const
     return m_lastError;
 }
 
+// execQuery(): ejecuta una consulta SQL y reconfigura el modelo.
+// Flujo:
+//   1. Obtener la conexion por nombre
+//   2. Ejecutar la consulta con QSqlQuery
+//   3. Si falla, guardar el error y notificar
+//   4. Si tiene exito, pasar el query al modelo base con setQuery()
+//   5. Regenerar roleNames() (los nombres de columna pueden haber cambiado)
+//   6. Emitir queryChanged() para que QML actualice bindings
 void SqlQueryModel::execQuery(const QString &sql,
                               const QString &connectionName)
 {
@@ -52,6 +67,9 @@ void SqlQueryModel::execQuery(const QString &sql,
     emit queryChanged();
 }
 
+// getRow(): devuelve una fila completa como QVariantMap {nombreColumna: valor}.
+// Util para mostrar datos en dialogos de detalle o formularios de edicion
+// donde se necesitan todos los campos de una vez.
 QVariantMap SqlQueryModel::getRow(int row) const
 {
     QVariantMap map;
@@ -71,6 +89,12 @@ QVariant SqlQueryModel::headerName(int column) const
     return headerData(column, Qt::Horizontal, Qt::DisplayRole);
 }
 
+// generateRoleNames(): mismo patron que SqlTableModel.
+// Lee los nombres de columna del resultado SQL y crea roles numericos:
+//   Qt::UserRole + 1 → primera columna del SELECT
+//   Qt::UserRole + 2 → segunda columna, etc.
+// Ejemplo: "SELECT name, SUM(salary) as total FROM employees GROUP BY name"
+//   genera roles: "name" y "total" accesibles desde QML.
 void SqlQueryModel::generateRoleNames()
 {
     m_roleNames.clear();

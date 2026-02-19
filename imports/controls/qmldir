@@ -1,3 +1,13 @@
+# =============================================================================
+# imports/controls/qmldir — Manifiesto del modulo "controls"
+# =============================================================================
+#
+# Ambos tipos estan disponibles al importar el modulo:
+#   import controls
+#   BaseCard { ... }
+#   Separator { ... }
+# =============================================================================
+
 module controls
 BaseCard 1.0 BaseCard.qml
 Separator 1.0 Separator.qml

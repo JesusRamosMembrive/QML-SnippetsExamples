@@ -1,3 +1,21 @@
+// =============================================================================
+// ProgressBarCard.qml — Tarjeta de ejemplo del control ProgressBar
+// =============================================================================
+// Demuestra las dos modalidades del ProgressBar nativo de Qt Quick Controls:
+//   1) Determinado: el valor se controla con un Slider (binding directo).
+//      Ideal para operaciones donde se conoce el progreso (descarga, copia).
+//   2) Indeterminado: propiedad "indeterminate: true" muestra una animacion
+//      ciclica sin porcentaje. Ideal para esperas de duracion desconocida.
+//
+// Conceptos clave:
+//   - El ProgressBar usa rango 0-1 por defecto (from/to). El label muestra
+//     el valor multiplicado por 100 con toFixed(0) para formatear como %.
+//   - El Switch controla indeterminate de forma reactiva — cambiar el
+//     binding es todo lo necesario, Qt gestiona la animacion automaticamente.
+//   - El Slider esta envuelto en un Item para controlar margenes sin
+//     afectar el layout, un patron comun cuando anchors y Layout colisionan.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +37,10 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Determinate ProgressBar
+        // ── ProgressBar determinado ──
+        // El valor se vincula directamente al Slider. Cada movimiento
+        // del slider actualiza la barra y la etiqueta de porcentaje
+        // gracias al sistema de bindings reactivos de QML.
         Label {
             text: "Determinate: " + (progressSlider.value * 100).toFixed(0) + "%"
             font.pixelSize: Style.resize(13)
@@ -56,7 +77,10 @@ Rectangle {
             color: Style.bgColor
         }
 
-        // Indeterminate ProgressBar
+        // ── ProgressBar indeterminado ──
+        // Cuando indeterminate=true, Qt muestra una animacion ciclica
+        // integrada en el estilo. El Switch permite activar/desactivar
+        // el modo en tiempo real para ver la diferencia visualmente.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)

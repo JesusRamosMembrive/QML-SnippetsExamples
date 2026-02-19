@@ -1,3 +1,27 @@
+// ============================================================================
+// EasingCurvesCard.qml
+// Concepto: Curvas de easing — como controlar la aceleracion de animaciones.
+//
+// Las curvas de easing definen la velocidad de una animacion a lo largo del
+// tiempo. En lugar de moverse a velocidad constante, se puede hacer que un
+// objeto acelere, desacelere, rebote o se comporte elasticamente.
+//
+// Qt ofrece mas de 40 tipos de easing a traves de Easing.Type. Aqui se
+// comparan cuatro de los mas representativos:
+//   - Linear:     velocidad constante, sin aceleracion (movimiento robotico)
+//   - InOutQuad:  acelera al inicio, desacelera al final (movimiento natural)
+//   - OutBounce:  rebota al llegar al destino (efecto fisico)
+//   - InElastic:  oscila elasticamente al arrancar (efecto de resorte)
+//
+// La convencion de nombres In/Out indica donde se aplica el efecto:
+//   - In = al inicio de la animacion
+//   - Out = al final de la animacion
+//   - InOut = en ambos extremos
+//
+// PropertyAnimation es el tipo de animacion mas comun en QML. Anima una
+// propiedad especifica de un target entre los valores 'from' y 'to'.
+// ============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,6 +43,8 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // restart() reinicia la animacion desde el principio, incluso si ya
+        // estaba en ejecucion. Esto permite reproducir la comparacion repetidamente.
         Button {
             text: "Play"
             onClicked: {
@@ -29,7 +55,7 @@ Rectangle {
             }
         }
 
-        // Easing bars container
+        // Contenedor de las barras de easing
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -38,7 +64,8 @@ Rectangle {
                 anchors.fill: parent
                 spacing: Style.resize(8)
 
-                // Bar 1: Linear
+                // Linear: velocidad constante. El movimiento se siente mecanico
+                // y predecible. Util para barras de progreso o indicadores.
                 ColumnLayout {
                     spacing: Style.resize(2)
                     Layout.fillWidth: true
@@ -68,6 +95,9 @@ Rectangle {
                             radius: height / 2
                             color: "#4A90D9"
 
+                            // PropertyAnimation: anima la propiedad 'x' del rectangulo.
+                            // target + property definen QUE se anima.
+                            // from/to definen el rango. duration es en milisegundos.
                             PropertyAnimation {
                                 id: easingAnim1
                                 target: bar1
@@ -81,7 +111,8 @@ Rectangle {
                     }
                 }
 
-                // Bar 2: InOutQuad
+                // InOutQuad: acelera suavemente al inicio y desacelera al final.
+                // Es la curva mas usada para movimientos naturales en UI.
                 ColumnLayout {
                     spacing: Style.resize(2)
                     Layout.fillWidth: true
@@ -124,7 +155,8 @@ Rectangle {
                     }
                 }
 
-                // Bar 3: OutBounce
+                // OutBounce: rebota varias veces al llegar al destino.
+                // Simula la fisica de un objeto cayendo y rebotando.
                 ColumnLayout {
                     spacing: Style.resize(2)
                     Layout.fillWidth: true
@@ -167,7 +199,8 @@ Rectangle {
                     }
                 }
 
-                // Bar 4: InElastic
+                // InElastic: oscilacion elastica al inicio de la animacion.
+                // El objeto "se estira" antes de lanzarse, como un resorte.
                 ColumnLayout {
                     spacing: Style.resize(2)
                     Layout.fillWidth: true

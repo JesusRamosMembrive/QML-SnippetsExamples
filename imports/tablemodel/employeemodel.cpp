@@ -1,3 +1,36 @@
+// ============================================================================
+// employeemodel.cpp - Implementacion del modelo de tabla de empleados
+// ============================================================================
+//
+// Este archivo implementa los metodos obligatorios de QAbstractTableModel.
+//
+// CONCEPTOS CLAVE:
+//
+// data() — El corazon del modelo:
+//   Recibe un QModelIndex (fila + columna) y un role (tipo de dato pedido).
+//   Devuelve el valor como QVariant (tipo generico que envuelve int, string, etc.).
+//   El role indica QUE tipo de informacion se pide:
+//     - Qt::DisplayRole: valor para mostrar (el mas comun)
+//     - Qt::EditRole:    valor para edicion (puede ser igual a DisplayRole)
+//     - Roles custom (Qt::UserRole + N): para datos adicionales
+//
+// roleNames() — El puente entre C++ y QML:
+//   QML no conoce los numeros de role. Necesita nombres de string.
+//   roleNames() devuelve un QHash que mapea: numero de role -> nombre string.
+//   Ejemplo: { Qt::DisplayRole -> "display", Qt::EditRole -> "edit" }
+//   En QML, model.display accede al Qt::DisplayRole de la celda.
+//
+// begin/endInsertRows() y begin/endRemoveRows():
+//   OBLIGATORIO llamar ANTES y DESPUES de modificar los datos internos.
+//   Qt usa estas llamadas para notificar a las vistas (TableView, ListView)
+//   que deben actualizar su contenido. Sin ellas, la vista no se entera
+//   de los cambios y se desincroniza del modelo.
+//
+// dataChanged():
+//   Signal que se emite cuando el valor de una celda existente cambia.
+//   Las vistas la reciben y actualizan solo esa celda (eficiente).
+// ============================================================================
+
 #include "employeemodel.h"
 
 EmployeeModel::EmployeeModel(QObject *parent)
@@ -6,6 +39,8 @@ EmployeeModel::EmployeeModel(QObject *parent)
     populateSampleData();
 }
 
+// Llena el modelo con datos de ejemplo para que la tabla no este vacia.
+// Usa beginInsertRows/endInsertRows para notificar correctamente.
 void EmployeeModel::populateSampleData()
 {
     const QStringList names = {
@@ -30,14 +65,24 @@ void EmployeeModel::populateSampleData()
         true, true, true, false, true
     };
 
+    // beginInsertRows(): notifica a las vistas que se van a insertar filas.
+    // Parametros: parent (QModelIndex() = raiz), fila inicio, fila fin.
+    // DEBE llamarse ANTES de modificar m_employees.
     beginInsertRows(QModelIndex(), 0, names.size() - 1);
     for (int i = 0; i < names.size(); ++i) {
         m_employees.append({m_nextId++, names[i], departments[i],
                            salaries[i], actives[i]});
     }
+    // endInsertRows(): confirma que la insercion termino.
+    // Las vistas actualizan su contenido al recibir esta notificacion.
     endInsertRows();
     emit countChanged();
 }
+
+// ─── rowCount / columnCount ─────────────────────────────────────────
+// Para modelos de tabla plana (sin jerarquia), parent.isValid() es false
+// en la raiz. Si parent es valido, significa que alguien pide hijos de
+// una celda, lo cual no aplica en tablas planas -> devolvemos 0.
 
 int EmployeeModel::rowCount(const QModelIndex &parent) const
 {
@@ -48,6 +93,17 @@ int EmployeeModel::columnCount(const QModelIndex &parent) const
 {
     return parent.isValid() ? 0 : ColumnCount;
 }
+
+// ─── data() — Devuelve el valor de una celda ────────────────────────
+// Parametros:
+//   index: QModelIndex con fila (index.row()) y columna (index.column())
+//   role:  que tipo de dato se pide (DisplayRole, EditRole, etc.)
+//
+// Qt::DisplayRole: el rol por defecto que las vistas usan para mostrar texto.
+// Qt::EditRole: el valor para edicion (aqui lo tratamos igual que DisplayRole).
+//
+// QVariant: tipo generico de Qt que puede contener int, QString, double, bool, etc.
+// data() devuelve QVariant porque cada celda puede tener un tipo diferente.
 
 QVariant EmployeeModel::data(const QModelIndex &index, int role) const
 {
@@ -68,6 +124,12 @@ QVariant EmployeeModel::data(const QModelIndex &index, int role) const
 
     return {};
 }
+
+// ─── setData() — Modifica el valor de una celda ─────────────────────
+// Se llama cuando QML (o una vista) quiere editar una celda.
+// Solo acepta Qt::EditRole (rol de edicion).
+// Despues de modificar, emite dataChanged() para que las vistas se actualicen.
+// Devuelve true si la edicion fue exitosa, false si no.
 
 bool EmployeeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
@@ -93,9 +155,17 @@ bool EmployeeModel::setData(const QModelIndex &index, const QVariant &value, int
         return false;
     }
 
+    // dataChanged() notifica a las vistas que esta celda cambio.
+    // Parametros: esquina superior izq, esquina inferior der, roles afectados.
+    // Aqui solo cambio una celda, asi que ambas esquinas son el mismo index.
     emit dataChanged(index, index, {role});
     return true;
 }
+
+// ─── flags() — Indica que celdas son editables ─────────────────────
+// Qt::ItemIsEditable habilita la edicion para una celda.
+// Aqui todas las columnas son editables EXCEPTO ColId (el ID es auto-generado).
+// Sin este flag, setData() nunca se llama para esa celda.
 
 Qt::ItemFlags EmployeeModel::flags(const QModelIndex &index) const
 {
@@ -104,6 +174,10 @@ Qt::ItemFlags EmployeeModel::flags(const QModelIndex &index) const
         f |= Qt::ItemIsEditable;
     return f;
 }
+
+// ─── headerData() — Nombres de columnas ─────────────────────────────
+// Devuelve el texto de cabecera para cada columna.
+// Solo respondemos a Qt::DisplayRole y orientacion Horizontal.
 
 QVariant EmployeeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
@@ -120,6 +194,23 @@ QVariant EmployeeModel::headerData(int section, Qt::Orientation orientation, int
     return {};
 }
 
+// ─── roleNames() — PUENTE CRITICO entre C++ y QML ──────────────────
+// QML accede a los datos del modelo usando nombres de string, no numeros.
+// Este metodo devuelve el mapeo: numero de role -> nombre string.
+//
+// Aqui mapeamos:
+//   Qt::DisplayRole (valor 0) -> "display"  -> en QML: model.display
+//   Qt::EditRole    (valor 2) -> "edit"      -> en QML: model.edit
+//
+// En TableView, QML usa model.display para mostrar el valor de cada celda.
+// Si este metodo no existiera o devolviera un hash vacio, QML no podria
+// acceder a NINGUN dato del modelo.
+//
+// Nota: tambien se pueden definir roles personalizados:
+//   enum Roles { NameRole = Qt::UserRole + 1, SalaryRole, ... };
+//   y mapearlos: { NameRole -> "name", SalaryRole -> "salary" }
+//   Esto permite acceder por nombre de campo: model.name, model.salary
+
 QHash<int, QByteArray> EmployeeModel::roleNames() const
 {
     return {
@@ -133,6 +224,11 @@ int EmployeeModel::count() const
     return m_employees.size();
 }
 
+// ─── addEmployee() — Agregar un empleado ────────────────────────────
+// Invocable desde QML via Q_INVOKABLE.
+// beginInsertRows/endInsertRows notifica a TODAS las vistas conectadas
+// (incluyendo proxies) que se inserto una fila nueva.
+
 void EmployeeModel::addEmployee(const QString &name, const QString &department,
                                  double salary, bool active)
 {
@@ -142,6 +238,9 @@ void EmployeeModel::addEmployee(const QString &name, const QString &department,
     endInsertRows();
     emit countChanged();
 }
+
+// ─── removeEmployee() — Eliminar un empleado ────────────────────────
+// Mismo patron: beginRemoveRows/endRemoveRows envuelve la eliminacion.
 
 void EmployeeModel::removeEmployee(int row)
 {

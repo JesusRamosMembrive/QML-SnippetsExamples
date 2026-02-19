@@ -1,3 +1,20 @@
+// ============================================================================
+// ListViewCard.qml
+// Concepto: Patron Model-View-Delegate, el pilar de las listas en Qt Quick.
+//
+// ListView es el componente central para mostrar listas en QML. Su arquitectura
+// se basa en tres partes:
+//   - Model:    los datos (aqui un ListModel con ListElements)
+//   - View:     el ListView que gestiona scroll, reciclaje de items y layout
+//   - Delegate: el componente visual que se instancia por cada elemento del modelo
+//
+// ListView solo crea instancias de delegate para los items visibles en pantalla
+// (virtualizacion), lo que lo hace eficiente incluso con miles de elementos.
+//
+// Ademas, se demuestra el sistema de highlight: un rectangulo visual que indica
+// el item seleccionado, con animacion automatica al cambiar currentIndex.
+// ============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -33,6 +50,9 @@ Rectangle {
             radius: Style.resize(6)
             clip: true
 
+            // ListModel define los datos en linea. Cada ListElement es un "registro"
+            // con propiedades (name, role, avatarColor) accesibles desde el delegate
+            // mediante el objeto 'model' (ej: model.name, model.role).
             ListModel {
                 id: contactModel
                 ListElement { name: "Alice Johnson"; role: "Designer"; avatarColor: "#4A90D9" }
@@ -51,8 +71,12 @@ Rectangle {
                 model: contactModel
                 clip: true
                 spacing: Style.resize(2)
+                // currentIndex: -1 significa que inicialmente ningun item esta seleccionado
                 currentIndex: -1
 
+                // highlight: componente visual que se dibuja detras del item actual.
+                // highlightFollowsCurrentItem hace que siga al item seleccionado.
+                // highlightMoveDuration controla la velocidad de la animacion de desplazamiento.
                 highlight: Rectangle {
                     color: Qt.rgba(0, 209/255, 169/255, 0.15)
                     radius: Style.resize(6)
@@ -60,6 +84,10 @@ Rectangle {
                 highlightFollowsCurrentItem: true
                 highlightMoveDuration: 200
 
+                // El delegate define como se renderiza CADA item del modelo.
+                // Se instancia una vez por cada elemento visible. Dentro del delegate,
+                // 'model' da acceso a las propiedades del ListElement correspondiente,
+                // e 'index' indica la posicion del item en el modelo.
                 delegate: Item {
                     width: contactListView.width
                     height: Style.resize(52)
@@ -70,6 +98,7 @@ Rectangle {
                         anchors.rightMargin: Style.resize(8)
                         spacing: Style.resize(10)
 
+                        // Avatar circular: radius = width/2 convierte un Rectangle en circulo
                         Rectangle {
                             width: Style.resize(36)
                             height: Style.resize(36)
@@ -106,6 +135,9 @@ Rectangle {
                         }
                     }
 
+                    // MouseArea captura clics sobre el delegate.
+                    // Al hacer clic, actualiza currentIndex (mueve el highlight)
+                    // y modifica el label externo para mostrar la seleccion.
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {

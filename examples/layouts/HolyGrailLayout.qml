@@ -1,3 +1,30 @@
+// =============================================================================
+// HolyGrailLayout.qml — El clasico "Holy Grail" de diseno web en QML
+// =============================================================================
+// El "Holy Grail Layout" es un patron de diseno web clasico que fue
+// notoriamente dificil de implementar en CSS durante anos. Consiste en:
+//
+//   +-------------------------------------------+
+//   |              Header / Navbar              |
+//   +--------+-----------------+--------+
+//   |  Nav   |   Main Content  | Aside  |
+//   | (fijo) |   (flexible)    | (fijo) |
+//   +--------+-----------------+--------+
+//   |               Footer                      |
+//   +-------------------------------------------+
+//
+// En QML, este layout es trivial gracias a ColumnLayout + RowLayout:
+// 1. ColumnLayout exterior: apila header, cuerpo y footer verticalmente.
+// 2. RowLayout interior: coloca sidebar, contenido y aside en fila.
+// 3. El contenido central usa fillWidth + fillHeight para ocupar TODO
+//    el espacio sobrante despues de reservar los anchos fijos de los
+//    paneles laterales y las alturas fijas de header/footer.
+//
+// Leccion para el aprendiz: este es el patron mas importante para
+// aplicaciones de escritorio — header fijo, footer fijo, sidebar(s)
+// de ancho fijo, y contenido que llena el resto.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -30,7 +57,12 @@ ColumnLayout {
                 anchors.margins: Style.resize(6)
                 spacing: Style.resize(4)
 
-                // Header
+                // -------------------------------------------------------------
+                // Header: altura fija, ancho completo
+                // Contiene logo/titulo a la izquierda y navegacion a la derecha.
+                // Item { fillWidth } actua como "spacer" para empujar los
+                // links de navegacion hacia la derecha.
+                // -------------------------------------------------------------
                 Rectangle {
                     Layout.fillWidth: true
                     height: Style.resize(36)
@@ -63,13 +95,20 @@ ColumnLayout {
                     }
                 }
 
-                // Middle row: sidebar + content + aside
+                // -------------------------------------------------------------
+                // Fila central: la clave del Holy Grail
+                // - Sidebar izquierdo: preferredWidth fijo (100px)
+                // - Contenido central: fillWidth + fillHeight (expansible)
+                // - Aside derecho: preferredWidth fijo (90px)
+                // El contenido central se expande automaticamente para
+                // llenar todo el espacio que los paneles laterales no usan.
+                // -------------------------------------------------------------
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: Style.resize(4)
 
-                    // Left sidebar
+                    // Sidebar de navegacion (ancho fijo)
                     Rectangle {
                         Layout.preferredWidth: Style.resize(100)
                         Layout.fillHeight: true
@@ -103,7 +142,7 @@ ColumnLayout {
                         }
                     }
 
-                    // Main content
+                    // Contenido principal (expansion total)
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -119,7 +158,7 @@ ColumnLayout {
                         }
                     }
 
-                    // Right aside
+                    // Panel lateral derecho (ancho fijo)
                     Rectangle {
                         Layout.preferredWidth: Style.resize(90)
                         Layout.fillHeight: true
@@ -151,7 +190,7 @@ ColumnLayout {
                     }
                 }
 
-                // Footer
+                // Footer: altura fija, ancho completo
                 Rectangle {
                     Layout.fillWidth: true
                     height: Style.resize(28)

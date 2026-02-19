@@ -1,3 +1,22 @@
+// =============================================================================
+// InteractiveScrollCard.qml — Scroll programático y carga dinámica
+// =============================================================================
+// Demuestra dos patrones avanzados de scroll:
+// 1. Navegación programática: botones que mueven la vista al inicio/fin
+//    usando positionViewAtBeginning() y positionViewAtEnd() de ListView
+// 2. "Infinite scroll" (carga incremental): al llegar al final de la lista
+//    se agregan más elementos automáticamente (patrón común en apps móviles)
+//
+// Usa ListView en vez de ScrollView porque ListView virtualiza los delegates:
+// solo crea instancias para los elementos visibles, lo que es mucho más
+// eficiente con listas largas que un Repeater dentro de ScrollView.
+//
+// Aprendizaje clave:
+// - onAtYEndChanged detecta cuándo el usuario llega al final de la lista
+// - positionViewAtBeginning/End() permite navegación programática
+// - ListView es preferible a ScrollView+Repeater para listas de datos
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +27,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Propiedad reactiva: al cambiar itemCount, ListView actualiza
+    // automáticamente su modelo y muestra los nuevos elementos.
     property int itemCount: 10
 
     ColumnLayout {
@@ -22,7 +43,7 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Controls
+        // Barra de controles: botones de navegación programática y contador
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -36,6 +57,7 @@ Rectangle {
                 onClicked: scrollListView.positionViewAtEnd()
             }
 
+            // Item vacío como espaciador flexible (empuja el Label a la derecha)
             Item { Layout.fillWidth: true }
 
             Label {
@@ -52,6 +74,9 @@ Rectangle {
             radius: Style.resize(4)
             clip: true
 
+            // ListView con virtualización: a diferencia de Repeater (que crea
+            // todos los elementos), ListView solo instancia los delegates
+            // visibles en pantalla, reciclándolos al hacer scroll.
             ListView {
                 id: scrollListView
                 anchors.fill: parent
@@ -72,6 +97,8 @@ Rectangle {
                         anchors.leftMargin: Style.resize(10)
                         anchors.rightMargin: Style.resize(10)
 
+                        // Círculo con número: radio = mitad del tamaño
+                        // para crear un círculo perfecto
                         Rectangle {
                             width: Style.resize(24)
                             height: Style.resize(24)
@@ -95,21 +122,24 @@ Rectangle {
                     }
                 }
 
-                // Load more when reaching the bottom
+                // Patrón "infinite scroll": atYEnd se vuelve true cuando
+                // el usuario llega al final. Agregamos 5 elementos más
+                // hasta un máximo de 50 para evitar crecimiento infinito.
                 onAtYEndChanged: {
                     if (atYEnd && root.itemCount < 50) {
                         root.itemCount += 5
                     }
                 }
 
-                // Scroll position indicator
                 ScrollBar.vertical: ScrollBar {
                     active: true
                     policy: ScrollBar.AsNeeded
                 }
             }
 
-            // "Loading more" indicator
+            // Indicador flotante de "carga": se posiciona con anchors sobre
+            // el ListView (no dentro de él) para que no se desplace con el
+            // contenido. Desaparece al alcanzar el límite de 50 items.
             Rectangle {
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter

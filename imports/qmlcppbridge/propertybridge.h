@@ -1,3 +1,33 @@
+// =============================================================================
+// EDUCATIVO: Q_PROPERTY — El mecanismo principal de data binding entre C++ y QML
+// =============================================================================
+//
+// Anatomia de Q_PROPERTY:
+//   Q_PROPERTY(tipo nombre READ getter WRITE setter NOTIFY signal)
+//
+//   READ   : obligatorio, funcion getter que QML llama al leer la propiedad
+//   WRITE  : opcional, funcion setter que QML llama al escribir la propiedad
+//            (omitir para propiedades de solo lectura)
+//   NOTIFY : signal emitida cuando el valor cambia. OBLIGATORIA para que
+//            los bindings de QML funcionen. Sin ella, QML muestra el warning:
+//            "Property used in binding but has no NOTIFY signal"
+//
+// Propiedades con solo READ+NOTIFY (sin WRITE) como "tags" y "summary"
+// son de solo lectura desde QML — QML puede leerlas y hacer bindings,
+// pero no puede asignarles un valor directamente.
+//
+// Metodos Q_INVOKABLE (increment, addTag, etc.): QML puede llamarlos
+// directamente como:  bridge.increment()
+//
+// Getters inline: int counter() const { return m_counter; }
+//   Definidos en el header para rendimiento (el compilador puede inlinearlos).
+//   El "const" es importante: Qt requiere que los getters sean const.
+//
+// Inicializacion de miembros: int m_counter = 0;
+//   Inicializacion en la clase (C++11), evita olvidar inicializar en el
+//   constructor.
+// =============================================================================
+
 #ifndef PROPERTYBRIDGE_H
 #define PROPERTYBRIDGE_H
 

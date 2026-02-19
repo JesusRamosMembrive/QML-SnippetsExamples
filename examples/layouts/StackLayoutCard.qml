@@ -1,3 +1,26 @@
+// =============================================================================
+// StackLayoutCard.qml — Demo de StackLayout para navegacion por paginas
+// =============================================================================
+// StackLayout apila todos sus hijos uno encima de otro como una baraja de
+// cartas, mostrando solo el hijo correspondiente a currentIndex. Es el
+// layout ideal para:
+// - Wizards o asistentes paso a paso
+// - Tab views (vistas por pestanas)
+// - Paginas de configuracion con secciones
+//
+// Conceptos clave:
+// 1. currentIndex: unica propiedad que controla que pagina se muestra.
+//    Los demas hijos no son visibles ni participan en el layout.
+//
+// 2. Cada hijo automaticamente ocupa todo el espacio del StackLayout
+//    (no necesita anchors.fill), lo cual simplifica la creacion de
+//    paginas a pantalla completa dentro del stack.
+//
+// 3. Patron de navegacion: los botones superiores usan highlighted
+//    (binding a currentPage) para indicar la pagina activa, creando
+//    una interfaz tipo tab bar sin usar TabBar.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +42,12 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Page buttons
+        // ---------------------------------------------------------------------
+        // Botones de navegacion (simula un TabBar)
+        // La propiedad currentPage esta en el RowLayout y se vincula al
+        // currentIndex del StackLayout. highlighted indica visualmente
+        // cual boton/pagina esta activo.
+        // ---------------------------------------------------------------------
         RowLayout {
             id: pageButtons
             Layout.fillWidth: true
@@ -49,14 +77,20 @@ Rectangle {
             }
         }
 
-        // Page indicator
+        // Indicador textual de la pagina actual
         Label {
             text: "Current page: " + (stackLayout.currentIndex + 1) + " of 3"
             font.pixelSize: Style.resize(13)
             color: Style.fontPrimaryColor
         }
 
-        // StackLayout
+        // ---------------------------------------------------------------------
+        // StackLayout con 3 paginas
+        // Solo una pagina es visible a la vez. Cada pagina tiene un estilo
+        // visual diferente (color de fondo y borde) para que el cambio
+        // sea evidente. Los colores usan notacion "#RRGGBBAA" donde los
+        // ultimos 2 digitos ("20") dan un 12% de opacidad al fondo.
+        // ---------------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -70,7 +104,7 @@ Rectangle {
                 anchors.margins: Style.resize(8)
                 currentIndex: pageButtons.currentPage
 
-                // Page 1
+                // Pagina 1: bienvenida con icono cuadrado
                 Rectangle {
                     color: "#4A90D920"
                     radius: Style.resize(8)
@@ -106,7 +140,7 @@ Rectangle {
                     }
                 }
 
-                // Page 2
+                // Pagina 2: contenido con circulos generados por Repeater
                 Rectangle {
                     color: "#00D1A920"
                     radius: Style.resize(8)
@@ -156,7 +190,7 @@ Rectangle {
                     }
                 }
 
-                // Page 3
+                // Pagina 3: resumen con boton estilo "pill" (bordes redondeados)
                 Rectangle {
                     color: "#FEA60120"
                     radius: Style.resize(8)

@@ -1,3 +1,26 @@
+// =============================================================================
+// GaugeItem - Medidor semicircular tipo velocimetro/tacometro
+// =============================================================================
+//
+// Otro ejemplo de QQuickPaintedItem que dibuja un medidor (gauge) con:
+//   - Arco de fondo (rango total) y arco de valor (rango actual)
+//   - Marcas de graduacion (ticks) distribuidas uniformemente
+//   - Aguja indicadora que apunta al valor actual
+//   - Texto del valor numerico y etiqueta descriptiva
+//
+// Propiedades controlables desde QML:
+//   - value/minValue/maxValue: rango y valor actual del medidor
+//   - label: texto descriptivo ("RPM", "km/h", "%", etc.)
+//   - gaugeColor/backgroundColor: colores personalizables
+//
+// Tecnica de dibujo: usa drawArc() con angulos en dieciseisavos de grado
+// (unidades de Qt para arcos). El arco abarca 270 grados (de 225 a -45),
+// dejando un hueco en la parte inferior.
+//
+// qBound(): limita un valor a un rango [min, max]. Evita que la aguja
+// se salga del arco si el valor excede los limites.
+// =============================================================================
+
 #ifndef GAUGEITEM_H
 #define GAUGEITEM_H
 

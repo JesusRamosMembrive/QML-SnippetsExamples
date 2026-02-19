@@ -1,3 +1,20 @@
+// =============================================================================
+// VerticalSplitCard.qml — SplitView vertical con tres paneles
+// =============================================================================
+// Demuestra un SplitView orientado verticalmente con tres secciones:
+// Header, Content y Footer, simulando un layout clásico de aplicación web.
+//
+// A diferencia del ejemplo horizontal (2 paneles), este usa 3 paneles para
+// mostrar que SplitView acepta cualquier cantidad de hijos. Cada handle
+// entre paneles es independiente y arrastrable.
+//
+// Conceptos clave:
+// - orientation: Qt.Vertical divide de arriba hacia abajo
+// - El handle es horizontal (ancho > alto), adaptado a la orientación
+// - SplitView.fillHeight en el panel central absorbe el espacio restante
+// - preferredHeight + minimumHeight en header/footer para límites razonables
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -25,6 +42,11 @@ Rectangle {
             Layout.fillHeight: true
             orientation: Qt.Vertical
 
+            // -- Handle horizontal --
+            // Nótese que el indicador de agarre ("grip") aquí es horizontal
+            // (width: 30, height: 2), al contrario del ejemplo horizontal
+            // donde era vertical. Esto da pistas visuales de la dirección
+            // en que se puede arrastrar.
             handle: Rectangle {
                 implicitWidth: Style.resize(6)
                 implicitHeight: Style.resize(6)
@@ -42,6 +64,9 @@ Rectangle {
                 }
             }
 
+            // -- Panel superior (Header) --
+            // preferredHeight define el alto inicial; minimumHeight evita
+            // que el usuario lo colapse por completo.
             Rectangle {
                 SplitView.preferredHeight: root.height * 0.25
                 SplitView.minimumHeight: Style.resize(50)
@@ -56,6 +81,9 @@ Rectangle {
                 }
             }
 
+            // -- Panel central (Content) --
+            // fillHeight: true absorbe todo el espacio sobrante. Cuando el
+            // usuario agranda header o footer, este panel se encoge y viceversa.
             Rectangle {
                 SplitView.fillHeight: true
                 color: Style.surfaceColor
@@ -69,6 +97,7 @@ Rectangle {
                 }
             }
 
+            // -- Panel inferior (Footer) --
             Rectangle {
                 SplitView.preferredHeight: root.height * 0.2
                 SplitView.minimumHeight: Style.resize(40)

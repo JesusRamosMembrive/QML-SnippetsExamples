@@ -1,3 +1,18 @@
+// =============================================================================
+// IconTabBarCard.qml — TabBar con iconos Unicode
+// =============================================================================
+// Demuestra como enriquecer visualmente un TabBar usando caracteres Unicode
+// como sustitutos de iconos reales. Esta tecnica es util para prototipos
+// rapidos donde no se dispone de assets graficos.
+//
+// Cada pestana muestra un icono Unicode junto al texto. En el contenido del
+// StackLayout, el mismo icono se repite en tamano grande para reforzar la
+// identidad visual de cada seccion. Los colores varian por seccion para
+// mostrar como personalizar la apariencia de cada pagina.
+//
+// Aprendizaje clave: los caracteres Unicode (\u2302, \u2709, \u2605, \u2699)
+// son una alternativa rapida a iconos de imagen cuando se necesita prototipar.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +35,12 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // TabBar with unicode icons as visual stand-ins
+        // ---------------------------------------------------------------------
+        // TabBar con iconos Unicode integrados en el texto.
+        // Se usa la concatenacion "icono + espacio + texto" directamente en la
+        // propiedad text. Es una solucion rapida, aunque para produccion se
+        // recomienda usar TabButton con icon.source o contentItem personalizado.
+        // ---------------------------------------------------------------------
         TabBar {
             id: iconTabBar
             Layout.fillWidth: true
@@ -43,6 +63,12 @@ Rectangle {
             }
         }
 
+        // ---------------------------------------------------------------------
+        // Contenido de cada pestana: icono grande + texto descriptivo.
+        // Cada seccion tiene un color de icono distinto para mostrar que se
+        // puede personalizar la apariencia por pestana. El Layout.alignment
+        // centra los elementos horizontal y verticalmente.
+        // ---------------------------------------------------------------------
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true

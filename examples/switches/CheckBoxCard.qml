@@ -1,3 +1,20 @@
+// =============================================================================
+// CheckBoxCard.qml — Tarjeta con ejemplo de CheckBox y patron "Select All"
+// =============================================================================
+// Demuestra el componente CheckBox de Qt Quick Controls 2 con una funcionalidad
+// comun en interfaces reales: un checkbox padre "Select All" que controla
+// multiples checkboxes hijos.
+//
+// Patron clave — tristate (tres estados):
+//   - Qt.Checked: todos los hijos estan marcados
+//   - Qt.Unchecked: ninguno esta marcado
+//   - Qt.PartiallyChecked: algunos si, otros no (el indicador muestra un guion)
+//
+// El estado del padre se calcula reactivamente contando cuantos hijos estan
+// checked. Cuando el usuario hace click en el padre, se fuerza el estado de
+// todos los hijos a checked o unchecked segun la logica en onClicked.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,6 +36,15 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // -----------------------------------------------------------------
+        // CheckBox padre con tristate: true — permite tres estados visuales.
+        // checkState se calcula con un binding que cuenta los hijos activos.
+        // onClicked alterna entre "todos seleccionados" y "ninguno".
+        //
+        // Nota: usamos onClicked (no onCheckStateChanged) porque queremos
+        // reaccionar solo a clicks del usuario, no a cambios programaticos
+        // que ocurren cuando los hijos cambian y recalculan checkState.
+        // -----------------------------------------------------------------
         CheckBox {
             id: selectAllCheckBox
             text: "Select All"
@@ -40,6 +66,11 @@ Rectangle {
             }
         }
 
+        // -----------------------------------------------------------------
+        // Checkboxes hijos — indentados con leftMargin para indicar jerarquia.
+        // Cada uno es independiente: el usuario puede marcarlos individualmente
+        // y el padre se recalcula automaticamente gracias al binding reactivo.
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.leftMargin: Style.resize(30)
             spacing: Style.resize(5)
@@ -68,6 +99,11 @@ Rectangle {
             color: Style.bgColor
         }
 
+        // -----------------------------------------------------------------
+        // Etiqueta de resumen: usa un bloque JavaScript en el binding para
+        // construir dinamicamente la lista de opciones seleccionadas.
+        // Esto muestra que los bindings de QML pueden contener logica compleja.
+        // -----------------------------------------------------------------
         Label {
             text: {
                 var selected = [];

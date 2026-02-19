@@ -1,3 +1,24 @@
+// =============================================================================
+// FormBuilderCard.qml — Formulario interactivo combinando multiples controles
+// =============================================================================
+// Este ejemplo integra todos los controles de entrada vistos en las tarjetas
+// anteriores (TextField, ComboBox, SpinBox, TextArea) en un formulario
+// practico con funcionalidad de envio y reinicio.
+//
+// Patrones educativos:
+//   - Gestion de estado con propiedades: `submitted` y `summary` controlan
+//     la visibilidad y contenido del resumen post-envio.
+//   - Uso de botones del estilo personalizado: GlowButton para la accion
+//     principal (submit) y PulseButton para la accion destructiva (reset).
+//     Esto demuestra como los estilos personalizados permiten comunicar
+//     jerarquia visual (accion primaria vs secundaria) con diferentes efectos.
+//   - Reinicio manual de formulario: en QML no existe un "form reset" nativo;
+//     hay que limpiar cada control individualmente. El handler de Reset
+//     demuestra este patron.
+//   - substring(0, 30) trunca el bio en el resumen para mantener el texto
+//     compacto, un patron comun en interfaces de previsualizacion.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +30,7 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Estado del formulario: estas propiedades controlan la UI post-envio
     property bool submitted: false
     property string summary: ""
 
@@ -24,7 +46,7 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Name
+        // Campo de nombre: TextField basico
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(3)
@@ -42,7 +64,7 @@ Rectangle {
             }
         }
 
-        // Department
+        // Selector de departamento: ComboBox con modelo de strings
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(3)
@@ -60,7 +82,7 @@ Rectangle {
             }
         }
 
-        // Years of Experience
+        // Anios de experiencia: SpinBox con rango 0-30
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -80,7 +102,7 @@ Rectangle {
             }
         }
 
-        // Bio
+        // Biografia: TextArea multilinea
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(3)
@@ -99,7 +121,13 @@ Rectangle {
             }
         }
 
-        // Buttons
+        // -----------------------------------------------------------------
+        // Botones de accion: GlowButton (primario) y PulseButton (secundario).
+        // Ambos son controles del estilo personalizado qmlsnippetsstyle.
+        // El submit construye un resumen concatenando los valores de todos
+        // los campos. El reset limpia cada campo manualmente — no hay un
+        // mecanismo automatico de "form reset" en QML.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -134,7 +162,12 @@ Rectangle {
             }
         }
 
-        // Summary
+        // -----------------------------------------------------------------
+        // Resumen: solo visible despues de hacer submit. El binding
+        // `visible: root.submitted` oculta este Label hasta que el usuario
+        // presione Submit. En QML, `visible: false` evita el renderizado
+        // y el calculo de layout del elemento.
+        // -----------------------------------------------------------------
         Label {
             visible: root.submitted
             text: "Submitted: " + root.summary

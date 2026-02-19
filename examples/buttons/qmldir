@@ -1,3 +1,11 @@
+# =============================================================================
+# qmldir — Manifiesto del módulo de ejemplo "buttons"
+# =============================================================================
+# Declara todos los tipos QML exportados por este módulo.
+# El Dashboard carga "qrc:/qt/qml/buttons/Main.qml" que es el Main declarado aquí.
+# Las tarjetas (*Card) son tipos internos del módulo usados solo por Main.qml,
+# pero deben declararse aquí para que el sistema de módulos las encuentre.
+# =============================================================================
 module buttons
 Main 1.0 Main.qml
 StandardButtonsCard 1.0 StandardButtonsCard.qml

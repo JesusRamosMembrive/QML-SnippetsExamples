@@ -1,3 +1,23 @@
+// =============================================================================
+// SignalStrength.qml — Indicador de intensidad de senal tipo WiFi/celular
+// =============================================================================
+// Muestra 6 niveles de senal (Excellent a None) con barras escalonadas, como
+// los iconos de senal de un telefono movil. Cada nivel muestra 5 barras
+// donde las activas se colorean y las inactivas quedan en gris translucido.
+//
+// Patrones clave:
+//   - Repeater anidados: el exterior itera sobre los 6 niveles de senal,
+//     el interior genera las 5 barras de cada indicador. Esto demuestra
+//     como componer layouts complejos con datos declarativos.
+//   - Modelo como array de objetos JS: en vez de un ListModel, el Repeater
+//     usa un array literal con {bars, label, clr}. Es mas conciso para
+//     datos estaticos y permite acceder via modelData.
+//   - "required property" en delegates: patron de Qt 6 que reemplaza el
+//     acceso implicito a model.xxx, es mas explicito y seguro con tipos.
+//   - Altura proporcional al indice: height = 10 + index * 8 crea el
+//     efecto escalonado clasico de las barras de senal.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,7 +28,6 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.resize(8)
 
-    // ── Section 4: Signal Strength Bars ───────────────
     Label {
         text: "Signal Strength"
         font.pixelSize: Style.resize(16)
@@ -21,6 +40,9 @@ ColumnLayout {
         spacing: Style.resize(40)
         Layout.alignment: Qt.AlignHCenter
 
+        // ── Repeater externo: un grupo de barras por cada nivel ──
+        // Cada objeto del modelo define cuantas barras estan activas (bars),
+        // la etiqueta descriptiva y el color correspondiente.
         Repeater {
             model: [
                 { bars: 5, label: "Excellent", clr: "#34C759" },
@@ -42,6 +64,10 @@ ColumnLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: Style.resize(3)
 
+                    // ── Repeater interno: las 5 barras de cada indicador ──
+                    // La condicion index < bars determina si la barra esta
+                    // activa (coloreada) o inactiva (translucida).
+                    // anchors.bottom alinea todas al pie para el efecto escalonado.
                     Repeater {
                         model: 5
                         delegate: Rectangle {

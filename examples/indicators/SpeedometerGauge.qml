@@ -1,3 +1,25 @@
+// =============================================================================
+// SpeedometerGauge.qml — Velocimetro analogico dibujado con Canvas
+// =============================================================================
+// Un velocimetro completo (0-240 km/h) con arco de colores, marcas de escala,
+// etiquetas numericas, aguja y lectura digital central. Todo pintado con la
+// API Canvas 2D de QML, similar a HTML5 Canvas.
+//
+// Patrones clave:
+//   - Canvas como instrumento analogico: el Canvas se repinta cada vez que
+//     cambia la velocidad (via Connections + requestPaint). No se usa
+//     animacion de Canvas — se redibuja el frame completo en cada cambio.
+//   - Gradiente de color por segmentos: como Canvas 2D no soporta
+//     gradientes a lo largo de un arco, se divide en ~60 micro-segmentos
+//     y se interpola el color RGB manualmente (verde→amarillo→rojo).
+//   - Trigonometria para posicionamiento: todas las posiciones (marcas,
+//     etiquetas, aguja) se calculan con cos/sin sobre angulos en radianes.
+//     El arco abarca 240° (de 150° a 390°) dejando un hueco abajo.
+//   - Connections vs onValueChanged: se usa Connections apuntando al
+//     contenedor para detectar cambios en speed y repintar el Canvas.
+//     Esto desacopla el Canvas del Slider.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +42,9 @@ ColumnLayout {
         spacing: Style.resize(30)
         Layout.alignment: Qt.AlignHCenter
 
-        // Speedometer
+        // ── Contenedor del velocimetro ──
+        // Las propiedades speed y maxSpeed se definen aqui para que el
+        // Canvas y la lectura digital puedan acceder a ellas por id.
         Item {
             id: speedoContainer
             Layout.preferredWidth: Style.resize(260)
@@ -41,11 +65,13 @@ ColumnLayout {
                     var cy = height / 2
                     var r = Math.min(cx, cy) - Style.resize(15)
 
-                    // Background arc (full sweep 240°)
+                    // ── Geometria del arco ──
+                    // 150° a 390° = arco de 240° con hueco en la parte inferior.
+                    // Los angulos en Canvas se miden en radianes desde las 3h.
                     var startAngle = (150) * Math.PI / 180
                     var endAngle = (390) * Math.PI / 180
 
-                    // Outer ring
+                    // Arco de fondo (riel completo semitransparente)
                     ctx.beginPath()
                     ctx.arc(cx, cy, r, startAngle, endAngle, false)
                     ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.08)
@@ -53,11 +79,14 @@ ColumnLayout {
                     ctx.lineCap = "butt"
                     ctx.stroke()
 
-                    // Speed arc with gradient color
+                    // ── Arco de velocidad con gradiente por segmentos ──
+                    // Se divide el arco activo en 60 partes. Cada una calcula
+                    // su color RGB segun la fraccion total del rango:
+                    //   0%-50%: verde→amarillo (R sube, G constante)
+                    //   50%-100%: amarillo→rojo (G baja, B=0)
                     var speedFraction = speedoContainer.speed / speedoContainer.maxSpeed
                     var speedAngle = startAngle + speedFraction * (endAngle - startAngle)
 
-                    // Color zones: green → yellow → red
                     var segments = 60
                     for (var i = 0; i < segments; i++) {
                         var frac = i / segments
@@ -85,7 +114,9 @@ ColumnLayout {
                         ctx.stroke()
                     }
 
-                    // Tick marks
+                    // ── Marcas de escala (ticks) ──
+                    // 13 marcas (0 a 12): las pares son mayores con etiqueta.
+                    // Posicion = punto en la circunferencia a radio tickInner/Outer.
                     for (var t = 0; t <= 12; t++) {
                         var tickAngle = startAngle + (t / 12) * (endAngle - startAngle)
                         var isMajor = (t % 2 === 0)
@@ -101,7 +132,7 @@ ColumnLayout {
                         ctx.lineWidth = isMajor ? Style.resize(2) : Style.resize(1)
                         ctx.stroke()
 
-                        // Labels for major ticks
+                        // Etiquetas numericas solo en marcas mayores
                         if (isMajor) {
                             var labelR = r - Style.resize(40)
                             var labelVal = Math.round(t / 12 * speedoContainer.maxSpeed)
@@ -115,7 +146,9 @@ ColumnLayout {
                         }
                     }
 
-                    // Needle
+                    // ── Aguja ──
+                    // Linea simple desde el centro hasta el punto del arco
+                    // correspondiente a la velocidad actual. Color rojo fijo.
                     var needleAngle = startAngle + speedFraction * (endAngle - startAngle)
                     var needleLen = r - Style.resize(30)
                     ctx.beginPath()
@@ -127,7 +160,8 @@ ColumnLayout {
                     ctx.lineCap = "round"
                     ctx.stroke()
 
-                    // Center hub
+                    // ── Eje central (hub) ──
+                    // Dos circulos concentricos simulan un eje metalico.
                     ctx.beginPath()
                     ctx.arc(cx, cy, Style.resize(8), 0, 2 * Math.PI)
                     ctx.fillStyle = "#FF3B30"
@@ -138,6 +172,9 @@ ColumnLayout {
                     ctx.fill()
                 }
 
+                // Repintar el Canvas cada vez que cambia la velocidad.
+                // Connections es preferible a un binding en onPaint porque
+                // permite reaccionar a cambios de propiedades externas.
                 Connections {
                     target: speedoContainer
                     function onSpeedChanged() { speedoCanvas.requestPaint() }
@@ -145,7 +182,9 @@ ColumnLayout {
                 Component.onCompleted: requestPaint()
             }
 
-            // Digital readout
+            // ── Lectura digital superpuesta ──
+            // Se posiciona sobre el Canvas con anchors, creando una capa
+            // de texto encima del dibujo vectorial.
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
@@ -168,7 +207,9 @@ ColumnLayout {
             }
         }
 
-        // Speed slider control
+        // ── Controles del velocimetro ──
+        // El Slider controla la velocidad. La etiqueta cambia de color
+        // con operador ternario encadenado segun umbrales de velocidad.
         ColumnLayout {
             Layout.fillHeight: true
             spacing: Style.resize(10)

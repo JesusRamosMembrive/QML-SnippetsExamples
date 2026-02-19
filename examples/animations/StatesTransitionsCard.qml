@@ -1,3 +1,28 @@
+// ============================================================================
+// StatesTransitionsCard.qml
+// Concepto: States (estados) y Transitions (transiciones) en QML.
+//
+// El sistema de estados es una de las herramientas mas poderosas de QML para
+// gestionar interfaces complejas de forma declarativa:
+//
+//   - State: define un conjunto de valores de propiedades que representan una
+//     "configuracion" del componente (ej: cuadrado, circulo, rectangulo ancho).
+//     Cada estado tiene un nombre unico y usa PropertyChanges para definir
+//     que propiedades cambian y a que valores.
+//
+//   - Transition: define COMO se anima el cambio entre estados. Sin transitions,
+//     los cambios de estado son instantaneos. Con transitions, QML interpola
+//     automaticamente entre los valores del estado anterior y el nuevo.
+//
+// La ventaja clave es la SEPARACION DE RESPONSABILIDADES:
+//   - Los States definen el QUE (configuraciones validas)
+//   - Las Transitions definen el COMO (animaciones entre configuraciones)
+//   - La logica solo necesita cambiar 'state' a un nombre y todo se resuelve
+//
+// Este patron es ideal para botones con multiples estados, menus que se
+// expanden/colapsan, formularios con pasos, etc.
+// ============================================================================
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -20,6 +45,8 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // morphRect.state es reactivo: este binding se actualiza automaticamente
+        // cada vez que cambia el estado del rectangulo.
         Label {
             text: "Current: " + morphRect.state
             font.pixelSize: Style.resize(14)
@@ -27,7 +54,7 @@ Rectangle {
             color: Style.fontPrimaryColor
         }
 
-        // Morph area
+        // Area de morph
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -47,6 +74,9 @@ Rectangle {
                 color: "#4A90D9"
                 state: "square"
 
+                // states: lista de configuraciones posibles del componente.
+                // Cada State tiene un 'name' unico y un bloque PropertyChanges
+                // que especifica los valores de las propiedades en ese estado.
                 states: [
                     State {
                         name: "square"
@@ -59,6 +89,7 @@ Rectangle {
                     },
                     State {
                         name: "circle"
+                        // radius = width/2 convierte el rectangulo en circulo
                         PropertyChanges {
                             morphRect.width: Style.resize(100)
                             morphRect.height: Style.resize(100)
@@ -77,6 +108,12 @@ Rectangle {
                     }
                 ]
 
+                // transitions: define como se animan los cambios entre CUALQUIER par
+                // de estados. Sin 'from'/'to' explicitos, esta Transition se aplica
+                // a todas las combinaciones de estado.
+                // NumberAnimation interpola width, height y radius.
+                // ColorAnimation interpola el color (requiere su propia animacion
+                // porque el color no es un numero simple).
                 transitions: [
                     Transition {
                         NumberAnimation {
@@ -92,7 +129,9 @@ Rectangle {
             }
         }
 
-        // State buttons
+        // Botones de estado: al hacer clic, solo cambian morphRect.state.
+        // Las Transitions se encargan automaticamente de la animacion.
+        // 'highlighted' refleja visualmente cual estado esta activo.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)

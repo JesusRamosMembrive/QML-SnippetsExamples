@@ -1,3 +1,22 @@
+// =============================================================================
+// ComboSpinCard.qml — ComboBox y SpinBox con preview visual reactivo
+// =============================================================================
+// Demuestra ComboBox (seleccion de lista desplegable) y SpinBox (entrada
+// numerica acotada con botones +/-), ambos controles nativos de Qt Quick
+// Controls 2. Lo mas interesante de este ejemplo es la preview reactiva:
+// un rectangulo que cambia de color, tamano y radio en tiempo real segun
+// los valores seleccionados por el usuario.
+//
+// Patrones educativos:
+//   - `Behavior on <propiedad>`: anima automaticamente cualquier cambio de
+//     esa propiedad. Aqui se usan 4 Behaviors distintos (width, height,
+//     radius, color) para que la transicion visual sea suave.
+//   - Binding con `switch/case` en la propiedad `color`: mapea el indice
+//     del ComboBox a un color hexadecimal. Es una alternativa a usar un
+//     modelo mas complejo con roles.
+//   - `toFixed(0)` para formatear numeros sin decimales en el Label interno.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +38,11 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // ComboBox
+        // -----------------------------------------------------------------
+        // ComboBox: el modelo mas simple es un array de strings. El valor
+        // seleccionado se accede con currentText (texto) o currentIndex
+        // (indice numerico, usado abajo para mapear al color).
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(5)
@@ -37,7 +60,11 @@ Rectangle {
             }
         }
 
-        // SpinBox - Radius
+        // -----------------------------------------------------------------
+        // Dos SpinBox en fila: controlan radio y tamano del rectangulo
+        // de preview. `from`/`to` definen el rango, `stepSize` el
+        // incremento por click. El valor actual se lee con `.value`.
+        // -----------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(15)
@@ -81,7 +108,13 @@ Rectangle {
             }
         }
 
-        // Preview Rectangle
+        // -----------------------------------------------------------------
+        // Preview reactiva: el rectangulo se actualiza automaticamente
+        // gracias a los bindings directos a las propiedades de los SpinBox
+        // y ComboBox. Los Behavior on <prop> generan animaciones suaves
+        // sin necesidad de controlar estados ni transiciones manualmente.
+        // Es la forma mas elegante de animar cambios en QML.
+        // -----------------------------------------------------------------
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true

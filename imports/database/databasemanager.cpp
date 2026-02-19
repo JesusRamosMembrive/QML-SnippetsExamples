@@ -1,20 +1,34 @@
+// =============================================================================
+// DatabaseManager - Implementacion del gestor de base de datos SQLite
+// =============================================================================
+
 #include "databasemanager.h"
 #include "sqltablemodel.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QUuid>
 
+// Constructor: genera un nombre de conexion unico con UUID.
+// Cada instancia de DatabaseManager tiene su propia conexion a la BD,
+// evitando colisiones si se crean multiples instancias en QML.
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
     , m_connectionName(QUuid::createUuid().toString())
 {
 }
 
+// Destructor: cierra la BD automaticamente al destruir el objeto.
+// Esto garantiza que no queden conexiones abiertas "huerfanas".
 DatabaseManager::~DatabaseManager()
 {
     closeDatabase();
 }
 
+// openDatabase(): abre una BD SQLite en memoria.
+// "QSQLITE" es el driver de Qt para SQLite.
+// ":memory:" crea la BD en RAM (rapida, pero se pierde al cerrar).
+// Para persistir datos, usar una ruta de archivo real, por ejemplo:
+//   db.setDatabaseName(QStandardPaths::writableLocation(...) + "/app.db");
 bool DatabaseManager::openDatabase()
 {
     if (m_isOpen)
@@ -34,6 +48,12 @@ bool DatabaseManager::openDatabase()
     return createSampleData();
 }
 
+// closeDatabase(): cierre seguro en dos pasos.
+// Paso 1: cerrar la conexion dentro de un scope {} para que el objeto
+//   QSqlDatabase local se destruya antes de removeDatabase().
+// Paso 2: removeDatabase() elimina la conexion del registro global de Qt.
+// Si no hacemos esto en dos pasos, Qt emite un warning:
+//   "QSqlDatabasePrivate::removeDatabase: connection '...' is still in use"
 void DatabaseManager::closeDatabase()
 {
     if (m_isOpen) {
@@ -47,6 +67,9 @@ void DatabaseManager::closeDatabase()
     }
 }
 
+// createTableModel(): fabrica un SqlTableModel conectado a la BD y a una tabla.
+// El modelo se crea como hijo de este DatabaseManager (parent = this),
+// asi Qt lo destruye automaticamente cuando el manager se destruye.
 SqlTableModel *DatabaseManager::createTableModel(const QString &tableName)
 {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);
@@ -56,6 +79,8 @@ SqlTableModel *DatabaseManager::createTableModel(const QString &tableName)
     return model;
 }
 
+// executeQuery(): ejecuta SQL arbitrario (CREATE, INSERT, UPDATE, DELETE).
+// Para consultas SELECT que devuelven datos, usar SqlQueryModel en su lugar.
 bool DatabaseManager::executeQuery(const QString &sql)
 {
     QSqlDatabase db = QSqlDatabase::database(m_connectionName);

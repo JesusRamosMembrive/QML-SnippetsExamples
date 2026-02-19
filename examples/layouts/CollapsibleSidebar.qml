@@ -1,3 +1,29 @@
+// =============================================================================
+// CollapsibleSidebar.qml — Sidebar colapsable con animacion
+// =============================================================================
+// Implementa el patron clasico de barra lateral que se puede expandir o
+// colapsar, muy comun en dashboards y aplicaciones de escritorio.
+//
+// Conceptos clave demostrados:
+// 1. Anchoring manual vs Layouts: la barra lateral usa anchors (left, top,
+//    bottom) con un width animado, en lugar de un Layout. Esto es
+//    intencional porque el ancho cambia con animacion — los Layouts
+//    recalculan posiciones sin animacion suave.
+//
+// 2. Behavior on width: anima el colapso/expansion con Easing.OutCubic
+//    (desaceleracion natural). El contenido principal se adapta
+//    automaticamente porque su anchor izquierdo esta vinculado al
+//    borde derecho del sidebar (anchors.left: sidebarPanel.right).
+//
+// 3. Doble visibilidad del texto: cuando el sidebar se colapsa, el Label
+//    usa TANTO visible: false (para no ocupar espacio en el layout)
+//    COMO opacity animada (para un fade out suave). Sin el visible,
+//    el texto seguiria ocupando espacio invisible.
+//
+// 4. Hover con MouseArea: cada item del menu cambia color al pasar el
+//    raton (containsMouse), dando retroalimentacion visual inmediata.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -28,7 +54,12 @@ ColumnLayout {
             radius: Style.resize(8)
             clip: true
 
-            // Sidebar
+            // -----------------------------------------------------------------
+            // Panel lateral (sidebar)
+            // Usa anchors manuales porque necesitamos animar el width.
+            // Con un Layout, el cambio de tamano seria instantaneo.
+            // Behavior on width da la transicion suave de 250ms.
+            // -----------------------------------------------------------------
             Rectangle {
                 id: sidebarPanel
                 anchors.left: parent.left
@@ -46,7 +77,8 @@ ColumnLayout {
                     anchors.margins: Style.resize(8)
                     spacing: Style.resize(4)
 
-                    // Toggle button
+                    // Boton toggle: alterna el estado abierto/cerrado
+                    // El icono cambia entre flecha izquierda y derecha
                     Rectangle {
                         Layout.fillWidth: true
                         height: Style.resize(32)
@@ -69,7 +101,12 @@ ColumnLayout {
                         }
                     }
 
-                    // Menu items
+                    // ---------------------------------------------------------
+                    // Items del menu generados con Repeater + modelo JS
+                    // Cada item tiene icono (siempre visible) + texto (se oculta
+                    // al colapsar). El primer item (index === 0) tiene un fondo
+                    // mas intenso para simular "seleccionado".
+                    // ---------------------------------------------------------
                     Repeater {
                         model: [
                             { icon: "\uD83C\uDFE0", label: "Home" },
@@ -104,6 +141,9 @@ ColumnLayout {
                                     font.pixelSize: Style.resize(16)
                                 }
 
+                                // El texto se oculta con visible + opacity animada.
+                                // visible: false evita que ocupe espacio;
+                                // Behavior on opacity da el efecto de fade.
                                 Label {
                                     text: sidebarItem.modelData.label
                                     font.pixelSize: Style.resize(12)
@@ -130,7 +170,13 @@ ColumnLayout {
                 }
             }
 
-            // Main content
+            // -----------------------------------------------------------------
+            // Contenido principal
+            // Su borde izquierdo esta anclado al borde derecho del sidebar,
+            // por lo que se expande automaticamente cuando el sidebar se
+            // colapsa. Este es el beneficio de usar anchors: la relacion
+            // espacial se mantiene sin codigo adicional.
+            // -----------------------------------------------------------------
             Rectangle {
                 anchors.left: sidebarPanel.right
                 anchors.right: parent.right
@@ -150,7 +196,9 @@ ColumnLayout {
                         color: Style.fontPrimaryColor
                     }
 
-                    // Mini stats cards
+                    // Tarjetas de estadisticas generadas con Repeater
+                    // Cada tarjeta usa fillWidth para repartir el espacio
+                    // equitativamente entre las 3
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: Style.resize(6)
@@ -192,7 +240,8 @@ ColumnLayout {
                         }
                     }
 
-                    // Content area
+                    // Area de contenido principal que crece para llenar
+                    // todo el espacio vertical restante (fillHeight)
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true

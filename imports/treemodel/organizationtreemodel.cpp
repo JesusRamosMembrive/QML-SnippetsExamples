@@ -1,5 +1,16 @@
+// =============================================================================
+// OrganizationTreeModel - Implementacion del modelo jerarquico interactivo
+// =============================================================================
+//
+// Implementa los mismos metodos base que FileSystemTreeModel (index, parent,
+// rowCount, data) con el mismo patron de internalPointer(), mas metodos
+// de escritura (setData, addNode, removeNode, editNode).
+// =============================================================================
+
 #include "organizationtreemodel.h"
 
+// Constructor: crea nodo raiz invisible con 4 columnas vacias (name, title,
+// department, email) y puebla el organigrama de ejemplo.
 OrganizationTreeModel::OrganizationTreeModel(QObject *parent)
     : QAbstractItemModel(parent)
     , m_rootItem(std::make_unique<TreeItem>(
@@ -10,6 +21,8 @@ OrganizationTreeModel::OrganizationTreeModel(QObject *parent)
 
 OrganizationTreeModel::~OrganizationTreeModel() = default;
 
+// index(): misma logica que FileSystemTreeModel — usa internalPointer() para
+// obtener el TreeItem padre, busca el hijo y crea un indice con createIndex().
 QModelIndex OrganizationTreeModel::index(int row, int column,
                                           const QModelIndex &parent) const
 {
@@ -26,6 +39,8 @@ QModelIndex OrganizationTreeModel::index(int row, int column,
     return {};
 }
 
+// parent(): DEBE retornar QModelIndex{} para elementos del nivel raiz.
+// Sin esta regla, Qt no puede determinar donde termina el arbol.
 QModelIndex OrganizationTreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -34,6 +49,7 @@ QModelIndex OrganizationTreeModel::parent(const QModelIndex &index) const
     auto *childItem = static_cast<TreeItem *>(index.internalPointer());
     TreeItem *parentItem = childItem->parentItem();
 
+    // Regla critica: nodo raiz o nullptr → indice invalido
     if (!parentItem || parentItem == m_rootItem.get())
         return {};
 
@@ -57,6 +73,8 @@ int OrganizationTreeModel::columnCount(const QModelIndex &) const
     return 1;
 }
 
+// data(): mapea cada rol a una columna del TreeItem.
+// Qt::DisplayRole se mapea al nombre para que funcione con vistas genericas.
 QVariant OrganizationTreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
@@ -79,6 +97,10 @@ QVariant OrganizationTreeModel::data(const QModelIndex &index, int role) const
     }
 }
 
+// setData(): modifica un campo individual del nodo.
+// Despues de modificar, emite dataChanged() para notificar a las vistas.
+// dataChanged(indice, indice, {roles}) indica QUE cambio y DONDE, para que
+// las vistas solo actualicen el delegate afectado (no toda la vista).
 bool OrganizationTreeModel::setData(const QModelIndex &index,
                                      const QVariant &value, int role)
 {
@@ -111,6 +133,8 @@ bool OrganizationTreeModel::setData(const QModelIndex &index,
     return changed;
 }
 
+// flags(): indica que cada nodo es seleccionable y editable.
+// Sin ItemIsEditable, setData() nunca seria llamado por las vistas.
 Qt::ItemFlags OrganizationTreeModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -119,6 +143,8 @@ Qt::ItemFlags OrganizationTreeModel::flags(const QModelIndex &index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
+// roleNames(): mapea roles a nombres para QML.
+// En QML se usa asi: Text { text: model.name } o model.department, etc.
 QHash<int, QByteArray> OrganizationTreeModel::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractItemModel::roleNames();
@@ -134,6 +160,16 @@ int OrganizationTreeModel::nodeCount() const
     return countNodes(m_rootItem.get());
 }
 
+// addNode(): agrega un nuevo nodo al arbol.
+//
+// SECUENCIA OBLIGATORIA:
+//   1. beginInsertRows(padre, fila_inicio, fila_fin)  ← notifica a las vistas
+//   2. Modificar los datos internos (agregar el TreeItem)
+//   3. endInsertRows()                                 ← confirma el cambio
+//
+// Sin begin/endInsertRows, las vistas no se enteran del nuevo nodo y pueden
+// crashear o mostrar datos corruptos. Esta es una regla FUNDAMENTAL de
+// QAbstractItemModel que se aplica a CUALQUIER modelo (listas, tablas, arboles).
 bool OrganizationTreeModel::addNode(const QModelIndex &parentIndex,
                                      const QString &name, const QString &title,
                                      const QString &department, const QString &email)
@@ -151,6 +187,8 @@ bool OrganizationTreeModel::addNode(const QModelIndex &parentIndex,
     return true;
 }
 
+// removeNode(): elimina un nodo y todos sus descendientes.
+// Misma secuencia obligatoria: beginRemoveRows → eliminar → endRemoveRows.
 bool OrganizationTreeModel::removeNode(const QModelIndex &index)
 {
     if (!index.isValid())
@@ -173,6 +211,9 @@ bool OrganizationTreeModel::removeNode(const QModelIndex &index)
     return true;
 }
 
+// editNode(): actualiza todos los campos de un nodo de una vez.
+// Emite dataChanged() con todos los roles afectados para que las vistas
+// refresquen todos los campos del delegate, no solo uno.
 bool OrganizationTreeModel::editNode(const QModelIndex &index,
                                       const QString &name, const QString &title,
                                       const QString &department, const QString &email)

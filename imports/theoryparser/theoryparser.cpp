@@ -1,3 +1,30 @@
+// =============================================================================
+// TheoryParser - Implementacion del parseador de teoria
+// =============================================================================
+//
+// Flujo de uso:
+//   1. Al instanciar TheoryParser, el constructor llama a scanChapters()
+//   2. scanChapters() recorre :/theory/ y construye la lista de capitulos/temas
+//   3. QML lee la propiedad 'chapters' para mostrar el indice de navegacion
+//   4. Cuando el usuario selecciona un tema, QML llama a getExplanation()
+//      y getCodeSections() para obtener el contenido parseado
+//   5. El resultado se cachea para evitar re-parsear en lecturas sucesivas
+//
+// Sistema de recursos Qt (QRC):
+//   Los archivos bajo ":/..." estan compilados dentro del ejecutable.
+//   Se acceden con QFile(":/ruta") igual que archivos normales, pero:
+//   - Siempre estan disponibles (no dependen del filesystem)
+//   - Son de solo lectura
+//   - Se comprimen automaticamente en el binario
+//   QDir(":/theory") lista directorios dentro de los recursos.
+//
+// Formato de marcadores:
+//   El parser busca etiquetas delimitadoras con formato <---NOMBRE--->.
+//   Es un formato propio de esta aplicacion, no un estandar.
+//   La seccion EXPLANATION contiene texto libre, FILES lista los nombres
+//   de secciones de codigo, y cada seccion tiene opcionalmente un Result.
+// =============================================================================
+
 #include "theoryparser.h"
 #include <QDir>
 #include <QFile>
@@ -11,11 +38,25 @@ TheoryParser::TheoryParser(QObject *parent)
     scanChapters();
 }
 
+// scanChapters - Descubre la estructura de capitulos y temas
+//
+// Recorre :/theory/ buscando subdirectorios (capitulos) y dentro de cada
+// uno, archivos .txt y .cpp (temas).
+//
+// Los directorios siguen la convencion "NN-Nombre" (ej: "01-Introduccion")
+// donde NN es un numero para ordenacion. Se extrae el numero antes del
+// primer guion para ordenar los capitulos numericamente.
+//
+// Cada capitulo se convierte en un QVariantMap con:
+//   - name: nombre completo del directorio ("01-Introduccion")
+//   - displayName: nombre sin el prefijo numerico ("Introduccion")
+//   - topics: QVariantList de {fileName, displayName} para cada archivo
 void TheoryParser::scanChapters()
 {
     QDir theoryDir(QStringLiteral(":/theory"));
     QStringList chapterDirs = theoryDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
 
+    // Ordenar capitulos por el numero antes del guion (01-, 02-, etc.)
     std::sort(chapterDirs.begin(), chapterDirs.end(),
               [](const QString &a, const QString &b) {
                   int numA = a.left(a.indexOf('-')).toInt();
@@ -27,10 +68,12 @@ void TheoryParser::scanChapters()
         QVariantMap chapter;
         chapter[QStringLiteral("name")] = chapterDir;
 
+        // Extraer nombre legible: todo despues del primer guion
         int dashIndex = chapterDir.indexOf('-');
         chapter[QStringLiteral("displayName")] =
             (dashIndex >= 0) ? chapterDir.mid(dashIndex + 1) : chapterDir;
 
+        // Listar archivos de temas (.txt y .cpp) dentro del capitulo
         QDir topicDir(theoryDir.filePath(chapterDir));
         QStringList filters;
         filters << QStringLiteral("*.txt") << QStringLiteral("*.cpp");
@@ -41,6 +84,7 @@ void TheoryParser::scanChapters()
         for (const QString &topicFile : topicFiles) {
             QVariantMap topic;
             topic[QStringLiteral("fileName")] = topicFile;
+            // displayName: quita la extension del archivo
             QString displayName = topicFile.left(topicFile.lastIndexOf('.'));
             topic[QStringLiteral("displayName")] = displayName;
             topics.append(topic);
@@ -56,6 +100,20 @@ QVariantList TheoryParser::chapters() const
     return m_chapters;
 }
 
+// parseFile - Parsea un archivo de teoria usando los marcadores delimitadores
+//
+// Formato esperado:
+//   <---EXPLANATION--->    -> Inicio del texto explicativo
+//   <---FILES--->          -> Lista de nombres de secciones de codigo
+//   <---NombreSeccion--->  -> Inicio del codigo de esa seccion
+//   <---NombreSeccion Result---> -> Resultado esperado de esa seccion
+//
+// El parser es tolerante:
+//   - Si no hay marcador EXPLANATION, todo el archivo es "explicacion"
+//     (util para archivos .cpp que son codigo puro)
+//   - Si no hay marcador FILES, solo hay explicacion sin secciones de codigo
+//   - Las entradas "NombreSeccion Result" en FILES se ignoran (se procesan
+//     automaticamente al encontrar la seccion correspondiente)
 TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath) const
 {
     ParsedContent result;
@@ -68,12 +126,13 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
     QString content = in.readAll();
     file.close();
 
+    // Buscar marcadores principales
     const QString explMarker = QStringLiteral("<---EXPLANATION--->");
     const QString filesMarker = QStringLiteral("<---FILES--->");
 
     int explStart = content.indexOf(explMarker);
     if (explStart < 0) {
-        // No EXPLANATION marker — treat whole file as content (e.g. .cpp files)
+        // Sin marcador EXPLANATION: todo el contenido es la explicacion
         result.explanation = content;
         return result;
     }
@@ -82,14 +141,15 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
     int filesStart = content.indexOf(filesMarker, explStart);
 
     if (filesStart < 0) {
-        // No FILES section — everything after EXPLANATION is the explanation
+        // Sin seccion FILES: todo despues de EXPLANATION es explicacion
         result.explanation = content.mid(explStart).trimmed();
         return result;
     }
 
+    // Extraer texto explicativo (entre EXPLANATION y FILES)
     result.explanation = content.mid(explStart, filesStart - explStart).trimmed();
 
-    // Extract FILES index
+    // --- Parsear indice de secciones de FILES ---
     int filesContentStart = filesStart + filesMarker.length();
     int nextMarkerAfterFiles = content.indexOf(QStringLiteral("<---"), filesContentStart);
     QString filesSection;
@@ -98,7 +158,8 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
     else
         filesSection = content.mid(filesContentStart).trimmed();
 
-    // Collect section names (skip "Result" entries)
+    // Filtrar nombres de secciones: ignorar las entradas "Result"
+    // (se procesan automaticamente al buscar el codigo)
     const QStringList fileNames = filesSection.split('\n', Qt::SkipEmptyParts);
     QStringList sectionNames;
     for (const QString &name : fileNames) {
@@ -107,8 +168,9 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
             sectionNames.append(trimmed);
     }
 
-    // Extract code sections
+    // --- Extraer codigo y resultado de cada seccion ---
     for (const QString &sectionName : sectionNames) {
+        // Construir etiquetas de busqueda dinamicamente
         QString startTag = QStringLiteral("<---") + sectionName + QStringLiteral("--->");
         QString resultTag = QStringLiteral("<---") + sectionName + QStringLiteral(" Result--->");
 
@@ -117,7 +179,7 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
             continue;
         codeStart += startTag.length();
 
-        // Find end — either the Result tag or the next <--- marker
+        // El codigo termina donde empieza el Result o el siguiente marcador
         int codeEnd = content.indexOf(resultTag, codeStart);
         if (codeEnd < 0)
             codeEnd = content.indexOf(QStringLiteral("<---"), codeStart);
@@ -128,7 +190,7 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
         else
             code = content.mid(codeStart).trimmed();
 
-        // Extract result if available
+        // Extraer resultado si existe la etiqueta "NombreSeccion Result"
         QString resultText;
         int resultStart = content.indexOf(resultTag);
         if (resultStart >= 0) {
@@ -146,6 +208,11 @@ TheoryParser::ParsedContent TheoryParser::parseFile(const QString &resourcePath)
     return result;
 }
 
+// getExplanation - Devuelve el texto explicativo de un tema
+//
+// Construye la ruta de recursos ":/theory/capitulo/tema.txt" y usa el cache.
+// Si el archivo ya fue parseado, devuelve el resultado cacheado directamente.
+// Si no, lo parsea y lo guarda en cache para futuras llamadas.
 QString TheoryParser::getExplanation(const QString &chapterDir, const QString &topicFile) const
 {
     QString path = QStringLiteral(":/theory/%1/%2").arg(chapterDir, topicFile);
@@ -156,6 +223,14 @@ QString TheoryParser::getExplanation(const QString &chapterDir, const QString &t
     return m_cache[path].explanation;
 }
 
+// getCodeSections - Devuelve las secciones de codigo como QVariantList
+//
+// Convierte la lista interna de CodeSection a QVariantList de QVariantMap,
+// que QML puede consumir directamente como un array de objetos JavaScript:
+//   [{ title: "...", code: "...", result: "..." }, ...]
+//
+// Esta conversion es necesaria porque QML no puede acceder a structs C++
+// directamente. QVariantMap es el tipo puente estandar.
 QVariantList TheoryParser::getCodeSections(const QString &chapterDir, const QString &topicFile) const
 {
     QString path = QStringLiteral(":/theory/%1/%2").arg(chapterDir, topicFile);

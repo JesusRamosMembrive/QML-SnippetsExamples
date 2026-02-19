@@ -1,3 +1,23 @@
+// =============================================================================
+// MultiSeriesCard.qml — Múltiples series de líneas animadas simultáneamente
+// =============================================================================
+// Muestra tres funciones matemáticas (seno, coseno y diente de sierra)
+// superpuestas en un mismo GraphsView, animadas en tiempo real.
+//
+// Conceptos clave:
+// - Múltiples LineSeries en un GraphsView: Se pueden superponer tantas series
+//   como se necesite. Cada una tiene su propio color y datos independientes.
+// - FrameAnimation centralizado: Un solo FrameAnimation (en sawSeries) actualiza
+//   las tres series. Esto es intencional — no se necesitan tres timers separados
+//   ya que todas comparten el mismo ciclo de actualización.
+// - pragma ComponentBehavior: Bound: Requerido en Qt 6.x cuando un Repeater
+//   usa `required property` para acceder a modelData de forma type-safe.
+// - Diente de sierra (sawtooth): Se genera con módulo — ((t) % (2*PI)) / (2*PI)
+//   produce una rampa lineal de 0 a 1 que se repite periódicamente.
+// - Desfase (phase): El slider de fase mueve la curva coseno respecto al seno,
+//   permitiendo visualizar la relación cos(x) = sin(x + PI/2).
+// =============================================================================
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -33,7 +53,8 @@ Rectangle {
             }
         }
 
-        // Frequency slider
+        // Slider de frecuencia: afecta las tres series por igual.
+        // Multiplica la velocidad temporal de la animación.
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Freq: " + multiFreqSlider.value.toFixed(1); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(60) }
@@ -43,7 +64,8 @@ Rectangle {
             }
         }
 
-        // Phase slider
+        // Slider de fase: desplaza la curva coseno respecto al seno.
+        // Rango 0 a 2*PI (6.28) para cubrir un ciclo completo.
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Phase: " + multiPhaseSlider.value.toFixed(1); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(60) }
@@ -53,7 +75,12 @@ Rectangle {
             }
         }
 
-        // Legend
+        // -------------------------------------------------------------------
+        // Leyenda con Repeater: genera un indicador color + texto por cada
+        // serie. El modelo es un array de objetos JS inline.
+        // `required property var modelData` es la forma type-safe de Qt 6
+        // para acceder a datos del modelo dentro de un delegate.
+        // -------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(15)
@@ -72,7 +99,7 @@ Rectangle {
             }
         }
 
-        // Graph area
+        // Área de la gráfica con tres LineSeries superpuestas
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -112,6 +139,7 @@ Rectangle {
                     max: 8
                 }
 
+                // Serie seno: la función trigonométrica base
                 LineSeries {
                     id: sinSeries
                     color: "#00D1A9"
@@ -123,6 +151,7 @@ Rectangle {
                     }
                 }
 
+                // Serie coseno: igual que seno pero desfasada por `phase`
                 LineSeries {
                     id: cosSeries
                     color: "#4A90D9"
@@ -134,6 +163,8 @@ Rectangle {
                     }
                 }
 
+                // Serie diente de sierra: onda lineal periódica.
+                // Contiene el FrameAnimation que actualiza las TRES series.
                 LineSeries {
                     id: sawSeries
                     color: "#FEA601"
@@ -146,6 +177,12 @@ Rectangle {
 
                     property real time: 0
 
+                    // Un solo FrameAnimation controla las tres series.
+                    // En cada frame recorre los 100 puntos y calcula:
+                    // - sin(t): onda sinusoidal pura
+                    // - cos(t + phase): seno desfasado por el slider
+                    // - sawtooth: rampa lineal usando operador módulo
+                    // Todas centradas en y=4 con amplitud escalada a +-2.5
                     FrameAnimation {
                         running: root.active && root.animRunning
                         onTriggered: {
@@ -165,7 +202,7 @@ Rectangle {
                                 let yc = Math.cos(t + phase) * 2.5 + 4.0
                                 cosSeries.replace(i, i, yc)
 
-                                // Sawtooth series
+                                // Sawtooth: módulo normalizado a [0,1], luego escalado
                                 let sawVal = ((t + phase * 2) % (Math.PI * 2)) / (Math.PI * 2)
                                 let ysaw = (sawVal * 2.0 - 1.0) * 2.0 + 4.0
                                 sawSeries.replace(i, i, ysaw)

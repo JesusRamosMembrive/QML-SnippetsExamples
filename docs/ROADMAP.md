@@ -81,7 +81,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **CustomItem** — QQuickPaintedItem, rendering custom desde C++
 - [x] **QMLCppBridge** — Q_PROPERTY, Q_INVOKABLE, senales C++ a QML
 - [x] **AsyncCpp** — QFuture, QtConcurrent, async C++ con UI
-- [ ] **Settings** — QSettings, preferencias persistentes, tema claro/oscuro
+- [x] **Settings** — QSettings, preferencias persistentes, tema claro/oscuro
 
 ### Showcases (aplicaciones practicas)
 - [x] **ChatUI** — Interfaz de chat, burbujas, input, scroll invertido

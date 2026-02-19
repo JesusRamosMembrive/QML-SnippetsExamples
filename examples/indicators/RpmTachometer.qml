@@ -1,3 +1,26 @@
+// =============================================================================
+// RpmTachometer.qml — Tacometro RPM con indicador de marcha automatico
+// =============================================================================
+// Un tacometro de motor (0-8000 RPM) dibujado con Canvas, similar al
+// SpeedometerGauge pero con diferencias importantes:
+//   - Arco de 270° (135° a 405°) vs 240° del velocimetro.
+//   - Zona roja fija (6000-8000 RPM) siempre visible como advertencia.
+//   - Aguja triangular (3 puntos) vs linea simple del velocimetro.
+//   - Indicador de marcha automatico: calcula la marcha (N,1-6) segun
+//     rangos de RPM y la resalta con color.
+//
+// Patrones clave:
+//   - Aguja triangular con Canvas: se dibujan 3 puntos usando
+//     trigonometria (punta + dos puntos laterales perpendiculares),
+//     se cierra el path y se rellena. Mas realista que una linea.
+//   - readonly property con bloque de codigo: "gear" usa un bloque {}
+//     con multiples return (via if/return) para calcular la marcha.
+//     QML permite expresiones complejas en propiedades readonly.
+//   - Zona roja permanente: se pinta sobre el arco de fondo ANTES
+//     del arco activo, como una capa semi-transparente que siempre
+//     esta visible, recordando al usuario el limite seguro.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -39,11 +62,12 @@ ColumnLayout {
                     var cx = width / 2, cy = height / 2
                     var r = Math.min(cx, cy) - Style.resize(10)
 
+                    // ── Geometria: arco de 270° (135° a 405°) ──
                     var startAngle = (135) * Math.PI / 180
                     var endAngle = (405) * Math.PI / 180
                     var totalSweep = endAngle - startAngle
 
-                    // Background arc
+                    // Arco de fondo
                     ctx.beginPath()
                     ctx.arc(cx, cy, r, startAngle, endAngle, false)
                     ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.06)
@@ -51,7 +75,10 @@ ColumnLayout {
                     ctx.lineCap = "butt"
                     ctx.stroke()
 
-                    // Red zone (6000-8000)
+                    // ── Zona roja permanente (6000-8000 RPM) ──
+                    // Se dibuja como capa semitransparente sobre el fondo.
+                    // Siempre visible independientemente del RPM actual,
+                    // como advertencia constante del limite de revoluciones.
                     var redStart = startAngle + (6000 / rpmContainer.maxRpm) * totalSweep
                     ctx.beginPath()
                     ctx.arc(cx, cy, r, redStart, endAngle, false)
@@ -59,7 +86,7 @@ ColumnLayout {
                     ctx.lineWidth = Style.resize(14)
                     ctx.stroke()
 
-                    // Active arc
+                    // ── Arco activo (azul o rojo si supera 6000) ──
                     var rpmFrac = rpmContainer.rpm / rpmContainer.maxRpm
                     var rpmAngle = startAngle + rpmFrac * totalSweep
                     ctx.beginPath()
@@ -69,7 +96,9 @@ ColumnLayout {
                     ctx.lineCap = "butt"
                     ctx.stroke()
 
-                    // Tick marks (0-8 for x1000)
+                    // ── Marcas de escala (0 a 8, representando x1000 RPM) ──
+                    // Las marcas >= 6 se pintan en rojo para reforzar
+                    // visualmente la zona de peligro.
                     for (var t = 0; t <= 8; t++) {
                         var tickAngle = startAngle + (t / 8) * totalSweep
                         var innerR = r - Style.resize(20)
@@ -84,7 +113,6 @@ ColumnLayout {
                         ctx.lineWidth = Style.resize(2)
                         ctx.stroke()
 
-                        // Labels
                         var labelR = r - Style.resize(32)
                         ctx.font = "bold " + Style.resize(11) + "px sans-serif"
                         ctx.fillStyle = t >= 6 ? "#FF3B30" : Style.fontSecondaryColor
@@ -95,7 +123,11 @@ ColumnLayout {
                             cy + labelR * Math.sin(tickAngle))
                     }
 
-                    // Needle
+                    // ── Aguja triangular ──
+                    // A diferencia del velocimetro (linea), aqui se dibujan
+                    // 3 puntos: la punta y dos puntos laterales desplazados
+                    // perpendicularmente (needleAngle + PI/2). closePath()
+                    // cierra el triangulo y fill() lo rellena.
                     var needleAngle = startAngle + rpmFrac * totalSweep
                     var needleLen = r - Style.resize(26)
                     ctx.beginPath()
@@ -109,7 +141,7 @@ ColumnLayout {
                     ctx.fillStyle = "#FF3B30"
                     ctx.fill()
 
-                    // Center cap
+                    // ── Eje central (doble circulo) ──
                     ctx.beginPath()
                     ctx.arc(cx, cy, Style.resize(10), 0, 2 * Math.PI)
                     ctx.fillStyle = "#444"
@@ -127,7 +159,7 @@ ColumnLayout {
                 Component.onCompleted: requestPaint()
             }
 
-            // Digital readout
+            // ── Lectura digital de RPM ──
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
@@ -150,7 +182,7 @@ ColumnLayout {
             }
         }
 
-        // RPM control
+        // ── Panel de control: Slider + indicador de marcha ──
         ColumnLayout {
             Layout.alignment: Qt.AlignVCenter
             spacing: Style.resize(10)
@@ -177,7 +209,11 @@ ColumnLayout {
                 color: rpmSlider.value > 6000 ? "#FF3B30" : "#5B8DEF"
             }
 
-            // Gear indicator
+            // ── Indicador de marcha automatico ──
+            // Cada Rectangle representa una marcha (N, 1-6). La propiedad
+            // "gear" se calcula con un bloque de codigo que evalua los
+            // rangos de RPM. Todas las instancias comparten la misma logica
+            // pero solo una se resalta como activa.
             RowLayout {
                 spacing: Style.resize(5)
 
@@ -188,6 +224,10 @@ ColumnLayout {
                         required property string modelData
                         required property int index
 
+                        // readonly property con bloque de codigo: permite
+                        // logica compleja (multiples if/return) dentro de
+                        // una propiedad declarativa. Se re-evalua cuando
+                        // rpmSlider.value cambia.
                         readonly property int gear: {
                             var r = rpmSlider.value
                             if (r < 200)  return 0  // N

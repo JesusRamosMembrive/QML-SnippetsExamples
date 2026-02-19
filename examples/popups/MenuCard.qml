@@ -1,3 +1,34 @@
+// =============================================================================
+// MenuCard.qml — Ejemplos de Menu dropdown y menu contextual
+// =============================================================================
+//
+// CONCEPTOS CLAVE:
+//
+// 1. Menu en Qt Quick Controls:
+//    - Menu es un componente emergente que muestra una lista vertical de acciones.
+//    - Se puede abrir de dos formas:
+//      a) Como dropdown: menu.popup(parent, x, y) posicionado relativo a un boton
+//      b) Como context menu: menu.popup() en la posicion del cursor (clic derecho)
+//
+// 2. MenuItem y sus variantes:
+//    - MenuItem: accion simple. onTriggered se ejecuta al seleccionarla.
+//    - MenuItem con checkable: true — actua como toggle (on/off).
+//      La propiedad checked refleja el estado actual.
+//    - MenuSeparator: linea divisoria para agrupar acciones relacionadas.
+//
+// 3. Menu contextual (clic derecho):
+//    - Se implementa con un MouseArea que acepta Qt.RightButton.
+//    - onClicked llama a contextMenu.popup() sin coordenadas — Qt usa
+//      automaticamente la posicion del cursor.
+//    - Es el patron estandar para menus contextuales en apps de escritorio.
+//
+// 4. popup() con posicionamiento:
+//    - popup(parent, x, y) posiciona el menu relativo a un componente.
+//    - popup(menuButton, 0, menuButton.height) lo abre justo debajo del
+//      boton, creando un efecto de "dropdown" clasico.
+//
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -7,7 +38,10 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
-    // Dropdown Menu
+    // --- Menu dropdown ---
+    // Combina items normales, un separador, e items checkable.
+    // Cada MenuItem reporta su seleccion actualizando un Label externo,
+    // lo que demuestra como capturar acciones del menu.
     Menu {
         id: dropdownMenu
 
@@ -26,6 +60,8 @@ Rectangle {
 
         MenuSeparator {}
 
+        // Items checkable: mantienen estado on/off.
+        // checked se actualiza automaticamente al pulsar.
         MenuItem {
             text: "Bold"
             checkable: true
@@ -39,7 +75,8 @@ Rectangle {
         }
     }
 
-    // Context Menu
+    // --- Menu contextual (clic derecho) ---
+    // No tiene posicion fija — aparece donde el usuario hace clic derecho.
     Menu {
         id: contextMenu
 
@@ -72,6 +109,9 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // Boton que abre el dropdown posicionado justo debajo.
+        // popup(menuButton, 0, menuButton.height) usa el boton como
+        // referencia y coloca el menu en (0, altura_del_boton).
         Button {
             id: menuButton
             text: "Open Menu"
@@ -79,6 +119,9 @@ Rectangle {
             onClicked: dropdownMenu.popup(menuButton, 0, menuButton.height)
         }
 
+        // Area interactiva para clic derecho.
+        // acceptedButtons: Qt.RightButton ignora clics izquierdos,
+        // permitiendo que solo el clic derecho abra el menu contextual.
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: Style.resize(80)
@@ -103,6 +146,8 @@ Rectangle {
             }
         }
 
+        // Label que refleja la ultima accion seleccionada en cualquiera
+        // de los dos menus, demostrando la captura de eventos onTriggered.
         Label {
             id: menuResultLabel
             text: "Selected: —"

@@ -1,3 +1,23 @@
+// =============================================================================
+// TextFieldCard.qml — Ejemplos de TextField con diferentes modos de entrada
+// =============================================================================
+// Demuestra las tres variantes mas comunes de TextField (control nativo de
+// Qt Quick Controls 2):
+//
+//   1. Texto basico: sin restricciones, el caso mas simple.
+//   2. Contrasena: usa `echoMode: TextInput.Password` para ocultar caracteres.
+//   3. Solo numeros: combina `RegularExpressionValidator` con `inputMethodHints`
+//      para restringir la entrada exclusivamente a digitos.
+//
+// Patron educativo clave: la validacion en QML ocurre en dos niveles:
+//   - `validator` rechaza caracteres en tiempo real (no permite escribirlos)
+//   - `inputMethodHints` sugiere al teclado virtual que tipo de entrada esperar
+//     (importante en dispositivos moviles, pero no bloquea en desktop)
+//
+// Al final de la tarjeta se muestra un resumen reactivo que refleja en tiempo
+// real los valores de los tres campos, gracias al binding declarativo de QML.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +39,10 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Basic TextField
+        // -----------------------------------------------------------------
+        // Campo basico: sin validacion ni restricciones. El TextField hereda
+        // su estilo visual del tema personalizado (qmlsnippetsstyle).
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(5)
@@ -37,7 +60,11 @@ Rectangle {
             }
         }
 
-        // Password TextField
+        // -----------------------------------------------------------------
+        // Campo de contrasena: echoMode oculta los caracteres escritos.
+        // Los modos disponibles son: Normal, Password, NoEcho y
+        // PasswordEchoOnEdit (muestra el ultimo caracter brevemente).
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(5)
@@ -56,7 +83,12 @@ Rectangle {
             }
         }
 
-        // Numbers-only TextField
+        // -----------------------------------------------------------------
+        // Campo numerico: RegularExpressionValidator con regex /[0-9]*/
+        // impide escribir letras. La regex valida toda la cadena, no solo
+        // caracteres individuales. Qt.ImhDigitsOnly le indica al sistema
+        // operativo que muestre un teclado numerico (relevante en movil).
+        // -----------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(5)
@@ -76,12 +108,19 @@ Rectangle {
             }
         }
 
+        // Separador visual
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(1)
             color: Style.bgColor
         }
 
+        // -----------------------------------------------------------------
+        // Resumen reactivo: este Label se actualiza automaticamente gracias
+        // a los bindings declarativos de QML. Cada vez que el usuario escribe
+        // en cualquier campo, el texto se recalcula sin necesidad de senales
+        // ni callbacks explicitos. Este es el poder del paradigma reactivo.
+        // -----------------------------------------------------------------
         Label {
             text: "Name: " + (nameField.text || "-")
                   + "  |  Password: " + (passwordField.text.length > 0 ? passwordField.text.length + " chars" : "-")

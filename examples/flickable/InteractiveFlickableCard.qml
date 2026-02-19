@@ -1,3 +1,23 @@
+// =============================================================================
+// InteractiveFlickableCard.qml — Laboratorio de propiedades de Flickable
+// =============================================================================
+// Permite experimentar en tiempo real con tres propiedades fundamentales de
+// Flickable: boundsBehavior, maximumFlickVelocity y flickDeceleration.
+// El objetivo es que el aprendiz "sienta" el efecto de cada parametro
+// al interactuar con el tablero de ajedrez arrastrandolo.
+//
+// Conceptos clave para el aprendiz:
+//   - boundsBehavior controla que pasa al llegar al borde del contenido:
+//       * StopAtBounds: se detiene inmediatamente (lo mas comun)
+//       * DragOverBounds: permite arrastrar un poco mas alla, con rebote
+//       * OvershootBounds: la inercia del flick puede sobrepasar el borde
+//   - maximumFlickVelocity: tope maximo de velocidad del flick (px/s).
+//     Valores altos hacen el scroll muy rapido e impreciso.
+//   - flickDeceleration: que tan rapido frena el scroll despues de soltar.
+//     Valores bajos = scroll largo y suave; altos = frenado brusco.
+//   - Indicadores duales (vertical + horizontal): el contenido es mas grande
+//     que el viewport en ambos ejes, asi que se necesitan dos scrollbars.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -25,6 +45,13 @@ Rectangle {
             Layout.fillHeight: true
             clip: true
 
+            // ---------------------------------------------------------------
+            // Flickable bidireccional: el contenido (500x500) es mayor que
+            // el viewport en ambos ejes. Las propiedades se enlazan
+            // directamente a los controles de abajo para experimentacion
+            // interactiva. Nota el uso de ternarios encadenados para mapear
+            // el indice del ComboBox al enum correspondiente.
+            // ---------------------------------------------------------------
             Flickable {
                 id: interFlick
                 anchors.fill: parent
@@ -43,7 +70,10 @@ Rectangle {
                     color: Style.surfaceColor
                     radius: Style.resize(8)
 
-                    // Checkerboard
+                    // Tablero de ajedrez 8x8 con colores HSL. La alternancia
+                    // de saturacion/luminosidad entre celdas pares e impares
+                    // crea el patron del tablero, mientras que el hue varia
+                    // con el index para agregar interes visual.
                     Grid {
                         anchors.fill: parent
                         anchors.margins: Style.resize(10)
@@ -81,7 +111,13 @@ Rectangle {
                 }
             }
 
-            // Scroll indicators
+            // ---------------------------------------------------------------
+            // Indicadores de scroll duales: uno vertical (derecha) y uno
+            // horizontal (abajo). Usan movingVertically/movingHorizontally
+            // para mayor precision — estas propiedades solo son true cuando
+            // hay movimiento en el eje correspondiente, a diferencia de
+            // "moving" que es true para cualquier eje.
+            // ---------------------------------------------------------------
             Rectangle {
                 anchors.right: parent.right
                 y: interFlick.visibleArea.yPosition * parent.height
@@ -104,7 +140,11 @@ Rectangle {
             }
         }
 
-        // Controls
+        // -------------------------------------------------------------------
+        // Panel de controles: cada propiedad del Flickable se puede ajustar
+        // en tiempo real. El ComboBox para boundsBehavior y los Sliders para
+        // velocity/deceleration estan enlazados directamente al Flickable.
+        // -------------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)

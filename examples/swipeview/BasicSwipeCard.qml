@@ -1,3 +1,20 @@
+// =============================================================================
+// BasicSwipeCard.qml — SwipeView basico con botones de navegacion
+// =============================================================================
+// Demuestra el uso fundamental de SwipeView: un contenedor que permite
+// deslizar horizontalmente entre varias paginas. El usuario puede navegar
+// mediante gestos de swipe o con los botones Prev/Next.
+//
+// SwipeView es ideal para interfaces donde el contenido se divide en
+// paginas secuenciales (onboarding, galerias, formularios multi-paso).
+// A diferencia de StackLayout (que requiere TabBar), SwipeView soporta
+// gestos tactiles de forma nativa.
+//
+// Aprendizaje clave: SwipeView.currentIndex se puede leer Y escribir.
+// Leerlo da la pagina actual; escribirlo navega programaticamente.
+// clip: true es necesario para evitar que las paginas adyacentes se
+// dibujen fuera de los limites del SwipeView.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,6 +37,13 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // ---------------------------------------------------------------------
+        // SwipeView con tres paginas estaticas.
+        // Cada pagina es un Rectangle con un Label centrado. Los colores
+        // distintos ayudan a visualizar el cambio de pagina.
+        // clip: true es esencial — sin el, las paginas adyacentes serian
+        // visibles durante la animacion de deslizamiento.
+        // ---------------------------------------------------------------------
         SwipeView {
             id: basicSwipe
             Layout.fillWidth: true
@@ -63,7 +87,12 @@ Rectangle {
             }
         }
 
-        // Navigation buttons
+        // ---------------------------------------------------------------------
+        // Barra de navegacion con botones Prev/Next y contador de paginas.
+        // enabled se vincula a los limites del indice para desactivar el boton
+        // cuando no hay mas paginas en esa direccion. Los Items con
+        // Layout.fillWidth actuan como espaciadores flexibles.
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
 

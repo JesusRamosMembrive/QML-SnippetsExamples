@@ -1,3 +1,20 @@
+// =============================================================================
+// Main.qml — Pagina principal del modulo de ejemplos de Layouts
+// =============================================================================
+// Este archivo es el punto de entrada de la seccion "Layouts" del showcase.
+// Organiza todas las tarjetas de ejemplo en una cuadricula de 2 columnas
+// (GridLayout) para los 4 layouts basicos, y luego una tarjeta grande que
+// contiene los 6 patrones de layout personalizados.
+//
+// Patrones clave demostrados:
+// - fullSize / opacity: mecanismo de visibilidad con animacion para la
+//   navegacion del Dashboard (solo la pagina activa es visible).
+// - ScrollView + ColumnLayout: scroll vertical con contenido que ocupa
+//   todo el ancho disponible (contentWidth: availableWidth).
+// - GridLayout de 2x2: distribucion uniforme de las tarjetas basicas.
+// - Separadores con Rectangle de 1px entre componentes personalizados.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -10,6 +27,11 @@ Item {
 
     property bool fullSize: false
 
+    // -------------------------------------------------------------------------
+    // Animacion de aparicion/desaparicion
+    // Se usa opacity + visible para que la pagina no consuma eventos de raton
+    // cuando esta oculta (visible: false). El Behavior anima la transicion.
+    // -------------------------------------------------------------------------
     opacity: fullSize ? 1.0 : 0.0
     visible: opacity > 0.0
     Behavior on opacity {
@@ -24,6 +46,11 @@ Item {
         anchors.fill: parent
         color: Style.bgColor
 
+        // ---------------------------------------------------------------------
+        // ScrollView envuelve todo el contenido para permitir scroll vertical.
+        // contentWidth: availableWidth evita scroll horizontal — el contenido
+        // se adapta al ancho disponible y solo crece verticalmente.
+        // ---------------------------------------------------------------------
         ScrollView {
             id: scrollView
             anchors.fill: parent
@@ -35,7 +62,7 @@ Item {
                 width: scrollView.availableWidth
                 spacing: Style.resize(40)
 
-                // Header
+                // Titulo de la pagina
                 Label {
                     text: "Layouts Examples"
                     font.pixelSize: Style.resize(32)
@@ -44,6 +71,13 @@ Item {
                     Layout.fillWidth: true
                 }
 
+                // -------------------------------------------------------------
+                // Cuadricula 2x2 con los 4 layouts basicos de Qt Quick Layouts:
+                // RowLayout, ColumnLayout, GridLayout, Flow y StackLayout.
+                // Cada tarjeta tiene fillWidth + fillHeight para que se
+                // distribuyan uniformemente, con minimumHeight para garantizar
+                // un tamano minimo legible.
+                // -------------------------------------------------------------
                 GridLayout {
                     columns: 2
                     rows: 2
@@ -76,9 +110,13 @@ Item {
                     }
                 }
 
-                // ════════════════════════════════════════════════════════
-                // Card 5: Custom Layout Patterns
-                // ════════════════════════════════════════════════════════
+                // ═════════════════════════════════════════════════════════════
+                // Tarjeta grande: Patrones de layout personalizados
+                // Contiene 6 sub-componentes separados por lineas divisorias.
+                // Se usa un Rectangle con preferredHeight fijo porque el
+                // contenido interno no es un layout puro — cada componente
+                // tiene su propia altura preferida.
+                // ═════════════════════════════════════════════════════════════
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(2400)
@@ -99,6 +137,8 @@ Item {
 
                         CollapsibleSidebar { }
 
+                        // Separadores visuales: Rectangle de 1px que actuan
+                        // como <hr> en HTML, separando cada patron
                         Rectangle { Layout.fillWidth: true; Layout.preferredHeight: Style.resize(1); color: Style.bgColor }
 
                         DraggableSplitPane { }

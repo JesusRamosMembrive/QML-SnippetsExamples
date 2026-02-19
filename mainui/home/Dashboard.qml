@@ -1,17 +1,55 @@
+// =============================================================================
+// Dashboard.qml — Contenedor de páginas con carga dinámica (Lazy Loading)
+// =============================================================================
+// Este componente gestiona qué página de ejemplo se muestra en el área de
+// contenido principal. Tiene dos vistas:
+//
+//   1. Vista "Dashboard" (home): información del proyecto y lista de ejemplos
+//   2. Vista de ejemplo: la página de ejemplo cargada dinámicamente con Loader
+//
+// Patrón de navegación por estados:
+// La propiedad "state" (heredada de Item) actúa como router. Cuando HomePage
+// asigna mainContent.state = "Buttons", el Loader busca en pageMap la URI
+// correspondiente y carga ese archivo QML.
+//
+// ¿Por qué Loader con URIs en vez de import + instancia directa?
+// Versión anterior: se importaban TODOS los módulos y se instanciaban 50+
+// páginas con opacity/visible bindings. Esto consumía mucha memoria ya que
+// todas las páginas existían en el árbol de objetos aunque estuvieran ocultas.
+//
+// Versión actual (Lazy Loading): solo la página activa existe en memoria.
+// El Loader crea la página al entrar y la destruye al salir. Las URIs
+// "qrc:/qt/qml/<modulo>/Main.qml" apuntan a los recursos compilados de
+// cada módulo QML estático.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtCore
 
 import utils
-import qmlsnippetsstyle
+import qmlsnippetsstyle   // Necesario para que los controles usen nuestro estilo
 
 Item {
     id: root
-    state: "Dashboard"
-    objectName: "Dashboard"
+    state: "Dashboard"          // Estado inicial: la vista home
+    objectName: "Dashboard"     // objectName permite encontrar este item desde C++
+                                // con findChild<QObject*>("Dashboard") si fuera necesario
 
-    // Mapa estado del menu → URI qrc del modulo
+    // --- Mapa de navegación: estado → URI del recurso QML ---
+    // readonly: no cambia en ejecución. var: tipo genérico (es un objeto JS).
+    // La sintaxis ({...}) con paréntesis es necesaria porque sin ellos QML
+    // interpreta las llaves como un bloque de código, no como un objeto literal.
+    //
+    // Las URIs siguen el patrón: qrc:/qt/qml/<uri_del_modulo>/Main.qml
+    // donde <uri_del_modulo> es el URI definido en qt_add_qml_module() de cada
+    // ejemplo. "qrc:" indica que es un recurso compilado dentro del ejecutable.
+    // "/qt/qml/" es el prefijo estándar que Qt usa para módulos QML compilados.
+    //
+    // IMPORTANTE: Las claves de este mapa deben coincidir EXACTAMENTE con los
+    // nombres en el ListModel del MainMenuList. Si no coinciden, el Loader
+    // recibirá "" y no cargará nada (sin error visible, solo pantalla vacía).
     readonly property var pageMap: ({
         "Buttons":      "qrc:/qt/qml/buttons/Main.qml",
         "Sliders":      "qrc:/qt/qml/sliders/Main.qml",
@@ -62,15 +100,26 @@ Item {
         "Multimedia":   "qrc:/qt/qml/multimedia/Main.qml",
         "CustomItem":   "qrc:/qt/qml/customitemex/Main.qml",
         "QMLCppBridge": "qrc:/qt/qml/qmlcppbridgeex/Main.qml",
-        "AsyncCpp":     "qrc:/qt/qml/asynccppex/Main.qml"
+        "AsyncCpp":     "qrc:/qt/qml/asynccppex/Main.qml",
+        "Settings":     "qrc:/qt/qml/settingsex/Main.qml"
     })
 
+    // --- Workaround para repintar Canvas tras cambio de página ---
+    // Algunos ejemplos usan Canvas (dibujo 2D). Cuando se carga una página
+    // con Canvas vía Loader, a veces el Canvas no se pinta en el primer frame
+    // porque aún no tiene dimensiones finales. Este Timer espera 250ms
+    // (suficiente para que el layout se estabilice) y luego fuerza un repaint.
     Timer {
         id: repaintTimer
         interval: 250
         onTriggered: forceRepaintCanvases(root)
     }
 
+    // Función recursiva que recorre todo el árbol de hijos buscando objetos
+    // que tengan el método requestPaint() (es decir, Canvas). Cuando lo
+    // encuentra, fuerza un repintado.
+    // typeof child.requestPaint === "function" es una forma dinámica de
+    // detectar si el hijo es un Canvas sin necesidad de importar el tipo.
     function forceRepaintCanvases(item) {
         for (var i = 0; i < item.children.length; i++) {
             var child = item.children[i]
@@ -80,7 +129,19 @@ Item {
         }
     }
 
-    // Dashboard home content
+    // =========================================================================
+    // Vista "Dashboard" (home) — Se muestra cuando state === "Dashboard"
+    // =========================================================================
+    // Patrón de visibilidad con animación:
+    //   opacity: binding ternario que vale 1.0 o 0.0 según el estado
+    //   visible: se desactiva cuando opacity llega a 0 (optimización: un
+    //            item con visible:false no se renderiza ni recibe eventos)
+    //   Behavior on opacity: anima cualquier cambio de opacity en 200ms
+    //
+    // ¿Por qué opacity + visible y no solo visible?
+    // Porque visible es binario (true/false), no se puede animar. La opacidad
+    // sí se puede animar suavemente. visible: opacity > 0.0 asegura que
+    // cuando la animación llega a 0, el item deje de procesarse.
     Item {
         anchors.fill: parent
         opacity: (root.state === "Dashboard") ? 1.0 : 0.0
@@ -93,6 +154,10 @@ Item {
             anchors.fill: parent
             color: Style.bgColor
 
+            // ScrollView envuelve el contenido para permitir scroll vertical.
+            // contentWidth: availableWidth evita scroll horizontal (el contenido
+            // se ajusta al ancho disponible).
+            // clip: true recorta el contenido que sobresale (necesario para scroll).
             ScrollView {
                 id: homeScrollView
                 anchors.fill: parent
@@ -100,11 +165,14 @@ Item {
                 clip: true
                 contentWidth: availableWidth
 
+                // ColumnLayout distribuye los hijos verticalmente con spacing.
+                // A diferencia de Column, ColumnLayout permite usar propiedades
+                // Layout.* (fillWidth, preferredHeight, etc.) para control fino.
                 ColumnLayout {
                     width: homeScrollView.availableWidth
                     spacing: Style.resize(20)
 
-                    // Title
+                    // --- Sección de título ---
                     Label {
                         text: "QML Snippets & Examples"
                         font.pixelSize: Style.resize(36)
@@ -121,9 +189,11 @@ Item {
                         Layout.fillWidth: true
                     }
 
+                    // Item vacío como espaciador. Es una técnica común en Layouts
+                    // cuando necesitas más espacio del que da el spacing uniforme.
                     Item { Layout.preferredHeight: Style.resize(10) }
 
-                    // Tech stack section
+                    // --- Sección "Built with" ---
                     Label {
                         text: "Built with"
                         font.pixelSize: Style.resize(20)
@@ -131,6 +201,13 @@ Item {
                         color: Style.fontPrimaryColor
                     }
 
+                    // Repeater con modelo de array de strings.
+                    // Cuando el modelo es un array JS (no ListModel), cada
+                    // elemento se accede con "modelData" (la propiedad especial
+                    // que Qt inyecta para modelos simples sin roles nombrados).
+                    // required property string modelData: necesario con
+                    // ComponentBehavior Bound (heredado del módulo).
+                    // "\u2022" es el carácter Unicode de viñeta (bullet point).
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.leftMargin: Style.resize(10)
@@ -154,7 +231,7 @@ Item {
 
                     Item { Layout.preferredHeight: Style.resize(10) }
 
-                    // Examples section header
+                    // --- Sección "Examples" con contador ---
                     RowLayout {
                         Layout.fillWidth: true
 
@@ -167,19 +244,29 @@ Item {
                         }
 
                         Label {
-                            text: "50 pages"
+                            text: "51 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
                     }
 
-                    // Examples list
+                    // --- Lista de ejemplos en tarjeta ---
+                    // Un Rectangle con radius actúa como tarjeta (card) visual.
+                    // implicitHeight se calcula dinámicamente a partir del contenido
+                    // interior + padding. Esto permite que el ScrollView sepa cuánto
+                    // mide la tarjeta sin necesidad de hardcodear una altura.
                     Rectangle {
                         Layout.fillWidth: true
                         color: Style.cardColor
                         radius: Style.resize(8)
                         implicitHeight: examplesList.implicitHeight + Style.resize(20)
 
+                        // ListModel con dos roles: name y desc.
+                        // Un "rol" en Qt es una propiedad nombrada del modelo.
+                        // En el delegate se acceden como model.name y model.desc.
+                        // ListModel es adecuado aquí porque los datos son estáticos
+                        // y se definen en QML. Para datos dinámicos o de C++, se
+                        // usaría QAbstractListModel.
                         ListModel {
                             id: examplesModel
                             ListElement { name: "Buttons";    desc: "Standard, icon, toggle, and styled buttons" }
@@ -232,8 +319,11 @@ Item {
                             ListElement { name: "CustomItem";  desc: "QQuickPaintedItem: clock, waveform, gauge, drawing canvas" }
                             ListElement { name: "QMLCppBridge"; desc: "Q_PROPERTY, Q_INVOKABLE, Q_ENUM, C++ signals to QML" }
                             ListElement { name: "AsyncCpp";     desc: "QtConcurrent, QFuture, QPromise, progress and cancellation" }
+                            ListElement { name: "Settings";     desc: "QSettings persistent preferences, key-value store, groups" }
                         }
 
+                        // ColumnLayout con spacing 0: las filas van pegadas,
+                        // separadas solo por el Rectangle de 1px (separador visual).
                         ColumnLayout {
                             id: examplesList
                             anchors.left: parent.left
@@ -245,6 +335,10 @@ Item {
                             Repeater {
                                 model: examplesModel
 
+                                // Cada fila: nombre del ejemplo + descripción.
+                                // Se accede a los roles del modelo con model.name
+                                // y model.desc. La propiedad "index" también está
+                                // disponible automáticamente (fila actual en el modelo).
                                 Item {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: Style.resize(36)
@@ -263,6 +357,9 @@ Item {
                                             Layout.preferredWidth: Style.resize(110)
                                         }
 
+                                        // elide: Text.ElideRight trunca el texto con "..."
+                                        // si no cabe en el ancho disponible, evitando
+                                        // desbordamiento horizontal.
                                         Label {
                                             text: model.desc
                                             font.pixelSize: Style.resize(13)
@@ -272,7 +369,9 @@ Item {
                                         }
                                     }
 
-                                    // Separator line
+                                    // Línea separadora entre filas. Se oculta en el último
+                                    // elemento (index < count - 1) para no tener línea suelta
+                                    // al final de la lista.
                                     Rectangle {
                                         anchors.bottom: parent.bottom
                                         anchors.left: parent.left
@@ -290,7 +389,6 @@ Item {
 
                     Item { Layout.preferredHeight: Style.resize(5) }
 
-                    // Footer hint
                     Label {
                         text: "Select a page from the menu to explore examples."
                         font.pixelSize: Style.resize(14)
@@ -306,7 +404,28 @@ Item {
         }
     }
 
-    // Lazy loader — solo carga la pagina activa
+    // =========================================================================
+    // Loader dinámico — Carga lazy de páginas de ejemplo
+    // =========================================================================
+    // Este es el corazón de la navegación. A diferencia del Item "Dashboard"
+    // de arriba (que siempre existe), el Loader crea/destruye páginas según
+    // el estado actual.
+    //
+    // source: binding reactivo. Cada vez que root.state cambia:
+    //   1. pageMap[root.state] busca la URI correspondiente
+    //   2. El operador ?? "" devuelve string vacío si el estado no está
+    //      en el mapa (ej: "Dashboard"), lo que hace que el Loader descargue
+    //      cualquier página previa y quede vacío
+    //   3. Si la URI es válida, el Loader carga el archivo QML, instancia
+    //      el componente y lo asigna a la propiedad "item"
+    //
+    // onLoaded: se ejecuta cuando el Loader termina de instanciar el componente.
+    //   - item.fullSize = true activa la animación de entrada de la página
+    //     (cada Main.qml de ejemplo tiene el patrón opacity: fullSize ? 1 : 0)
+    //   - repaintTimer.restart() fuerza el repaint de Canvas tras 250ms
+    //
+    // Ventaja sobre import directo: con 50+ páginas, el Loader mantiene solo
+    // 1 página en memoria. Sin Loader, las 50 estarían instanciadas siempre.
     Loader {
         id: pageLoader
         anchors.fill: parent

@@ -1,3 +1,19 @@
+// =============================================================================
+// DynamicTabBarCard.qml — TabBar con pestanas dinamicas (agregar/cerrar)
+// =============================================================================
+// Demuestra como crear un TabBar cuyas pestanas se generan dinamicamente
+// desde un ListModel. El usuario puede agregar nuevas pestanas con un boton
+// y cerrar las existentes con un boton "X" superpuesto en cada TabButton.
+//
+// Patron clave: Repeater + ListModel dentro de un TabBar. El Repeater genera
+// TabButtons a partir del modelo. Al modificar el modelo (append/remove),
+// las pestanas se crean o destruyen automaticamente gracias a la reactividad
+// de QML.
+//
+// Aprendizaje clave: como gestionar pestanas dinamicas con ListModel, y
+// la logica necesaria para ajustar currentIndex al cerrar una pestana
+// (evitar indices fuera de rango).
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +24,7 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Contador global para generar nombres unicos de pestanas
     property int tabCounter: 3
 
     ColumnLayout {
@@ -22,7 +39,11 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Controls
+        // ---------------------------------------------------------------------
+        // Barra de controles: boton para agregar pestanas + contador.
+        // El Item con Layout.fillWidth actua como espaciador flexible (spacer)
+        // para empujar el contador a la derecha.
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(10)
@@ -44,7 +65,16 @@ Rectangle {
             }
         }
 
-        // Dynamic TabBar
+        // ---------------------------------------------------------------------
+        // TabBar dinamico con Repeater + ListModel.
+        // El Repeater genera un TabButton por cada elemento del ListModel.
+        // Cuando se hace append() o remove() en el modelo, QML actualiza
+        // la UI automaticamente sin necesidad de logica adicional.
+        //
+        // Cada TabButton incluye un boton de cierre (la "X") implementado
+        // como un Rectangle con MouseArea superpuesto. Se oculta si solo
+        // queda una pestana para evitar dejar el TabBar vacio.
+        // ---------------------------------------------------------------------
         TabBar {
             id: dynamicTabBar
             Layout.fillWidth: true
@@ -63,7 +93,12 @@ Rectangle {
                     text: title
                     width: implicitWidth
 
-                    // Close button
+                    // ---------------------------------------------------------
+                    // Boton de cierre superpuesto en cada pestana.
+                    // Al cerrar una pestana, se ajusta currentIndex hacia atras
+                    // si el indice actual era >= al que se elimina. Esto evita
+                    // que currentIndex apunte fuera de rango.
+                    // ---------------------------------------------------------
                     Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: Style.resize(4)
@@ -97,7 +132,12 @@ Rectangle {
             }
         }
 
-        // Content area
+        // ---------------------------------------------------------------------
+        // Area de contenido: muestra el titulo de la pestana activa.
+        // Se usa una expresion ternaria con verificacion de limites para
+        // evitar errores cuando currentIndex queda temporalmente invalido
+        // durante la eliminacion de una pestana.
+        // ---------------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

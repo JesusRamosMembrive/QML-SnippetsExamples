@@ -1,3 +1,23 @@
+// =============================================================================
+// EDUCATIVO: Signals de C++ -> Handlers de QML (comunicacion asincrona)
+// =============================================================================
+//
+// QTimer: emite la signal timeout() a intervalos regulares. Aqui se usa
+// para simular una tarea de multiples pasos que avanza cada 500ms.
+//
+// Seccion "signals": estas son signals de C++ que QML conecta con
+// handlers "on<NombreSignal>":
+//
+//   dataReceived(data)      ->  QML: onDataReceived: function(data) { ... }
+//   taskCompleted(result)   ->  QML: onTaskCompleted: function(result) { ... }
+//   errorOccurred(error)    ->  QML: onErrorOccurred: function(error) { ... }
+//   customSignal(message)   ->  QML: onCustomSignal: function(message) { ... }
+//
+// Seccion "private slots": "slots" es la palabra clave de Qt para metodos
+// que pueden ser conectados a signals. Tambien pueden llamarse como metodos
+// normales. Aqui onTick() se conecta a QTimer::timeout en el constructor.
+// =============================================================================
+
 #ifndef SIGNALBRIDGE_H
 #define SIGNALBRIDGE_H
 

@@ -1,3 +1,26 @@
+// ============================================================================
+// GraphicalEffectsCard.qml
+// Demuestra efectos graficos de post-procesado usando Qt5Compat.GraphicalEffects.
+//
+// CONCEPTO CLAVE: GraphicalEffects aplica shaders GPU sobre elementos QML
+// existentes. Funcionan como "filtros" que toman un item fuente ('source')
+// y producen una version modificada (con sombra, desenfoque, colorizado, etc.).
+//
+// PATRON SOURCE/EFFECT:
+//   1. Crear el item fuente con 'visible: false' (para que no se dibuje dos veces).
+//   2. Crear el efecto con 'source: itemFuente' y 'anchors.fill: itemFuente'.
+//   El efecto reemplaza visualmente al item original.
+//
+// NOTA IMPORTANTE: En Qt 6, estos efectos se movieron al modulo de
+// compatibilidad 'Qt5Compat.GraphicalEffects'. Para usarlos hay que agregar
+// el modulo Qt5Compat en CMake: find_package(Qt6 COMPONENTS Qt5Compat).
+// En Qt 6.5+ se recomienda usar MultiEffect como alternativa mas eficiente.
+//
+// EFECTOS MOSTRADOS:
+//   - DropShadow: sombra proyectada con desenfoque gaussiano.
+//   - GaussianBlur: desenfoque gaussiano (efecto "frosted glass").
+//   - Colorize: cambia el tono/saturacion/luminosidad del item fuente.
+// ============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +43,11 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // DropShadow
+        // --- Controles interactivos ---
+        // Cada slider controla un parametro de un efecto diferente,
+        // permitiendo ver en tiempo real como cambia el resultado.
+
+        // Radio de sombra: valores mas altos = sombra mas difusa y extendida
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Shadow: " + shadowSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
@@ -30,7 +57,7 @@ Rectangle {
             }
         }
 
-        // Blur
+        // Radio de desenfoque: 0 = nitido, valores altos = muy borroso
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Blur: " + blurSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
@@ -40,7 +67,7 @@ Rectangle {
             }
         }
 
-        // Hue
+        // Tono (hue): 0.0-1.0 recorre todo el espectro de colores (rojo->amarillo->verde->azul->violeta->rojo)
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Hue: " + hueSlider.value.toFixed(2); font.pixelSize: Style.resize(12); color: Style.fontSecondaryColor; Layout.preferredWidth: Style.resize(80) }
@@ -50,13 +77,21 @@ Rectangle {
             }
         }
 
-        // Effects preview
+        // --- Vista previa de efectos ---
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: Style.resize(15)
 
-            // DropShadow
+            // =============================================
+            // DropShadow: sombra proyectada
+            // - horizontalOffset/verticalOffset: desplazamiento de la sombra.
+            // - radius: desenfoque de la sombra (mayor = mas suave).
+            // - samples: calidad del desenfoque. Regla: samples >= radius * 2 + 1
+            //   para evitar artefactos. Mas samples = mejor calidad pero mas lento.
+            // - color: color de la sombra (tipicamente negro semitransparente).
+            // PATRON: el source debe tener visible:false para evitar doble dibujo.
+            // =============================================
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -72,6 +107,7 @@ Rectangle {
                         radius: Style.resize(4)
                     }
 
+                    // Item fuente: visible:false porque DropShadow lo renderiza
                     Rectangle {
                         id: shadowSource
                         anchors.centerIn: parent
@@ -90,6 +126,7 @@ Rectangle {
                         }
                     }
 
+                    // DropShadow dibuja el item original + su sombra
                     DropShadow {
                         anchors.fill: shadowSource
                         source: shadowSource
@@ -109,7 +146,15 @@ Rectangle {
                 }
             }
 
-            // GaussianBlur
+            // =============================================
+            // GaussianBlur: desenfoque gaussiano
+            // - radius: intensidad del desenfoque (0 = sin efecto).
+            // - samples: debe ser al menos radius*2+1 para buena calidad.
+            //   Aqui se calcula dinamicamente con la formula: valor * 2 + 1.
+            //
+            // USO COMUN: efecto "frosted glass" (vidrio esmerilado), fondos
+            // difusos detras de menus/popups, transiciones de enfoque.
+            // =============================================
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -147,6 +192,7 @@ Rectangle {
                         anchors.fill: blurSource
                         source: blurSource
                         radius: blurSlider.value
+                        // Formula: samples = radius * 2 + 1 garantiza calidad optima
                         samples: blurSlider.value * 2 + 1
                     }
                 }
@@ -159,7 +205,16 @@ Rectangle {
                 }
             }
 
-            // Colorize
+            // =============================================
+            // Colorize: cambia el color del item fuente
+            // - hue: tono (0.0-1.0, recorre el espectro completo).
+            // - saturation: intensidad del color (0 = gris, 1 = puro).
+            // - lightness: luminosidad (-1 a 1, 0 = sin cambio).
+            //
+            // Trabaja en espacio de color HSL. Util para temas dinamicos,
+            // indicadores de estado (verde=ok, rojo=error), o efectos
+            // de seleccion/hover sin crear multiples assets.
+            // =============================================
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true

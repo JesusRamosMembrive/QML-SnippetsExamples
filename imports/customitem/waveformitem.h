@@ -1,3 +1,26 @@
+// =============================================================================
+// WaveformItem - Visualizador de ondas sinusoidales con QPainter
+// =============================================================================
+//
+// Otro ejemplo de QQuickPaintedItem: dibuja una onda seno parametrizable
+// con cuadricula de fondo tipo osciloscopio.
+//
+// Propiedades controlables desde QML:
+//   - frequency: cuantos ciclos completos de la onda se muestran
+//   - amplitude: altura de la onda (0.0 a 1.0, relativa al alto del item)
+//   - phase: desplazamiento horizontal de la onda (en radianes)
+//   - lineColor/lineWidth: apariencia visual de la linea
+//   - showGrid: mostrar/ocultar la cuadricula de fondo
+//
+// Usa QPainterPath para dibujar la onda — permite trazar una curva suave
+// punto a punto con moveTo/lineTo, mucho mas eficiente que dibujar
+// cientos de lineas individuales.
+//
+// qFuzzyCompare() en los setters: comparacion de punto flotante con tolerancia.
+// Los doubles no se deben comparar con == directamente porque la aritmetica
+// de punto flotante tiene errores de redondeo. qFuzzyCompare() maneja esto.
+// =============================================================================
+
 #ifndef WAVEFORMITEM_H
 #define WAVEFORMITEM_H
 

@@ -1,3 +1,20 @@
+// =============================================================================
+// IndicatorSwipeCard.qml — SwipeView con dos estilos de PageIndicator
+// =============================================================================
+// Demuestra como acompanar un SwipeView con indicadores visuales de pagina.
+// Presenta dos variantes:
+//   1. Indicador de puntos (dots) — el estilo clasico con delegate personalizado
+//   2. Indicador de barras (bars) — mas moderno, la barra activa se expande
+//
+// Ambos indicadores son interactivos: se puede hacer clic en ellos para
+// navegar directamente a una pagina. Las transiciones usan Behavior para
+// animar el cambio de color, opacidad y ancho.
+//
+// Aprendizaje clave: PageIndicator acepta un delegate personalizado para
+// modificar completamente la apariencia de cada punto. El estilo "bar"
+// se construye manualmente con Repeater + Rectangle porque requiere
+// animacion de ancho que PageIndicator no soporta nativamente.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +25,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Paleta de colores para las paginas, usada tanto en los circulos
+    // de contenido como potencialmente en los indicadores
     readonly property var pageColors: ["#00D1A9", "#FEA601", "#4FC3F7", "#FF7043", "#AB47BC"]
 
     ColumnLayout {
@@ -22,6 +41,12 @@ Rectangle {
             color: Style.mainColor
         }
 
+        // ---------------------------------------------------------------------
+        // SwipeView con 5 paginas generadas via Repeater.
+        // Usar Repeater dentro de SwipeView es mas limpio que declarar
+        // 5 Rectangles manualmente. Cada pagina muestra un circulo de color
+        // con su numero para facilitar la identificacion visual.
+        // ---------------------------------------------------------------------
         SwipeView {
             id: indicatorSwipe
             Layout.fillWidth: true
@@ -55,7 +80,13 @@ Rectangle {
             }
         }
 
-        // Default PageIndicator
+        // ---------------------------------------------------------------------
+        // Estilo 1: PageIndicator con delegate de puntos personalizados.
+        // interactive: true permite hacer clic en los puntos para navegar.
+        // El delegate reemplaza los puntos por defecto con Rectangles
+        // circulares que cambian color y opacidad segun si estan activos.
+        // onCurrentIndexChanged sincroniza el indicador con el SwipeView.
+        // ---------------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -89,7 +120,13 @@ Rectangle {
             }
         }
 
-        // Bar-style indicator
+        // ---------------------------------------------------------------------
+        // Estilo 2: Indicador tipo "barra" construido manualmente.
+        // Se usa Repeater + Row en lugar de PageIndicator porque necesitamos
+        // animar el ancho: la barra activa se expande (28px vs 12px).
+        // Cada barra tiene un MouseArea para hacerla clicable, replicando
+        // la funcionalidad de interactive: true de PageIndicator.
+        // ---------------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)

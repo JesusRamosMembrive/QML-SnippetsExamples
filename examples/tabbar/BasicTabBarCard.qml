@@ -1,3 +1,17 @@
+// =============================================================================
+// BasicTabBarCard.qml — TabBar basico con StackLayout
+// =============================================================================
+// Demuestra el patron fundamental de navegacion por pestanas en QML:
+// un TabBar vinculado a un StackLayout mediante currentIndex.
+//
+// El TabBar genera los TabButtons y gestiona cual esta seleccionado.
+// El StackLayout muestra solo el hijo cuyo indice coincide con currentIndex,
+// ocultando automaticamente los demas. Esta vinculacion bidireccional es el
+// nucleo de cualquier interfaz con pestanas en Qt Quick.
+//
+// Aprendizaje clave: TabBar + StackLayout es el patron canonico para
+// navegacion por pestanas. Solo se necesita enlazar currentIndex.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +34,11 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // TabBar + StackLayout
+        // ---------------------------------------------------------------------
+        // TabBar con tres pestanas estaticas.
+        // Cada TabButton define una pestana. El TabBar gestiona internamente
+        // cual esta activa via currentIndex. No necesitamos logica adicional.
+        // ---------------------------------------------------------------------
         TabBar {
             id: basicTabBar
             Layout.fillWidth: true
@@ -30,6 +48,12 @@ Rectangle {
             TabButton { text: "Settings" }
         }
 
+        // ---------------------------------------------------------------------
+        // StackLayout: muestra solo UN hijo a la vez segun currentIndex.
+        // Al vincular currentIndex con basicTabBar.currentIndex, el contenido
+        // cambia automaticamente al pulsar una pestana. Cada Rectangle
+        // representa el contenido de una pestana.
+        // ---------------------------------------------------------------------
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -69,6 +93,7 @@ Rectangle {
             }
         }
 
+        // Indicador de estado: muestra el indice actual para fines didacticos
         Label {
             text: "Current tab index: " + basicTabBar.currentIndex
             font.pixelSize: Style.resize(13)

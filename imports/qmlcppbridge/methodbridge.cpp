@@ -3,11 +3,16 @@
 
 MethodBridge::MethodBridge(QObject *parent) : QObject(parent) {}
 
+// transformText: usa switch de C++ sobre un enum. Desde QML se llama asi:
+//   bridge.transformText("hola mundo", MethodBridge.TitleCase)
+// Qt convierte automaticamente el enum de QML al valor C++ correspondiente.
 QString MethodBridge::transformText(const QString &text, TextTransform mode)
 {
     switch (mode) {
     case Uppercase: return text.toUpper();
     case Lowercase: return text.toLower();
+    // TitleCase: split -> minusculas cada palabra -> capitalizar primera letra.
+    // Demuestra la manipulacion de strings con Qt (split, join, toUpper).
     case TitleCase: {
         QStringList words = text.toLower().split(' ');
         for (auto &w : words)
@@ -25,6 +30,9 @@ QString MethodBridge::transformText(const QString &text, TextTransform mode)
     return text;
 }
 
+// fibonacci: implementacion iterativa O(n), no recursiva O(2^n).
+// Demuestra la ventaja de rendimiento de C++ sobre QML/JavaScript
+// para computacion intensiva.
 int MethodBridge::fibonacci(int n)
 {
     if (n <= 0) return 0;
@@ -38,6 +46,10 @@ int MethodBridge::fibonacci(int n)
     return b;
 }
 
+// validateEmail: usa QRegularExpression con string literal crudo R"(...)".
+// El prefijo R permite usar caracteres especiales de regex sin doble escape.
+// "static" significa que la regex se compila una sola vez y se reutiliza
+// en cada llamada (optimizacion de rendimiento).
 bool MethodBridge::validateEmail(const QString &email)
 {
     static QRegularExpression re(
@@ -45,6 +57,14 @@ bool MethodBridge::validateEmail(const QString &email)
     return re.match(email).hasMatch();
 }
 
+// analyzeText retorna QVariantMap: Qt lo auto-convierte a un objeto
+// JavaScript en QML. Cada r["clave"] = valor se convierte en una
+// propiedad del objeto:
+//   var info = bridge.analyzeText("Hola 123");
+//   info.length -> 8
+//   info.words  -> 2
+//   info.vowels -> 2
+//   info.digits -> 3
 QVariantMap MethodBridge::analyzeText(const QString &text)
 {
     QVariantMap r;

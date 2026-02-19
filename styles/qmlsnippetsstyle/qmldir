@@ -1,3 +1,36 @@
+# =============================================================================
+# qmldir — Manifiesto del modulo QML "qmlsnippetsstyle"
+# =============================================================================
+#
+# El archivo qmldir es el "manifiesto" de un modulo QML. Le dice al motor
+# de QML que tipos exporta este modulo y donde encontrar sus archivos.
+# Sin este archivo, Qt no sabria que tipos provee el modulo y obtendrias
+# errores del tipo: "<Tipo> is not a type".
+#
+# --- Formato ---
+# Cada linea sigue el patron:  NombreTipo Version Archivo
+# Ejemplo: Button 1.0 Button.qml
+#
+# --- "module qmlsnippetsstyle" ---
+# Declara el URI del modulo. Esto es lo que usas en el import:
+#   import qmlsnippetsstyle
+# Despues del import, todos los tipos listados aqui estan disponibles.
+#
+# --- Overrides de estilo ---
+# Para modulos de estilo, el NombreTipo DEBE coincidir EXACTAMENTE con
+# el nombre del control de Qt (Button, Slider, CheckBox, etc.). Asi el
+# motor de estilos los encuentra y los usa en lugar de los controles
+# por defecto. Si escribes "Boton 1.0 Button.qml", Qt no lo reconoceria
+# como override de Button.
+#
+# --- Componentes especializados ---
+# Los tipos como GlowButton, GradientButton, PulseButton, etc. son
+# componentes personalizados (no overrides de Qt). Estan disponibles
+# directamente al importar el modulo:
+#   import qmlsnippetsstyle
+#   GlowButton { text: "Hola" }
+# =============================================================================
+
 module qmlsnippetsstyle
 BusyIndicator 1.0 BusyIndicator.qml
 Button 1.0 Button.qml

@@ -1,3 +1,17 @@
+// =============================================================================
+// HorizontalSplitCard.qml — SplitView horizontal básico
+// =============================================================================
+// Demuestra el uso más simple de SplitView: dos paneles divididos
+// horizontalmente (sidebar + contenido principal). El usuario arrastra
+// el handle para redimensionar los paneles.
+//
+// Conceptos clave:
+// - orientation: Qt.Horizontal para dividir de izquierda a derecha
+// - handle personalizado con feedback visual (hover/pressed)
+// - SplitView.preferredWidth vs SplitView.fillWidth
+// - SplitView.minimumWidth para limitar el tamaño mínimo
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,6 +40,11 @@ Rectangle {
             Layout.fillHeight: true
             orientation: Qt.Horizontal
 
+            // -- Handle personalizado --
+            // SplitView permite reemplazar el handle por defecto con cualquier
+            // componente visual. Usamos SplitHandle.pressed y SplitHandle.hovered
+            // (propiedades attached) para dar retroalimentación visual al usuario.
+            // El rectángulo interior blanco actúa como indicador de agarre ("grip").
             handle: Rectangle {
                 implicitWidth: Style.resize(6)
                 implicitHeight: Style.resize(6)
@@ -43,6 +62,10 @@ Rectangle {
                 }
             }
 
+            // -- Panel izquierdo (Sidebar) --
+            // preferredWidth establece el ancho inicial (30% del contenedor).
+            // minimumWidth evita que el usuario colapse el panel por debajo
+            // de un umbral usable.
             Rectangle {
                 SplitView.preferredWidth: root.width * 0.3
                 SplitView.minimumWidth: Style.resize(80)
@@ -58,6 +81,9 @@ Rectangle {
                 }
             }
 
+            // -- Panel derecho (Contenido principal) --
+            // SplitView.fillWidth: true hace que este panel ocupe todo
+            // el espacio restante, adaptándose cuando el sidebar cambia.
             Rectangle {
                 SplitView.fillWidth: true
                 color: Style.surfaceColor

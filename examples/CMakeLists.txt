@@ -1,3 +1,17 @@
+# =============================================================================
+# examples/CMakeLists.txt — Registro de todas las páginas de ejemplo
+# =============================================================================
+# Cada add_subdirectory incluye una página de ejemplo independiente.
+# Cada subdirectorio es un módulo QML autónomo con su propio CMakeLists.txt,
+# qmldir y Main.qml. Son cargados bajo demanda por el Loader de Dashboard.qml.
+#
+# Para añadir un nuevo ejemplo:
+#   1. Crear el directorio examples/<nombre>/ con CMakeLists.txt, qmldir, Main.qml
+#   2. Añadir add_subdirectory(<nombre>) aquí
+#   3. Añadir el target de enlace en /qmlmodules
+#   4. Registrar en Dashboard.qml (pageMap) y MainMenuList.qml (menuModel)
+#   Guía completa: docs/CREAR_NUEVA_PAGINA.md
+# =============================================================================
 add_subdirectory(buttons)
 add_subdirectory(sliders)
 add_subdirectory(rangesliders)
@@ -48,3 +62,4 @@ add_subdirectory(multimedia)
 add_subdirectory(customitem)
 add_subdirectory(qmlcppbridge)
 add_subdirectory(asynccpp)
+add_subdirectory(settings)

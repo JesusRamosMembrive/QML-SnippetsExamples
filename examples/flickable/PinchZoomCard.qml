@@ -1,3 +1,21 @@
+// =============================================================================
+// PinchZoomCard.qml — Flickable con zoom (escala + desplazamiento)
+// =============================================================================
+// Combina Flickable con la propiedad scale para crear una experiencia de
+// zoom + pan. El usuario puede hacer zoom con la rueda del raton o el slider,
+// y desplazarse por el contenido ampliado arrastrando.
+//
+// Conceptos clave para el aprendiz:
+//   - Relacion Flickable + scale: contentWidth/Height se multiplican por la
+//     escala actual para que el Flickable sepa el tamano real del contenido
+//     escalado y ajuste el rango de scroll correctamente.
+//   - transformOrigin: TopLeft es fundamental — si se usa Center (el default),
+//     la escala desplaza el contenido y el Flickable no puede rastrearlo.
+//   - Canvas: API de dibujo imperativo (similar a HTML Canvas) para crear
+//     graficos personalizados. Ideal para patrones, graficas, y diagramas.
+//   - WheelHandler: captura eventos de rueda del raton y los convierte en
+//     cambios de zoom, ofreciendo una alternativa al gesto de pinch.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -31,6 +49,12 @@ Rectangle {
             Layout.fillHeight: true
             clip: true
 
+            // ---------------------------------------------------------------
+            // El truco del zoom: contentWidth/Height incluyen la escala.
+            // Cuando el contenido se amplifica (scale > 1), el Flickable
+            // necesita saber el tamano visual real para habilitar el scroll
+            // en las areas que ahora quedan fuera del viewport.
+            // ---------------------------------------------------------------
             Flickable {
                 id: zoomFlick
                 anchors.fill: parent
@@ -42,21 +66,34 @@ Rectangle {
                     id: zoomContent
                     width: Style.resize(400)
                     height: Style.resize(400)
+                    // transformOrigin en TopLeft es esencial: la escala se
+                    // aplica desde la esquina superior izquierda para que
+                    // (0,0) del contenido siempre coincida con el inicio
+                    // del area del Flickable.
                     transformOrigin: Item.TopLeft
                     scale: zoomSlider.value
 
-                    // Grid pattern
+                    // -----------------------------------------------------------
+                    // Canvas: dibujo imperativo con la API 2D de HTML Canvas.
+                    // Se ejecuta una sola vez (onPaint) y genera una escena
+                    // estatica con cuadricula, formas geometricas y texto.
+                    // A diferencia de Items QML, el Canvas rasteriza todo en
+                    // una textura, lo que es eficiente para graficos complejos
+                    // pero no se adapta automaticamente a cambios de tamano
+                    // (hay que llamar requestPaint() si cambia el tamano).
+                    // -----------------------------------------------------------
                     Canvas {
                         anchors.fill: parent
                         onPaint: {
                             var ctx = getContext("2d")
                             ctx.clearRect(0, 0, width, height)
 
-                            // Background
+                            // Fondo
                             ctx.fillStyle = Style.surfaceColor
                             ctx.fillRect(0, 0, width, height)
 
-                            // Grid lines
+                            // Cuadricula: lineas cada 40px para dar contexto visual
+                            // y que el usuario perciba el efecto del zoom
                             var step = 40
                             ctx.strokeStyle = "#3A3D45"
                             ctx.lineWidth = 1
@@ -73,7 +110,8 @@ Rectangle {
                                 ctx.stroke()
                             }
 
-                            // Colored shapes
+                            // Formas geometricas de colores para hacer el contenido
+                            // visualmente interesante al hacer zoom
                             ctx.fillStyle = "#00D1A9"
                             ctx.fillRect(60, 60, 80, 80)
 
@@ -93,7 +131,7 @@ Rectangle {
                             ctx.fillStyle = "#AB47BC"
                             ctx.fillRect(260, 260, 100, 60)
 
-                            // Labels
+                            // Texto sobre las formas
                             ctx.fillStyle = "#FFFFFF"
                             ctx.font = "bold 14px sans-serif"
                             ctx.textAlign = "center"
@@ -105,6 +143,10 @@ Rectangle {
                     }
                 }
 
+                // WheelHandler captura la rueda del raton dentro del Flickable.
+                // Divide angleDelta.y entre 120 (un "click" estandar de rueda)
+                // y aplica un factor de 0.2 para que el zoom sea gradual.
+                // Math.max/min mantiene el valor dentro del rango del slider.
                 WheelHandler {
                     onWheel: function(event) {
                         var delta = event.angleDelta.y / 120
@@ -114,6 +156,8 @@ Rectangle {
             }
         }
 
+        // Controles de zoom: slider para control fino y boton Reset para
+        // volver al estado inicial (zoom 1x, sin desplazamiento)
         RowLayout {
             Layout.fillWidth: true
             Label {

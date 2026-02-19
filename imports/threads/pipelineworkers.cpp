@@ -1,21 +1,49 @@
+// ============================================================================
+// pipelineworkers.cpp - Implementacion de los workers del pipeline
+// ============================================================================
+//
+// Cada worker procesa datos en su propio hilo de fondo. Sus slots se ejecutan
+// en el hilo al que fueron movidos con moveToThread(), NO en el hilo principal.
+//
+// Flujo del pipeline:
+//   GeneratorWorker::generate()  [Hilo 1]
+//        |
+//        | emit dataGenerated(data)  -- signal cross-thread (QueuedConnection) -->
+//        v
+//   FilterWorker::processData()  [Hilo 2]
+//        |
+//        | emit dataMatched(data)    -- signal cross-thread (QueuedConnection) -->
+//        v
+//   CollectorWorker::collectData()  [Hilo 3]
+// ============================================================================
+
 #include "pipelineworkers.h"
 #include <QThread>
 #include <QMutexLocker>
 #include <QVariantMap>
 
-// ─── GeneratorWorker ───────────────────────────────────────────────
+// ============================================================================
+// GeneratorWorker - Produce datos aleatorios en el Hilo 1
+// ============================================================================
 
 GeneratorWorker::GeneratorWorker(QObject *parent)
     : QObject(parent)
     , m_timer(this)   // Parent timer to worker so moveToThread() moves both
 {
     m_timer.setInterval(m_interval);
+    // Esta conexion timer->generate es DIRECTA (mismo hilo).
+    // El timer y el worker viven ambos en el Hilo 1.
     connect(&m_timer, &QTimer::timeout, this, &GeneratorWorker::generate);
 }
 
+// start() se invoca via QMetaObject::invokeMethod con Qt::QueuedConnection
+// desde el hilo principal. Se ejecuta en el Hilo 1 (el event loop del
+// QThread al que este worker fue movido).
 void GeneratorWorker::start()
 {
     m_count = 0;
+    // QThread::currentThreadId() devuelve el ID del hilo ACTUAL de ejecucion,
+    // que aqui es el Hilo 1 (no el principal), confirmando que moveToThread funciono.
     emit threadIdReady(QStringLiteral("0x%1")
         .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()), 0, 16));
     m_timer.start();
@@ -32,6 +60,9 @@ void GeneratorWorker::setInterval(int ms)
     m_timer.setInterval(ms);
 }
 
+// generate() se llama cada vez que el QTimer dispara (en el Hilo 1).
+// Crea un array de bytes aleatorio y emite dataGenerated(), que cruza
+// al Hilo 2 via QueuedConnection automatica.
 void GeneratorWorker::generate()
 {
     std::uniform_int_distribution<int> lenDist(1, 100);
@@ -49,7 +80,9 @@ void GeneratorWorker::generate()
         emit countChanged(m_count);
 }
 
-// ─── FilterWorker ──────────────────────────────────────────────────
+// ============================================================================
+// FilterWorker - Filtra datos en el Hilo 2
+// ============================================================================
 
 FilterWorker::FilterWorker(QObject *parent)
     : QObject(parent)
@@ -64,6 +97,12 @@ void FilterWorker::start()
         .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()), 0, 16));
 }
 
+// processData() se ejecuta en el Hilo 2 cada vez que el Generador emite
+// dataGenerated(). Qt encolo la llamada automaticamente porque emisor
+// (Hilo 1) y receptor (Hilo 2) estan en hilos diferentes.
+//
+// El filtro busca si los datos contienen el patron m_pattern.
+// Solo los datos que coinciden se reenvian al Colector via dataMatched().
 void FilterWorker::processData(const QByteArray &data)
 {
     ++m_processedCount;
@@ -82,7 +121,9 @@ void FilterWorker::setFilterPattern(const QByteArray &pattern)
     m_pattern = pattern;
 }
 
-// ─── CollectorWorker ───────────────────────────────────────────────
+// ============================================================================
+// CollectorWorker - Recolecta resultados en el Hilo 3
+// ============================================================================
 
 CollectorWorker::CollectorWorker(QObject *parent)
     : QObject(parent)
@@ -95,6 +136,17 @@ void CollectorWorker::start()
         .arg(reinterpret_cast<quintptr>(QThread::currentThreadId()), 0, 16));
 }
 
+// collectData() se ejecuta en el Hilo 3. Almacena el dato filtrado
+// con un timestamp UTC.
+//
+// USO DE QMutex:
+// QMutexLocker bloquea el mutex al crearse y lo desbloquea al destruirse
+// (patron RAII). Esto protege m_records porque otros hilos pueden llamar
+// a recordCount() o getRecords() en cualquier momento.
+//
+// Nota: hacemos lock.unlock() ANTES de emitir signals para minimizar el
+// tiempo que el mutex esta bloqueado. Las signals no acceden a m_records,
+// asi que no necesitan el mutex.
 void CollectorWorker::collectData(const QByteArray &data)
 {
     QMutexLocker lock(&m_mutex);
@@ -112,6 +164,8 @@ void CollectorWorker::collectData(const QByteArray &data)
     emit recordCountChanged(count);
 }
 
+// Estos metodos se llaman desde el hilo principal (QML). Por eso necesitan
+// QMutexLocker para acceder a m_records de forma thread-safe.
 int CollectorWorker::recordCount() const
 {
     QMutexLocker lock(&m_mutex);

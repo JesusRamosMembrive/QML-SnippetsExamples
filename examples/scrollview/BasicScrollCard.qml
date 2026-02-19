@@ -1,3 +1,21 @@
+// =============================================================================
+// BasicScrollCard.qml — ScrollView vertical básico
+// =============================================================================
+// Demuestra el uso más simple de ScrollView: una lista larga de elementos
+// dentro de un ColumnLayout que excede el área visible, generando scroll
+// vertical automáticamente.
+//
+// ScrollView vs Flickable: ScrollView es un contenedor de conveniencia que
+// agrega barras de scroll automáticas sobre un Flickable interno. Es ideal
+// cuando solo necesitas scroll estándar sin personalización.
+//
+// Aprendizaje clave:
+// - contentWidth: availableWidth fuerza que el contenido ocupe solo el ancho
+//   disponible, evitando scroll horizontal innecesario
+// - clip: true es necesario para que el contenido no se dibuje fuera del área
+// - Repeater genera elementos dinámicamente a partir de un modelo numérico
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -13,6 +31,7 @@ Rectangle {
         anchors.margins: Style.resize(20)
         spacing: Style.resize(15)
 
+        // Encabezado de la tarjeta (título + descripción)
         Label {
             text: "Basic ScrollView"
             font.pixelSize: Style.resize(20)
@@ -26,6 +45,8 @@ Rectangle {
             color: Style.fontSecondaryColor
         }
 
+        // Área de demostración: un Rectangle de fondo con clip: true actúa
+        // como contenedor visual que recorta el contenido desbordante.
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -33,6 +54,8 @@ Rectangle {
             radius: Style.resize(4)
             clip: true
 
+            // ScrollView genera barras de scroll automáticas cuando el
+            // contenido (ColumnLayout) excede el espacio disponible.
             ScrollView {
                 anchors.fill: parent
                 anchors.margins: Style.resize(8)
@@ -42,6 +65,9 @@ Rectangle {
                     width: parent.width
                     spacing: Style.resize(6)
 
+                    // Repeater con modelo numérico: genera 25 rectángulos.
+                    // La alternancia de color (index % 2) da un efecto visual
+                    // de filas zebra que mejora la legibilidad.
                     Repeater {
                         model: 25
                         Rectangle {

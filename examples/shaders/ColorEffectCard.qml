@@ -1,3 +1,23 @@
+// =============================================================================
+// ColorEffectCard.qml — Efectos de color: overlay y desaturacion
+// =============================================================================
+// Demuestra dos efectos de manipulacion de color encadenados:
+//   1. Desaturate: reduce la saturacion de la imagen (hacia escala de grises)
+//   2. ColorOverlay: superpone un tinte de color sobre el resultado
+//
+// Conceptos clave para el aprendiz:
+//   - Encadenamiento de efectos: un efecto puede usar otro efecto como
+//     source, creando un pipeline de procesamiento. Aqui, Desaturate procesa
+//     el source original y ColorOverlay procesa la salida de Desaturate.
+//   - visible: false en efectos intermedios: el Desaturate esta oculto
+//     porque no es el resultado final — solo alimenta al ColorOverlay.
+//   - ColorOverlay.color con alfa: el componente alfa controla la intensidad
+//     del tinte. Qt.rgba() construye el color usando los canales RGB del
+//     color seleccionado y el alfa del slider de opacidad.
+//   - Desaturate.desaturation: 0.0 = colores originales, 1.0 = escala de
+//     grises completa. Combinar desaturacion parcial con overlay de color
+//     es una tecnica comun para crear filtros tipo Instagram.
+// =============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,6 +29,8 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
+    // Propiedades a nivel de componente para que los controles de abajo
+    // y los efectos de arriba compartan estado limpiamente
     property color overlayColor: "#00D1A9"
     property real desatAmount: 0.0
 
@@ -28,7 +50,10 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Source scene
+            // ---------------------------------------------------------------
+            // Escena fuente: fila de iconos coloridos. visible: false porque
+            // este Item solo sirve como entrada para la cadena de efectos.
+            // ---------------------------------------------------------------
             Item {
                 id: colorSource
                 anchors.fill: parent
@@ -70,7 +95,15 @@ Rectangle {
                 }
             }
 
-            // Apply ColorOverlay + Desaturate
+            // ---------------------------------------------------------------
+            // Cadena de efectos:
+            //   colorSource -> Desaturate -> ColorOverlay (visible)
+            //
+            // El Desaturate es un paso intermedio (visible: false) que
+            // alimenta al ColorOverlay. Solo el ultimo efecto de la cadena
+            // es visible. Este patron se puede extender a N efectos
+            // encadenandolos secuencialmente.
+            // ---------------------------------------------------------------
             Desaturate {
                 id: desatEffect
                 anchors.fill: colorSource
@@ -82,15 +115,26 @@ Rectangle {
             ColorOverlay {
                 anchors.fill: desatEffect
                 source: desatEffect
+                // Qt.rgba() construye el color final: toma RGB del color
+                // seleccionado y usa el slider como canal alfa para
+                // controlar la intensidad del overlay
                 color: Qt.rgba(root.overlayColor.r, root.overlayColor.g, root.overlayColor.b, overlaySlider.value)
             }
         }
 
-        // Color picker
+        // -------------------------------------------------------------------
+        // Panel de controles con tres secciones:
+        //   1. Selector de color (circulos clickeables)
+        //   2. Slider de opacidad del overlay
+        //   3. Slider de desaturacion
+        // -------------------------------------------------------------------
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
 
+            // Selector de color: circulos con borde blanco para indicar
+            // el color activo. Usa MouseArea en lugar de TapHandler por
+            // simplicidad en elementos no-Control.
             RowLayout {
                 Layout.fillWidth: true
                 Label {

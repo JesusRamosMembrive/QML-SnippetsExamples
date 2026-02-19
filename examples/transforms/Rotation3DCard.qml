@@ -1,3 +1,29 @@
+// ============================================================================
+// Rotation3DCard.qml
+// Demuestra rotaciones 3D usando la propiedad 'transform' de QML.
+//
+// CONCEPTO CLAVE: Aunque QML es un framework 2D, soporta transformaciones
+// 3D a traves del tipo Rotation con la propiedad 'axis'. Esto permite crear
+// efectos de perspectiva como voltear tarjetas, carruseles, o cubos giratorios
+// sin necesitar Qt Quick 3D (que es un modulo separado para escenas 3D reales).
+//
+// COMO FUNCIONA:
+//   - 'axis { x: 1; y: 0; z: 0 }' rota alrededor del eje X (como abrir una
+//     tapa de laptop hacia atras).
+//   - 'axis { x: 0; y: 1; z: 0 }' rota alrededor del eje Y (como abrir una
+//     puerta giratoria).
+//   - 'axis { x: 0; y: 0; z: 1 }' rota alrededor del eje Z (rotacion plana
+//     normal, como las agujas de un reloj).
+//
+// PROPIEDAD 'transform': acepta una LISTA de Transform (Rotation, Scale,
+// Translate). Se aplican en ORDEN, lo cual importa porque las transformaciones
+// 3D NO son conmutativas (rotar X luego Y != rotar Y luego X).
+//
+// 'origin': punto alrededor del cual se realiza la rotacion. Si no se
+// establece, rota alrededor de (0,0) del item (esquina superior izquierda),
+// lo cual generalmente no es el efecto deseado. Centrar el origin da un
+// giro "en su sitio".
+// ============================================================================
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +45,12 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // X axis
+        // --- Controles por eje ---
+        // Cada slider controla un eje de rotacion (0-360 grados).
+        // Los colores (rojo=X, verde/teal=Y, azul=Z) siguen la convencion
+        // comun en herramientas 3D (XYZ = RGB).
+
+        // Eje X (rojo): inclinacion adelante/atras
         RowLayout {
             Layout.fillWidth: true
             Label { text: "X: " + xRotSlider.value.toFixed(0) + "\u00B0"; font.pixelSize: Style.resize(12); color: "#E74C3C"; Layout.preferredWidth: Style.resize(60) }
@@ -29,7 +60,7 @@ Rectangle {
             }
         }
 
-        // Y axis
+        // Eje Y (teal): giro lateral izquierda/derecha
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Y: " + yRotSlider.value.toFixed(0) + "\u00B0"; font.pixelSize: Style.resize(12); color: "#00D1A9"; Layout.preferredWidth: Style.resize(60) }
@@ -39,7 +70,7 @@ Rectangle {
             }
         }
 
-        // Z axis
+        // Eje Z (azul): rotacion plana (como rotation normal de QML)
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Z: " + zRotSlider.value.toFixed(0) + "\u00B0"; font.pixelSize: Style.resize(12); color: "#4A90D9"; Layout.preferredWidth: Style.resize(60) }
@@ -54,7 +85,7 @@ Rectangle {
             onClicked: { xRotSlider.value = 0; yRotSlider.value = 0; zRotSlider.value = 0 }
         }
 
-        // 3D preview
+        // --- Vista previa 3D ---
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -73,6 +104,13 @@ Rectangle {
                 radius: Style.resize(10)
                 color: "#4A90D9"
 
+                // Lista de transformaciones aplicadas en secuencia.
+                // ORDEN IMPORTANTE: primero X, luego Y, luego Z.
+                // Cambiar este orden produciria un resultado visual diferente.
+                // Cada Rotation tiene:
+                //   - origin: centro de rotacion (aqui, centro del rectangulo).
+                //   - axis: vector unitario que define el eje de giro.
+                //   - angle: angulo de rotacion en grados.
                 transform: [
                     Rotation {
                         origin.x: rect3d.width / 2

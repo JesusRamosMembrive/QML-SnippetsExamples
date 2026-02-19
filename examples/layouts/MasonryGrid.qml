@@ -1,3 +1,27 @@
+// =============================================================================
+// MasonryGrid.qml — Cuadricula estilo Masonry (tipo Pinterest)
+// =============================================================================
+// Implementa un layout "masonry" donde los elementos tienen alturas
+// diferentes y se apilan en columnas sin dejar huecos verticales,
+// similar a Pinterest, Unsplash o muros de imagenes.
+//
+// POR QUE no se puede usar GridLayout para esto:
+// GridLayout alinea filas a la misma altura, dejando espacio vacio debajo
+// de los elementos mas cortos. Masonry necesita que cada columna sea
+// independiente, apilando elementos sin alinearse con las otras columnas.
+//
+// Estrategia de implementacion:
+// 1. Row + Repeater exterior: crea N columnas (Column) lado a lado.
+// 2. Repeater interior con modelo JS: distribuye los items entre columnas
+//    usando modulo (i % colCount). El item 0 va a columna 0, item 1 a
+//    columna 1, item 2 a columna 2, item 3 vuelve a columna 0, etc.
+// 3. Cada item tiene una altura diferente (definida en los datos),
+//    creando el efecto visual "masonry" donde las columnas no se alinean.
+//
+// Efecto hover: scale: 1.03 con Behavior da un zoom sutil al pasar
+// el raton, sin afectar el layout (scale no cambia width/height reales).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,6 +44,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.resize(350)
 
+        // Datos de ejemplo: cada item tiene titulo, altura diferente y color
         readonly property var items: [
             { title: "Sunset Beach", h: 120, clr: "#FF6B6B" },
             { title: "Mountain View", h: 160, clr: "#5B8DEF" },
@@ -42,6 +67,11 @@ ColumnLayout {
             radius: Style.resize(8)
             clip: true
 
+            // -----------------------------------------------------------------
+            // Estructura: Row > Repeater(columnas) > Column > Repeater(items)
+            // Cada Column es independiente, lo que permite alturas desiguales
+            // entre columnas — la esencia del layout masonry.
+            // -----------------------------------------------------------------
             Row {
                 anchors.fill: parent
                 anchors.margins: Style.resize(8)
@@ -54,9 +84,13 @@ ColumnLayout {
                         id: masonryCol
                         required property int index
 
+                        // Calcula el ancho de cada columna descontando el spacing
                         width: (parent.width - Style.resize(8) * (masonrySection.colCount - 1)) / masonrySection.colCount
                         spacing: Style.resize(8)
 
+                        // Distribucion round-robin: los items se asignan a
+                        // columnas alternando (0,1,2,0,1,2...) usando modulo.
+                        // Esto equilibra la cantidad de items por columna.
                         Repeater {
                             model: {
                                 var colItems = []
@@ -76,9 +110,13 @@ ColumnLayout {
                                 radius: Style.resize(8)
                                 color: masonryCard.modelData.clr
 
+                                // Efecto hover: scale no altera el layout real,
+                                // solo la apariencia visual (transform visual)
                                 scale: masonryHoverMa.containsMouse ? 1.03 : 1.0
                                 Behavior on scale { NumberAnimation { duration: 150 } }
 
+                                // Informacion en la esquina inferior izquierda,
+                                // simulando una tarjeta de imagen con overlay
                                 ColumnLayout {
                                     anchors.left: parent.left
                                     anchors.bottom: parent.bottom

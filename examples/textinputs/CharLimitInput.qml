@@ -1,3 +1,31 @@
+// =============================================================================
+// CharLimitInput.qml — Campo de texto con limite de caracteres y anillo de progreso
+// =============================================================================
+// Implementa un campo de entrada estilo Twitter/X con limite de 140 caracteres
+// y un indicador visual circular (progress ring) que muestra cuanto espacio
+// queda. El anillo cambia de color conforme se acerca al limite.
+//
+// Patrones educativos:
+//   - Canvas para graficos personalizados: QML Canvas funciona exactamente
+//     como HTML5 Canvas (misma API 2D context). Se usa aqui para dibujar
+//     un arco de progreso que seria imposible con Rectangles simples.
+//     `onProgChanged: requestPaint()` fuerza el repintado cada vez que
+//     cambia el progreso — Canvas NO es reactivo automaticamente como
+//     otros elementos de QML.
+//   - Progreso normalizado (0.0 a 1.0): `text.length / 140` normaliza
+//     el conteo a un rango de 0 a 1, facilitando los calculos del arco
+//     y los umbrales de color.
+//   - Umbrales de color progresivos: verde (mainColor) hasta 70%, naranja
+//     de 70% a 90%, rojo despues de 90%. Tanto el borde del campo como
+//     el anillo usan la misma logica de color, manteniendo consistencia.
+//   - Geometria del arco: startAngle = -PI/2 para que el arco empiece
+//     desde las 12 en punto (arriba) en vez de las 3 (derecha), que es
+//     el angulo 0 por defecto en Canvas. El arco final es
+//     startAngle + 2*PI*progreso.
+//   - `maximumLength: 140` en TextInput hace que Qt rechace caracteres
+//     mas alla del limite, eliminando la necesidad de validacion manual.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,6 +47,12 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Style.resize(15)
 
+        // -----------------------------------------------------------------
+        // Campo de texto con borde reactivo: el color del borde cambia
+        // segun el foco Y el nivel de progreso (verde/naranja/rojo).
+        // La propiedad `progress` se calcula como ratio del largo actual
+        // sobre el maximo (140). `progressColor` usa umbrales escalonados.
+        // -----------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             height: Style.resize(46)
@@ -48,6 +82,7 @@ ColumnLayout {
                 selectionColor: Style.mainColor
                 verticalAlignment: TextInput.AlignVCenter
 
+                // Placeholder manual (patron recurrente en controles personalizados)
                 Text {
                     anchors.fill: parent
                     text: "Tweet something (140 chars max)..."
@@ -59,7 +94,14 @@ ColumnLayout {
             }
         }
 
-        // Progress ring
+        // -----------------------------------------------------------------
+        // Anillo de progreso: dibujado con Canvas. A diferencia de los
+        // elementos declarativos de QML, Canvas requiere repintado manual
+        // (requestPaint). Las propiedades `prog` y `rColor` existen como
+        // propiedades del Canvas para que onProgChanged pueda llamar a
+        // requestPaint() — si usaramos directamente parent.progress, el
+        // Canvas no sabria cuando repintarse.
+        // -----------------------------------------------------------------
         Item {
             width: Style.resize(44)
             height: Style.resize(44)
@@ -92,14 +134,16 @@ ColumnLayout {
 
                     ctx.clearRect(0, 0, w, h)
 
-                    // Background ring
+                    // Anillo de fondo (siempre visible, color oscuro)
                     ctx.beginPath()
                     ctx.arc(cx, cy, r, 0, 2 * Math.PI)
                     ctx.strokeStyle = "#3A3D45"
                     ctx.lineWidth = 3
                     ctx.stroke()
 
-                    // Progress arc
+                    // Arco de progreso: desde -PI/2 (12 en punto) hasta
+                    // -PI/2 + 2*PI*progreso. Math.min(prog, 1) evita
+                    // que el arco exceda un circulo completo.
                     if (prog > 0) {
                         ctx.beginPath()
                         ctx.arc(cx, cy, r, startAngle,
@@ -112,6 +156,7 @@ ColumnLayout {
                 }
             }
 
+            // Contador de caracteres restantes, centrado en el anillo
             Label {
                 anchors.centerIn: parent
                 text: 140 - limitInput.text.length

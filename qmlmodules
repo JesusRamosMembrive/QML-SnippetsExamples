@@ -1,3 +1,29 @@
+# =============================================================================
+# qmlmodules — Registro central de todos los módulos QML del proyecto
+# =============================================================================
+# Este archivo se incluye desde el CMakeLists.txt raíz con include(qmlmodules).
+# No tiene extensión .cmake, pero CMake lo interpreta igual.
+#
+# Cumple dos funciones:
+#   1. Registrar el módulo QML raíz ("Main") sobre el ejecutable
+#   2. Incluir todos los subdirectorios y enlazar todos los plugins QML
+#
+# ¿Por qué está separado del CMakeLists.txt raíz?
+# Porque la lista de módulos crece con cada página de ejemplo nueva. Tenerlo
+# separado evita que el CMakeLists.txt raíz se vuelva inmanejable y permite
+# ver de un vistazo todos los módulos del proyecto.
+# =============================================================================
+
+# --- Módulo QML raíz ---
+# Convierte el propio ejecutable en un módulo QML con URI "Main".
+# Esto permite que main.cpp cargue la UI con engine.loadFromModule("Main", "Main").
+#
+# NO_PLUGIN: Como este módulo vive directamente en el ejecutable (no es una
+# biblioteca separada), no necesita generar un plugin. Los plugins son
+# necesarios solo para módulos en bibliotecas estáticas/dinámicas separadas.
+#
+# QML_FILES: Los archivos QML que pertenecen a este módulo. Main.qml es la
+# ventana principal, SplashScreen.qml es la pantalla de carga inicial.
 qt_add_qml_module(QMLSnippetsExamples
     URI "Main"
     VERSION 1.0
@@ -7,16 +33,52 @@ qt_add_qml_module(QMLSnippetsExamples
         SplashScreen.qml
 )
 
+# --- Inclusión de subdirectorios ---
+# Cada add_subdirectory procesa el CMakeLists.txt de ese directorio, que a
+# su vez puede tener más add_subdirectory internos. El orden importa:
+#   - styles: Estilos personalizados de Qt Quick Controls (debe ir primero
+#             porque otros módulos pueden depender de los controles estilizados)
+#   - imports: Utilidades compartidas (Style singleton, controles base, assets)
+#   - mainui: Shell principal (dashboard, menú lateral, homepage)
+#   - examples: Todas las páginas de ejemplo (buttons, sliders, etc.)
 add_subdirectory(styles)
 add_subdirectory(imports)
 add_subdirectory(mainui)
 add_subdirectory(examples)
 
+# --- Enlace de plugins QML con el ejecutable ---
+# Aquí está la parte más importante y donde más errores se cometen.
+#
+# ¿Por qué "pluginplugin" (doble "plugin")?
+# Cuando creas una biblioteca estática con qt_add_library(buttonsplugin STATIC)
+# y luego la registras con qt_add_qml_module(), Qt auto-genera un target de
+# plugin añadiendo el sufijo "plugin" al nombre de la biblioteca. Entonces:
+#
+#   Biblioteca: buttonsplugin → Target del plugin: buttonspluginplugin
+#   Biblioteca: slidersplugin → Target del plugin: sliderspluginplugin
+#
+# Este sufijo doble es confuso pero necesario. Si pones solo "buttonsplugin"
+# (un solo "plugin"), enlazarás la biblioteca pero NO el código de registro
+# del módulo QML, y obtendrás "module not found" en tiempo de ejecución.
+#
+# Excepciones (sin doble "plugin"):
+#   - qmlsnippetsstyleplugin: La biblioteca se llama "qmlsnippetsstyle",
+#     así que con un "plugin" ya queda correcto.
+#   - utilsplugin, controlsplugin, mainuiplugin: Se nombran sin el sufijo
+#     "plugin" en la biblioteca base, así que el target queda con un solo
+#     "plugin".
+#
+# PRIVATE: Estas dependencias son solo para compilar el ejecutable final.
+# Cada plugin aporta los tipos QML de su módulo (ej: buttonspluginplugin
+# registra el tipo Buttons.Main para que QML pueda hacer "import buttons").
 target_link_libraries(QMLSnippetsExamples PRIVATE
+    # --- Infraestructura (estilo, utilidades, controles base, shell UI) ---
     qmlsnippetsstyleplugin
     utilsplugin
     controlsplugin
     mainuiplugin
+
+    # --- Páginas de ejemplos de controles básicos ---
     buttonspluginplugin
     sliderspluginplugin
     rangesliderspluginplugin
@@ -30,50 +92,66 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     switchespluginplugin
     textinputspluginplugin
     indicatorspluginplugin
-    animationspluginplugin
     popupspluginplugin
-    listspluginplugin
+
+    # --- Páginas de ejemplos visuales y animación ---
+    animationspluginplugin
     canvaspluginplugin
-    layoutspluginplugin
     transformspluginplugin
     particlespluginplugin
-    graphspluginplugin
-    pfdpluginplugin
-    hudpluginplugin
-    websocketpluginplugin
-    websocketexpluginplugin
-    ecampluginplugin
-    navdisplaypluginplugin
-    theoryparserpluginplugin
-    theorycpppluginplugin
-    datepluginplugin
-    aircraftmappluginplugin
     shapespluginplugin
-    mapspluginplugin
-    pdfreaderplugplugin
-    threadspluginplugin
-    threadsexpluginplugin
+    shaderspluginplugin
+    imagespluginplugin
+    statespluginplugin
+
+    # --- Páginas de ejemplos de layout y navegación ---
+    layoutspluginplugin
+    listspluginplugin
+    pathviewpluginplugin
+    gridviewpluginplugin
+    flickablepluginplugin
+    loaderexpluginplugin
+
+    # --- Páginas de gráficos y datos ---
+    graphspluginplugin
     tablemodelpluginplugin
     tableviewpluginplugin
     treemodelpluginplugin
     treeviewpluginplugin
-    databasepluginplugin
-    databaseexpluginplugin
-    pathviewpluginplugin
-    gridviewpluginplugin
-    flickablepluginplugin
-    shaderspluginplugin
-    loaderexpluginplugin
-    imagespluginplugin
-    statespluginplugin
-    filedialogspluginplugin
+
+    # --- Páginas de aviación (HUD, PFD, ECAM, Nav Display, Aircraft Map) ---
+    pfdpluginplugin
+    hudpluginplugin
+    ecampluginplugin
+    navdisplaypluginplugin
+    aircraftmappluginplugin
+
+    # --- Páginas de red y comunicación ---
+    websocketpluginplugin
+    websocketexpluginplugin
     networkpluginplugin
     chatuipluginplugin
-    multimediapluginplugin
+
+    # --- Páginas de integración C++ ---
+    theoryparserpluginplugin
+    theorycpppluginplugin
     customitempluginplugin
     customitemexpluginplugin
     qmlcppbridgepluginplugin
     qmlcppbridgeexpluginplugin
     asynccpppluginplugin
     asynccppexpluginplugin
+
+    # --- Páginas de utilidades del sistema ---
+    datepluginplugin
+    mapspluginplugin
+    pdfreaderplugplugin
+    threadspluginplugin
+    threadsexpluginplugin
+    databasepluginplugin
+    databaseexpluginplugin
+    filedialogspluginplugin
+    multimediapluginplugin
+    settingsmgrpluginplugin
+    settingsexpluginplugin
 )

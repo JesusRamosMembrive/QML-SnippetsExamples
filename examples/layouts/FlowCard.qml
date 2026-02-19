@@ -1,3 +1,25 @@
+// =============================================================================
+// FlowCard.qml — Demo interactiva del posicionador Flow
+// =============================================================================
+// Flow es un posicionador (no un Layout) que coloca hijos en fila y los
+// "envuelve" (wrap) a la siguiente linea cuando no caben en el ancho
+// disponible. Es similar a CSS flexbox con flex-wrap: wrap.
+//
+// Diferencia clave entre Flow y RowLayout:
+// - RowLayout: todos los hijos en una sola fila, se comprimen si no caben.
+// - Flow: los hijos mantienen su tamano y saltan a la siguiente fila.
+//
+// Conceptos demostrados:
+// 1. Flow + Repeater + ListModel: patron dinamico donde se pueden agregar
+//    y quitar elementos en tiempo de ejecucion.
+// 2. Ancho controlable: el slider cambia el width del Flow, provocando
+//    que los elementos se redistribuyan (wrap) automaticamente.
+// 3. Indicador visual: una linea roja muestra el borde derecho del Flow,
+//    ayudando a entender donde ocurre el salto de linea.
+// 4. Anchos aleatorios: cada item tiene un ancho diferente para demostrar
+//    que Flow maneja elementos de tamano variable.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -19,7 +41,11 @@ Rectangle {
             color: Style.mainColor
         }
 
-        // Controls
+        // ---------------------------------------------------------------------
+        // Controles para agregar/quitar elementos del modelo
+        // Demuestra la interaccion entre ListModel y un Repeater dentro de
+        // Flow: al hacer append/remove, el Flow se redistribuye al instante.
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -47,7 +73,11 @@ Rectangle {
             }
         }
 
-        // Width slider
+        // ---------------------------------------------------------------------
+        // Slider de ancho del contenedor Flow
+        // Reducir el ancho fuerza a mas elementos a saltar de linea;
+        // aumentarlo permite que quepan mas en una sola fila.
+        // ---------------------------------------------------------------------
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -73,7 +103,12 @@ Rectangle {
             }
         }
 
-        // Flow area
+        // ---------------------------------------------------------------------
+        // Area del Flow
+        // El ListModel almacena color y ancho de cada item. El Repeater
+        // genera un Rectangle por cada entrada del modelo. El Flow se
+        // encarga de posicionarlos con wrapping automatico.
+        // ---------------------------------------------------------------------
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -121,7 +156,9 @@ Rectangle {
                 }
             }
 
-            // Width indicator line
+            // Linea indicadora roja: marca visualmente el borde derecho
+            // del Flow. Cuando un item no cabe antes de esta linea, salta
+            // a la siguiente fila. El Behavior anima el movimiento.
             Rectangle {
                 x: flowWidthSlider.value + Style.resize(8)
                 y: 0

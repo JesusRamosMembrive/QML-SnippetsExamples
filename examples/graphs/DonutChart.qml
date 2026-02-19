@@ -1,3 +1,27 @@
+// =============================================================================
+// DonutChart.qml — Gráfica de dona (donut/pie chart con hueco central)
+// =============================================================================
+// Dibuja un gráfico circular con hueco central usando Canvas 2D, donde cada
+// segmento representa una proporción del total. Incluye etiquetas externas
+// con porcentaje y un valor total en el centro del hueco.
+//
+// Conceptos clave:
+// - Donut vs Pie: La diferencia es solo el radio interior (innerR). Un pie
+//   chart tendría innerR = 0. El hueco central se aprovecha para mostrar
+//   información adicional (total, KPI, icono, etc.).
+// - Arcos con ctx.arc(): Para crear la forma de "rebanada", se trazan dos
+//   arcos — uno exterior (sentido horario) y uno interior (sentido antihorario,
+//   parámetro `true`). Al cerrar el path, Canvas conecta los extremos
+//   automáticamente, formando la forma de sector anular.
+// - Separación visual entre segmentos: Se logra con un stroke del color del
+//   fondo (Style.surfaceColor), creando líneas divisorias que parecen huecos.
+// - Posicionamiento de etiquetas: Se calculan en coordenadas polares usando
+//   el ángulo medio de cada segmento. La alineación de texto cambia según
+//   si la etiqueta está a la izquierda o derecha del centro.
+// - Ángulo inicial -PI/2: Hace que el primer segmento empiece arriba (12 en
+//   punto) en lugar de a la derecha (3 en punto), que es la convención visual.
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -43,6 +67,8 @@ ColumnLayout {
             width: Math.min(parent.width - Style.resize(20), Style.resize(240))
             height: width
 
+            // Modelo de datos: array de objetos con valor, color y etiqueta.
+            // Este patrón es flexible — se puede alimentar desde C++ o JSON.
             property var segments: [
                 { value: 35, color: "#00D1A9", label: "QML" },
                 { value: 25, color: "#4A90D9", label: "C++" },
@@ -62,6 +88,13 @@ ColumnLayout {
                 var total = 0
                 for (var i = 0; i < segments.length; i++) total += segments[i].value
 
+                // -----------------------------------------------------------
+                // Dibujado de segmentos: cada uno es un sector anular.
+                // sweep = ángulo proporcional al valor del segmento.
+                // Se trazan dos arcos (exterior e interior) para formar la
+                // forma de "rebanada de dona". El segundo arc va en sentido
+                // contrario (anticlockwise = true) para cerrar correctamente.
+                // -----------------------------------------------------------
                 var startAngle = -Math.PI / 2
                 for (var i = 0; i < segments.length; i++) {
                     var sweep = segments[i].value / total * 2 * Math.PI
@@ -72,12 +105,13 @@ ColumnLayout {
                     ctx.fillStyle = segments[i].color
                     ctx.fill()
 
-                    // Segment border
+                    // Borde del mismo color que el fondo para simular separación
                     ctx.strokeStyle = Style.surfaceColor
                     ctx.lineWidth = 2
                     ctx.stroke()
 
-                    // Label line
+                    // Etiqueta posicionada en el punto medio del arco exterior.
+                    // textAlign cambia según el lado para que no se monte sobre la dona.
                     var midAngle = startAngle + sweep / 2
                     var labelR = outerR + 12
                     var lx = cx + labelR * Math.cos(midAngle)
@@ -91,7 +125,8 @@ ColumnLayout {
                     startAngle += sweep
                 }
 
-                // Center text
+                // Texto central: aprovecha el hueco de la dona para mostrar el total.
+                // Este espacio es ideal para un KPI principal o dato destacado.
                 ctx.font = "bold 22px sans-serif"
                 ctx.fillStyle = "#E0E0E0"
                 ctx.textAlign = "center"

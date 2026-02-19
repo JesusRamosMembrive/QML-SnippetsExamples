@@ -1,3 +1,26 @@
+// =============================================================================
+// SearchBar.qml — Barra de busqueda personalizada con TextInput
+// =============================================================================
+// Construye una barra de busqueda desde cero usando primitivas de QML
+// (Rectangle + TextInput), en lugar del TextField de Qt Quick Controls.
+// Esto demuestra como crear controles con apariencia y comportamiento
+// totalmente personalizados.
+//
+// Patrones educativos:
+//   - TextInput vs TextField: TextInput es el tipo primitivo de Qt Quick,
+//     sin estilo ni decoracion. TextField (de Controls) envuelve TextInput
+//     con fondo, bordes, placeholder, etc. Aqui usamos TextInput porque
+//     queremos control total del aspecto visual.
+//   - Placeholder manual: un Text superpuesto que se oculta cuando hay
+//     texto escrito o el campo tiene foco. Este es exactamente el patron
+//     que TextField implementa internamente.
+//   - Borde reactivo al foco: border.color cambia con un binding ternario
+//     y se anima con Behavior para una transicion suave.
+//   - Boton de limpiar (X): solo visible cuando hay texto. Usa MouseArea
+//     con hoverEnabled para feedback visual al pasar el cursor.
+//   - `radius: height / 2` crea bordes completamente redondeados (pill shape).
+// =============================================================================
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -14,6 +37,11 @@ ColumnLayout {
         color: Style.fontPrimaryColor
     }
 
+    // -------------------------------------------------------------------------
+    // Contenedor de la barra: un Rectangle con forma de pastilla (pill).
+    // El borde cambia de color y grosor segun el estado de foco del input,
+    // con una animacion suave de 200ms.
+    // -------------------------------------------------------------------------
     Rectangle {
         Layout.fillWidth: true
         height: Style.resize(46)
@@ -30,7 +58,7 @@ ColumnLayout {
             anchors.rightMargin: Style.resize(12)
             spacing: Style.resize(10)
 
-            // Search icon
+            // Icono de busqueda: su opacidad cambia segun el foco
             Label {
                 text: "\uD83D\uDD0D"
                 font.pixelSize: Style.resize(18)
@@ -39,6 +67,11 @@ ColumnLayout {
                 Behavior on opacity { NumberAnimation { duration: 200 } }
             }
 
+            // -----------------------------------------------------------------
+            // TextInput primitivo con placeholder manual. `selectByMouse: true`
+            // permite seleccionar texto con el raton (deshabilitado por defecto
+            // en TextInput). `clip: true` evita que el texto desborde.
+            // -----------------------------------------------------------------
             TextInput {
                 id: searchInput
                 Layout.fillWidth: true
@@ -48,6 +81,8 @@ ColumnLayout {
                 selectByMouse: true
                 selectionColor: Style.mainColor
 
+                // Placeholder manual: Text superpuesto, visible solo si no
+                // hay texto y el campo no tiene foco activo
                 Text {
                     anchors.fill: parent
                     text: "Search anything..."
@@ -58,7 +93,11 @@ ColumnLayout {
                 }
             }
 
-            // Clear button
+            // -----------------------------------------------------------------
+            // Boton de limpiar: aparece solo cuando hay texto. MouseArea con
+            // hoverEnabled cambia el fondo del circulo al pasar el cursor,
+            // dando feedback visual sin usar estados explícitos.
+            // -----------------------------------------------------------------
             Rectangle {
                 width: Style.resize(24)
                 height: width
