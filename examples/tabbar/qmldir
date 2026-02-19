@@ -1,0 +1,6 @@
+module tabbar
+Main 1.0 Main.qml
+BasicTabBarCard 1.0 BasicTabBarCard.qml
+IconTabBarCard 1.0 IconTabBarCard.qml
+DynamicTabBarCard 1.0 DynamicTabBarCard.qml
+InteractiveTabBarCard 1.0 InteractiveTabBarCard.qml

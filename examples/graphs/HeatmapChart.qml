@@ -76,12 +76,12 @@ ColumnLayout {
                     ctx.fillStyle = heatColor(v)
                     ctx.fillRect(barX, barY + i, barW, 1)
                 }
-                ctx.strokeStyle = "#444"
+                ctx.strokeStyle = "#444444"
                 ctx.lineWidth = 1
                 ctx.strokeRect(barX, barY, barW, barH)
 
                 ctx.font = "9px monospace"
-                ctx.fillStyle = "#888"
+                ctx.fillStyle = "#888888"
                 ctx.textAlign = "right"
                 ctx.fillText("Hot", barX - 3, barY + 8)
                 ctx.fillText("Cold", barX - 3, barY + barH - 2)

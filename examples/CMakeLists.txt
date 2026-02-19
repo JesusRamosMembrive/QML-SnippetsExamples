@@ -1,5 +1,8 @@
 add_subdirectory(buttons)
 add_subdirectory(sliders)
+add_subdirectory(rangesliders)
+add_subdirectory(combobox)
+add_subdirectory(tabbar)
 add_subdirectory(switches)
 add_subdirectory(textinputs)
 add_subdirectory(indicators)

@@ -1,0 +1,6 @@
+module combobox
+Main 1.0 Main.qml
+BasicComboBoxCard 1.0 BasicComboBoxCard.qml
+EditableComboBoxCard 1.0 EditableComboBoxCard.qml
+ModelComboBoxCard 1.0 ModelComboBoxCard.qml
+InteractiveComboBoxCard 1.0 InteractiveComboBoxCard.qml

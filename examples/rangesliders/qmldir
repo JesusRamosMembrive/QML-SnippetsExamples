@@ -1,0 +1,6 @@
+module rangesliders
+Main 1.0 Main.qml
+BasicRangeSliderCard 1.0 BasicRangeSliderCard.qml
+VerticalRangeSliderCard 1.0 VerticalRangeSliderCard.qml
+LabelsRangeSliderCard 1.0 LabelsRangeSliderCard.qml
+InteractiveRangeCard 1.0 InteractiveRangeCard.qml

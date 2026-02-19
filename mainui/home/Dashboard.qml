@@ -5,41 +5,46 @@ import QtCore
 
 import utils
 import qmlsnippetsstyle
-import buttons as Buttons
-import sliders as Sliders
-import switches as Switches
-import textinputs as TextInputs
-import indicators as Indicators
-import animations as Animations
-import popups as Popups
-import lists as Lists
-import canvas as CanvasPage
-import layouts as LayoutsPage
-import transforms as Transforms
-import particles as Particles
-import graphs as GraphsPage
-import pfd as PfdPage
-import hud as HudPage
-import websocketex as WebSocketPage
-import ecam as EcamPage
-import navdisplay as NavDisplayPage
-import theorycpp as TheoryCppPage
-import date as DatePage
-import aircraftmap as AircraftMapPage
-import shapes as ShapesPage
-import maps as MapsPage
-import pdfreader as PdfReaderPage
-import threadsex as ThreadsPage
-import tableview as TableViewPage
-import treeview as TreeViewPage
-import databaseex as DatabasePage
 
 Item {
     id: root
     state: "Dashboard"
     objectName: "Dashboard"
 
-    onStateChanged: repaintTimer.restart()
+    // Mapa estado del menu → URI qrc del modulo
+    readonly property var pageMap: ({
+        "Buttons":      "qrc:/qt/qml/buttons/Main.qml",
+        "Sliders":      "qrc:/qt/qml/sliders/Main.qml",
+        "RangeSliders": "qrc:/qt/qml/rangesliders/Main.qml",
+        "ComboBox":     "qrc:/qt/qml/combobox/Main.qml",
+        "TabBar":       "qrc:/qt/qml/tabbar/Main.qml",
+        "Switches":     "qrc:/qt/qml/switches/Main.qml",
+        "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
+        "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
+        "Animations":   "qrc:/qt/qml/animations/Main.qml",
+        "Popups":       "qrc:/qt/qml/popups/Main.qml",
+        "Lists":        "qrc:/qt/qml/lists/Main.qml",
+        "Canvas":       "qrc:/qt/qml/canvas/Main.qml",
+        "Layouts":      "qrc:/qt/qml/layouts/Main.qml",
+        "Transforms":   "qrc:/qt/qml/transforms/Main.qml",
+        "Particles":    "qrc:/qt/qml/particles/Main.qml",
+        "Graphs":       "qrc:/qt/qml/graphs/Main.qml",
+        "PFD":          "qrc:/qt/qml/pfd/Main.qml",
+        "HUD":          "qrc:/qt/qml/hud/Main.qml",
+        "WebSocket":    "qrc:/qt/qml/websocketex/Main.qml",
+        "ECAM":         "qrc:/qt/qml/ecam/Main.qml",
+        "NavDisplay":   "qrc:/qt/qml/navdisplay/Main.qml",
+        "Teoria":       "qrc:/qt/qml/theorycpp/Main.qml",
+        "Date":         "qrc:/qt/qml/date/Main.qml",
+        "AircraftMap":  "qrc:/qt/qml/aircraftmap/Main.qml",
+        "Shapes":       "qrc:/qt/qml/shapes/Main.qml",
+        "Maps":         "qrc:/qt/qml/maps/Main.qml",
+        "PdfReader":    "qrc:/qt/qml/pdfreader/Main.qml",
+        "Threads":      "qrc:/qt/qml/threadsex/Main.qml",
+        "TableView":    "qrc:/qt/qml/tableview/Main.qml",
+        "TreeView":     "qrc:/qt/qml/treeview/Main.qml",
+        "Database":     "qrc:/qt/qml/databaseex/Main.qml"
+    })
 
     Timer {
         id: repaintTimer
@@ -143,7 +148,7 @@ Item {
                         }
 
                         Label {
-                            text: "28 pages"
+                            text: "31 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -160,6 +165,9 @@ Item {
                             id: examplesModel
                             ListElement { name: "Buttons";    desc: "Standard, icon, toggle, and styled buttons" }
                             ListElement { name: "Sliders";    desc: "Range sliders, styled tracks, custom handles" }
+                            ListElement { name: "RangeSliders"; desc: "RangeSlider with formatted labels, vertical, interactive" }
+                            ListElement { name: "ComboBox";   desc: "Editable, ListModel roles, validators, interactive demo" }
+                            ListElement { name: "TabBar";     desc: "StackLayout, icons, dynamic closable tabs, interactive" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }
@@ -260,143 +268,16 @@ Item {
         }
     }
 
-    Buttons.Main {
-        visible: fullSize
-        fullSize: (root.state === "Buttons")
-    }
-
-    Sliders.Main {
-        visible: fullSize
-        fullSize: (root.state === "Sliders")
-    }
-
-    Switches.Main {
-        visible: fullSize
-        fullSize: (root.state === "Switches")
-    }
-
-    TextInputs.Main {
-        visible: fullSize
-        fullSize: (root.state === "TextInputs")
-    }
-
-    Indicators.Main {
-        visible: fullSize
-        fullSize: (root.state === "Indicators")
-    }
-
-    Animations.Main {
-        visible: fullSize
-        fullSize: (root.state === "Animations")
-    }
-
-    Popups.Main {
-        visible: fullSize
-        fullSize: (root.state === "Popups")
-    }
-
-    Lists.Main {
-        visible: fullSize
-        fullSize: (root.state === "Lists")
-    }
-
-    CanvasPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Canvas")
-    }
-
-    LayoutsPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Layouts")
-    }
-
-    Transforms.Main {
-        visible: fullSize
-        fullSize: (root.state === "Transforms")
-    }
-
-    Particles.Main {
-        visible: fullSize
-        fullSize: (root.state === "Particles")
-    }
-
-    GraphsPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Graphs")
-    }
-
-    PfdPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "PFD")
-    }
-
-    HudPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "HUD")
-    }
-
-    WebSocketPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "WebSocket")
-    }
-
-    EcamPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "ECAM")
-    }
-
-    NavDisplayPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "NavDisplay")
-    }
-
-    TheoryCppPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Teoria")
-    }
-
-    DatePage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Date")
-    }
-
-    AircraftMapPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "AircraftMap")
-    }
-
-    ShapesPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Shapes")
-    }
-
-    MapsPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Maps")
-    }
-
-    PdfReaderPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "PdfReader")
-    }
-
-    ThreadsPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Threads")
-    }
-
-    TableViewPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "TableView")
-    }
-
-    TreeViewPage.Main {
-        visible: fullSize
-        fullSize: (root.state === "TreeView")
-    }
-
-    DatabasePage.Main {
-        visible: fullSize
-        fullSize: (root.state === "Database")
+    // Lazy loader — solo carga la pagina activa
+    Loader {
+        id: pageLoader
+        anchors.fill: parent
+        source: root.pageMap[root.state] ?? ""
+        onLoaded: {
+            if (item) {
+                item.fullSize = true
+            }
+            repaintTimer.restart()
+        }
     }
 }

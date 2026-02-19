@@ -19,6 +19,9 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     mainuiplugin
     buttonspluginplugin
     sliderspluginplugin
+    rangesliderspluginplugin
+    comboboxpluginplugin
+    tabbarpluginplugin
     switchespluginplugin
     textinputspluginplugin
     indicatorspluginplugin

@@ -29,6 +29,7 @@ qt_add_qml_module(qmlsnippetsstyle
         buttons/GradientButton.qml
         buttons/PulseButton.qml
         buttons/NeumorphicButton.qml
+        RangeSlider.qml
         # Componentes especializados - Sliders
         sliders/CircularSlider.qml
 )

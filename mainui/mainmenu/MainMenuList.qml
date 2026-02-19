@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
@@ -10,40 +11,43 @@ Item {
     width: parent.width
     height: parent.height
 
-    property string currentItemName: menuModel.get(listView.currentIndex).text
+    property string currentItemName: menuModel.get(listView.currentIndex).name
     signal menuItemClicked(var name)
 
     ListModel {
         id: menuModel
-        ListElement { text: "Dashboard" }
-        ListElement { text: "Buttons" }
-        ListElement { text: "Sliders" }
-        ListElement { text: "Switches" }
-        ListElement { text: "TextInputs" }
-        ListElement { text: "Indicators" }
-        ListElement { text: "Animations" }
-        ListElement { text: "Popups" }
-        ListElement { text: "Lists" }
-        ListElement { text: "Canvas" }
-        ListElement { text: "Layouts" }
-        ListElement { text: "Transforms" }
-        ListElement { text: "Particles" }
-        ListElement { text: "Graphs" }
-        ListElement { text: "PFD" }
-        ListElement { text: "HUD" }
-        ListElement { text: "WebSocket" }
-        ListElement { text: "ECAM" }
-        ListElement { text: "NavDisplay" }
-        ListElement { text: "Teoria" }
-        ListElement { text: "Date" }
-        ListElement { text: "AircraftMap" }
-        ListElement { text: "Shapes" }
-        ListElement { text: "Maps" }
-        ListElement { text: "PdfReader" }
-        ListElement { text: "Threads" }
-        ListElement { text: "TableView" }
-        ListElement { text: "TreeView" }
-        ListElement { text: "Database" }
+        ListElement { name: "Dashboard" }
+        ListElement { name: "Buttons" }
+        ListElement { name: "Sliders" }
+        ListElement { name: "RangeSliders" }
+        ListElement { name: "ComboBox" }
+        ListElement { name: "TabBar" }
+        ListElement { name: "Switches" }
+        ListElement { name: "TextInputs" }
+        ListElement { name: "Indicators" }
+        ListElement { name: "Animations" }
+        ListElement { name: "Popups" }
+        ListElement { name: "Lists" }
+        ListElement { name: "Canvas" }
+        ListElement { name: "Layouts" }
+        ListElement { name: "Transforms" }
+        ListElement { name: "Particles" }
+        ListElement { name: "Graphs" }
+        ListElement { name: "PFD" }
+        ListElement { name: "HUD" }
+        ListElement { name: "WebSocket" }
+        ListElement { name: "ECAM" }
+        ListElement { name: "NavDisplay" }
+        ListElement { name: "Teoria" }
+        ListElement { name: "Date" }
+        ListElement { name: "AircraftMap" }
+        ListElement { name: "Shapes" }
+        ListElement { name: "Maps" }
+        ListElement { name: "PdfReader" }
+        ListElement { name: "Threads" }
+        ListElement { name: "TableView" }
+        ListElement { name: "TreeView" }
+        ListElement { name: "Database" }
     }
 
     ListView {
@@ -68,6 +72,10 @@ Item {
         model: menuModel
 
         delegate: ItemDelegate {
+            id: menuDelegate
+            required property int index
+            required property string name
+
             width: listView.width
             height: Style.resize(47)
             background: Rectangle { color: "transparent" }
@@ -80,10 +88,10 @@ Item {
                     anchors.left: parent.left
                     anchors.leftMargin: Style.resize(40)
                     anchors.verticalCenter: parent.verticalCenter
-                    source: Style.icon(model.text.toLowerCase())
+                    source: Style.icon(menuDelegate.name.toLowerCase())
                     layer.enabled: true
                     layer.effect: ColorOverlay {
-                        color: "#fff"
+                        color: "#ffffff"
                     }
                 }
                 Label {
@@ -91,14 +99,14 @@ Item {
                     anchors.leftMargin: Style.resize(20)
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: Style.resize(3)
-                    text: model.text
-                    color: "#fff"
+                    text: menuDelegate.name
+                    color: "#ffffff"
                 }
             }
 
             onClicked: {
-                listView.currentIndex = index;
-                root.menuItemClicked(model.text);
+                listView.currentIndex = menuDelegate.index;
+                root.menuItemClicked(menuDelegate.name);
             }
         }
     }

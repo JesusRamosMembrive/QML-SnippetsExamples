@@ -64,6 +64,7 @@ Rectangle {
                     { label: "Sawtooth", clr: "#FEA601" }
                 ]
                 RowLayout {
+                    required property var modelData
                     spacing: Style.resize(4)
                     Rectangle { width: Style.resize(12); height: Style.resize(3); color: modelData.clr; radius: 1 }
                     Label { text: modelData.label; font.pixelSize: Style.resize(11); color: Style.fontSecondaryColor }

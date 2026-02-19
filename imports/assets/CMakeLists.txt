@@ -27,6 +27,9 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/stop.png
         icons/buttons.png
         icons/sliders.png
+        icons/rangesliders.png
+        icons/combobox.png
+        icons/tabbar.png
         icons/switches.png
         icons/textinputs.png
         icons/indicators.png
