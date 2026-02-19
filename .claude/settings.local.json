@@ -36,7 +36,10 @@
       "WebFetch(domain:www.basyskom.de)",
       "WebFetch(domain:www.learnqt.guide)",
       "WebFetch(domain:forum.qt.io)",
-      "WebFetch(domain:wiki.qt.io)"
+      "WebFetch(domain:wiki.qt.io)",
+      "Bash(magick -version:*)",
+      "Bash(convert:*)",
+      "Bash(git status:*)"
     ]
   }
 }

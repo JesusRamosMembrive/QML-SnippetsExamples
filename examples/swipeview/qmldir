@@ -1,0 +1,6 @@
+module swipeview
+Main 1.0 Main.qml
+BasicSwipeCard 1.0 BasicSwipeCard.qml
+IndicatorSwipeCard 1.0 IndicatorSwipeCard.qml
+CarouselCard 1.0 CarouselCard.qml
+InteractiveSwipeCard 1.0 InteractiveSwipeCard.qml

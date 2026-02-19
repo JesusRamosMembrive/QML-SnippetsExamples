@@ -22,6 +22,7 @@ Item {
         ListElement { name: "RangeSliders" }
         ListElement { name: "ComboBox" }
         ListElement { name: "TabBar" }
+        ListElement { name: "SwipeView" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

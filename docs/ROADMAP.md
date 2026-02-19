@@ -55,7 +55,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **ComboBox** — ComboBox editable, con modelos, searchable, dropdown estilizado
 - ~~**SpinBox**~~ — Ya cubierto en TextInputs (ComboSpinCard + FormBuilderCard)
 - [x] **TabBar** — TabBar + StackLayout, tabs dinamicas, con iconos, closable tabs
-- [ ] **SwipeView** — SwipeView paginado, PageIndicator, carrusel de imagenes
+- [x] **SwipeView** — SwipeView paginado, PageIndicator, carrusel de imagenes
 
 ### Controles avanzados
 - [ ] **SplitView** — SplitView horizontal/vertical, paneles redimensionables

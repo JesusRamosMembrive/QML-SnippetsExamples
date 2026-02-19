@@ -18,6 +18,7 @@ Item {
         "RangeSliders": "qrc:/qt/qml/rangesliders/Main.qml",
         "ComboBox":     "qrc:/qt/qml/combobox/Main.qml",
         "TabBar":       "qrc:/qt/qml/tabbar/Main.qml",
+        "SwipeView":    "qrc:/qt/qml/swipeview/Main.qml",
         "Switches":     "qrc:/qt/qml/switches/Main.qml",
         "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
@@ -148,7 +149,7 @@ Item {
                         }
 
                         Label {
-                            text: "31 pages"
+                            text: "32 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -168,6 +169,7 @@ Item {
                             ListElement { name: "RangeSliders"; desc: "RangeSlider with formatted labels, vertical, interactive" }
                             ListElement { name: "ComboBox";   desc: "Editable, ListModel roles, validators, interactive demo" }
                             ListElement { name: "TabBar";     desc: "StackLayout, icons, dynamic closable tabs, interactive" }
+                            ListElement { name: "SwipeView";  desc: "PageIndicator, card carousel, onboarding wizard" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }

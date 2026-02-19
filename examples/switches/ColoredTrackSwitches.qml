@@ -42,8 +42,8 @@ ColumnLayout {
                 // Custom track
                 Rectangle {
                     id: colorTrack
-                    width: Style.resize(52)
-                    height: Style.resize(28)
+                    Layout.preferredWidth: Style.resize(52)
+                    Layout.preferredHeight: Style.resize(28)
                     radius: height / 2
                     color: colorSwitchRow.on
                            ? colorSwitchRow.modelData.color

@@ -43,7 +43,7 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            height: Style.resize(1)
+            Layout.preferredHeight: Style.resize(1)
             color: Style.bgColor
         }
 
