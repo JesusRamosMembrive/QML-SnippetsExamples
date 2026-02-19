@@ -27,6 +27,7 @@ Item {
         ListElement { name: "ToolBar" }
         ListElement { name: "ScrollView" }
         ListElement { name: "MenuBar" }
+        ListElement { name: "PathView" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

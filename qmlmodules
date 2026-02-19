@@ -59,4 +59,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     treeviewpluginplugin
     databasepluginplugin
     databaseexpluginplugin
+    pathviewpluginplugin
 )

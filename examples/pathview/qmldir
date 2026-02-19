@@ -1,0 +1,6 @@
+module pathview
+Main 1.0 Main.qml
+CircularPathCard 1.0 CircularPathCard.qml
+ArcPathCard 1.0 ArcPathCard.qml
+CoverFlowCard 1.0 CoverFlowCard.qml
+InteractivePathCard 1.0 InteractivePathCard.qml

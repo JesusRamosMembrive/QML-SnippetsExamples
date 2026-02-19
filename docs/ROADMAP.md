@@ -64,7 +64,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **MenuBar** — Menu de aplicacion, context menus avanzados, keyboard shortcuts
 
 ### Patrones QML
-- [ ] **PathView** — Vista circular/path, coverflow, selector carrusel 3D
+- [x] **PathView** — Vista circular/path, coverflow, selector carrusel 3D
 - [ ] **GridView** — GridView con delegates, photo gallery, masonry layout
 - [ ] **Flickable** — Flickable custom, pinch-to-zoom, zoom de imagen, snap
 - [ ] **Shaders** — ShaderEffect, fragmento GLSL, transiciones custom, filtros
