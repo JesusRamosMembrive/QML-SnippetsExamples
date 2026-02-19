@@ -1,0 +1,7 @@
+module shaders
+prefer :/qt/qml/shaders/
+Main 1.0 Main.qml
+BlurEffectCard 1.0 BlurEffectCard.qml
+GlowShadowCard 1.0 GlowShadowCard.qml
+ColorEffectCard 1.0 ColorEffectCard.qml
+InteractiveEffectsCard 1.0 InteractiveEffectsCard.qml

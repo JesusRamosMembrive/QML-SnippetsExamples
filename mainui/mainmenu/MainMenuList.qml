@@ -30,6 +30,8 @@ Item {
         ListElement { name: "PathView" }
         ListElement { name: "GridView" }
         ListElement { name: "Flickable" }
+        ListElement { name: "Shaders" }
+        ListElement { name: "Loader" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

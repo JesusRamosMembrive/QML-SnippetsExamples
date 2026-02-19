@@ -1,0 +1,7 @@
+module loaderex
+prefer :/qt/qml/loaderex/
+Main 1.0 Main.qml
+BasicLoaderCard 1.0 BasicLoaderCard.qml
+ComponentLoaderCard 1.0 ComponentLoaderCard.qml
+DynamicCreationCard 1.0 DynamicCreationCard.qml
+InteractiveLoaderCard 1.0 InteractiveLoaderCard.qml

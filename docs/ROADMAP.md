@@ -67,8 +67,8 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **PathView** — Vista circular/path, coverflow, selector carrusel 3D
 - [x] **GridView** — GridView con delegates, photo gallery, masonry layout
 - [x] **Flickable** — Flickable custom, pinch-to-zoom, zoom de imagen, snap
-- [ ] **Shaders** — ShaderEffect, fragmento GLSL, transiciones custom, filtros
-- [ ] **Loader** — Component/Loader, creacion dinamica, lazy loading, Instantiator
+- [x] **Shaders** — ShaderEffect, fragmento GLSL, transiciones custom, filtros
+- [x] **Loader** — Component/Loader, creacion dinamica, lazy loading, Instantiator
 - [ ] **Images** — Image, AnimatedImage, BorderImage, image providers
 - [ ] **States** — States avanzados, transiciones complejas, state machines
 
