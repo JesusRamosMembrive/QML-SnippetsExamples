@@ -72,4 +72,8 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     multimediapluginplugin
     customitempluginplugin
     customitemexpluginplugin
+    qmlcppbridgepluginplugin
+    qmlcppbridgeexpluginplugin
+    asynccpppluginplugin
+    asynccppexpluginplugin
 )

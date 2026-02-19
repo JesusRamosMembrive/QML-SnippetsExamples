@@ -1,0 +1,7 @@
+module qmlcppbridgeex
+prefer :/qt/qml/qmlcppbridgeex/
+Main 1.0 Main.qml
+PropertyBindCard 1.0 PropertyBindCard.qml
+MethodCard 1.0 MethodCard.qml
+SignalCard 1.0 SignalCard.qml
+InteractiveBridgeCard 1.0 InteractiveBridgeCard.qml

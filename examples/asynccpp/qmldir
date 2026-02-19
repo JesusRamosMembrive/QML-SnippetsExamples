@@ -1,0 +1,7 @@
+module asynccppex
+prefer :/qt/qml/asynccppex/
+Main 1.0 Main.qml
+ConcurrentRunCard 1.0 ConcurrentRunCard.qml
+ProgressTaskCard 1.0 ProgressTaskCard.qml
+CancelTaskCard 1.0 CancelTaskCard.qml
+ParallelMapCard 1.0 ParallelMapCard.qml

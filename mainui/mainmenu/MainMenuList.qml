@@ -65,6 +65,8 @@ Item {
         ListElement { name: "Database" }
         ListElement { name: "Multimedia" }
         ListElement { name: "CustomItem" }
+        ListElement { name: "QMLCppBridge" }
+        ListElement { name: "AsyncCpp" }
     }
 
     ListView {

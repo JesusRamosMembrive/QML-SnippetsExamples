@@ -60,7 +60,9 @@ Item {
         "TreeView":     "qrc:/qt/qml/treeview/Main.qml",
         "Database":     "qrc:/qt/qml/databaseex/Main.qml",
         "Multimedia":   "qrc:/qt/qml/multimedia/Main.qml",
-        "CustomItem":   "qrc:/qt/qml/customitemex/Main.qml"
+        "CustomItem":   "qrc:/qt/qml/customitemex/Main.qml",
+        "QMLCppBridge": "qrc:/qt/qml/qmlcppbridgeex/Main.qml",
+        "AsyncCpp":     "qrc:/qt/qml/asynccppex/Main.qml"
     })
 
     Timer {
@@ -165,7 +167,7 @@ Item {
                         }
 
                         Label {
-                            text: "48 pages"
+                            text: "50 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -228,6 +230,8 @@ Item {
                             ListElement { name: "Database";    desc: "SQLite CRUD with QSqlTableModel, query explorer, data dashboard" }
                             ListElement { name: "Multimedia";  desc: "Video player, audio spectrum, camera capture, playback controls" }
                             ListElement { name: "CustomItem";  desc: "QQuickPaintedItem: clock, waveform, gauge, drawing canvas" }
+                            ListElement { name: "QMLCppBridge"; desc: "Q_PROPERTY, Q_INVOKABLE, Q_ENUM, C++ signals to QML" }
+                            ListElement { name: "AsyncCpp";     desc: "QtConcurrent, QFuture, QPromise, progress and cancellation" }
                         }
 
                         ColumnLayout {

@@ -79,8 +79,8 @@ Documento de seguimiento: paginas completadas y pendientes.
 
 ### Integracion C++ avanzada
 - [x] **CustomItem** — QQuickPaintedItem, rendering custom desde C++
-- [ ] **QMLCppBridge** — Q_PROPERTY, Q_INVOKABLE, senales C++ a QML
-- [ ] **AsyncCpp** — QFuture, QtConcurrent, async C++ con UI
+- [x] **QMLCppBridge** — Q_PROPERTY, Q_INVOKABLE, senales C++ a QML
+- [x] **AsyncCpp** — QFuture, QtConcurrent, async C++ con UI
 - [ ] **Settings** — QSettings, preferencias persistentes, tema claro/oscuro
 
 ### Showcases (aplicaciones practicas)
