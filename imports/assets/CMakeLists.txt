@@ -34,6 +34,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/splitview.png
         icons/toolbar.png
         icons/scrollview.png
+        icons/menubar.png
         icons/switches.png
         icons/textinputs.png
         icons/indicators.png

@@ -26,6 +26,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     splitviewpluginplugin
     toolbarpluginplugin
     scrollviewpluginplugin
+    menubarpluginplugin
     switchespluginplugin
     textinputspluginplugin
     indicatorspluginplugin

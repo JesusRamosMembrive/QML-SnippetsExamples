@@ -1,0 +1,6 @@
+module menubar
+Main 1.0 Main.qml
+BasicMenuBarCard 1.0 BasicMenuBarCard.qml
+ContextMenuCard 1.0 ContextMenuCard.qml
+CheckableMenuCard 1.0 CheckableMenuCard.qml
+InteractiveMenuCard 1.0 InteractiveMenuCard.qml
