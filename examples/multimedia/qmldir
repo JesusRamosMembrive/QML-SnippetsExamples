@@ -1,0 +1,7 @@
+module multimedia
+prefer :/qt/qml/multimedia/
+Main 1.0 Main.qml
+VideoPlayerCard 1.0 VideoPlayerCard.qml
+AudioPlayerCard 1.0 AudioPlayerCard.qml
+CameraCard 1.0 CameraCard.qml
+InteractiveMediaCard 1.0 InteractiveMediaCard.qml

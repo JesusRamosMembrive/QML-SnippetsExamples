@@ -58,7 +58,8 @@ Item {
         "Threads":      "qrc:/qt/qml/threadsex/Main.qml",
         "TableView":    "qrc:/qt/qml/tableview/Main.qml",
         "TreeView":     "qrc:/qt/qml/treeview/Main.qml",
-        "Database":     "qrc:/qt/qml/databaseex/Main.qml"
+        "Database":     "qrc:/qt/qml/databaseex/Main.qml",
+        "Multimedia":   "qrc:/qt/qml/multimedia/Main.qml"
     })
 
     Timer {
@@ -163,7 +164,7 @@ Item {
                         }
 
                         Label {
-                            text: "46 pages"
+                            text: "47 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -224,6 +225,7 @@ Item {
                             ListElement { name: "TableView";   desc: "C++ QAbstractTableModel, sort/filter proxy, editable cells" }
                             ListElement { name: "TreeView";    desc: "C++ QAbstractItemModel, tree hierarchy, expand/collapse, add/remove" }
                             ListElement { name: "Database";    desc: "SQLite CRUD with QSqlTableModel, query explorer, data dashboard" }
+                            ListElement { name: "Multimedia";  desc: "Video player, audio spectrum, camera capture, playback controls" }
                         }
 
                         ColumnLayout {

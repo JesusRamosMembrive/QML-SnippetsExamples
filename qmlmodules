@@ -69,4 +69,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     filedialogspluginplugin
     networkpluginplugin
     chatuipluginplugin
+    multimediapluginplugin
 )

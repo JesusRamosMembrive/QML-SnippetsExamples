@@ -73,7 +73,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [x] **States** — States avanzados, transiciones complejas, state machines
 
 ### Multimedia y red
-- [ ] **Multimedia** — Video player, audio waveform, camara (Qt Multimedia)
+- [x] **Multimedia** — Video player, audio waveform, camara (Qt Multimedia)
 - [x] **Network** — XMLHttpRequest, REST API, JSON parsing, descarga con progreso
 - [x] **FileDialogs** — FileDialog, FolderDialog, guardar/abrir, filtros
 
