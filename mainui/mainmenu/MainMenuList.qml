@@ -25,6 +25,7 @@ Item {
         ListElement { name: "SwipeView" }
         ListElement { name: "SplitView" }
         ListElement { name: "ToolBar" }
+        ListElement { name: "ScrollView" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

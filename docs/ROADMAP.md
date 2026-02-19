@@ -60,7 +60,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 ### Controles avanzados
 - [x] **SplitView** — SplitView horizontal/vertical, paneles redimensionables
 - [x] **ToolBar** — ToolBar con acciones, toolbar flotante, toolbar contextual
-- [ ] **ScrollView** — ScrollBar custom, pull-to-refresh, infinite scroll
+- [x] **ScrollView** — ScrollBar custom, pull-to-refresh, infinite scroll
 - [ ] **MenuBar** — Menu de aplicacion, context menus avanzados, keyboard shortcuts
 
 ### Patrones QML

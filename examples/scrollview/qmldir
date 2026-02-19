@@ -1,0 +1,6 @@
+module scrollview
+Main 1.0 Main.qml
+BasicScrollCard 1.0 BasicScrollCard.qml
+CustomScrollBarCard 1.0 CustomScrollBarCard.qml
+FlickableCard 1.0 FlickableCard.qml
+InteractiveScrollCard 1.0 InteractiveScrollCard.qml

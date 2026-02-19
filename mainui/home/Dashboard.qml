@@ -21,6 +21,7 @@ Item {
         "SwipeView":    "qrc:/qt/qml/swipeview/Main.qml",
         "SplitView":    "qrc:/qt/qml/splitview/Main.qml",
         "ToolBar":      "qrc:/qt/qml/toolbar/Main.qml",
+        "ScrollView":   "qrc:/qt/qml/scrollview/Main.qml",
         "Switches":     "qrc:/qt/qml/switches/Main.qml",
         "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
@@ -151,7 +152,7 @@ Item {
                         }
 
                         Label {
-                            text: "34 pages"
+                            text: "35 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -174,6 +175,7 @@ Item {
                             ListElement { name: "SwipeView";  desc: "PageIndicator, card carousel, onboarding wizard" }
                             ListElement { name: "SplitView";  desc: "Horizontal, vertical, nested IDE layout, color mixer" }
                             ListElement { name: "ToolBar";    desc: "ToolButtons, actions, contextual toolbar, text editor" }
+                            ListElement { name: "ScrollView"; desc: "Custom ScrollBar, 2D Flickable, infinite scroll" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }
