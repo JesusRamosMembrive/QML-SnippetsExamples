@@ -32,6 +32,7 @@ Item {
         "States":       "qrc:/qt/qml/states/Main.qml",
         "FileDialogs":  "qrc:/qt/qml/filedialogs/Main.qml",
         "Network":      "qrc:/qt/qml/network/Main.qml",
+        "ChatUI":       "qrc:/qt/qml/chatui/Main.qml",
         "Switches":     "qrc:/qt/qml/switches/Main.qml",
         "TextInputs":   "qrc:/qt/qml/textinputs/Main.qml",
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
@@ -162,7 +163,7 @@ Item {
                         }
 
                         Label {
-                            text: "45 pages"
+                            text: "46 pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -196,6 +197,7 @@ Item {
                             ListElement { name: "States";    desc: "PropertyChanges, easing transitions, traffic light, when conditions" }
                             ListElement { name: "FileDialogs"; desc: "FileDialog open/save, FolderDialog, multi-select, action log" }
                             ListElement { name: "Network";    desc: "XMLHttpRequest, REST API, JSON parser, request builder" }
+                            ListElement { name: "ChatUI";    desc: "Chat bubbles, typing indicators, emoji picker, interactive bot" }
                             ListElement { name: "Switches";   desc: "Toggle switches and check controls" }
                             ListElement { name: "TextInputs"; desc: "Text fields, validation, styled inputs" }
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }

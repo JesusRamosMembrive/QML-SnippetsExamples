@@ -36,6 +36,7 @@ Item {
         ListElement { name: "States" }
         ListElement { name: "FileDialogs" }
         ListElement { name: "Network" }
+        ListElement { name: "ChatUI" }
         ListElement { name: "Switches" }
         ListElement { name: "TextInputs" }
         ListElement { name: "Indicators" }

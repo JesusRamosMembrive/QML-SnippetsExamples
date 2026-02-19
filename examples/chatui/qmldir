@@ -1,0 +1,7 @@
+module chatui
+prefer :/qt/qml/chatui/
+Main 1.0 Main.qml
+ChatBubblesCard 1.0 ChatBubblesCard.qml
+TypingIndicatorCard 1.0 TypingIndicatorCard.qml
+EmojiPickerCard 1.0 EmojiPickerCard.qml
+InteractiveChatCard 1.0 InteractiveChatCard.qml

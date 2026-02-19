@@ -84,7 +84,7 @@ Documento de seguimiento: paginas completadas y pendientes.
 - [ ] **Settings** — QSettings, preferencias persistentes, tema claro/oscuro
 
 ### Showcases (aplicaciones practicas)
-- [ ] **ChatUI** — Interfaz de chat, burbujas, input, scroll invertido
+- [x] **ChatUI** — Interfaz de chat, burbujas, input, scroll invertido
 - [ ] **Dashboard** — Dashboard KPI con cards, sparklines, estadisticas real-time
 - [ ] **LoginForm** — Formularios login/registro, validacion, transiciones
 - [ ] **MusicPlayer** — Reproductor con controles, barra de progreso, playlist
