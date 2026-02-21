@@ -8,7 +8,7 @@
 // Flujo de carga de contenido:
 //   1. ChapterPanel emite topicSelected -> Main.qml actualiza propiedades
 //   2. onChapterDirChanged / onTopicFileChanged disparan loadContent()
-//   3. loadContent() llama a parser.getExplanation() y parser.getCodeSections()
+//   3. loadContent() llama a parser.getExplanationHtml() y parser.getCodeSections()
 //   4. Los resultados se asignan a propiedades locales que alimentan la UI
 //   5. contentFlickable.contentY = 0 resetea el scroll al inicio
 //
@@ -43,7 +43,7 @@ Item {
     property string topicDisplay: ""
 
     // -- Contenido cargado: se actualizan en loadContent()
-    property string explanationText: ""
+    property string explanationHtml: ""
     property var codeSections: []
 
     // -- Recargar contenido cuando cambia el capitulo o tema seleccionado
@@ -51,12 +51,19 @@ Item {
     onTopicFileChanged: loadContent()
 
     // -- Funcion que llama al parser C++ para obtener el contenido.
+    //    Usa getExplanationHtml() para obtener HTML estilizado, pasando
+    //    los colores del tema actual para que los headers, codigo inline
+    //    y listas se rendericen con la paleta correcta.
     //    Resetea el scroll para que el nuevo contenido empiece desde arriba.
     function loadContent() {
         if (chapterDir === "" || topicFile === "")
             return
 
-        explanationText = parser.getExplanation(chapterDir, topicFile)
+        explanationHtml = parser.getExplanationHtml(
+            chapterDir, topicFile,
+            Style.mainColor, Style.fontPrimaryColor,
+            Style.fontSecondaryColor, "#1E1E2E"
+        )
         codeSections = parser.getCodeSections(chapterDir, topicFile)
         contentFlickable.contentY = 0
     }
@@ -154,24 +161,47 @@ Item {
                         }
                     }
 
-                    // -- Seccion de teoria: TextEdit con Markdown que muestra
-                    //    la explicacion devuelta por parser.getExplanation().
+                    // -- Encabezado de la seccion de explicacion
+                    Label {
+                        Layout.leftMargin: Style.resize(20)
+                        Layout.topMargin: Style.resize(16)
+                        text: "Explicacion"
+                        font.pixelSize: Style.resize(16)
+                        font.bold: true
+                        color: Style.fontPrimaryColor
+                        visible: root.chapterDir !== ""
+                    }
+
+                    // -- Seccion de teoria: TextEdit con HTML estilizado.
+                    //    El HTML viene de parser.getExplanationHtml() con estilos
+                    //    inline para headers coloreados, bloques de codigo con fondo
+                    //    oscuro, listas con bullets accent, y blockquotes con borde.
+                    //    La barra accent izquierda (4px) da identidad visual al card.
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.leftMargin: Style.resize(20)
                         Layout.rightMargin: Style.resize(20)
-                        Layout.topMargin: Style.resize(16)
                         radius: Style.resize(8)
                         color: Style.cardColor
                         visible: root.chapterDir !== ""
                         implicitHeight: explanationEdit.implicitHeight + Style.resize(40)
 
+                        // -- Barra accent izquierda
+                        Rectangle {
+                            width: Style.resize(4)
+                            height: parent.height
+                            color: Style.mainColor
+                            radius: Style.resize(4)
+                            anchors.left: parent.left
+                        }
+
                         TextEdit {
                             id: explanationEdit
                             anchors.fill: parent
                             anchors.margins: Style.resize(20)
-                            text: root.explanationText
-                            textFormat: TextEdit.MarkdownText
+                            anchors.leftMargin: Style.resize(24)
+                            text: root.explanationHtml
+                            textFormat: TextEdit.RichText
                             readOnly: true
                             wrapMode: TextEdit.WordWrap
                             font.pixelSize: Style.resize(14)
@@ -180,6 +210,17 @@ Item {
                             selectedTextColor: "white"
                             selectionColor: Style.mainColor
                         }
+                    }
+
+                    // -- Separador visual entre explicacion y ejemplos de codigo
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.leftMargin: Style.resize(40)
+                        Layout.rightMargin: Style.resize(40)
+                        height: 1
+                        color: Style.mainColor
+                        opacity: 0.3
+                        visible: root.codeSections.length > 0
                     }
 
                     // -- Encabezado de la seccion de codigo con contador

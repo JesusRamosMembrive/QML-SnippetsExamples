@@ -73,11 +73,24 @@ public:
     // Parametros: directorio del capitulo + nombre del archivo del tema.
     Q_INVOKABLE QString getExplanation(const QString &chapterDir, const QString &topicFile) const;
 
+    // getExplanationHtml: devuelve la explicacion convertida a HTML con
+    // estilos inline. Los colores se pasan desde QML para respetar el tema.
+    Q_INVOKABLE QString getExplanationHtml(const QString &chapterDir, const QString &topicFile,
+                                           const QString &accentColor, const QString &textColor,
+                                           const QString &secondaryColor, const QString &codeBgColor) const;
+
     // getCodeSections: devuelve las secciones de codigo como QVariantList
     // donde cada elemento es un QVariantMap con {title, code, result}.
     Q_INVOKABLE QVariantList getCodeSections(const QString &chapterDir, const QString &topicFile) const;
 
 private:
+    // Convierte markdown a HTML con estilos inline para renderizar en QML RichText
+    QString markdownToHtml(const QString &markdown, const QString &accentColor,
+                           const QString &textColor, const QString &secondaryColor,
+                           const QString &codeBgColor) const;
+
+    // Procesa formato inline: **bold**, `code`, escapa HTML
+    QString processInlineFormatting(const QString &text, const QString &codeBgColor) const;
     // Estructura interna para una seccion de codigo parseada
     struct CodeSection {
         QString title;   // Nombre de la seccion (ej: "NombreSeccion1")

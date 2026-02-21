@@ -1,0 +1,70 @@
+<---EXPLANATION--->
+### Titulo del Tema
+
+Parrafo introductorio explicando el concepto. Puedes usar **negrita** para
+resaltar terminos importantes y `codigo_inline` para funciones o tipos.
+
+#### Subtitulo (Seccion Principal)
+
+Texto explicativo de esta seccion. Puedes incluir bloques de codigo
+directamente en la explicacion:
+
+```cpp
+int ejemplo = 42;
+std::cout << ejemplo << std::endl;
+```
+
+##### Sub-subtitulo (Detalle)
+
+- **Elemento 1:** Descripcion del primer punto.
+- **Elemento 2:** Descripcion del segundo punto.
+- **Elemento 3 (`tipo`):** Descripcion con codigo inline.
+
+#### Otra Seccion
+
+Mas texto explicativo. Puedes usar blockquotes para notas:
+
+> **Nota:** Este es un dato importante que el lector debe recordar.
+
+#### Referencia Rapida
+
+- `funcion()` — Descripcion breve de la funcion.
+- `tipo` — Descripcion breve del tipo.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    // Tu codigo de ejemplo aqui
+    cout << "Hola Mundo" << endl;
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+Hola Mundo
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> nums = {1, 2, 3, 4, 5};
+    for (int n : nums) {
+        cout << n << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+1 2 3 4 5

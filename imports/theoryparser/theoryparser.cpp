@@ -30,6 +30,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QVariantMap>
+#include <QRegularExpression>
 #include <algorithm>
 
 TheoryParser::TheoryParser(QObject *parent)
@@ -248,4 +249,165 @@ QVariantList TheoryParser::getCodeSections(const QString &chapterDir, const QStr
     }
 
     return sections;
+}
+
+// getExplanationHtml - Devuelve la explicacion como HTML estilizado
+//
+// Obtiene el markdown raw del cache y lo convierte a HTML con estilos
+// inline. Los colores se reciben desde QML para respetar el tema activo.
+QString TheoryParser::getExplanationHtml(const QString &chapterDir, const QString &topicFile,
+                                         const QString &accentColor, const QString &textColor,
+                                         const QString &secondaryColor, const QString &codeBgColor) const
+{
+    QString path = QStringLiteral(":/theory/%1/%2").arg(chapterDir, topicFile);
+
+    if (!m_cache.contains(path))
+        m_cache[path] = parseFile(path);
+
+    return markdownToHtml(m_cache[path].explanation, accentColor, textColor,
+                          secondaryColor, codeBgColor);
+}
+
+// processInlineFormatting - Procesa formato inline en una linea de texto
+//
+// Orden de procesamiento:
+//   1. Escapar HTML (&, <, >) para que codigo C++ no rompa el HTML
+//   2. Reemplazar `codigo` por <span> estilizado con fondo oscuro
+//   3. Reemplazar **negrita** por <b>
+QString TheoryParser::processInlineFormatting(const QString &text, const QString &codeBgColor) const
+{
+    QString result = text;
+
+    // 1. Escapar entidades HTML (antes de insertar tags propios)
+    result.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+    result.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+    result.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
+
+    // 2. Codigo inline: `texto` → <span> con fondo oscuro y fuente monospace
+    static const QRegularExpression codeRe(QStringLiteral("`([^`]+)`"));
+    result.replace(codeRe,
+        QStringLiteral("<span style=\"background-color:%1; font-family:Consolas; "
+                       "font-size:13px; color:#D4D4D4;\">\\1</span>")
+            .arg(codeBgColor));
+
+    // 3. Negrita: **texto** → <b>texto</b>
+    static const QRegularExpression boldRe(QStringLiteral("\\*\\*(.+?)\\*\\*"));
+    result.replace(boldRe, QStringLiteral("<b>\\1</b>"));
+
+    return result;
+}
+
+// markdownToHtml - Convierte Markdown a HTML con estilos inline
+//
+// Recorre el texto linea por linea identificando:
+//   - Bloques de codigo (```...```): se escapan literalmente, sin formato inline
+//   - Headers (###, ####, #####): color accent, tamaños diferentes
+//   - Listas (- item): bullet point en color accent con indentacion
+//   - Blockquotes (> texto): borde izquierdo accent, texto en gris italica
+//   - Parrafos normales: color texto primario
+//
+// Cada elemento recibe estilos CSS inline porque QTextDocument (usado por
+// TextEdit.RichText en QML) no soporta CSS externo ni clases.
+QString TheoryParser::markdownToHtml(const QString &markdown, const QString &accentColor,
+                                     const QString &textColor, const QString &secondaryColor,
+                                     const QString &codeBgColor) const
+{
+    const QStringList lines = markdown.split(QLatin1Char('\n'));
+    QString html;
+    bool inCodeBlock = false;
+    QString codeBuffer;
+
+    for (const QString &line : lines) {
+        const QString trimmed = line.trimmed();
+
+        // --- Bloques de codigo delimitados por ``` ---
+        if (trimmed.startsWith(QStringLiteral("```"))) {
+            if (inCodeBlock) {
+                // Cerrar bloque: escapar HTML y envolver en <pre>
+                QString escaped = codeBuffer;
+                escaped.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+                escaped.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+                escaped.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
+                if (escaped.endsWith(QLatin1Char('\n')))
+                    escaped.chop(1);
+
+                html += QStringLiteral(
+                    "<pre style=\"background-color:%1; padding:12px; "
+                    "font-family:Consolas; font-size:13px; color:#D4D4D4; "
+                    "margin-top:8px; margin-bottom:8px;\">%2</pre>")
+                    .arg(codeBgColor, escaped);
+
+                codeBuffer.clear();
+                inCodeBlock = false;
+            } else {
+                inCodeBlock = true;
+            }
+            continue;
+        }
+
+        if (inCodeBlock) {
+            codeBuffer += line + QLatin1Char('\n');
+            continue;
+        }
+
+        // --- Linea vacia: espaciador ---
+        if (trimmed.isEmpty()) {
+            html += QStringLiteral("<br/>");
+            continue;
+        }
+
+        // --- Headers (verificar prefijos largos primero) ---
+        if (trimmed.startsWith(QStringLiteral("##### "))) {
+            QString content = processInlineFormatting(trimmed.mid(6), codeBgColor);
+            html += QStringLiteral(
+                "<h5 style=\"color:%1; font-size:15px; "
+                "margin-top:16px; margin-bottom:4px;\">%2</h5>")
+                .arg(accentColor, content);
+        }
+        else if (trimmed.startsWith(QStringLiteral("#### "))) {
+            QString content = processInlineFormatting(trimmed.mid(5), codeBgColor);
+            html += QStringLiteral(
+                "<h4 style=\"color:%1; font-size:17px; "
+                "margin-top:20px; margin-bottom:6px;\">%2</h4>")
+                .arg(accentColor, content);
+        }
+        else if (trimmed.startsWith(QStringLiteral("### "))) {
+            QString content = processInlineFormatting(trimmed.mid(4), codeBgColor);
+            html += QStringLiteral(
+                "<h3 style=\"color:%1; font-size:20px; "
+                "margin-top:24px; margin-bottom:8px;\">%2</h3>")
+                .arg(accentColor, content);
+        }
+        // --- Blockquote ---
+        else if (trimmed.startsWith(QStringLiteral("> "))) {
+            QString content = processInlineFormatting(trimmed.mid(2), codeBgColor);
+            html += QStringLiteral(
+                "<p style=\"color:%1; font-style:italic; margin-left:16px; "
+                "margin-top:4px; margin-bottom:4px; "
+                "border-left-width:3px; border-left-style:solid; "
+                "border-left-color:%2; padding-left:12px;\">%3</p>")
+                .arg(secondaryColor, accentColor, content);
+        }
+        // --- Lista: lineas que empiezan con "- " (posible indentacion) ---
+        else if (trimmed.startsWith(QStringLiteral("- "))) {
+            // Calcular indentacion: posicion del '-' en la linea original
+            int dashPos = line.indexOf(QLatin1Char('-'));
+            int marginLeft = 16 + (dashPos / 2) * 16;
+            QString content = processInlineFormatting(trimmed.mid(2), codeBgColor);
+            html += QStringLiteral(
+                "<p style=\"color:%1; margin-left:%2px; "
+                "margin-top:2px; margin-bottom:2px;\">"
+                "<span style=\"color:%3;\">&#8226; </span>%4</p>")
+                .arg(textColor).arg(marginLeft).arg(accentColor, content);
+        }
+        // --- Parrafo regular ---
+        else {
+            QString content = processInlineFormatting(trimmed, codeBgColor);
+            html += QStringLiteral(
+                "<p style=\"color:%1; margin-top:4px; margin-bottom:4px;\">%2</p>")
+                .arg(textColor, content);
+        }
+    }
+
+    return html;
 }
