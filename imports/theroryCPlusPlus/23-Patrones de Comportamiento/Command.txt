@@ -1,0 +1,660 @@
+<---EXPLANATION--->
+### Patrón Command (Comando)
+
+El patrón **Command** es un patrón de diseño de comportamiento que encapsula una solicitud como un objeto, permitiendo parametrizar clientes con diferentes solicitudes, encolar o registrar solicitudes, y soportar operaciones que se pueden deshacer (**undo/redo**). Convierte una llamada a método en un objeto independiente que contiene toda la información sobre la solicitud.
+
+#### Problema
+
+Imagina que estás desarrollando un editor de texto. Necesitas implementar botones en la barra de herramientas, atajos de teclado y entradas de menú, todos ejecutando las mismas operaciones (copiar, pegar, deshacer). Sin el patrón Command:
+
+- Cada elemento de la interfaz (botón, menú, atajo) tendría su propia implementación de la operación, duplicando código.
+- Implementar **undo/redo** sería extremadamente complejo porque no hay una forma uniforme de representar las operaciones.
+- No podrías encolar operaciones para ejecución diferida o crear macros (secuencias de comandos).
+- El código de la interfaz estaría fuertemente acoplado a la lógica de negocio.
+
+#### Solución
+
+El patrón Command resuelve estos problemas encapsulando cada operación en un objeto:
+
+1. Se crea una interfaz **Command** con un método `ejecutar()` (y opcionalmente `deshacer()`).
+2. Cada operación se implementa como una clase que hereda de Command.
+3. El **invocador** (botón, menú) almacena y ejecuta comandos sin conocer los detalles.
+4. Se puede mantener un **historial** de comandos para implementar undo/redo.
+
+```cpp
+// El invocador no sabe qué hace el comando, solo lo ejecuta
+auto cmd = std::make_unique<ComandoCopiar>(editor);
+invocador.ejecutarComando(std::move(cmd));
+invocador.deshacer(); // Deshace el último comando
+```
+
+#### Estructura
+
+Los componentes principales del patrón Command son:
+
+- **Command (Comando):** Interfaz que declara `ejecutar()` y opcionalmente `deshacer()`. Es la abstracción central del patrón.
+- **ConcreteCommand (Comando Concreto):** Implementa la interfaz Command. Almacena la referencia al receptor y los parámetros necesarios para la operación.
+- **Invoker (Invocador):** Solicita al comando que ejecute la operación. Puede mantener un historial de comandos.
+- **Receiver (Receptor):** Sabe cómo realizar la operación real. El comando delega el trabajo al receptor.
+- **Client (Cliente):** Crea los comandos concretos y los asocia con los receptores.
+
+#### Implementación en C++
+
+La implementación en C++ usa polimorfismo y `std::unique_ptr` para manejar la vida de los comandos:
+
+```cpp
+// Interfaz del comando
+class IComando {
+public:
+    virtual ~IComando() = default;
+    virtual void ejecutar() = 0;
+    virtual void deshacer() = 0;
+};
+
+// El invocador mantiene una pila de comandos para undo
+class Invocador {
+    std::vector<std::unique_ptr<IComando>> historial_;
+public:
+    void ejecutar(std::unique_ptr<IComando> cmd) {
+        cmd->ejecutar();
+        historial_.push_back(std::move(cmd));
+    }
+    void deshacer() {
+        if (!historial_.empty()) {
+            historial_.back()->deshacer();
+            historial_.pop_back();
+        }
+    }
+};
+```
+
+> **Nota:** Para implementar **redo**, se necesita una segunda pila donde se mueven los comandos deshecho. Al ejecutar un nuevo comando, se limpia la pila de redo.
+
+#### Ventajas y Desventajas
+
+**Ventajas:**
+
+- **Desacoplamiento:** Separa el objeto que invoca la operación del que sabe cómo realizarla.
+- **Undo/Redo:** Facilita la implementación de operaciones reversibles manteniendo un historial.
+- **Composición:** Se pueden crear macros combinando comandos simples en comandos compuestos.
+- **Ejecución diferida:** Los comandos se pueden encolar y ejecutar en otro momento o en otro hilo.
+- **Registro:** Se puede registrar un log de todas las operaciones ejecutadas.
+
+**Desventajas:**
+
+- **Complejidad:** Introduce muchas clases pequeñas, una por cada operación.
+- **Memoria:** Mantener el historial de comandos consume memoria, especialmente si los comandos guardan estado para deshacer.
+- **Consistencia:** Implementar `deshacer()` correctamente puede ser difícil si las operaciones tienen efectos secundarios complejos.
+
+#### Aplicación en Qt
+
+Qt proporciona una implementación completa del patrón Command:
+
+- **`QUndoCommand`:** Clase base para comandos con soporte de undo/redo. Se implementan `redo()` (ejecutar) y `undo()` (deshacer). Soporta **compresión** de comandos (fusionar comandos consecutivos del mismo tipo) y **comandos hijo** (composición).
+- **`QUndoStack`:** Actúa como invocador. Mantiene la pila de comandos, emite señales cuando cambia el estado (puede deshacer, puede rehacer), y se integra con `QAction` para crear botones de undo/redo automáticamente.
+- **`QAction`:** Representa un comando abstracto que puede ser disparado desde menús, barras de herramientas y atajos de teclado simultáneamente. Es una implementación ligera del patrón Command.
+
+> **Nota:** `QUndoStack::push()` ejecuta el comando automáticamente (llama a `redo()`) y lo agrega al historial. No necesitas ejecutar el comando manualmente.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <string>
+
+// Interfaz del comando
+class IComando {
+public:
+    virtual ~IComando() = default;
+    virtual void ejecutar() = 0;
+    virtual void deshacer() = 0;
+    virtual std::string descripcion() const = 0;
+};
+
+// Receptor: una luz que se puede encender/apagar
+class Luz {
+private:
+    std::string ubicacion_;
+    bool encendida_ = false;
+
+public:
+    Luz(const std::string& ubicacion) : ubicacion_(ubicacion) {}
+
+    void encender() {
+        encendida_ = true;
+        std::cout << "Luz de " << ubicacion_ << ": ENCENDIDA" << std::endl;
+    }
+
+    void apagar() {
+        encendida_ = false;
+        std::cout << "Luz de " << ubicacion_ << ": APAGADA" << std::endl;
+    }
+
+    bool estaEncendida() const { return encendida_; }
+    std::string ubicacion() const { return ubicacion_; }
+};
+
+// Comando concreto: encender luz
+class ComandoEncender : public IComando {
+private:
+    Luz& luz_;
+
+public:
+    ComandoEncender(Luz& luz) : luz_(luz) {}
+
+    void ejecutar() override { luz_.encender(); }
+    void deshacer() override { luz_.apagar(); }
+    std::string descripcion() const override {
+        return "Encender luz de " + luz_.ubicacion();
+    }
+};
+
+// Comando concreto: apagar luz
+class ComandoApagar : public IComando {
+private:
+    Luz& luz_;
+
+public:
+    ComandoApagar(Luz& luz) : luz_(luz) {}
+
+    void ejecutar() override { luz_.apagar(); }
+    void deshacer() override { luz_.encender(); }
+    std::string descripcion() const override {
+        return "Apagar luz de " + luz_.ubicacion();
+    }
+};
+
+// Invocador: control remoto con historial
+class ControlRemoto {
+private:
+    std::vector<std::unique_ptr<IComando>> historial_;
+
+public:
+    void ejecutar(std::unique_ptr<IComando> comando) {
+        std::cout << "[Ejecutando] " << comando->descripcion() << std::endl;
+        comando->ejecutar();
+        historial_.push_back(std::move(comando));
+    }
+
+    void deshacer() {
+        if (historial_.empty()) {
+            std::cout << "[No hay comandos para deshacer]" << std::endl;
+            return;
+        }
+        std::cout << "[Deshaciendo] " << historial_.back()->descripcion() << std::endl;
+        historial_.back()->deshacer();
+        historial_.pop_back();
+    }
+};
+
+int main() {
+    // Receptores
+    Luz luzSala("la sala");
+    Luz luzCocina("la cocina");
+
+    // Invocador
+    ControlRemoto control;
+
+    // Ejecutar comandos
+    control.ejecutar(std::make_unique<ComandoEncender>(luzSala));
+    control.ejecutar(std::make_unique<ComandoEncender>(luzCocina));
+    control.ejecutar(std::make_unique<ComandoApagar>(luzSala));
+
+    std::cout << "\n--- Deshaciendo operaciones ---" << std::endl;
+    control.deshacer();  // Deshace "apagar sala" -> enciende sala
+    control.deshacer();  // Deshace "encender cocina" -> apaga cocina
+    control.deshacer();  // Deshace "encender sala" -> apaga sala
+    control.deshacer();  // No hay más comandos
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+[Ejecutando] Encender luz de la sala
+Luz de la sala: ENCENDIDA
+[Ejecutando] Encender luz de la cocina
+Luz de la cocina: ENCENDIDA
+[Ejecutando] Apagar luz de la sala
+Luz de la sala: APAGADA
+
+--- Deshaciendo operaciones ---
+[Deshaciendo] Apagar luz de la sala
+Luz de la sala: ENCENDIDA
+[Deshaciendo] Encender luz de la cocina
+Luz de la cocina: APAGADA
+[Deshaciendo] Encender luz de la sala
+Luz de la sala: APAGADA
+[No hay comandos para deshacer]
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <string>
+#include <sstream>
+
+// Editor de texto con undo/redo completo y comandos compuestos (macros)
+
+class IComando {
+public:
+    virtual ~IComando() = default;
+    virtual void ejecutar() = 0;
+    virtual void deshacer() = 0;
+    virtual std::string descripcion() const = 0;
+};
+
+// Receptor: documento de texto
+class Documento {
+private:
+    std::string contenido_;
+    int posicionCursor_ = 0;
+
+public:
+    void insertar(int posicion, const std::string& texto) {
+        contenido_.insert(posicion, texto);
+        posicionCursor_ = posicion + static_cast<int>(texto.length());
+    }
+
+    std::string eliminar(int posicion, int longitud) {
+        std::string eliminado = contenido_.substr(posicion, longitud);
+        contenido_.erase(posicion, longitud);
+        posicionCursor_ = posicion;
+        return eliminado;
+    }
+
+    std::string contenido() const { return contenido_; }
+    int longitud() const { return static_cast<int>(contenido_.length()); }
+
+    void mostrar() const {
+        std::cout << "  Documento: \"" << contenido_ << "\"" << std::endl;
+    }
+};
+
+// Comando: insertar texto
+class ComandoInsertar : public IComando {
+private:
+    Documento& doc_;
+    int posicion_;
+    std::string texto_;
+
+public:
+    ComandoInsertar(Documento& doc, int posicion, const std::string& texto)
+        : doc_(doc), posicion_(posicion), texto_(texto) {}
+
+    void ejecutar() override { doc_.insertar(posicion_, texto_); }
+    void deshacer() override { doc_.eliminar(posicion_, static_cast<int>(texto_.length())); }
+    std::string descripcion() const override {
+        return "Insertar \"" + texto_ + "\" en posicion " + std::to_string(posicion_);
+    }
+};
+
+// Comando: eliminar texto
+class ComandoEliminar : public IComando {
+private:
+    Documento& doc_;
+    int posicion_;
+    int longitud_;
+    std::string textoEliminado_;  // Para poder deshacer
+
+public:
+    ComandoEliminar(Documento& doc, int posicion, int longitud)
+        : doc_(doc), posicion_(posicion), longitud_(longitud) {}
+
+    void ejecutar() override {
+        textoEliminado_ = doc_.eliminar(posicion_, longitud_);
+    }
+    void deshacer() override {
+        doc_.insertar(posicion_, textoEliminado_);
+    }
+    std::string descripcion() const override {
+        return "Eliminar " + std::to_string(longitud_) + " chars en posicion " + std::to_string(posicion_);
+    }
+};
+
+// Comando compuesto (Macro): agrupa varios comandos
+class ComandoMacro : public IComando {
+private:
+    std::string nombre_;
+    std::vector<std::unique_ptr<IComando>> comandos_;
+
+public:
+    ComandoMacro(const std::string& nombre) : nombre_(nombre) {}
+
+    void agregar(std::unique_ptr<IComando> cmd) {
+        comandos_.push_back(std::move(cmd));
+    }
+
+    void ejecutar() override {
+        for (auto& cmd : comandos_) {
+            cmd->ejecutar();
+        }
+    }
+
+    void deshacer() override {
+        // Deshacer en orden inverso
+        for (auto it = comandos_.rbegin(); it != comandos_.rend(); ++it) {
+            (*it)->deshacer();
+        }
+    }
+
+    std::string descripcion() const override {
+        return "Macro: " + nombre_ + " (" + std::to_string(comandos_.size()) + " comandos)";
+    }
+};
+
+// Invocador con undo y redo
+class Editor {
+private:
+    std::vector<std::unique_ptr<IComando>> historialUndo_;
+    std::vector<std::unique_ptr<IComando>> historialRedo_;
+
+public:
+    void ejecutar(std::unique_ptr<IComando> cmd) {
+        std::cout << "[Exec] " << cmd->descripcion() << std::endl;
+        cmd->ejecutar();
+        historialUndo_.push_back(std::move(cmd));
+        historialRedo_.clear();  // Limpiar redo al ejecutar nuevo comando
+    }
+
+    void deshacer() {
+        if (historialUndo_.empty()) {
+            std::cout << "[Undo] Nada que deshacer" << std::endl;
+            return;
+        }
+        auto& cmd = historialUndo_.back();
+        std::cout << "[Undo] " << cmd->descripcion() << std::endl;
+        cmd->deshacer();
+        historialRedo_.push_back(std::move(cmd));
+        historialUndo_.pop_back();
+    }
+
+    void rehacer() {
+        if (historialRedo_.empty()) {
+            std::cout << "[Redo] Nada que rehacer" << std::endl;
+            return;
+        }
+        auto& cmd = historialRedo_.back();
+        std::cout << "[Redo] " << cmd->descripcion() << std::endl;
+        cmd->ejecutar();
+        historialUndo_.push_back(std::move(cmd));
+        historialRedo_.pop_back();
+    }
+};
+
+int main() {
+    Documento doc;
+    Editor editor;
+
+    // Escribir texto paso a paso
+    editor.ejecutar(std::make_unique<ComandoInsertar>(doc, 0, "Hola"));
+    doc.mostrar();
+
+    editor.ejecutar(std::make_unique<ComandoInsertar>(doc, 4, " Mundo"));
+    doc.mostrar();
+
+    editor.ejecutar(std::make_unique<ComandoInsertar>(doc, 10, " Cruel"));
+    doc.mostrar();
+
+    // Eliminar " Cruel"
+    editor.ejecutar(std::make_unique<ComandoEliminar>(doc, 10, 6));
+    doc.mostrar();
+
+    // Deshacer dos veces
+    std::cout << "\n--- Deshaciendo ---" << std::endl;
+    editor.deshacer();
+    doc.mostrar();
+    editor.deshacer();
+    doc.mostrar();
+
+    // Rehacer una vez
+    std::cout << "\n--- Rehaciendo ---" << std::endl;
+    editor.rehacer();
+    doc.mostrar();
+
+    // Macro: reemplazar "Hola" por "Adios"
+    std::cout << "\n--- Ejecutando macro ---" << std::endl;
+    auto macro = std::make_unique<ComandoMacro>("Reemplazar Hola->Adios");
+    macro->agregar(std::make_unique<ComandoEliminar>(doc, 0, 4));
+    macro->agregar(std::make_unique<ComandoInsertar>(doc, 0, "Adios"));
+    editor.ejecutar(std::move(macro));
+    doc.mostrar();
+
+    // Deshacer la macro completa
+    std::cout << "\n--- Deshaciendo macro ---" << std::endl;
+    editor.deshacer();
+    doc.mostrar();
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+[Exec] Insertar "Hola" en posicion 0
+  Documento: "Hola"
+[Exec] Insertar " Mundo" en posicion 4
+  Documento: "Hola Mundo"
+[Exec] Insertar " Cruel" en posicion 10
+  Documento: "Hola Mundo Cruel"
+[Exec] Eliminar 6 chars en posicion 10
+  Documento: "Hola Mundo"
+
+--- Deshaciendo ---
+[Undo] Eliminar 6 chars en posicion 10
+  Documento: "Hola Mundo Cruel"
+[Undo] Insertar " Cruel" en posicion 10
+  Documento: "Hola Mundo"
+
+--- Rehaciendo ---
+[Redo] Insertar " Cruel" en posicion 10
+  Documento: "Hola Mundo Cruel"
+
+--- Ejecutando macro ---
+[Exec] Macro: Reemplazar Hola->Adios (2 comandos)
+  Documento: "Adios Mundo Cruel"
+
+--- Deshaciendo macro ---
+[Undo] Macro: Reemplazar Hola->Adios (2 comandos)
+  Documento: "Hola Mundo Cruel"
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QUndoCommand>
+#include <QUndoStack>
+#include <QDebug>
+#include <QString>
+#include <QAction>
+
+// ============================================================
+// Editor de figuras con QUndoCommand y QUndoStack
+// ============================================================
+
+// Modelo simple: una figura con posición y color
+struct Figura {
+    QString nombre;
+    int x = 0;
+    int y = 0;
+    QString color = "rojo";
+
+    void mostrar() const {
+        qDebug().noquote() << QString("  %1: posicion(%2, %3) color=%4")
+            .arg(nombre).arg(x).arg(y).arg(color);
+    }
+};
+
+// Comando: mover figura (con compresión de comandos consecutivos)
+class ComandoMover : public QUndoCommand {
+public:
+    ComandoMover(Figura* figura, int nuevoX, int nuevoY,
+                 QUndoCommand* parent = nullptr)
+        : QUndoCommand(parent)
+        , figura_(figura)
+        , antiguoX_(figura->x), antiguoY_(figura->y)
+        , nuevoX_(nuevoX), nuevoY_(nuevoY)
+    {
+        // Texto que aparece en el menú Edit > Undo
+        setText(QString("Mover %1 a (%2, %3)")
+                .arg(figura->nombre).arg(nuevoX).arg(nuevoY));
+    }
+
+    // redo() se llama automáticamente al hacer push() al stack
+    void redo() override {
+        figura_->x = nuevoX_;
+        figura_->y = nuevoY_;
+        qDebug().noquote() << "[Redo]" << text();
+    }
+
+    void undo() override {
+        figura_->x = antiguoX_;
+        figura_->y = antiguoY_;
+        qDebug().noquote() << "[Undo]" << text();
+    }
+
+    // Compresión: fusionar movimientos consecutivos de la misma figura
+    int id() const override { return 1; }  // Mismo ID = mismo tipo de comando
+
+    bool mergeWith(const QUndoCommand* otro) override {
+        auto otroMover = dynamic_cast<const ComandoMover*>(otro);
+        if (!otroMover || otroMover->figura_ != figura_) {
+            return false;
+        }
+        // Fusionar: mantener posición antigua original, usar nueva posición del otro
+        nuevoX_ = otroMover->nuevoX_;
+        nuevoY_ = otroMover->nuevoY_;
+        setText(QString("Mover %1 a (%2, %3)")
+                .arg(figura_->nombre).arg(nuevoX_).arg(nuevoY_));
+        return true;
+    }
+
+private:
+    Figura* figura_;
+    int antiguoX_, antiguoY_;
+    int nuevoX_, nuevoY_;
+};
+
+// Comando: cambiar color
+class ComandoCambiarColor : public QUndoCommand {
+public:
+    ComandoCambiarColor(Figura* figura, const QString& nuevoColor,
+                        QUndoCommand* parent = nullptr)
+        : QUndoCommand(parent)
+        , figura_(figura)
+        , colorAntiguo_(figura->color)
+        , colorNuevo_(nuevoColor)
+    {
+        setText(QString("Cambiar color de %1 a %2")
+                .arg(figura->nombre).arg(nuevoColor));
+    }
+
+    void redo() override {
+        figura_->color = colorNuevo_;
+        qDebug().noquote() << "[Redo]" << text();
+    }
+
+    void undo() override {
+        figura_->color = colorAntiguo_;
+        qDebug().noquote() << "[Undo]" << text();
+    }
+
+private:
+    Figura* figura_;
+    QString colorAntiguo_;
+    QString colorNuevo_;
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // Crear la pila de undo (invocador)
+    QUndoStack pilaUndo;
+
+    // Crear figuras (receptores)
+    Figura circulo{"Circulo", 0, 0, "rojo"};
+    Figura cuadrado{"Cuadrado", 10, 10, "azul"};
+
+    qDebug() << "=== Estado inicial ===";
+    circulo.mostrar();
+    cuadrado.mostrar();
+
+    // Ejecutar comandos (push los ejecuta automáticamente)
+    qDebug() << "\n=== Ejecutando comandos ===";
+    pilaUndo.push(new ComandoMover(&circulo, 50, 50));
+    pilaUndo.push(new ComandoCambiarColor(&circulo, "verde"));
+    pilaUndo.push(new ComandoMover(&cuadrado, 100, 200));
+
+    qDebug() << "\n=== Estado actual ===";
+    circulo.mostrar();
+    cuadrado.mostrar();
+
+    // Deshacer con QUndoStack
+    qDebug() << "\n=== Deshaciendo (2 veces) ===";
+    pilaUndo.undo();  // Deshace mover cuadrado
+    pilaUndo.undo();  // Deshace cambiar color circulo
+
+    qDebug() << "\n=== Estado tras undo ===";
+    circulo.mostrar();
+    cuadrado.mostrar();
+
+    // Rehacer
+    qDebug() << "\n=== Rehaciendo (1 vez) ===";
+    pilaUndo.redo();  // Rehace cambiar color circulo
+
+    qDebug() << "\n=== Estado final ===";
+    circulo.mostrar();
+    cuadrado.mostrar();
+
+    // Información del stack
+    qDebug() << "\n=== Info del UndoStack ===";
+    qDebug() << "Puede deshacer:" << pilaUndo.canUndo();
+    qDebug() << "Puede rehacer:" << pilaUndo.canRedo();
+    qDebug() << "Texto undo:" << pilaUndo.undoText();
+    qDebug() << "Texto redo:" << pilaUndo.redoText();
+
+    return 0;
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+=== Estado inicial ===
+  Circulo: posicion(0, 0) color=rojo
+  Cuadrado: posicion(10, 10) color=azul
+
+=== Ejecutando comandos ===
+[Redo] Mover Circulo a (50, 50)
+[Redo] Cambiar color de Circulo a verde
+[Redo] Mover Cuadrado a (100, 200)
+
+=== Estado actual ===
+  Circulo: posicion(50, 50) color=verde
+  Cuadrado: posicion(100, 200) color=azul
+
+=== Deshaciendo (2 veces) ===
+[Undo] Mover Cuadrado a (100, 200)
+[Undo] Cambiar color de Circulo a verde
+
+=== Estado tras undo ===
+  Circulo: posicion(50, 50) color=rojo
+  Cuadrado: posicion(10, 10) color=azul
+
+=== Rehaciendo (1 vez) ===
+[Redo] Cambiar color de Circulo a verde
+
+=== Estado final ===
+  Circulo: posicion(50, 50) color=verde
+  Cuadrado: posicion(10, 10) color=azul
+
+=== Info del UndoStack ===
+Puede deshacer: true
+Puede rehacer: true
+Texto undo: "Cambiar color de Circulo a verde"
+Texto redo: "Mover Cuadrado a (100, 200)"

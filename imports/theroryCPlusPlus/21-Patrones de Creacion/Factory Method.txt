@@ -1,0 +1,563 @@
+<---EXPLANATION--->
+### Factory Method
+
+El patrón **Factory Method** (Método de Fábrica) es un patrón de diseño creacional que define una **interfaz para crear objetos** en una clase base, pero permite que las **subclases decidan** qué clase concreta instanciar. En lugar de llamar a `new` directamente, delegas la creación a un método que puede ser sobrescrito.
+
+#### Problema
+
+Imagina que estás desarrollando un editor de documentos. Inicialmente solo soportas documentos de texto plano, así que tu código crea objetos `DocumentoTexto` directamente con `new`. Pero ahora necesitas soportar PDF, HTML y Markdown. El problema es:
+
+- **Código acoplado:** Cada vez que agregas un nuevo tipo, debes modificar el código existente (viola el principio Open/Closed).
+- **Lógica de creación dispersa:** Los `new` están repartidos por toda la aplicación.
+- **Difícil de extender:** Agregar un nuevo formato requiere tocar múltiples archivos.
+- **Difícil de testear:** No puedes sustituir las clases concretas por mocks fácilmente.
+
+#### Solución
+
+El Factory Method resuelve esto introduciendo un método virtual que se encarga de la creación:
+
+1. **Producto (interfaz):** Define la interfaz común de los objetos creados.
+2. **Productos concretos:** Implementaciones específicas del producto.
+3. **Creador (clase base):** Declara el Factory Method que retorna un Producto.
+4. **Creadores concretos:** Sobrescriben el Factory Method para crear productos específicos.
+
+```cpp
+// El creador declara el factory method
+class Creador {
+public:
+    virtual ~Creador() = default;
+    virtual std::unique_ptr<Producto> crearProducto() = 0;
+
+    // Puede tener lógica que usa el factory method
+    void operacion() {
+        auto producto = crearProducto();
+        producto->usar();
+    }
+};
+```
+
+#### Estructura
+
+Los componentes del patrón Factory Method son:
+
+- **Product (interfaz/clase abstracta):** Define la interfaz que todos los productos concretos deben implementar.
+- **ConcreteProduct:** Implementaciones específicas de Product.
+- **Creator (clase abstracta):** Declara el Factory Method (`crearProducto()`). Puede tener una implementación por defecto.
+- **ConcreteCreator:** Sobrescribe el Factory Method para devolver un ConcreteProduct específico.
+
+##### Variantes
+
+- **Factory Method puro:** El método es abstracto (`= 0`), las subclases **deben** implementarlo.
+- **Factory Method con defecto:** La clase base proporciona una implementación por defecto que las subclases **pueden** sobrescribir.
+- **Factory Method parametrizado:** Recibe un parámetro (enum, string) y decide qué crear basándose en él. Técnicamente es un **Simple Factory**, no un Factory Method puro.
+
+#### Implementación en C++
+
+La implementación típica usa clases abstractas con `virtual` y `std::unique_ptr` para la gestión de memoria:
+
+```cpp
+class Transporte {
+public:
+    virtual ~Transporte() = default;
+    virtual void entregar() = 0;
+};
+
+class Logistica {
+public:
+    virtual ~Logistica() = default;
+    virtual std::unique_ptr<Transporte> crearTransporte() = 0;
+
+    void planificarEntrega() {
+        auto transporte = crearTransporte();
+        transporte->entregar();
+    }
+};
+```
+
+> **Nota:** Siempre usa `std::unique_ptr` como tipo de retorno del Factory Method. Esto garantiza la correcta gestión de memoria sin fugas y deja claro quién es el dueño del objeto creado.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+
+- **Principio Open/Closed:** Puedes agregar nuevos tipos sin modificar el código existente.
+- **Principio de Responsabilidad Única:** La lógica de creación se concentra en un solo lugar.
+- **Desacoplamiento:** El código cliente trabaja con interfaces, no con clases concretas.
+- **Extensibilidad:** Nuevos productos se agregan creando nuevas subclases.
+
+##### Desventajas
+
+- **Complejidad adicional:** Requiere crear una jerarquía de clases paralela (creadores + productos).
+- **Muchas subclases:** Puede generar una explosión de clases si hay muchos tipos de productos.
+- **Indirección:** El flujo del programa es menos directo y puede ser más difícil de seguir.
+
+#### Aplicación en Qt
+
+Qt utiliza el Factory Method en varios lugares:
+
+- **`QItemEditorFactory`:** Crea widgets editores apropiados según el tipo de dato (`QVariant::Type`). Puedes registrar tus propios editores con `registerEditor()`.
+- **`QAbstractItemView::itemDelegate()`:** Los views crean delegados apropiados para cada tipo de dato.
+- **`QStyle::drawControl()`:** Cada estilo (Fusion, Windows, etc.) crea sus propios elementos visuales.
+- **Plugins de Qt:** `QPluginLoader` carga dinámicamente clases que implementan interfaces definidas — un Factory Method dinámico.
+
+```cpp
+// Ejemplo: QItemEditorFactory decide qué widget crear según el tipo
+QItemEditorFactory *factory = new QItemEditorFactory;
+factory->registerEditor(QMetaType::QColor,
+    new QStandardItemEditorCreator<QColorDialog>());
+```
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// === Producto (interfaz) ===
+class Documento {
+public:
+    virtual ~Documento() = default;
+    virtual void abrir() = 0;
+    virtual void guardar() = 0;
+    virtual std::string tipo() const = 0;
+};
+
+// === Productos concretos ===
+class DocumentoTexto : public Documento {
+public:
+    void abrir() override {
+        std::cout << "  Abriendo documento de texto plano..." << std::endl;
+    }
+    void guardar() override {
+        std::cout << "  Guardando como .txt" << std::endl;
+    }
+    std::string tipo() const override { return "Texto Plano"; }
+};
+
+class DocumentoPDF : public Documento {
+public:
+    void abrir() override {
+        std::cout << "  Abriendo documento PDF..." << std::endl;
+    }
+    void guardar() override {
+        std::cout << "  Guardando como .pdf" << std::endl;
+    }
+    std::string tipo() const override { return "PDF"; }
+};
+
+class DocumentoHTML : public Documento {
+public:
+    void abrir() override {
+        std::cout << "  Abriendo documento HTML..." << std::endl;
+    }
+    void guardar() override {
+        std::cout << "  Guardando como .html" << std::endl;
+    }
+    std::string tipo() const override { return "HTML"; }
+};
+
+// === Creador (clase base con Factory Method) ===
+class EditorDocumentos {
+public:
+    virtual ~EditorDocumentos() = default;
+
+    // Factory Method - las subclases deciden qué documento crear
+    virtual std::unique_ptr<Documento> crearDocumento() = 0;
+
+    // Lógica de negocio que usa el Factory Method
+    void nuevoDocumento() {
+        auto doc = crearDocumento();
+        std::cout << "Creado documento: " << doc->tipo() << std::endl;
+        doc->abrir();
+        doc->guardar();
+    }
+};
+
+// === Creadores concretos ===
+class EditorTexto : public EditorDocumentos {
+public:
+    std::unique_ptr<Documento> crearDocumento() override {
+        return std::make_unique<DocumentoTexto>();
+    }
+};
+
+class EditorPDF : public EditorDocumentos {
+public:
+    std::unique_ptr<Documento> crearDocumento() override {
+        return std::make_unique<DocumentoPDF>();
+    }
+};
+
+class EditorHTML : public EditorDocumentos {
+public:
+    std::unique_ptr<Documento> crearDocumento() override {
+        return std::make_unique<DocumentoHTML>();
+    }
+};
+
+int main() {
+    std::cout << "=== Factory Method Basico ===" << std::endl;
+
+    // El cliente trabaja con la interfaz del creador
+    std::unique_ptr<EditorDocumentos> editor;
+
+    editor = std::make_unique<EditorTexto>();
+    editor->nuevoDocumento();
+
+    std::cout << std::endl;
+
+    editor = std::make_unique<EditorPDF>();
+    editor->nuevoDocumento();
+
+    std::cout << std::endl;
+
+    editor = std::make_unique<EditorHTML>();
+    editor->nuevoDocumento();
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Factory Method Basico ===
+Creado documento: Texto Plano
+  Abriendo documento de texto plano...
+  Guardando como .txt
+
+Creado documento: PDF
+  Abriendo documento PDF...
+  Guardando como .pdf
+
+Creado documento: HTML
+  Abriendo documento HTML...
+  Guardando como .html
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <functional>
+#include <map>
+
+// === Producto: Notificación ===
+class Notificacion {
+public:
+    virtual ~Notificacion() = default;
+    virtual void enviar(const std::string& destinatario,
+                        const std::string& mensaje) = 0;
+    virtual std::string canal() const = 0;
+};
+
+class NotificacionEmail : public Notificacion {
+public:
+    void enviar(const std::string& destinatario,
+                const std::string& mensaje) override {
+        std::cout << "  [EMAIL] Para: " << destinatario
+                  << " | Asunto: " << mensaje << std::endl;
+    }
+    std::string canal() const override { return "Email"; }
+};
+
+class NotificacionSMS : public Notificacion {
+public:
+    void enviar(const std::string& destinatario,
+                const std::string& mensaje) override {
+        std::cout << "  [SMS] Tel: " << destinatario
+                  << " | Texto: " << mensaje << std::endl;
+    }
+    std::string canal() const override { return "SMS"; }
+};
+
+class NotificacionPush : public Notificacion {
+public:
+    void enviar(const std::string& destinatario,
+                const std::string& mensaje) override {
+        std::cout << "  [PUSH] Dispositivo: " << destinatario
+                  << " | Alerta: " << mensaje << std::endl;
+    }
+    std::string canal() const override { return "Push"; }
+};
+
+// === Factory con registro dinámico ===
+// Esta variante permite registrar nuevos tipos en tiempo de ejecución
+class NotificacionFactory {
+public:
+    // Tipo: función que crea una Notificacion
+    using CreadorFn = std::function<std::unique_ptr<Notificacion>()>;
+
+    // Registrar un nuevo tipo de notificación
+    void registrar(const std::string& tipo, CreadorFn creador) {
+        creadores_[tipo] = std::move(creador);
+        std::cout << "Registrado tipo: " << tipo << std::endl;
+    }
+
+    // Factory Method parametrizado
+    std::unique_ptr<Notificacion> crear(const std::string& tipo) const {
+        auto it = creadores_.find(tipo);
+        if (it != creadores_.end()) {
+            return it->second();
+        }
+        std::cerr << "  Error: tipo '" << tipo
+                  << "' no registrado" << std::endl;
+        return nullptr;
+    }
+
+    // Listar tipos disponibles
+    std::vector<std::string> tiposDisponibles() const {
+        std::vector<std::string> tipos;
+        for (const auto& [tipo, _] : creadores_) {
+            tipos.push_back(tipo);
+        }
+        return tipos;
+    }
+
+private:
+    std::map<std::string, CreadorFn> creadores_;
+};
+
+// === Servicio que usa la fábrica ===
+class ServicioNotificaciones {
+public:
+    explicit ServicioNotificaciones(NotificacionFactory& factory)
+        : factory_(factory) {}
+
+    void notificar(const std::string& canal,
+                   const std::string& destinatario,
+                   const std::string& mensaje) {
+        auto notif = factory_.crear(canal);
+        if (notif) {
+            std::cout << "Enviando via " << notif->canal() << ":" << std::endl;
+            notif->enviar(destinatario, mensaje);
+        }
+    }
+
+    void notificarTodos(const std::string& mensaje) {
+        std::cout << "Notificacion masiva:" << std::endl;
+        for (const auto& tipo : factory_.tiposDisponibles()) {
+            auto notif = factory_.crear(tipo);
+            if (notif) {
+                notif->enviar("broadcast", mensaje);
+            }
+        }
+    }
+
+private:
+    NotificacionFactory& factory_;
+};
+
+int main() {
+    std::cout << "=== Factory Method Avanzado ===" << std::endl;
+
+    // Crear la fábrica y registrar tipos
+    NotificacionFactory factory;
+    factory.registrar("email", []() {
+        return std::make_unique<NotificacionEmail>();
+    });
+    factory.registrar("sms", []() {
+        return std::make_unique<NotificacionSMS>();
+    });
+    factory.registrar("push", []() {
+        return std::make_unique<NotificacionPush>();
+    });
+
+    std::cout << std::endl;
+
+    // Usar el servicio
+    ServicioNotificaciones servicio(factory);
+
+    servicio.notificar("email", "usuario@correo.com", "Bienvenido!");
+    std::cout << std::endl;
+
+    servicio.notificar("sms", "+34600123456", "Codigo: 1234");
+    std::cout << std::endl;
+
+    servicio.notificar("push", "iPhone-ABC123", "Nueva actualizacion");
+    std::cout << std::endl;
+
+    // Intentar un tipo no registrado
+    servicio.notificar("telegram", "@usuario", "Hola");
+    std::cout << std::endl;
+
+    // Notificación masiva
+    servicio.notificarTodos("Mantenimiento programado");
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Factory Method Avanzado ===
+Registrado tipo: email
+Registrado tipo: push
+Registrado tipo: sms
+
+Enviando via Email:
+  [EMAIL] Para: usuario@correo.com | Asunto: Bienvenido!
+
+Enviando via SMS:
+  [SMS] Tel: +34600123456 | Texto: Codigo: 1234
+
+Enviando via Push:
+  [PUSH] Dispositivo: iPhone-ABC123 | Alerta: Nueva actualizacion
+
+  Error: tipo 'telegram' no registrado
+
+Notificacion masiva:
+  [EMAIL] Para: broadcast | Asunto: Mantenimiento programado
+  [PUSH] Dispositivo: broadcast | Alerta: Mantenimiento programado
+  [SMS] Tel: broadcast | Texto: Mantenimiento programado
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QDebug>
+#include <QString>
+#include <QMap>
+#include <memory>
+
+// === Producto: Widget simulado ===
+class Widget {
+public:
+    virtual ~Widget() = default;
+    virtual QString nombre() const = 0;
+    virtual void renderizar() const = 0;
+};
+
+class BotonWidget : public Widget {
+public:
+    explicit BotonWidget(const QString& texto) : texto_(texto) {}
+    QString nombre() const override { return "QPushButton"; }
+    void renderizar() const override {
+        qDebug() << "  [Boton]" << texto_;
+    }
+private:
+    QString texto_;
+};
+
+class EntradaTextoWidget : public Widget {
+public:
+    explicit EntradaTextoWidget(const QString& placeholder)
+        : placeholder_(placeholder) {}
+    QString nombre() const override { return "QLineEdit"; }
+    void renderizar() const override {
+        qDebug() << "  [EntradaTexto] placeholder:" << placeholder_;
+    }
+private:
+    QString placeholder_;
+};
+
+class EtiquetaWidget : public Widget {
+public:
+    explicit EtiquetaWidget(const QString& texto) : texto_(texto) {}
+    QString nombre() const override { return "QLabel"; }
+    void renderizar() const override {
+        qDebug() << "  [Etiqueta]" << texto_;
+    }
+private:
+    QString texto_;
+};
+
+// === Factory de Widgets (similar a QItemEditorFactory) ===
+class WidgetFactory {
+public:
+    virtual ~WidgetFactory() = default;
+
+    // Factory Methods - uno por cada tipo de widget
+    virtual std::unique_ptr<Widget> crearBoton(
+        const QString& texto) const {
+        return std::make_unique<BotonWidget>(texto);
+    }
+
+    virtual std::unique_ptr<Widget> crearEntradaTexto(
+        const QString& placeholder) const {
+        return std::make_unique<EntradaTextoWidget>(placeholder);
+    }
+
+    virtual std::unique_ptr<Widget> crearEtiqueta(
+        const QString& texto) const {
+        return std::make_unique<EtiquetaWidget>(texto);
+    }
+};
+
+// === Factory para tema oscuro ===
+class DarkBotonWidget : public BotonWidget {
+public:
+    using BotonWidget::BotonWidget;
+    void renderizar() const override {
+        qDebug() << "  [Boton Oscuro] bg:#333 fg:#fff |"
+                 << nombre();
+    }
+};
+
+class DarkWidgetFactory : public WidgetFactory {
+public:
+    std::unique_ptr<Widget> crearBoton(
+        const QString& texto) const override {
+        return std::make_unique<DarkBotonWidget>(texto);
+    }
+    // Los demás widgets heredan la implementación base
+};
+
+// === Función que construye un formulario usando la fábrica ===
+void construirFormulario(const WidgetFactory& factory) {
+    qDebug() << "Construyendo formulario:";
+
+    auto etiqueta = factory.crearEtiqueta("Nombre de usuario:");
+    etiqueta->renderizar();
+
+    auto entrada = factory.crearEntradaTexto("Escribe tu nombre...");
+    entrada->renderizar();
+
+    auto boton = factory.crearBoton("Enviar");
+    boton->renderizar();
+}
+
+int main(int argc, char *argv[]) {
+    QCoreApplication app(argc, argv);
+
+    qDebug() << "=== Factory Method con Qt ===";
+
+    // Formulario con tema por defecto
+    qDebug() << "\n--- Tema por defecto ---";
+    WidgetFactory factoryBase;
+    construirFormulario(factoryBase);
+
+    // Formulario con tema oscuro
+    qDebug() << "\n--- Tema oscuro ---";
+    DarkWidgetFactory factoryOscuro;
+    construirFormulario(factoryOscuro);
+
+    // Ejemplo de cómo QStyleFactory funciona como factory
+    qDebug() << "\n--- Estilos disponibles en Qt ---";
+    qDebug() << "  (QStyleFactory::keys() devolveria los estilos instalados)";
+    qDebug() << "  Fusion, Windows, etc.";
+
+    return 0;
+}
+```
+<---Ejemplo con Qt Result--->
+=== Factory Method con Qt ===
+
+--- Tema por defecto ---
+Construyendo formulario:
+  [Etiqueta] "Nombre de usuario:"
+  [EntradaTexto] placeholder: "Escribe tu nombre..."
+  [Boton] "Enviar"
+
+--- Tema oscuro ---
+Construyendo formulario:
+  [Etiqueta] "Nombre de usuario:"
+  [EntradaTexto] placeholder: "Escribe tu nombre..."
+  [Boton Oscuro] bg:#333 fg:#fff | "QPushButton"
+
+--- Estilos disponibles en Qt ---
+  (QStyleFactory::keys() devolveria los estilos instalados)
+  Fusion, Windows, etc.

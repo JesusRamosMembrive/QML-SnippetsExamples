@@ -1,0 +1,761 @@
+<---EXPLANATION--->
+### Patrón Iterator (Iterador)
+
+El patrón **Iterator** es un patrón de diseño de comportamiento que proporciona una forma de acceder secuencialmente a los elementos de una colección sin exponer su representación interna (lista, pila, árbol, grafo, etc.). Separa la lógica de recorrido de la colección misma, permitiendo definir múltiples formas de iterar sobre la misma estructura de datos.
+
+#### Problema
+
+Imagina que tienes una colección compleja como un árbol binario, un grafo o una estructura personalizada. Los clientes que necesitan recorrer estos datos tendrían que:
+
+- Conocer la estructura interna de la colección para navegar por ella.
+- Implementar diferentes algoritmos de recorrido (en profundidad, en anchura, en orden, etc.) directamente en el código cliente.
+- Si cambias la estructura interna de la colección, todo el código cliente que la recorre se rompe.
+- No hay forma uniforme de recorrer diferentes tipos de colecciones con el mismo código.
+
+#### Solución
+
+El patrón Iterator resuelve estos problemas extrayendo la lógica de recorrido a un objeto separado:
+
+1. Se define una **interfaz de iterador** con métodos como `siguiente()`, `actual()` y `hayMas()`.
+2. Cada **colección** proporciona un método para crear un iterador apropiado.
+3. El **cliente** usa el iterador para recorrer la colección sin conocer su estructura interna.
+4. Se pueden crear múltiples iteradores para diferentes formas de recorrido.
+
+```cpp
+// El cliente usa el iterador sin conocer la estructura interna
+auto it = coleccion.crearIterador();
+while (it->hayMas()) {
+    auto elemento = it->siguiente();
+    // Procesar elemento...
+}
+```
+
+> **Nota:** En C++ moderno, el patrón Iterator está profundamente integrado en el lenguaje a través de los iteradores de la STL y el range-based for loop. Sin embargo, comprender el patrón es esencial para crear colecciones personalizadas compatibles con el ecosistema de C++.
+
+#### Estructura
+
+Los componentes principales del patrón Iterator son:
+
+- **Iterator (Iterador):** Interfaz que define los métodos para recorrer la colección (`next()`, `hasNext()`, `current()`).
+- **ConcreteIterator (Iterador Concreto):** Implementa el algoritmo de recorrido específico. Mantiene la posición actual en la colección.
+- **Aggregate/Collection (Colección):** Interfaz que declara uno o más métodos para crear iteradores.
+- **ConcreteAggregate (Colección Concreta):** Implementa la creación de iteradores específicos para su estructura.
+
+#### Implementación en C++
+
+En C++ hay dos enfoques principales para implementar iteradores:
+
+##### Enfoque GoF (clásico con interfaz)
+
+```cpp
+template <typename T>
+class IIterador {
+public:
+    virtual ~IIterador() = default;
+    virtual bool hayMas() const = 0;
+    virtual T siguiente() = 0;
+    virtual T actual() const = 0;
+};
+```
+
+##### Enfoque STL (compatible con range-based for)
+
+Para que una colección funcione con `for (auto& x : coleccion)`, se necesitan:
+
+- Un tipo iterador con operadores `*`, `++` y `!=`.
+- Métodos `begin()` y `end()` en la colección.
+
+```cpp
+class MiIterador {
+public:
+    T& operator*();
+    MiIterador& operator++();
+    bool operator!=(const MiIterador& otro) const;
+};
+
+class MiColeccion {
+public:
+    MiIterador begin();
+    MiIterador end();
+};
+// Ahora: for (auto& elem : miColeccion) { ... }
+```
+
+#### Ventajas y Desventajas
+
+**Ventajas:**
+
+- **Principio de Responsabilidad Única:** La lógica de recorrido está separada de la colección.
+- **Principio Abierto/Cerrado:** Se pueden añadir nuevos tipos de iteradores sin modificar la colección.
+- **Interfaz uniforme:** Diferentes colecciones se recorren de la misma manera.
+- **Múltiples recorridos:** Se pueden tener varios iteradores activos sobre la misma colección simultáneamente.
+- **Control de recorrido:** El cliente puede pausar y reanudar la iteración en cualquier momento.
+
+**Desventajas:**
+
+- **Sobrecarga:** Para colecciones simples (como un vector), un iterador personalizado es innecesario.
+- **Complejidad:** Implementar iteradores compatibles con STL requiere cumplir con varios requisitos (traits, categorías, etc.).
+- **Invalidación:** Si la colección se modifica durante la iteración, los iteradores pueden quedar inválidos.
+
+#### Aplicación en Qt
+
+Qt proporciona dos estilos de iteradores:
+
+- **Iteradores estilo Java:** `QListIterator<T>`, `QMapIterator<K,V>`, `QSetIterator<T>`. Usan `hasNext()`/`next()` y `hasPrevious()`/`previous()`. Son de solo lectura (existen versiones mutables: `QMutableListIterator<T>`).
+- **Iteradores estilo STL:** `QList<T>::iterator`, `QMap<K,V>::iterator`. Compatibles con los algoritmos de `<algorithm>` y con range-based for.
+- **`QDirIterator`:** Iterador especializado para recorrer directorios del sistema de archivos. Soporta recorrido recursivo con banderas configurables.
+- **Iteradores implícitos:** Qt usa *implicit sharing* (copy-on-write), lo que hace que copiar contenedores sea barato pero puede invalidar iteradores si una copia modifica los datos.
+
+```cpp
+// Estilo Java
+QListIterator<int> it(lista);
+while (it.hasNext()) {
+    qDebug() << it.next();
+}
+
+// Estilo STL (preferido en Qt 6)
+for (auto it = mapa.begin(); it != mapa.end(); ++it) {
+    qDebug() << it.key() << ":" << it.value();
+}
+
+// Range-based for (el más común)
+for (const auto& item : lista) {
+    qDebug() << item;
+}
+```
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <memory>
+
+// Iterador GoF clásico para una colección de nombres
+
+// Interfaz del iterador
+template <typename T>
+class IIterador {
+public:
+    virtual ~IIterador() = default;
+    virtual bool hayMas() const = 0;
+    virtual T siguiente() = 0;
+    virtual T actual() const = 0;
+    virtual void reiniciar() = 0;
+};
+
+// Colección simple de elementos
+template <typename T>
+class Coleccion {
+private:
+    std::vector<T> elementos_;
+
+public:
+    void agregar(const T& elem) {
+        elementos_.push_back(elem);
+    }
+
+    int tamano() const { return static_cast<int>(elementos_.size()); }
+    T obtener(int indice) const { return elementos_[indice]; }
+
+    // Iterador hacia adelante
+    class IteradorAdelante : public IIterador<T> {
+    private:
+        const Coleccion& coleccion_;
+        int posicion_ = 0;
+
+    public:
+        IteradorAdelante(const Coleccion& col) : coleccion_(col) {}
+
+        bool hayMas() const override {
+            return posicion_ < coleccion_.tamano();
+        }
+
+        T siguiente() override {
+            return coleccion_.obtener(posicion_++);
+        }
+
+        T actual() const override {
+            return coleccion_.obtener(posicion_);
+        }
+
+        void reiniciar() override { posicion_ = 0; }
+    };
+
+    // Iterador hacia atrás (reverso)
+    class IteradorReverso : public IIterador<T> {
+    private:
+        const Coleccion& coleccion_;
+        int posicion_;
+
+    public:
+        IteradorReverso(const Coleccion& col)
+            : coleccion_(col), posicion_(col.tamano() - 1) {}
+
+        bool hayMas() const override {
+            return posicion_ >= 0;
+        }
+
+        T siguiente() override {
+            return coleccion_.obtener(posicion_--);
+        }
+
+        T actual() const override {
+            return coleccion_.obtener(posicion_);
+        }
+
+        void reiniciar() override { posicion_ = coleccion_.tamano() - 1; }
+    };
+
+    // Métodos fábrica para crear iteradores
+    std::unique_ptr<IIterador<T>> crearIterador() const {
+        return std::make_unique<IteradorAdelante>(*this);
+    }
+
+    std::unique_ptr<IIterador<T>> crearIteradorReverso() const {
+        return std::make_unique<IteradorReverso>(*this);
+    }
+};
+
+int main() {
+    Coleccion<std::string> ciudades;
+    ciudades.agregar("Madrid");
+    ciudades.agregar("Barcelona");
+    ciudades.agregar("Valencia");
+    ciudades.agregar("Sevilla");
+    ciudades.agregar("Bilbao");
+
+    // Iterador hacia adelante
+    std::cout << "--- Recorrido hacia adelante ---" << std::endl;
+    auto it = ciudades.crearIterador();
+    while (it->hayMas()) {
+        std::cout << "  " << it->siguiente() << std::endl;
+    }
+
+    // Iterador reverso
+    std::cout << "\n--- Recorrido reverso ---" << std::endl;
+    auto itRev = ciudades.crearIteradorReverso();
+    while (itRev->hayMas()) {
+        std::cout << "  " << itRev->siguiente() << std::endl;
+    }
+
+    // Reiniciar y recorrer de nuevo
+    std::cout << "\n--- Reiniciar y recorrer ---" << std::endl;
+    it->reiniciar();
+    while (it->hayMas()) {
+        std::cout << "  -> " << it->siguiente() << std::endl;
+    }
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+--- Recorrido hacia adelante ---
+  Madrid
+  Barcelona
+  Valencia
+  Sevilla
+  Bilbao
+
+--- Recorrido reverso ---
+  Bilbao
+  Sevilla
+  Valencia
+  Barcelona
+  Madrid
+
+--- Reiniciar y recorrer ---
+  -> Madrid
+  -> Barcelona
+  -> Valencia
+  -> Sevilla
+  -> Bilbao
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <memory>
+#include <queue>
+#include <functional>
+
+// Árbol binario con iteradores compatibles con STL (range-based for)
+// Soporta recorrido en orden (inorder) y por niveles (BFS)
+
+template <typename T>
+class ArbolBinario {
+public:
+    struct Nodo {
+        T valor;
+        std::unique_ptr<Nodo> izquierdo;
+        std::unique_ptr<Nodo> derecho;
+
+        Nodo(const T& v) : valor(v) {}
+    };
+
+private:
+    std::unique_ptr<Nodo> raiz_;
+
+    // Función auxiliar para inserción en BST
+    void insertarEnNodo(std::unique_ptr<Nodo>& nodo, const T& valor) {
+        if (!nodo) {
+            nodo = std::make_unique<Nodo>(valor);
+        } else if (valor < nodo->valor) {
+            insertarEnNodo(nodo->izquierdo, valor);
+        } else {
+            insertarEnNodo(nodo->derecho, valor);
+        }
+    }
+
+    // Recolectar nodos en orden (inorder)
+    void inorder(Nodo* nodo, std::vector<T>& resultado) const {
+        if (!nodo) return;
+        inorder(nodo->izquierdo.get(), resultado);
+        resultado.push_back(nodo->valor);
+        inorder(nodo->derecho.get(), resultado);
+    }
+
+    // Recolectar nodos por niveles (BFS)
+    void porNiveles(Nodo* raiz, std::vector<T>& resultado) const {
+        if (!raiz) return;
+        std::queue<Nodo*> cola;
+        cola.push(raiz);
+        while (!cola.empty()) {
+            Nodo* actual = cola.front();
+            cola.pop();
+            resultado.push_back(actual->valor);
+            if (actual->izquierdo) cola.push(actual->izquierdo.get());
+            if (actual->derecho) cola.push(actual->derecho.get());
+        }
+    }
+
+public:
+    void insertar(const T& valor) {
+        insertarEnNodo(raiz_, valor);
+    }
+
+    // ============================================================
+    // Iterador compatible con STL para range-based for
+    // ============================================================
+    class IteradorInorder {
+    private:
+        std::vector<T> elementos_;
+        std::size_t posicion_;
+
+    public:
+        IteradorInorder() : posicion_(0) {}  // Iterador "end"
+
+        IteradorInorder(const std::vector<T>& elems, std::size_t pos = 0)
+            : elementos_(elems), posicion_(pos) {}
+
+        // Operador de desreferencia
+        const T& operator*() const { return elementos_[posicion_]; }
+
+        // Operador de incremento
+        IteradorInorder& operator++() {
+            ++posicion_;
+            return *this;
+        }
+
+        // Operador de comparación
+        bool operator!=(const IteradorInorder& otro) const {
+            return posicion_ != otro.posicion_;
+        }
+    };
+
+    // Vista para recorrido inorder (compatible con range-based for)
+    class VistaInorder {
+    private:
+        std::vector<T> elementos_;
+
+    public:
+        VistaInorder(const ArbolBinario& arbol) {
+            arbol.inorder(arbol.raiz_.get(), elementos_);
+        }
+
+        IteradorInorder begin() const {
+            return IteradorInorder(elementos_, 0);
+        }
+
+        IteradorInorder end() const {
+            return IteradorInorder(elementos_, elementos_.size());
+        }
+    };
+
+    // Vista para recorrido por niveles
+    class VistaPorNiveles {
+    private:
+        std::vector<T> elementos_;
+
+    public:
+        VistaPorNiveles(const ArbolBinario& arbol) {
+            arbol.porNiveles(arbol.raiz_.get(), elementos_);
+        }
+
+        IteradorInorder begin() const {
+            return IteradorInorder(elementos_, 0);
+        }
+
+        IteradorInorder end() const {
+            return IteradorInorder(elementos_, elementos_.size());
+        }
+    };
+
+    // Métodos para obtener vistas con iteradores
+    VistaInorder enOrden() const { return VistaInorder(*this); }
+    VistaPorNiveles porNiveles() const { return VistaPorNiveles(*this); }
+
+    // begin/end por defecto usa inorder
+    IteradorInorder begin() const {
+        std::vector<T> elems;
+        inorder(raiz_.get(), elems);
+        return IteradorInorder(elems, 0);
+    }
+
+    IteradorInorder end() const {
+        std::vector<T> elems;
+        inorder(raiz_.get(), elems);
+        return IteradorInorder(elems, elems.size());
+    }
+};
+
+int main() {
+    ArbolBinario<int> arbol;
+
+    //         50
+    //       /    \
+    //      30     70
+    //     /  \   /  \
+    //    20  40 60   80
+
+    arbol.insertar(50);
+    arbol.insertar(30);
+    arbol.insertar(70);
+    arbol.insertar(20);
+    arbol.insertar(40);
+    arbol.insertar(60);
+    arbol.insertar(80);
+
+    // Recorrido inorder (ordenado) - usando range-based for directo
+    std::cout << "--- Recorrido Inorder (range-based for) ---" << std::endl;
+    for (const auto& valor : arbol) {
+        std::cout << valor << " ";
+    }
+    std::cout << std::endl;
+
+    // Recorrido inorder usando vista explícita
+    std::cout << "\n--- Recorrido Inorder (vista explicita) ---" << std::endl;
+    for (const auto& valor : arbol.enOrden()) {
+        std::cout << valor << " ";
+    }
+    std::cout << std::endl;
+
+    // Recorrido por niveles (BFS)
+    std::cout << "\n--- Recorrido por Niveles (BFS) ---" << std::endl;
+    for (const auto& valor : arbol.porNiveles()) {
+        std::cout << valor << " ";
+    }
+    std::cout << std::endl;
+
+    // Ejemplo con strings
+    std::cout << "\n--- Arbol de palabras ---" << std::endl;
+    ArbolBinario<std::string> palabras;
+    palabras.insertar("mango");
+    palabras.insertar("banana");
+    palabras.insertar("uva");
+    palabras.insertar("acerola");
+    palabras.insertar("cereza");
+    palabras.insertar("pera");
+    palabras.insertar("zapote");
+
+    std::cout << "En orden alfabetico: ";
+    for (const auto& p : palabras) {
+        std::cout << p << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Por niveles: ";
+    for (const auto& p : palabras.porNiveles()) {
+        std::cout << p << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+--- Recorrido Inorder (range-based for) ---
+20 30 40 50 60 70 80
+
+--- Recorrido Inorder (vista explicita) ---
+20 30 40 50 60 70 80
+
+--- Recorrido por Niveles (BFS) ---
+50 30 70 20 40 60 80
+
+--- Arbol de palabras ---
+En orden alfabetico: acerola banana cereza mango pera uva zapote
+Por niveles: mango banana uva acerola cereza pera zapote
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QList>
+#include <QMap>
+#include <QHash>
+#include <QDir>
+#include <QDirIterator>
+#include <QDebug>
+#include <QStringList>
+
+// ============================================================
+// Demostración de los diferentes estilos de iteradores en Qt
+// ============================================================
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // ============================================================
+    // 1. Iteradores estilo Java (QListIterator, QMapIterator)
+    // ============================================================
+    qDebug() << "=== Iteradores estilo Java ===";
+
+    QList<QString> frutas = {"Manzana", "Banana", "Cereza", "Durazno", "Fresa"};
+
+    // QListIterator: solo lectura, recorrido hacia adelante y atrás
+    QListIterator<QString> itFrutas(frutas);
+
+    qDebug() << "\nHacia adelante:";
+    while (itFrutas.hasNext()) {
+        qDebug() << "  " << itFrutas.next();
+    }
+
+    qDebug() << "\nHacia atras:";
+    while (itFrutas.hasPrevious()) {
+        qDebug() << "  " << itFrutas.previous();
+    }
+
+    // QMutableListIterator: lectura y escritura
+    QMutableListIterator<QString> itMutable(frutas);
+    while (itMutable.hasNext()) {
+        QString fruta = itMutable.next();
+        if (fruta == "Banana") {
+            itMutable.setValue("Platano");  // Modificar durante iteración
+        }
+    }
+    qDebug() << "\nDespues de modificar:" << frutas;
+
+    // QMapIterator para mapas
+    QMap<QString, int> edades;
+    edades["Ana"] = 25;
+    edades["Carlos"] = 30;
+    edades["Elena"] = 28;
+    edades["Pedro"] = 35;
+
+    qDebug() << "\n--- QMapIterator ---";
+    QMapIterator<QString, int> itMapa(edades);
+    while (itMapa.hasNext()) {
+        itMapa.next();
+        qDebug().noquote() << QString("  %1: %2 anios")
+            .arg(itMapa.key()).arg(itMapa.value());
+    }
+
+    // ============================================================
+    // 2. Iteradores estilo STL (preferidos en Qt 6)
+    // ============================================================
+    qDebug() << "\n=== Iteradores estilo STL ===";
+
+    // STL iterators con QList
+    qDebug() << "\nQList con iterador STL:";
+    for (QList<QString>::const_iterator it = frutas.constBegin();
+         it != frutas.constEnd(); ++it) {
+        qDebug() << "  " << *it;
+    }
+
+    // STL iterators con QMap
+    qDebug() << "\nQMap con iterador STL:";
+    for (auto it = edades.constBegin(); it != edades.constEnd(); ++it) {
+        qDebug().noquote() << QString("  %1 -> %2").arg(it.key()).arg(it.value());
+    }
+
+    // Range-based for (el más idiomático en Qt 6)
+    qDebug() << "\nRange-based for con QMap (constKeyValueBegin):";
+    for (auto it = edades.constKeyValueBegin();
+         it != edades.constKeyValueEnd(); ++it) {
+        qDebug().noquote() << QString("  %1: %2").arg(it->first).arg(it->second);
+    }
+
+    // ============================================================
+    // 3. QHash con iteradores (orden no garantizado)
+    // ============================================================
+    qDebug() << "\n=== QHash (orden no garantizado) ===";
+
+    QHash<QString, QString> capitales;
+    capitales["Espania"] = "Madrid";
+    capitales["Francia"] = "Paris";
+    capitales["Alemania"] = "Berlin";
+    capitales["Italia"] = "Roma";
+
+    // Range-based for con QHash
+    for (auto it = capitales.constBegin(); it != capitales.constEnd(); ++it) {
+        qDebug().noquote() << QString("  %1 -> %2").arg(it.key()).arg(it.value());
+    }
+
+    // ============================================================
+    // 4. QDirIterator: iterador especializado para el sistema de archivos
+    // ============================================================
+    qDebug() << "\n=== QDirIterator ===";
+
+    // Iterar archivos del directorio actual (no recursivo)
+    QDirIterator itDir(".", QStringList() << "*.cpp" << "*.h",
+                       QDir::Files, QDirIterator::NoIteratorFlags);
+
+    qDebug() << "Archivos C++ en directorio actual:";
+    int conteo = 0;
+    while (itDir.hasNext()) {
+        QString archivo = itDir.next();
+        qDebug() << "  " << itDir.fileName();
+        conteo++;
+        if (conteo >= 5) {
+            qDebug() << "  ... (mostrando solo 5)";
+            break;
+        }
+    }
+    if (conteo == 0) {
+        qDebug() << "  (no se encontraron archivos .cpp/.h)";
+    }
+
+    // QDirIterator recursivo
+    QDirIterator itRecursivo(".", QStringList() << "*.txt",
+                             QDir::Files, QDirIterator::Subdirectories);
+
+    qDebug() << "\nArchivos .txt (recursivo):";
+    conteo = 0;
+    while (itRecursivo.hasNext()) {
+        itRecursivo.next();
+        qDebug() << "  " << itRecursivo.filePath();
+        conteo++;
+        if (conteo >= 5) {
+            qDebug() << "  ... (mostrando solo 5)";
+            break;
+        }
+    }
+    if (conteo == 0) {
+        qDebug() << "  (no se encontraron archivos .txt)";
+    }
+
+    // ============================================================
+    // 5. Comparación de rendimiento: estilo Java vs STL
+    // ============================================================
+    qDebug() << "\n=== Comparacion estilos ===";
+
+    QList<int> numeros;
+    for (int i = 1; i <= 10; ++i) {
+        numeros.append(i * 10);
+    }
+
+    // Estilo Java
+    qDebug() << "Java:";
+    QListIterator<int> javaIt(numeros);
+    QStringList javaResult;
+    while (javaIt.hasNext()) {
+        javaResult << QString::number(javaIt.next());
+    }
+    qDebug() << "  " << javaResult.join(", ");
+
+    // Estilo STL
+    qDebug() << "STL:";
+    QStringList stlResult;
+    for (auto it = numeros.cbegin(); it != numeros.cend(); ++it) {
+        stlResult << QString::number(*it);
+    }
+    qDebug() << "  " << stlResult.join(", ");
+
+    // Range-based (recomendado)
+    qDebug() << "Range:";
+    QStringList rangeResult;
+    for (int n : numeros) {
+        rangeResult << QString::number(n);
+    }
+    qDebug() << "  " << rangeResult.join(", ");
+
+    return 0;
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+=== Iteradores estilo Java ===
+
+Hacia adelante:
+  "Manzana"
+  "Banana"
+  "Cereza"
+  "Durazno"
+  "Fresa"
+
+Hacia atras:
+  "Fresa"
+  "Durazno"
+  "Cereza"
+  "Banana"
+  "Manzana"
+
+Despues de modificar: ("Manzana", "Platano", "Cereza", "Durazno", "Fresa")
+
+--- QMapIterator ---
+  Ana: 25 anios
+  Carlos: 30 anios
+  Elena: 28 anios
+  Pedro: 35 anios
+
+=== Iteradores estilo STL ===
+
+QList con iterador STL:
+  "Manzana"
+  "Platano"
+  "Cereza"
+  "Durazno"
+  "Fresa"
+
+QMap con iterador STL:
+  Ana -> 25
+  Carlos -> 30
+  Elena -> 28
+  Pedro -> 35
+
+Range-based for con QMap (constKeyValueBegin):
+  Ana: 25
+  Carlos: 30
+  Elena: 28
+  Pedro: 35
+
+=== QHash (orden no garantizado) ===
+  Espania -> Madrid
+  Francia -> Paris
+  Alemania -> Berlin
+  Italia -> Roma
+
+=== QDirIterator ===
+Archivos C++ en directorio actual:
+  "main.cpp"
+
+Archivos .txt (recursivo):
+  (no se encontraron archivos .txt)
+
+=== Comparacion estilos ===
+Java:
+  "10, 20, 30, 40, 50, 60, 70, 80, 90, 100"
+STL:
+  "10, 20, 30, 40, 50, 60, 70, 80, 90, 100"
+Range:
+  "10, 20, 30, 40, 50, 60, 70, 80, 90, 100"

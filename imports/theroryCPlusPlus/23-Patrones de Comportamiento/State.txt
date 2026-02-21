@@ -1,0 +1,650 @@
+<---EXPLANATION--->
+### Patrón State (Estado)
+
+El patrón **State** es un patrón de diseño de comportamiento que permite a un objeto alterar su comportamiento cuando su estado interno cambia. El objeto parecerá haber cambiado de clase. Este patrón encapsula cada estado posible en una clase separada y delega el comportamiento dependiente del estado a estos objetos, eliminando cadenas de condicionales complejas.
+
+#### Problema
+
+Imagina que estás desarrollando un reproductor de música. Este reproductor tiene varios estados: reproduciendo, pausado, detenido, y buscando. Cada botón (play, pause, stop, siguiente) debe comportarse de forma diferente según el estado actual. Sin el patrón State:
+
+- El código estaría lleno de sentencias `if/else` o `switch` que verifican el estado actual en cada método.
+- Añadir un nuevo estado (por ejemplo, "grabando") requeriría modificar **todos** los métodos existentes.
+- La lógica de transición entre estados estaría dispersa por todo el código.
+- El código sería propenso a errores porque es fácil olvidar un caso en alguno de los condicionales.
+
+#### Solución
+
+El patrón State resuelve estos problemas delegando el comportamiento a objetos de estado:
+
+1. Se define una **interfaz de estado** con todos los métodos que dependen del estado.
+2. Cada **estado concreto** implementa el comportamiento específico para ese estado.
+3. El **contexto** mantiene una referencia al estado actual y delega las llamadas a él.
+4. Los estados concretos pueden cambiar el estado del contexto, definiendo las **transiciones**.
+
+```cpp
+// El contexto delega al estado actual
+reproductor->presionarPlay();
+// Si está pausado -> reanuda reproducción
+// Si está detenido -> inicia reproducción
+// Si está reproduciendo -> no hace nada
+```
+
+#### Estructura
+
+Los componentes principales del patrón State son:
+
+- **Context (Contexto):** Mantiene una referencia al estado actual. Proporciona una interfaz para cambiar de estado. Delega el trabajo al objeto de estado actual.
+- **State (Estado):** Interfaz que declara los métodos dependientes del estado. Todos los estados concretos implementan esta interfaz.
+- **ConcreteState (Estado Concreto):** Implementa el comportamiento asociado a un estado particular del contexto. Puede almacenar una referencia al contexto para realizar transiciones de estado.
+
+#### Implementación en C++
+
+En C++ se implementa con polimorfismo. El punto clave es cómo manejar las transiciones:
+
+```cpp
+class IEstado {
+public:
+    virtual ~IEstado() = default;
+    virtual void manejar(Contexto& contexto) = 0;
+};
+
+class Contexto {
+    std::unique_ptr<IEstado> estado_;
+public:
+    void cambiarEstado(std::unique_ptr<IEstado> nuevo) {
+        estado_ = std::move(nuevo);
+    }
+    void solicitar() {
+        estado_->manejar(*this);
+    }
+};
+```
+
+> **Nota importante:** Las transiciones pueden ser definidas por el contexto (centralizadas) o por los estados concretos (distribuidas). El enfoque distribuido es más común y más fiel al patrón original.
+
+#### Ventajas y Desventajas
+
+**Ventajas:**
+
+- **Elimina condicionales:** Reemplaza grandes bloques `switch/if-else` con polimorfismo.
+- **Principio de Responsabilidad Única:** Cada estado está en su propia clase.
+- **Principio Abierto/Cerrado:** Se pueden añadir nuevos estados sin modificar los existentes.
+- **Transiciones explícitas:** Las transiciones entre estados están claramente definidas.
+- **Organización:** El comportamiento de cada estado está localizado en un solo lugar.
+
+**Desventajas:**
+
+- **Excesivo para pocos estados:** Si solo hay 2-3 estados simples, el patrón puede ser sobreingeniería.
+- **Número de clases:** Cada estado requiere una clase adicional.
+- **Acoplamiento entre estados:** Los estados concretos pueden necesitar conocer otros estados para las transiciones.
+
+#### Aplicación en Qt
+
+Qt ofrece soporte nativo para máquinas de estado:
+
+- **`QStateMachine`:** Framework completo para máquinas de estado. Define estados, transiciones y acciones. Soporta estados jerárquicos (subestados) y paralelos.
+- **`QState`:** Representa un estado individual. Puede ejecutar acciones al entrar (`onEntry`) y al salir (`onExit`). Soporta asignación de propiedades al entrar en el estado.
+- **`QSignalTransition`:** Transición que se dispara cuando se emite una señal específica.
+- **QML States:** En QML, el patrón State es de primera clase con `State {}` y `StateGroup {}`, permitiendo cambiar propiedades, transiciones animadas y lógica condicional declarativa.
+
+```qml
+// Estado en QML - patrón State nativo
+states: [
+    State {
+        name: "activo"
+        PropertyChanges { target: boton; color: "verde" }
+    },
+    State {
+        name: "inactivo"
+        PropertyChanges { target: boton; color: "gris" }
+    }
+]
+transitions: Transition {
+    ColorAnimation { duration: 300 }
+}
+```
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Declaración adelantada
+class Contexto;
+
+// Interfaz de estado
+class IEstado {
+public:
+    virtual ~IEstado() = default;
+    virtual void insertar(Contexto& ctx) = 0;
+    virtual void expulsar(Contexto& ctx) = 0;
+    virtual void reproducir(Contexto& ctx) = 0;
+    virtual std::string nombre() const = 0;
+};
+
+// Contexto: Reproductor de CD
+class Contexto {
+private:
+    std::unique_ptr<IEstado> estado_;
+
+public:
+    Contexto(std::unique_ptr<IEstado> estadoInicial)
+        : estado_(std::move(estadoInicial)) {}
+
+    void cambiarEstado(std::unique_ptr<IEstado> nuevoEstado) {
+        std::cout << "  [Transicion: " << estado_->nombre()
+                  << " -> " << nuevoEstado->nombre() << "]" << std::endl;
+        estado_ = std::move(nuevoEstado);
+    }
+
+    void insertar() {
+        std::cout << "> Insertar CD (estado: " << estado_->nombre() << ")" << std::endl;
+        estado_->insertar(*this);
+    }
+
+    void expulsar() {
+        std::cout << "> Expulsar CD (estado: " << estado_->nombre() << ")" << std::endl;
+        estado_->expulsar(*this);
+    }
+
+    void reproducir() {
+        std::cout << "> Reproducir (estado: " << estado_->nombre() << ")" << std::endl;
+        estado_->reproducir(*this);
+    }
+};
+
+// Estado: Sin CD
+class EstadoSinCD : public IEstado {
+public:
+    void insertar(Contexto& ctx) override;  // Definido después
+    void expulsar(Contexto& ctx) override {
+        std::cout << "  No hay CD para expulsar" << std::endl;
+    }
+    void reproducir(Contexto& ctx) override {
+        std::cout << "  No hay CD para reproducir" << std::endl;
+    }
+    std::string nombre() const override { return "Sin CD"; }
+};
+
+// Estado: Detenido (CD insertado pero no reproduciendo)
+class EstadoDetenido : public IEstado {
+public:
+    void insertar(Contexto& ctx) override {
+        std::cout << "  Ya hay un CD insertado" << std::endl;
+    }
+    void expulsar(Contexto& ctx) override;
+    void reproducir(Contexto& ctx) override;
+    std::string nombre() const override { return "Detenido"; }
+};
+
+// Estado: Reproduciendo
+class EstadoReproduciendo : public IEstado {
+public:
+    void insertar(Contexto& ctx) override {
+        std::cout << "  No se puede insertar mientras se reproduce" << std::endl;
+    }
+    void expulsar(Contexto& ctx) override {
+        std::cout << "  Deteniendo y expulsando CD..." << std::endl;
+        ctx.cambiarEstado(std::make_unique<EstadoSinCD>());
+    }
+    void reproducir(Contexto& ctx) override {
+        std::cout << "  Ya se esta reproduciendo" << std::endl;
+    }
+    std::string nombre() const override { return "Reproduciendo"; }
+};
+
+// Implementaciones diferidas (necesitan conocer todas las clases)
+void EstadoSinCD::insertar(Contexto& ctx) {
+    std::cout << "  CD insertado correctamente" << std::endl;
+    ctx.cambiarEstado(std::make_unique<EstadoDetenido>());
+}
+
+void EstadoDetenido::expulsar(Contexto& ctx) {
+    std::cout << "  Expulsando CD..." << std::endl;
+    ctx.cambiarEstado(std::make_unique<EstadoSinCD>());
+}
+
+void EstadoDetenido::reproducir(Contexto& ctx) {
+    std::cout << "  Iniciando reproduccion..." << std::endl;
+    ctx.cambiarEstado(std::make_unique<EstadoReproduciendo>());
+}
+
+int main() {
+    // Crear reproductor en estado "Sin CD"
+    Contexto reproductor(std::make_unique<EstadoSinCD>());
+
+    reproductor.reproducir();   // No hay CD
+    reproductor.insertar();     // Inserta CD -> Detenido
+    reproductor.insertar();     // Ya hay CD
+    reproductor.reproducir();   // Inicia -> Reproduciendo
+    reproductor.reproducir();   // Ya se reproduce
+    reproductor.expulsar();     // Detiene y expulsa -> Sin CD
+    reproductor.expulsar();     // No hay CD
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+> Reproducir (estado: Sin CD)
+  No hay CD para reproducir
+> Insertar CD (estado: Sin CD)
+  CD insertado correctamente
+  [Transicion: Sin CD -> Detenido]
+> Insertar CD (estado: Detenido)
+  Ya hay un CD insertado
+> Reproducir (estado: Detenido)
+  Iniciando reproduccion...
+  [Transicion: Detenido -> Reproduciendo]
+> Reproducir (estado: Reproduciendo)
+  Ya se esta reproduciendo
+> Expulsar CD (estado: Reproduciendo)
+  Deteniendo y expulsando CD...
+  [Transicion: Reproduciendo -> Sin CD]
+> Expulsar CD (estado: Sin CD)
+  No hay CD para expulsar
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <functional>
+#include <map>
+
+// Máquina expendedora con patrón State completo
+// Estados: Esperando, SeleccionandoProducto, Procesando, Dispensando
+
+class MaquinaExpendedora;  // Declaración adelantada
+
+// Interfaz de estado
+class IEstadoMaquina {
+public:
+    virtual ~IEstadoMaquina() = default;
+    virtual void insertarMoneda(MaquinaExpendedora& maq, double cantidad) = 0;
+    virtual void seleccionarProducto(MaquinaExpendedora& maq, const std::string& producto) = 0;
+    virtual void dispensar(MaquinaExpendedora& maq) = 0;
+    virtual void cancelar(MaquinaExpendedora& maq) = 0;
+    virtual std::string nombre() const = 0;
+};
+
+// Contexto: Máquina expendedora
+class MaquinaExpendedora {
+    friend class EstadoEsperando;
+    friend class EstadoConCredito;
+    friend class EstadoDispensando;
+
+private:
+    std::unique_ptr<IEstadoMaquina> estado_;
+    double credito_ = 0.0;
+    std::string productoSeleccionado_;
+
+    // Inventario: nombre -> {precio, cantidad}
+    struct InfoProducto {
+        double precio;
+        int cantidad;
+    };
+    std::map<std::string, InfoProducto> inventario_;
+
+public:
+    MaquinaExpendedora();
+
+    void cambiarEstado(std::unique_ptr<IEstadoMaquina> nuevo) {
+        std::cout << "  >> Estado: " << estado_->nombre()
+                  << " -> " << nuevo->nombre() << std::endl;
+        estado_ = std::move(nuevo);
+    }
+
+    // Acciones públicas (delegadas al estado)
+    void insertarMoneda(double cantidad) {
+        std::cout << "\n[Accion] Insertar $" << cantidad << std::endl;
+        estado_->insertarMoneda(*this, cantidad);
+    }
+
+    void seleccionarProducto(const std::string& producto) {
+        std::cout << "\n[Accion] Seleccionar: " << producto << std::endl;
+        estado_->seleccionarProducto(*this, producto);
+    }
+
+    void dispensar() {
+        estado_->dispensar(*this);
+    }
+
+    void cancelar() {
+        std::cout << "\n[Accion] Cancelar" << std::endl;
+        estado_->cancelar(*this);
+    }
+
+    void mostrarEstado() const {
+        std::cout << "  [Info] Estado: " << estado_->nombre()
+                  << " | Credito: $" << credito_ << std::endl;
+    }
+};
+
+// Estado: Esperando monedas (estado inicial)
+class EstadoEsperando : public IEstadoMaquina {
+public:
+    void insertarMoneda(MaquinaExpendedora& maq, double cantidad) override;
+    void seleccionarProducto(MaquinaExpendedora& maq, const std::string&) override {
+        std::cout << "  Primero inserte monedas" << std::endl;
+    }
+    void dispensar(MaquinaExpendedora&) override {
+        std::cout << "  Primero inserte monedas y seleccione un producto" << std::endl;
+    }
+    void cancelar(MaquinaExpendedora&) override {
+        std::cout << "  No hay nada que cancelar" << std::endl;
+    }
+    std::string nombre() const override { return "Esperando"; }
+};
+
+// Estado: Con crédito (monedas insertadas, esperando selección)
+class EstadoConCredito : public IEstadoMaquina {
+public:
+    void insertarMoneda(MaquinaExpendedora& maq, double cantidad) override {
+        maq.credito_ += cantidad;
+        std::cout << "  Credito acumulado: $" << maq.credito_ << std::endl;
+    }
+
+    void seleccionarProducto(MaquinaExpendedora& maq, const std::string& producto) override;
+    void dispensar(MaquinaExpendedora&) override {
+        std::cout << "  Primero seleccione un producto" << std::endl;
+    }
+
+    void cancelar(MaquinaExpendedora& maq) override {
+        std::cout << "  Devolviendo $" << maq.credito_ << std::endl;
+        maq.credito_ = 0.0;
+        maq.cambiarEstado(std::make_unique<EstadoEsperando>());
+    }
+
+    std::string nombre() const override { return "Con Credito"; }
+};
+
+// Estado: Dispensando producto
+class EstadoDispensando : public IEstadoMaquina {
+public:
+    void insertarMoneda(MaquinaExpendedora&, double) override {
+        std::cout << "  Espere, dispensando producto..." << std::endl;
+    }
+    void seleccionarProducto(MaquinaExpendedora&, const std::string&) override {
+        std::cout << "  Espere, dispensando producto..." << std::endl;
+    }
+
+    void dispensar(MaquinaExpendedora& maq) override {
+        auto& info = maq.inventario_[maq.productoSeleccionado_];
+        info.cantidad--;
+
+        double cambio = maq.credito_ - info.precio;
+        maq.credito_ = 0.0;
+
+        std::cout << "  *** Dispensando: " << maq.productoSeleccionado_ << " ***" << std::endl;
+        if (cambio > 0) {
+            std::cout << "  Cambio devuelto: $" << cambio << std::endl;
+        }
+        std::cout << "  (Quedan " << info.cantidad << " unidades)" << std::endl;
+
+        maq.productoSeleccionado_.clear();
+        maq.cambiarEstado(std::make_unique<EstadoEsperando>());
+    }
+
+    void cancelar(MaquinaExpendedora&) override {
+        std::cout << "  No se puede cancelar durante la dispensacion" << std::endl;
+    }
+
+    std::string nombre() const override { return "Dispensando"; }
+};
+
+// Implementaciones diferidas
+MaquinaExpendedora::MaquinaExpendedora()
+    : estado_(std::make_unique<EstadoEsperando>()) {
+    inventario_["Cola"] = {1.50, 5};
+    inventario_["Agua"] = {1.00, 3};
+    inventario_["Jugo"] = {2.00, 2};
+}
+
+void EstadoEsperando::insertarMoneda(MaquinaExpendedora& maq, double cantidad) {
+    maq.credito_ = cantidad;
+    std::cout << "  Credito: $" << maq.credito_ << std::endl;
+    maq.cambiarEstado(std::make_unique<EstadoConCredito>());
+}
+
+void EstadoConCredito::seleccionarProducto(MaquinaExpendedora& maq,
+                                            const std::string& producto) {
+    auto it = maq.inventario_.find(producto);
+    if (it == maq.inventario_.end()) {
+        std::cout << "  Producto no disponible" << std::endl;
+        return;
+    }
+    if (it->second.cantidad == 0) {
+        std::cout << "  " << producto << " agotado" << std::endl;
+        return;
+    }
+    if (maq.credito_ < it->second.precio) {
+        std::cout << "  Credito insuficiente. Necesita: $" << it->second.precio
+                  << " | Tiene: $" << maq.credito_ << std::endl;
+        return;
+    }
+
+    maq.productoSeleccionado_ = producto;
+    maq.cambiarEstado(std::make_unique<EstadoDispensando>());
+    maq.dispensar();  // Dispensar automáticamente
+}
+
+int main() {
+    MaquinaExpendedora maquina;
+
+    // Intento sin monedas
+    maquina.seleccionarProducto("Cola");
+
+    // Compra exitosa
+    maquina.insertarMoneda(2.00);
+    maquina.seleccionarProducto("Cola");
+
+    // Crédito insuficiente
+    maquina.insertarMoneda(0.50);
+    maquina.seleccionarProducto("Jugo");
+
+    // Agregar más crédito y comprar
+    maquina.insertarMoneda(1.50);
+    maquina.seleccionarProducto("Jugo");
+
+    // Cancelar operación
+    maquina.insertarMoneda(1.00);
+    maquina.mostrarEstado();
+    maquina.cancelar();
+    maquina.mostrarEstado();
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+
+[Accion] Seleccionar: Cola
+  Primero inserte monedas
+
+[Accion] Insertar $2
+  Credito: $2
+  >> Estado: Esperando -> Con Credito
+
+[Accion] Seleccionar: Cola
+  >> Estado: Con Credito -> Dispensando
+  *** Dispensando: Cola ***
+  Cambio devuelto: $0.5
+  (Quedan 4 unidades)
+  >> Estado: Dispensando -> Esperando
+
+[Accion] Insertar $0.5
+  Credito: $0.5
+  >> Estado: Esperando -> Con Credito
+
+[Accion] Seleccionar: Jugo
+  Credito insuficiente. Necesita: $2 | Tiene: $0.5
+
+[Accion] Insertar $1.5
+  Credito acumulado: $2
+
+[Accion] Seleccionar: Jugo
+  >> Estado: Con Credito -> Dispensando
+  *** Dispensando: Jugo ***
+  (Quedan 1 unidades)
+  >> Estado: Dispensando -> Esperando
+
+[Accion] Insertar $1
+  Credito: $1
+  >> Estado: Esperando -> Con Credito
+  [Info] Estado: Con Credito | Credito: $1
+
+[Accion] Cancelar
+  Devolviendo $1
+  >> Estado: Con Credito -> Esperando
+  [Info] Estado: Esperando | Credito: $0
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QStateMachine>
+#include <QState>
+#include <QFinalState>
+#include <QSignalTransition>
+#include <QObject>
+#include <QDebug>
+#include <QTimer>
+
+// ============================================================
+// Semáforo con QStateMachine y QState
+// Demuestra el patrón State nativo de Qt
+// ============================================================
+
+// Modelo del semáforo
+class Semaforo : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString color READ color NOTIFY colorChanged)
+    Q_PROPERTY(bool peatonPermitido READ peatonPermitido NOTIFY peatonPermitidoChanged)
+
+public:
+    explicit Semaforo(QObject* parent = nullptr) : QObject(parent) {}
+
+    QString color() const { return color_; }
+    bool peatonPermitido() const { return peatonPermitido_; }
+
+    void setColor(const QString& c) {
+        if (color_ != c) {
+            color_ = c;
+            emit colorChanged(c);
+        }
+    }
+
+    void setPeatonPermitido(bool p) {
+        if (peatonPermitido_ != p) {
+            peatonPermitido_ = p;
+            emit peatonPermitidoChanged(p);
+        }
+    }
+
+signals:
+    void colorChanged(const QString& color);
+    void peatonPermitidoChanged(bool permitido);
+    void avanzar();  // Señal para transiciones
+
+private:
+    QString color_ = "Rojo";
+    bool peatonPermitido_ = true;
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    Semaforo semaforo;
+
+    // Crear la máquina de estados
+    QStateMachine maquina;
+
+    // Definir estados
+    QState* rojo = new QState();
+    QState* verde = new QState();
+    QState* amarillo = new QState();
+
+    // Asignar propiedades a cada estado
+    // Cuando la máquina entra en un estado, asigna estas propiedades
+    rojo->assignProperty(&semaforo, "color", "Rojo");
+    rojo->assignProperty(&semaforo, "peatonPermitido", true);
+
+    verde->assignProperty(&semaforo, "color", "Verde");
+    verde->assignProperty(&semaforo, "peatonPermitido", false);
+
+    amarillo->assignProperty(&semaforo, "color", "Amarillo");
+    amarillo->assignProperty(&semaforo, "peatonPermitido", false);
+
+    // Definir transiciones (disparadas por la señal "avanzar")
+    rojo->addTransition(&semaforo, &Semaforo::avanzar, verde);
+    verde->addTransition(&semaforo, &Semaforo::avanzar, amarillo);
+    amarillo->addTransition(&semaforo, &Semaforo::avanzar, rojo);
+
+    // Acciones al entrar en cada estado
+    QObject::connect(rojo, &QState::entered, [&]() {
+        qDebug() << "=== ROJO === | Peatones: PUEDEN cruzar";
+    });
+    QObject::connect(verde, &QState::entered, [&]() {
+        qDebug() << "=== VERDE === | Peatones: NO cruzar";
+    });
+    QObject::connect(amarillo, &QState::entered, [&]() {
+        qDebug() << "=== AMARILLO === | Peatones: NO cruzar (precaucion)";
+    });
+
+    // Configurar máquina
+    maquina.addState(rojo);
+    maquina.addState(verde);
+    maquina.addState(amarillo);
+    maquina.setInitialState(rojo);
+
+    // Iniciar la máquina
+    qDebug() << "--- Iniciando semaforo ---";
+    maquina.start();
+
+    // Simular ciclos del semáforo con QTimer
+    int ciclos = 0;
+    QTimer timer;
+    timer.setInterval(500);  // 500ms por estado para demo
+
+    QObject::connect(&timer, &QTimer::timeout, [&]() {
+        emit semaforo.avanzar();
+        ciclos++;
+
+        if (ciclos >= 6) {  // 2 ciclos completos
+            timer.stop();
+            qDebug() << "\n--- Semaforo detenido tras 2 ciclos ---";
+            qDebug() << "Color final:" << semaforo.color();
+            qDebug() << "Peaton permitido:" << semaforo.peatonPermitido();
+            app.quit();
+        }
+    });
+
+    // Procesar el estado inicial antes de iniciar el timer
+    QTimer::singleShot(0, [&]() {
+        timer.start();
+    });
+
+    return app.exec();
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+--- Iniciando semaforo ---
+=== ROJO === | Peatones: PUEDEN cruzar
+=== VERDE === | Peatones: NO cruzar
+=== AMARILLO === | Peatones: NO cruzar (precaucion)
+=== ROJO === | Peatones: PUEDEN cruzar
+=== VERDE === | Peatones: NO cruzar
+=== AMARILLO === | Peatones: NO cruzar (precaucion)
+
+--- Semaforo detenido tras 2 ciclos ---
+Color final: "Rojo"
+Peaton permitido: true

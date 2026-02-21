@@ -1,0 +1,708 @@
+<---EXPLANATION--->
+### Patron Proxy
+
+El patron **Proxy** proporciona un sustituto o representante de otro objeto para controlar el acceso a el. El proxy tiene la misma interfaz que el objeto real, por lo que el cliente no nota la diferencia. Es como un intermediario que agrega una capa de control — puede restringir acceso, agregar cache, diferir la creacion del objeto costoso o registrar operaciones.
+
+#### Problema
+
+Imagina un visor de documentos que carga imagenes de alta resolucion. Cada imagen pesa 50 MB y hay 200 en el documento. Cargar todas al abrir el documento consumiria 10 GB de memoria y tardaria minutos. Solo se muestran 2-3 imagenes a la vez en pantalla. Necesitas una forma de **diferir** la carga hasta que la imagen sea realmente visible, sin cambiar la interfaz que el visor usa para acceder a las imagenes.
+
+Otros escenarios:
+- Controlar acceso a un servicio remoto (proxy remoto)
+- Cachear resultados costosos (proxy de cache)
+- Verificar permisos antes de acceder a un recurso (proxy de proteccion)
+- Registrar todas las operaciones sobre un objeto (proxy de logging)
+
+#### Solucion
+
+El Proxy implementa la misma interfaz que el objeto real y mantiene una referencia a el. Intercepta las llamadas del cliente y agrega su logica (verificacion, cache, lazy loading) antes o despues de delegar al objeto real:
+
+```cpp
+class ImagenProxy : public IImagen {
+    std::string ruta_;
+    std::unique_ptr<ImagenReal> imagenReal_; // nullptr hasta que se necesite
+public:
+    explicit ImagenProxy(const std::string& ruta) : ruta_(ruta) {}
+
+    void mostrar() override {
+        if (!imagenReal_) {
+            imagenReal_ = std::make_unique<ImagenReal>(ruta_); // Lazy load
+        }
+        imagenReal_->mostrar();
+    }
+};
+```
+
+#### Estructura
+
+- **Subject (Sujeto):** Interfaz comun que tanto el Proxy como el objeto real implementan. Permite al cliente usar el proxy de forma transparente.
+- **RealSubject (Sujeto Real):** El objeto real que contiene la logica de negocio. Es el objeto cuyo acceso el proxy controla.
+- **Proxy:** Mantiene una referencia al sujeto real. Controla el acceso, agrega funcionalidad y delega al objeto real cuando es apropiado.
+
+##### Tipos de Proxy
+
+- **Virtual Proxy (Lazy Loading):** Difiere la creacion del objeto costoso hasta que se necesite realmente.
+- **Protection Proxy (Control de Acceso):** Verifica permisos antes de permitir operaciones.
+- **Remote Proxy:** Representa un objeto que vive en otro espacio de direcciones (otro proceso, servidor remoto).
+- **Caching Proxy:** Almacena resultados de operaciones costosas y los reutiliza.
+- **Logging Proxy:** Registra todas las operaciones realizadas sobre el objeto.
+- **Smart Reference:** Realiza acciones adicionales cuando se accede al objeto (conteo de referencias, verificacion de locks).
+
+#### Implementacion en C++
+
+En C++ moderno se usan punteros inteligentes. El proxy decide cuando crear o acceder al objeto real:
+
+```cpp
+class Proxy : public ISujeto {
+private:
+    mutable std::unique_ptr<SujetoReal> real_; // mutable para lazy load en metodos const
+    // ... datos para control de acceso, cache, etc.
+
+public:
+    void operacion() const override {
+        // Logica ANTES (verificar permisos, cache, logging)
+        if (!real_) {
+            real_ = std::make_unique<SujetoReal>(); // Crear bajo demanda
+        }
+        real_->operacion(); // Delegar
+        // Logica DESPUES (cache resultado, logging)
+    }
+};
+```
+
+> **Nota:** Se usa `mutable` cuando el proxy necesita modificar su estado interno (como crear el objeto real) desde metodos `const`.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+- **Control de acceso:** Puedes gestionar el ciclo de vida del objeto real sin que el cliente lo sepa.
+- **Optimizacion:** Lazy loading evita crear objetos costosos innecesariamente.
+- **Transparencia:** El cliente usa exactamente la misma interfaz.
+- **Separacion de responsabilidades:** La logica de control esta separada de la logica de negocio.
+- **Principio abierto/cerrado:** Puedes agregar nuevos proxies sin modificar el objeto real.
+
+##### Desventajas
+- **Latencia:** La respuesta puede retrasarse la primera vez si el proxy necesita inicializar el objeto real.
+- **Complejidad:** Agrega una capa de indirecta que hace el codigo mas dificil de seguir.
+- **Consistencia:** El proxy de cache puede servir datos obsoletos si no se invalida correctamente.
+
+#### Aplicacion en Qt
+
+Qt utiliza proxies en varios subsistemas:
+
+- **`QSortFilterProxyModel`:** Es el proxy mas utilizado en Qt. Se interpone entre un modelo de datos y una vista, permitiendo filtrar y ordenar filas sin modificar el modelo original. Implementa la misma interfaz `QAbstractItemModel` que el modelo fuente.
+
+- **Lazy loading con `QPixmap`:** Qt carga pixmaps de forma diferida internamente. Cuando asignas un archivo a un `QPixmap`, la decodificacion real puede ocurrir cuando realmente se necesita dibujar. `QPixmap::isNull()` permite verificar sin forzar la carga.
+
+- **`QNetworkReply`:** Actua como proxy de un recurso remoto. Representa los datos que aun no han llegado del servidor. La interfaz es sincrona (puedes leer datos), pero internamente los datos llegan asincronamente.
+
+- **`QQmlComponent`:** En QML, los componentes se cargan de forma diferida con `Loader {}`, que es esencialmente un proxy virtual que crea el componente real solo cuando es necesario (cuando `active` es `true` o `source` cambia).
+
+> **Nota:** En QML, el componente `Loader` es un proxy virtual clasico: controla cuando se crea y destruye el componente real. `Loader { active: false; source: "Pesado.qml" }` no carga nada hasta que `active` se pone en `true`.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// === Sujeto: Interfaz comun para imagen real y proxy ===
+class IImagen {
+public:
+    virtual ~IImagen() = default;
+    virtual void mostrar() const = 0;
+    virtual int ancho() const = 0;
+    virtual int alto() const = 0;
+    virtual std::string info() const = 0;
+};
+
+// === Sujeto Real: Imagen de alta resolucion (costosa de crear) ===
+class ImagenReal : public IImagen {
+    std::string ruta_;
+    int ancho_, alto_;
+    // Simula datos de la imagen en memoria
+    std::string datos_;
+
+public:
+    explicit ImagenReal(const std::string& ruta)
+        : ruta_(ruta), ancho_(0), alto_(0) {
+        cargar(); // Operacion costosa en el constructor
+    }
+
+    void mostrar() const override {
+        std::cout << "  [ImagenReal] Mostrando: " << ruta_
+                  << " (" << ancho_ << "x" << alto_ << ")" << std::endl;
+    }
+
+    int ancho() const override { return ancho_; }
+    int alto() const override { return alto_; }
+    std::string info() const override {
+        return ruta_ + " (" + std::to_string(ancho_) + "x"
+               + std::to_string(alto_) + ")";
+    }
+
+private:
+    void cargar() {
+        std::cout << "  [ImagenReal] Cargando desde disco: " << ruta_
+                  << " (operacion costosa...)" << std::endl;
+        // Simular carga costosa
+        ancho_ = 3840;
+        alto_ = 2160;
+        datos_ = "datos_simulados_de_50MB";
+    }
+};
+
+// === Proxy Virtual: Carga la imagen solo cuando es necesario ===
+class ImagenProxy : public IImagen {
+    std::string ruta_;
+    mutable std::unique_ptr<ImagenReal> imagenReal_;
+
+    // Cargar bajo demanda
+    void cargarSiNecesario() const {
+        if (!imagenReal_) {
+            std::cout << "  [Proxy] Primera solicitud -> creando imagen real" << std::endl;
+            imagenReal_ = std::make_unique<ImagenReal>(ruta_);
+        }
+    }
+
+public:
+    explicit ImagenProxy(const std::string& ruta) : ruta_(ruta) {
+        std::cout << "  [Proxy] Proxy creado para: " << ruta
+                  << " (sin cargar imagen)" << std::endl;
+    }
+
+    void mostrar() const override {
+        cargarSiNecesario();
+        imagenReal_->mostrar();
+    }
+
+    int ancho() const override {
+        cargarSiNecesario();
+        return imagenReal_->ancho();
+    }
+
+    int alto() const override {
+        cargarSiNecesario();
+        return imagenReal_->alto();
+    }
+
+    std::string info() const override {
+        if (imagenReal_) return imagenReal_->info();
+        return ruta_ + " (no cargada aun)";
+    }
+};
+
+int main() {
+    std::cout << "=== Visor de Imagenes (Patron Proxy) ===\n" << std::endl;
+
+    // Crear proxies (no cargan las imagenes reales)
+    std::cout << "--- Creando proxies ---" << std::endl;
+    ImagenProxy img1("foto_vacaciones.jpg");
+    ImagenProxy img2("panorama_montana.jpg");
+    ImagenProxy img3("retrato_familia.jpg");
+
+    std::cout << "\n--- Info sin cargar ---" << std::endl;
+    std::cout << "  img1: " << img1.info() << std::endl;
+    std::cout << "  img2: " << img2.info() << std::endl;
+    std::cout << "  img3: " << img3.info() << std::endl;
+
+    // Solo img1 se carga realmente (lazy loading)
+    std::cout << "\n--- Mostrando solo img1 ---" << std::endl;
+    img1.mostrar();
+
+    // Segunda llamada: ya esta cargada, no repite la carga
+    std::cout << "\n--- Mostrando img1 otra vez (ya cargada) ---" << std::endl;
+    img1.mostrar();
+
+    // img2 se carga cuando se accede
+    std::cout << "\n--- Accediendo a dimensiones de img2 ---" << std::endl;
+    std::cout << "  Ancho: " << img2.ancho() << std::endl;
+    std::cout << "  Alto: " << img2.alto() << std::endl;
+
+    // img3 nunca se cargo
+    std::cout << "\n--- img3 nunca se cargo ---" << std::endl;
+    std::cout << "  img3: " << img3.info() << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Visor de Imagenes (Patron Proxy) ===
+
+--- Creando proxies ---
+  [Proxy] Proxy creado para: foto_vacaciones.jpg (sin cargar imagen)
+  [Proxy] Proxy creado para: panorama_montana.jpg (sin cargar imagen)
+  [Proxy] Proxy creado para: retrato_familia.jpg (sin cargar imagen)
+
+--- Info sin cargar ---
+  img1: foto_vacaciones.jpg (no cargada aun)
+  img2: panorama_montana.jpg (no cargada aun)
+  img3: retrato_familia.jpg (no cargada aun)
+
+--- Mostrando solo img1 ---
+  [Proxy] Primera solicitud -> creando imagen real
+  [ImagenReal] Cargando desde disco: foto_vacaciones.jpg (operacion costosa...)
+  [ImagenReal] Mostrando: foto_vacaciones.jpg (3840x2160)
+
+--- Mostrando img1 otra vez (ya cargada) ---
+  [ImagenReal] Mostrando: foto_vacaciones.jpg (3840x2160)
+
+--- Accediendo a dimensiones de img2 ---
+  [Proxy] Primera solicitud -> creando imagen real
+  [ImagenReal] Cargando desde disco: panorama_montana.jpg (operacion costosa...)
+  Ancho: 3840
+  Alto: 2160
+
+--- img3 nunca se cargo ---
+  img3: retrato_familia.jpg (no cargada aun)
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <chrono>
+#include <thread>
+#include <functional>
+
+// === Sujeto: Interfaz de servicio de datos ===
+class IServicioDatos {
+public:
+    virtual ~IServicioDatos() = default;
+    virtual std::string consultar(const std::string& consulta) = 0;
+    virtual bool actualizar(const std::string& clave, const std::string& valor) = 0;
+    virtual std::string nombre() const = 0;
+};
+
+// === Sujeto Real: Base de datos (operaciones lentas) ===
+class BaseDatosReal : public IServicioDatos {
+public:
+    std::string consultar(const std::string& consulta) override {
+        // Simular operacion lenta
+        std::cout << "      [BD] Ejecutando consulta: " << consulta << std::endl;
+        // Simular datos de respuesta
+        if (consulta == "SELECT * FROM usuarios") {
+            return "Ana|30, Carlos|25, Maria|35";
+        } else if (consulta == "SELECT * FROM productos") {
+            return "Laptop|22999, Mouse|599, Teclado|899";
+        }
+        return "Sin resultados";
+    }
+
+    bool actualizar(const std::string& clave, const std::string& valor) override {
+        std::cout << "      [BD] Actualizando: " << clave << " = " << valor << std::endl;
+        return true;
+    }
+
+    std::string nombre() const override { return "BaseDatosReal"; }
+};
+
+// === Proxy de Cache: Almacena resultados de consultas ===
+class ProxyCache : public IServicioDatos {
+    std::unique_ptr<IServicioDatos> servicio_;
+    mutable std::unordered_map<std::string, std::string> cache_;
+    mutable int hits_ = 0;
+    mutable int misses_ = 0;
+
+public:
+    explicit ProxyCache(std::unique_ptr<IServicioDatos> servicio)
+        : servicio_(std::move(servicio)) {}
+
+    std::string consultar(const std::string& consulta) override {
+        auto it = cache_.find(consulta);
+        if (it != cache_.end()) {
+            hits_++;
+            std::cout << "    [Cache] HIT para: " << consulta << std::endl;
+            return it->second;
+        }
+
+        misses_++;
+        std::cout << "    [Cache] MISS para: " << consulta << std::endl;
+        std::string resultado = servicio_->consultar(consulta);
+        cache_[consulta] = resultado;
+        return resultado;
+    }
+
+    bool actualizar(const std::string& clave, const std::string& valor) override {
+        // Invalidar cache al modificar datos
+        cache_.clear();
+        std::cout << "    [Cache] Invalidado por actualizacion" << std::endl;
+        return servicio_->actualizar(clave, valor);
+    }
+
+    std::string nombre() const override { return "ProxyCache -> " + servicio_->nombre(); }
+
+    void estadisticas() const {
+        std::cout << "  Cache stats: " << hits_ << " hits, "
+                  << misses_ << " misses" << std::endl;
+    }
+};
+
+// === Proxy de Acceso: Verifica permisos ===
+class ProxyAcceso : public IServicioDatos {
+    std::unique_ptr<IServicioDatos> servicio_;
+    std::string rol_;
+    std::vector<std::string> log_;
+
+public:
+    ProxyAcceso(std::unique_ptr<IServicioDatos> servicio, const std::string& rol)
+        : servicio_(std::move(servicio)), rol_(rol) {}
+
+    std::string consultar(const std::string& consulta) override {
+        log_.push_back("[CONSULTA] " + rol_ + ": " + consulta);
+        std::cout << "  [Acceso] Usuario '" << rol_ << "' consultando..." << std::endl;
+
+        // Todos pueden consultar
+        return servicio_->consultar(consulta);
+    }
+
+    bool actualizar(const std::string& clave, const std::string& valor) override {
+        log_.push_back("[ACTUALIZAR] " + rol_ + ": " + clave);
+
+        // Solo admin puede actualizar
+        if (rol_ != "admin") {
+            std::cout << "  [Acceso] DENEGADO: '" << rol_
+                      << "' no tiene permisos de escritura" << std::endl;
+            return false;
+        }
+
+        std::cout << "  [Acceso] PERMITIDO: '" << rol_
+                  << "' actualizando datos" << std::endl;
+        return servicio_->actualizar(clave, valor);
+    }
+
+    std::string nombre() const override {
+        return "ProxyAcceso(" + rol_ + ") -> " + servicio_->nombre();
+    }
+
+    void mostrarLog() const {
+        std::cout << "  Log de operaciones:" << std::endl;
+        for (const auto& entrada : log_) {
+            std::cout << "    " << entrada << std::endl;
+        }
+    }
+};
+
+// === Proxy de Logging: Registra todas las operaciones ===
+class ProxyLog : public IServicioDatos {
+    std::unique_ptr<IServicioDatos> servicio_;
+    int operaciones_ = 0;
+
+public:
+    explicit ProxyLog(std::unique_ptr<IServicioDatos> servicio)
+        : servicio_(std::move(servicio)) {}
+
+    std::string consultar(const std::string& consulta) override {
+        operaciones_++;
+        std::cout << "[Log #" << operaciones_ << "] Consulta: " << consulta << std::endl;
+        auto resultado = servicio_->consultar(consulta);
+        std::cout << "[Log #" << operaciones_ << "] Resultado: "
+                  << resultado.substr(0, 40) << "..." << std::endl;
+        return resultado;
+    }
+
+    bool actualizar(const std::string& clave, const std::string& valor) override {
+        operaciones_++;
+        std::cout << "[Log #" << operaciones_ << "] Actualizar: "
+                  << clave << " = " << valor << std::endl;
+        bool exito = servicio_->actualizar(clave, valor);
+        std::cout << "[Log #" << operaciones_ << "] Resultado: "
+                  << (exito ? "Exitoso" : "Fallido") << std::endl;
+        return exito;
+    }
+
+    std::string nombre() const override { return "ProxyLog -> " + servicio_->nombre(); }
+};
+
+int main() {
+    std::cout << "=== Sistema con Proxies Apilados ===\n" << std::endl;
+
+    // Apilar proxies: Log -> Acceso -> Cache -> BD Real
+    // Cada proxy agrega una capa de funcionalidad
+    auto bd = std::make_unique<BaseDatosReal>();
+    auto cache = std::make_unique<ProxyCache>(std::move(bd));
+    auto* cachePtr = cache.get(); // Guardar referencia para estadisticas
+    auto acceso = std::make_unique<ProxyAcceso>(std::move(cache), "admin");
+    auto* accesoPtr = acceso.get();
+    auto servicio = std::make_unique<ProxyLog>(std::move(acceso));
+
+    std::cout << "Cadena: " << servicio->nombre() << "\n" << std::endl;
+
+    // Primera consulta (MISS en cache)
+    std::cout << "--- Consulta 1 (primera vez) ---" << std::endl;
+    servicio->consultar("SELECT * FROM usuarios");
+
+    // Segunda consulta (HIT en cache)
+    std::cout << "\n--- Consulta 2 (repetida, deberia ser cache hit) ---" << std::endl;
+    servicio->consultar("SELECT * FROM usuarios");
+
+    // Consulta diferente
+    std::cout << "\n--- Consulta 3 (nueva consulta) ---" << std::endl;
+    servicio->consultar("SELECT * FROM productos");
+
+    // Actualizar (admin: permitido, invalida cache)
+    std::cout << "\n--- Actualizar como admin ---" << std::endl;
+    servicio->actualizar("usuario.nombre", "Pedro");
+
+    // Consulta despues de invalidar cache
+    std::cout << "\n--- Consulta 4 (cache invalidado) ---" << std::endl;
+    servicio->consultar("SELECT * FROM usuarios");
+
+    // Estadisticas
+    std::cout << "\n--- Estadisticas ---" << std::endl;
+    cachePtr->estadisticas();
+
+    std::cout << "\n--- Log de acceso ---" << std::endl;
+    accesoPtr->mostrarLog();
+
+    // Probar con usuario sin permisos
+    std::cout << "\n=== Probando con usuario 'lector' ===" << std::endl;
+    auto bd2 = std::make_unique<BaseDatosReal>();
+    auto acceso2 = std::make_unique<ProxyAcceso>(std::move(bd2), "lector");
+    acceso2->consultar("SELECT * FROM usuarios"); // Permitido
+    acceso2->actualizar("dato", "valor");         // Denegado
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Sistema con Proxies Apilados ===
+
+Cadena: ProxyLog -> ProxyAcceso(admin) -> ProxyCache -> BaseDatosReal
+
+--- Consulta 1 (primera vez) ---
+[Log #1] Consulta: SELECT * FROM usuarios
+  [Acceso] Usuario 'admin' consultando...
+    [Cache] MISS para: SELECT * FROM usuarios
+      [BD] Ejecutando consulta: SELECT * FROM usuarios
+[Log #1] Resultado: Ana|30, Carlos|25, Maria|35...
+
+--- Consulta 2 (repetida, deberia ser cache hit) ---
+[Log #2] Consulta: SELECT * FROM usuarios
+  [Acceso] Usuario 'admin' consultando...
+    [Cache] HIT para: SELECT * FROM usuarios
+[Log #2] Resultado: Ana|30, Carlos|25, Maria|35...
+
+--- Consulta 3 (nueva consulta) ---
+[Log #3] Consulta: SELECT * FROM productos
+  [Acceso] Usuario 'admin' consultando...
+    [Cache] MISS para: SELECT * FROM productos
+      [BD] Ejecutando consulta: SELECT * FROM productos
+[Log #3] Resultado: Laptop|22999, Mouse|599, Teclado|899...
+
+--- Actualizar como admin ---
+[Log #4] Actualizar: usuario.nombre = Pedro
+  [Acceso] PERMITIDO: 'admin' actualizando datos
+    [Cache] Invalidado por actualizacion
+      [BD] Actualizando: usuario.nombre = Pedro
+[Log #4] Resultado: Exitoso
+
+--- Consulta 4 (cache invalidado) ---
+[Log #5] Consulta: SELECT * FROM usuarios
+  [Acceso] Usuario 'admin' consultando...
+    [Cache] MISS para: SELECT * FROM usuarios
+      [BD] Ejecutando consulta: SELECT * FROM usuarios
+[Log #5] Resultado: Ana|30, Carlos|25, Maria|35...
+
+--- Estadisticas ---
+  Cache stats: 1 hits, 3 misses
+
+--- Log de acceso ---
+  Log de operaciones:
+    [CONSULTA] admin: SELECT * FROM usuarios
+    [CONSULTA] admin: SELECT * FROM usuarios
+    [CONSULTA] admin: SELECT * FROM productos
+    [ACTUALIZAR] admin: usuario.nombre
+    [CONSULTA] admin: SELECT * FROM usuarios
+
+=== Probando con usuario 'lector' ===
+  [Acceso] Usuario 'lector' consultando...
+      [BD] Ejecutando consulta: SELECT * FROM usuarios
+  [Acceso] DENEGADO: 'lector' no tiene permisos de escritura
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
+#include <QDebug>
+
+// =====================================================
+// Demostracion del Proxy en Qt: QSortFilterProxyModel
+//
+// QSortFilterProxyModel es un proxy clasico:
+// - Implementa la misma interfaz (QAbstractItemModel)
+// - Envuelve un modelo fuente
+// - Agrega funcionalidad (filtrado + ordenamiento)
+// - El modelo original no se modifica
+// =====================================================
+
+// Modelo fuente con datos de empleados
+QStandardItemModel* crearModeloEmpleados() {
+    auto* modelo = new QStandardItemModel();
+    modelo->setHorizontalHeaderLabels({"Nombre", "Departamento", "Salario"});
+
+    auto agregarEmpleado = [&](const QString& nombre, const QString& depto,
+                               int salario) {
+        QList<QStandardItem*> fila;
+        fila << new QStandardItem(nombre)
+             << new QStandardItem(depto)
+             << new QStandardItem(QString::number(salario));
+        // Guardar salario como dato numerico para ordenamiento correcto
+        fila[2]->setData(salario, Qt::UserRole);
+        modelo->appendRow(fila);
+    };
+
+    agregarEmpleado("Ana Garcia", "Ingenieria", 55000);
+    agregarEmpleado("Carlos Lopez", "Ventas", 42000);
+    agregarEmpleado("Maria Torres", "Ingenieria", 62000);
+    agregarEmpleado("Pedro Ruiz", "RRHH", 38000);
+    agregarEmpleado("Laura Diaz", "Ingenieria", 58000);
+    agregarEmpleado("Roberto Chen", "Ventas", 45000);
+    agregarEmpleado("Sofia Mendez", "RRHH", 41000);
+    agregarEmpleado("Diego Vargas", "Ingenieria", 51000);
+    agregarEmpleado("Carmen Flores", "Ventas", 48000);
+    agregarEmpleado("Andres Morales", "RRHH", 36000);
+
+    return modelo;
+}
+
+// Funcion auxiliar para mostrar los datos de un modelo
+void mostrarModelo(QAbstractItemModel* modelo, const QString& titulo) {
+    qDebug().noquote() << "\n  " << titulo;
+    qDebug().noquote() << "  " + QString("-").repeated(50);
+
+    for (int fila = 0; fila < modelo->rowCount(); ++fila) {
+        QString nombre = modelo->data(modelo->index(fila, 0)).toString();
+        QString depto = modelo->data(modelo->index(fila, 1)).toString();
+        QString salario = modelo->data(modelo->index(fila, 2)).toString();
+        qDebug().noquote() << QString("  %-20s %-15s $%1").arg(nombre, depto, salario);
+    }
+    qDebug().noquote() << "  Total filas:" << modelo->rowCount();
+}
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    qDebug() << "=== QSortFilterProxyModel (Patron Proxy) ===";
+
+    // Crear modelo fuente
+    QStandardItemModel* modeloFuente = crearModeloEmpleados();
+    mostrarModelo(modeloFuente, "Modelo Original (todos los empleados)");
+
+    // === Proxy 1: Filtrar por departamento ===
+    QSortFilterProxyModel proxyFiltro;
+    proxyFiltro.setSourceModel(modeloFuente);   // Envolver el modelo original
+    proxyFiltro.setFilterKeyColumn(1);           // Filtrar por columna "Departamento"
+    proxyFiltro.setFilterFixedString("Ingenieria");
+
+    mostrarModelo(&proxyFiltro, "Proxy Filtrado: Solo Ingenieria");
+
+    // === Proxy 2: Ordenar por salario (descendente) ===
+    QSortFilterProxyModel proxyOrden;
+    proxyOrden.setSourceModel(modeloFuente);
+    proxyOrden.setSortRole(Qt::UserRole);  // Usar el dato numerico para ordenar
+    proxyOrden.sort(2, Qt::DescendingOrder);  // Columna 2 = Salario
+
+    mostrarModelo(&proxyOrden, "Proxy Ordenado: Por salario (mayor a menor)");
+
+    // === Proxy sobre Proxy: Filtrar + Ordenar ===
+    QSortFilterProxyModel proxyDoble;
+    proxyDoble.setSourceModel(&proxyFiltro);  // Proxy sobre otro proxy
+    proxyDoble.setSortRole(Qt::UserRole);
+    proxyDoble.sort(2, Qt::AscendingOrder);
+
+    mostrarModelo(&proxyDoble, "Proxy Doble: Ingenieria + Ordenado por salario (asc)");
+
+    // === Verificar que el modelo original no cambio ===
+    qDebug() << "\n  === Verificacion ===";
+    qDebug() << "  Filas en modelo original:" << modeloFuente->rowCount();
+    qDebug() << "  Filas en proxy filtrado:" << proxyFiltro.rowCount();
+    qDebug() << "  Filas en proxy ordenado:" << proxyOrden.rowCount();
+    qDebug() << "  Filas en proxy doble:" << proxyDoble.rowCount();
+    qDebug() << "  El modelo original NO fue modificado.";
+
+    // === Mapeo de indices (proxy <-> fuente) ===
+    qDebug() << "\n  === Mapeo de Indices (proxy -> fuente) ===";
+    for (int i = 0; i < proxyFiltro.rowCount(); ++i) {
+        QModelIndex proxyIdx = proxyFiltro.index(i, 0);
+        QModelIndex sourceIdx = proxyFiltro.mapToSource(proxyIdx);
+        qDebug().noquote() << QString("  Proxy fila %1 -> Fuente fila %2: %3")
+            .arg(proxyIdx.row())
+            .arg(sourceIdx.row())
+            .arg(proxyFiltro.data(proxyIdx).toString());
+    }
+
+    delete modeloFuente;
+    return 0;
+}
+```
+<---Ejemplo con Qt Result--->
+=== QSortFilterProxyModel (Patron Proxy) ===
+
+  Modelo Original (todos los empleados)
+  --------------------------------------------------
+  Ana Garcia           Ingenieria      $55000
+  Carlos Lopez         Ventas          $42000
+  Maria Torres         Ingenieria      $62000
+  Pedro Ruiz           RRHH            $38000
+  Laura Diaz           Ingenieria      $58000
+  Roberto Chen         Ventas          $45000
+  Sofia Mendez         RRHH            $41000
+  Diego Vargas         Ingenieria      $51000
+  Carmen Flores        Ventas          $48000
+  Andres Morales       RRHH            $36000
+  Total filas: 10
+
+  Proxy Filtrado: Solo Ingenieria
+  --------------------------------------------------
+  Ana Garcia           Ingenieria      $55000
+  Maria Torres         Ingenieria      $62000
+  Laura Diaz           Ingenieria      $58000
+  Diego Vargas         Ingenieria      $51000
+  Total filas: 4
+
+  Proxy Ordenado: Por salario (mayor a menor)
+  --------------------------------------------------
+  Maria Torres         Ingenieria      $62000
+  Laura Diaz           Ingenieria      $58000
+  Ana Garcia           Ingenieria      $55000
+  Diego Vargas         Ingenieria      $51000
+  Carmen Flores        Ventas          $48000
+  Roberto Chen         Ventas          $45000
+  Carlos Lopez         Ventas          $42000
+  Sofia Mendez         RRHH            $41000
+  Pedro Ruiz           RRHH            $38000
+  Andres Morales       RRHH            $36000
+  Total filas: 10
+
+  Proxy Doble: Ingenieria + Ordenado por salario (asc)
+  --------------------------------------------------
+  Diego Vargas         Ingenieria      $51000
+  Ana Garcia           Ingenieria      $55000
+  Laura Diaz           Ingenieria      $58000
+  Maria Torres         Ingenieria      $62000
+  Total filas: 4
+
+  === Verificacion ===
+  Filas en modelo original: 10
+  Filas en proxy filtrado: 4
+  Filas en proxy ordenado: 10
+  Filas en proxy doble: 4
+  El modelo original NO fue modificado.
+
+  === Mapeo de Indices (proxy -> fuente) ===
+  Proxy fila 0 -> Fuente fila 0: Ana Garcia
+  Proxy fila 1 -> Fuente fila 2: Maria Torres
+  Proxy fila 2 -> Fuente fila 4: Laura Diaz
+  Proxy fila 3 -> Fuente fila 7: Diego Vargas

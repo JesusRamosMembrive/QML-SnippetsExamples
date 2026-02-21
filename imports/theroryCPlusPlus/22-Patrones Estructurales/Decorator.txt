@@ -1,0 +1,580 @@
+<---EXPLANATION--->
+### Patron Decorator (Decorador)
+
+El patron **Decorator** permite agregar comportamiento adicional a objetos de forma dinamica, envolviendolos en objetos especiales llamados decoradores. Proporciona una alternativa flexible a la herencia para extender funcionalidad, ya que puedes **combinar** multiples decoradores en tiempo de ejecucion sin crear una explosion de subclases.
+
+#### Problema
+
+Imagina un sistema de notificaciones que inicialmente solo envia por correo electronico. Luego necesitas agregar la posibilidad de enviar tambien por SMS, Facebook y Slack. Ademas, un usuario podria querer **combinar** varios canales (email + SMS, email + Slack + SMS, etc.). Con herencia, necesitarias una subclase por cada combinacion posible: `EmailSMS`, `EmailSlack`, `EmailSMSSlack`... El numero de combinaciones crece exponencialmente.
+
+Otro escenario clasico: un flujo de datos que necesita compresion, cifrado y logging. Con herencia, necesitarias `CompressedEncryptedLoggedStream` y todas las demas combinaciones.
+
+#### Solucion
+
+El Decorator envuelve el objeto original y agrega comportamiento antes o despues de delegar al objeto envuelto. Cada decorador implementa la misma interfaz que el componente, por lo que el cliente no nota la diferencia. Los decoradores se pueden **apilar** como capas:
+
+```cpp
+// Componente base
+auto notificador = std::make_unique<NotificadorEmail>();
+
+// Apilar decoradores
+auto conSMS = std::make_unique<DecoradorSMS>(std::move(notificador));
+auto conSlack = std::make_unique<DecoradorSlack>(std::move(conSMS));
+
+// El cliente usa la misma interfaz
+conSlack->enviar("Hola"); // Envia por Slack + SMS + Email
+```
+
+#### Estructura
+
+- **Component (Componente):** Interfaz comun que define las operaciones que pueden ser decoradas.
+- **ConcreteComponent (Componente Concreto):** La clase original cuyo comportamiento se quiere extender.
+- **Decorator (Decorador Base):** Clase abstracta que implementa Component y contiene una referencia a un Component. Delega todas las operaciones al componente envuelto.
+- **ConcreteDecorator (Decorador Concreto):** Agrega comportamiento adicional antes o despues de delegar al componente envuelto.
+
+##### Principio clave
+
+Cada decorador **es un** componente (implementa la misma interfaz) y **tiene un** componente (envuelve otro objeto). Esta doble relacion es lo que permite el apilamiento.
+
+#### Implementacion en C++
+
+En C++ moderno se implementa con `std::unique_ptr` para transferencia de propiedad:
+
+```cpp
+class DecoradorBase : public IComponente {
+protected:
+    std::unique_ptr<IComponente> envuelto_;
+public:
+    explicit DecoradorBase(std::unique_ptr<IComponente> comp)
+        : envuelto_(std::move(comp)) {}
+
+    void operacion() override {
+        envuelto_->operacion(); // Delegar al envuelto
+    }
+};
+
+class DecoradorConcreto : public DecoradorBase {
+public:
+    using DecoradorBase::DecoradorBase;
+
+    void operacion() override {
+        // Comportamiento adicional ANTES
+        DecoradorBase::operacion(); // Delegar
+        // Comportamiento adicional DESPUES
+    }
+};
+```
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+- **Composicion sobre herencia:** Extiende comportamiento sin crear subclases.
+- **Combinacion libre:** Puedes combinar decoradores en cualquier orden y cantidad.
+- **Principio de responsabilidad unica:** Cada decorador tiene una responsabilidad clara.
+- **Tiempo de ejecucion:** Las combinaciones se deciden dinamicamente, no en tiempo de compilacion.
+
+##### Desventajas
+- **Complejidad de configuracion:** Crear una pila de decoradores puede ser verboso.
+- **Dificil de depurar:** Una pila profunda de decoradores hace el debugging mas complejo.
+- **Orden importa:** El orden en que se aplican los decoradores puede afectar el resultado.
+- **Identidad:** Un componente decorado no es identico al original (`==` puede fallar).
+
+#### Aplicacion en Qt
+
+Qt utiliza el patron Decorator en varios componentes:
+
+- **`QScrollArea`:** Decora cualquier widget agregandole barras de desplazamiento. El widget original no sabe que esta siendo decorado. `QScrollArea::setWidget(miWidget)` envuelve `miWidget` con funcionalidad de scroll.
+
+- **`QProxyStyle`:** Permite decorar el estilo visual de la aplicacion. Puedes sobreescribir solo los metodos de dibujo que quieras cambiar y delegar el resto al estilo base. Es un decorador puro.
+
+- **`QAbstractProxyModel`:** Decora modelos de datos agregando funcionalidad (filtrado, ordenamiento, transformacion) sin modificar el modelo original.
+
+- **Event Filters (Filtros de eventos):** `QObject::installEventFilter()` es una forma de Decorator. Puedes agregar multiples filtros que procesan eventos antes de que lleguen al objeto original.
+
+> **Nota:** En QML, los `Behavior` y `Transition` actuan como decoradores que agregan animaciones al comportamiento de las propiedades sin modificar la logica del componente.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// === Componente: Interfaz de bebida ===
+class IBebida {
+public:
+    virtual ~IBebida() = default;
+    virtual std::string descripcion() const = 0;
+    virtual double precio() const = 0;
+};
+
+// === Componente Concreto: Bebidas base ===
+class Cafe : public IBebida {
+public:
+    std::string descripcion() const override { return "Cafe"; }
+    double precio() const override { return 25.0; }
+};
+
+class Te : public IBebida {
+public:
+    std::string descripcion() const override { return "Te"; }
+    double precio() const override { return 20.0; }
+};
+
+// === Decorador Base ===
+class DecoradorBebida : public IBebida {
+protected:
+    std::unique_ptr<IBebida> bebida_;
+public:
+    explicit DecoradorBebida(std::unique_ptr<IBebida> bebida)
+        : bebida_(std::move(bebida)) {}
+
+    std::string descripcion() const override { return bebida_->descripcion(); }
+    double precio() const override { return bebida_->precio(); }
+};
+
+// === Decoradores Concretos ===
+class ConLeche : public DecoradorBebida {
+public:
+    using DecoradorBebida::DecoradorBebida;
+
+    std::string descripcion() const override {
+        return bebida_->descripcion() + " + Leche";
+    }
+    double precio() const override {
+        return bebida_->precio() + 8.0;
+    }
+};
+
+class ConAzucar : public DecoradorBebida {
+public:
+    using DecoradorBebida::DecoradorBebida;
+
+    std::string descripcion() const override {
+        return bebida_->descripcion() + " + Azucar";
+    }
+    double precio() const override {
+        return bebida_->precio() + 3.0;
+    }
+};
+
+class ConChocolate : public DecoradorBebida {
+public:
+    using DecoradorBebida::DecoradorBebida;
+
+    std::string descripcion() const override {
+        return bebida_->descripcion() + " + Chocolate";
+    }
+    double precio() const override {
+        return bebida_->precio() + 12.0;
+    }
+};
+
+// Funcion auxiliar para mostrar la orden
+void mostrarOrden(const IBebida& bebida) {
+    std::cout << "  " << bebida.descripcion()
+              << " -> $" << bebida.precio() << std::endl;
+}
+
+int main() {
+    std::cout << "=== Cafeteria (Patron Decorator) ===" << std::endl;
+
+    // Cafe simple
+    auto cafe = std::make_unique<Cafe>();
+    std::cout << "\nOrden 1:" << std::endl;
+    mostrarOrden(*cafe);
+
+    // Cafe con leche (un decorador)
+    auto cafeConLeche = std::make_unique<ConLeche>(std::move(cafe));
+    std::cout << "\nOrden 2:" << std::endl;
+    mostrarOrden(*cafeConLeche);
+
+    // Cafe con leche, azucar y chocolate (apilando decoradores)
+    auto cafeCompleto = std::make_unique<ConChocolate>(
+        std::make_unique<ConAzucar>(
+            std::make_unique<ConLeche>(
+                std::make_unique<Cafe>()
+            )
+        )
+    );
+    std::cout << "\nOrden 3:" << std::endl;
+    mostrarOrden(*cafeCompleto);
+
+    // Te con azucar
+    auto teConAzucar = std::make_unique<ConAzucar>(
+        std::make_unique<Te>()
+    );
+    std::cout << "\nOrden 4:" << std::endl;
+    mostrarOrden(*teConAzucar);
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Cafeteria (Patron Decorator) ===
+
+Orden 1:
+  Cafe -> $25
+
+Orden 2:
+  Cafe + Leche -> $33
+
+Orden 3:
+  Cafe + Leche + Azucar + Chocolate -> $48
+
+Orden 4:
+  Te + Azucar -> $23
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+// === Componente: Interfaz de flujo de datos ===
+class IFlujoTexto {
+public:
+    virtual ~IFlujoTexto() = default;
+    virtual std::string procesar(const std::string& datos) const = 0;
+    virtual std::string descripcion() const = 0;
+};
+
+// === Componente Concreto: Flujo base (sin transformacion) ===
+class FlujoBase : public IFlujoTexto {
+public:
+    std::string procesar(const std::string& datos) const override {
+        return datos; // Pasa los datos sin modificacion
+    }
+    std::string descripcion() const override { return "FlujoBase"; }
+};
+
+// === Decorador Base ===
+class DecoradorFlujo : public IFlujoTexto {
+protected:
+    std::unique_ptr<IFlujoTexto> flujoInterno_;
+public:
+    explicit DecoradorFlujo(std::unique_ptr<IFlujoTexto> flujo)
+        : flujoInterno_(std::move(flujo)) {}
+
+    std::string procesar(const std::string& datos) const override {
+        return flujoInterno_->procesar(datos);
+    }
+    std::string descripcion() const override {
+        return flujoInterno_->descripcion();
+    }
+};
+
+// === Decorador: Cifrado simple (XOR con clave) ===
+class DecoradorCifrado : public DecoradorFlujo {
+    char clave_;
+public:
+    DecoradorCifrado(std::unique_ptr<IFlujoTexto> flujo, char clave = 'K')
+        : DecoradorFlujo(std::move(flujo)), clave_(clave) {}
+
+    std::string procesar(const std::string& datos) const override {
+        // Primero procesar con el flujo interno
+        std::string procesado = flujoInterno_->procesar(datos);
+
+        // Luego aplicar cifrado XOR
+        std::string cifrado = procesado;
+        for (char& c : cifrado) {
+            c ^= clave_;
+        }
+
+        // Mostrar como hexadecimal para legibilidad
+        std::ostringstream hex;
+        hex << std::hex << std::setfill('0');
+        for (unsigned char c : cifrado) {
+            hex << std::setw(2) << static_cast<int>(c) << " ";
+        }
+        return hex.str();
+    }
+
+    std::string descripcion() const override {
+        return flujoInterno_->descripcion() + " -> Cifrado";
+    }
+};
+
+// === Decorador: Compresion (Run-Length Encoding simple) ===
+class DecoradorCompresion : public DecoradorFlujo {
+public:
+    using DecoradorFlujo::DecoradorFlujo;
+
+    std::string procesar(const std::string& datos) const override {
+        std::string procesado = flujoInterno_->procesar(datos);
+
+        // Aplicar RLE simple
+        if (procesado.empty()) return procesado;
+        std::string comprimido;
+        char actual = procesado[0];
+        int conteo = 1;
+
+        for (size_t i = 1; i < procesado.size(); ++i) {
+            if (procesado[i] == actual) {
+                conteo++;
+            } else {
+                comprimido += actual;
+                if (conteo > 1) comprimido += std::to_string(conteo);
+                actual = procesado[i];
+                conteo = 1;
+            }
+        }
+        comprimido += actual;
+        if (conteo > 1) comprimido += std::to_string(conteo);
+
+        return comprimido;
+    }
+
+    std::string descripcion() const override {
+        return flujoInterno_->descripcion() + " -> Compresion";
+    }
+};
+
+// === Decorador: Logging ===
+class DecoradorLog : public DecoradorFlujo {
+    std::string etiqueta_;
+public:
+    DecoradorLog(std::unique_ptr<IFlujoTexto> flujo, const std::string& etiqueta)
+        : DecoradorFlujo(std::move(flujo)), etiqueta_(etiqueta) {}
+
+    std::string procesar(const std::string& datos) const override {
+        std::cout << "    [LOG:" << etiqueta_ << "] Entrada (" << datos.size()
+                  << " bytes): \"" << datos.substr(0, 40) << "\"" << std::endl;
+
+        std::string resultado = flujoInterno_->procesar(datos);
+
+        std::cout << "    [LOG:" << etiqueta_ << "] Salida  (" << resultado.size()
+                  << " bytes): \"" << resultado.substr(0, 40) << "\"" << std::endl;
+
+        return resultado;
+    }
+
+    std::string descripcion() const override {
+        return flujoInterno_->descripcion() + " -> Log";
+    }
+};
+
+// === Decorador: Mayusculas ===
+class DecoradorMayusculas : public DecoradorFlujo {
+public:
+    using DecoradorFlujo::DecoradorFlujo;
+
+    std::string procesar(const std::string& datos) const override {
+        std::string procesado = flujoInterno_->procesar(datos);
+        std::string resultado = procesado;
+        for (char& c : resultado) {
+            c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        }
+        return resultado;
+    }
+
+    std::string descripcion() const override {
+        return flujoInterno_->descripcion() + " -> Mayusculas";
+    }
+};
+
+int main() {
+    std::string texto = "aaabbbcccddd Hola Mundo!!!";
+
+    // Pipeline 1: Solo compresion
+    std::cout << "=== Pipeline 1: Compresion ===" << std::endl;
+    auto p1 = std::make_unique<DecoradorCompresion>(
+        std::make_unique<FlujoBase>()
+    );
+    std::cout << "  Cadena: " << p1->descripcion() << std::endl;
+    std::cout << "  Resultado: " << p1->procesar(texto) << std::endl;
+
+    // Pipeline 2: Mayusculas + Compresion
+    std::cout << "\n=== Pipeline 2: Mayusculas + Compresion ===" << std::endl;
+    auto p2 = std::make_unique<DecoradorCompresion>(
+        std::make_unique<DecoradorMayusculas>(
+            std::make_unique<FlujoBase>()
+        )
+    );
+    std::cout << "  Cadena: " << p2->descripcion() << std::endl;
+    std::cout << "  Resultado: " << p2->procesar(texto) << std::endl;
+
+    // Pipeline 3: Log + Mayusculas + Log + Compresion
+    std::cout << "\n=== Pipeline 3: Con Logging ===" << std::endl;
+    auto p3 = std::make_unique<DecoradorLog>(
+        std::make_unique<DecoradorCompresion>(
+            std::make_unique<DecoradorLog>(
+                std::make_unique<DecoradorMayusculas>(
+                    std::make_unique<FlujoBase>()
+                ), "post-mayusc"
+            )
+        ), "final"
+    );
+    std::cout << "  Cadena: " << p3->descripcion() << std::endl;
+    std::string resultado = p3->procesar(texto);
+    std::cout << "  Resultado final: " << resultado << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Pipeline 1: Compresion ===
+  Cadena: FlujoBase -> Compresion
+  Resultado: a3b3c3d3 Hola Mundo!3
+
+=== Pipeline 2: Mayusculas + Compresion ===
+  Cadena: FlujoBase -> Mayusculas -> Compresion
+  Resultado: A3B3C3D3 HOLA MUNDO!3
+
+=== Pipeline 3: Con Logging ===
+  Cadena: FlujoBase -> Mayusculas -> Log -> Compresion -> Log
+    [LOG:final] Entrada (25 bytes): "aaabbbcccddd Hola Mundo!!!"
+    [LOG:post-mayusc] Entrada (25 bytes): "aaabbbcccddd Hola Mundo!!!"
+    [LOG:post-mayusc] Salida  (25 bytes): "AAABBBCCCDDD HOLA MUNDO!!!"
+    [LOG:final] Salida  (21 bytes): "A3B3C3D3 HOLA MUNDO!3"
+  Resultado final: A3B3C3D3 HOLA MUNDO!3
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QApplication>
+#include <QProxyStyle>
+#include <QPainter>
+#include <QStyleOption>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QDebug>
+
+// =====================================================
+// Demostracion del Decorator en Qt: QProxyStyle
+//
+// QProxyStyle es un decorador puro: envuelve un estilo
+// base y permite sobreescribir solo los metodos que
+// quieras, delegando el resto al estilo original.
+// =====================================================
+
+// === Decorador 1: Agrega borde redondeado a los botones ===
+class EstiloBordeRedondeado : public QProxyStyle {
+public:
+    explicit EstiloBordeRedondeado(QStyle* estiloBase = nullptr)
+        : QProxyStyle(estiloBase) {}
+
+    void drawControl(ControlElement elemento, const QStyleOption* opcion,
+                     QPainter* painter, const QWidget* widget) const override {
+        if (elemento == CE_PushButtonBevel) {
+            // Dibujar boton con bordes redondeados
+            painter->save();
+            painter->setRenderHint(QPainter::Antialiasing);
+            painter->setPen(QPen(QColor("#3498db"), 2));
+            painter->setBrush(QColor("#ecf0f1"));
+
+            if (opcion->state & State_MouseOver) {
+                painter->setBrush(QColor("#d5e8f5"));
+            }
+            if (opcion->state & State_Sunken) {
+                painter->setBrush(QColor("#bdc3c7"));
+            }
+
+            painter->drawRoundedRect(opcion->rect.adjusted(1, 1, -1, -1), 10, 10);
+            painter->restore();
+        } else {
+            // Delegar al estilo base para todo lo demas
+            QProxyStyle::drawControl(elemento, opcion, painter, widget);
+        }
+    }
+
+    // Personalizar tamanio del boton
+    QSize sizeFromContents(ContentsType tipo, const QStyleOption* opcion,
+                           const QSize& tamanio, const QWidget* widget) const override {
+        QSize s = QProxyStyle::sizeFromContents(tipo, opcion, tamanio, widget);
+        if (tipo == CT_PushButton) {
+            s.setHeight(qMax(s.height(), 45)); // Altura minima de 45px
+            s.rwidth() += 20; // Agregar padding horizontal
+        }
+        return s;
+    }
+};
+
+// === Decorador 2: Agrega icono de estado a los botones ===
+class EstiloConIcono : public QProxyStyle {
+public:
+    explicit EstiloConIcono(QStyle* estiloBase = nullptr)
+        : QProxyStyle(estiloBase) {}
+
+    void drawControl(ControlElement elemento, const QStyleOption* opcion,
+                     QPainter* painter, const QWidget* widget) const override {
+        // Primero delegar al estilo base (que puede ser otro decorador)
+        QProxyStyle::drawControl(elemento, opcion, painter, widget);
+
+        // Agregar indicador visual despues del dibujo base
+        if (elemento == CE_PushButtonLabel) {
+            painter->save();
+            painter->setPen(QPen(QColor("#2ecc71"), 2));
+
+            // Dibujar un pequenio circulo verde como indicador
+            int radio = 5;
+            int x = opcion->rect.right() - radio - 8;
+            int y = opcion->rect.center().y();
+            painter->setBrush(QColor("#2ecc71"));
+            painter->drawEllipse(QPoint(x, y), radio, radio);
+
+            painter->restore();
+        }
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+
+    qDebug() << "=== Decorator con QProxyStyle ===";
+    qDebug() << "QProxyStyle envuelve el estilo base y agrega funcionalidad.";
+    qDebug() << "Se pueden apilar estilos como decoradores.\n";
+
+    // Crear ventana con botones
+    QWidget ventana;
+    ventana.setWindowTitle("Decorator: QProxyStyle");
+    ventana.setFixedSize(300, 200);
+
+    auto* layout = new QVBoxLayout(&ventana);
+
+    auto* btn1 = new QPushButton("Boton Normal");
+    auto* btn2 = new QPushButton("Boton Decorado");
+    auto* btn3 = new QPushButton("Boton Doble Decorador");
+
+    layout->addWidget(btn1);
+    layout->addWidget(btn2);
+    layout->addWidget(btn3);
+
+    // Aplicar decoradores
+    // btn1 usa el estilo por defecto (sin decorar)
+
+    // btn2: un decorador (borde redondeado)
+    btn2->setStyle(new EstiloBordeRedondeado());
+
+    // btn3: dos decoradores apilados (borde redondeado + icono)
+    // EstiloConIcono decora a EstiloBordeRedondeado
+    auto* estiloBase = new EstiloBordeRedondeado();
+    btn3->setStyle(new EstiloConIcono(estiloBase));
+
+    qDebug() << "btn1: Estilo por defecto";
+    qDebug() << "btn2: + EstiloBordeRedondeado";
+    qDebug() << "btn3: + EstiloBordeRedondeado + EstiloConIcono";
+
+    ventana.show();
+    return app.exec();
+}
+```
+<---Ejemplo con Qt Result--->
+=== Decorator con QProxyStyle ===
+QProxyStyle envuelve el estilo base y agrega funcionalidad.
+Se pueden apilar estilos como decoradores.
+
+btn1: Estilo por defecto
+btn2: + EstiloBordeRedondeado
+btn3: + EstiloBordeRedondeado + EstiloConIcono

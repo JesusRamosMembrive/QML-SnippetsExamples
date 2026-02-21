@@ -1,0 +1,565 @@
+<---EXPLANATION--->
+### Patrón Strategy (Estrategia)
+
+El patrón **Strategy** es un patrón de diseño de comportamiento que permite definir una familia de algoritmos, encapsular cada uno en una clase separada y hacerlos intercambiables. Este patrón permite que el algoritmo varíe independientemente de los clientes que lo usan. En lugar de implementar un algoritmo directamente dentro de una clase, la clase delega la ejecución a un objeto de estrategia que puede ser cambiado en tiempo de ejecución.
+
+#### Problema
+
+Imagina que estás desarrollando un sistema de navegación que necesita calcular rutas. Inicialmente solo soportas rutas en automóvil, pero luego necesitas añadir rutas a pie, en bicicleta y en transporte público. Sin el patrón Strategy:
+
+- Terminarías con una clase monolítica llena de condicionales `if/else` o `switch` para cada tipo de ruta.
+- Cada vez que añades un nuevo algoritmo de ruta, debes modificar la clase existente, violando el **Principio Abierto/Cerrado**.
+- El código se vuelve difícil de probar porque todos los algoritmos están mezclados en una sola clase.
+- Es imposible reutilizar un algoritmo individual en otro contexto.
+
+#### Solución
+
+El patrón Strategy propone extraer cada algoritmo a su propia clase con una interfaz común:
+
+1. Se define una **interfaz de estrategia** que declara el método común a todos los algoritmos.
+2. Cada **estrategia concreta** implementa una variante del algoritmo.
+3. El **contexto** mantiene una referencia a la estrategia actual y delega el trabajo a ella.
+4. El cliente puede cambiar la estrategia del contexto en tiempo de ejecución.
+
+```cpp
+// La estrategia se puede cambiar dinámicamente
+contexto->establecerEstrategia(std::make_unique<RutaEnBicicleta>());
+contexto->calcularRuta(origen, destino);
+```
+
+#### Estructura
+
+Los componentes principales del patrón Strategy son:
+
+- **Strategy (Estrategia):** Interfaz común para todos los algoritmos soportados. Declara un método que el contexto usa para ejecutar la estrategia.
+- **ConcreteStrategy (Estrategia Concreta):** Implementa el algoritmo usando la interfaz de Strategy. Puede haber múltiples estrategias concretas.
+- **Context (Contexto):** Mantiene una referencia al objeto Strategy. No conoce la clase concreta de la estrategia; trabaja con todas las estrategias a través de la interfaz.
+
+#### Implementación en C++
+
+En C++ moderno existen dos enfoques principales:
+
+##### Enfoque clásico con polimorfismo
+
+Se usa una clase base abstracta y `std::unique_ptr` para la composición:
+
+```cpp
+class IEstrategia {
+public:
+    virtual ~IEstrategia() = default;
+    virtual int ejecutar(int a, int b) const = 0;
+};
+
+class Contexto {
+    std::unique_ptr<IEstrategia> estrategia_;
+public:
+    void establecer(std::unique_ptr<IEstrategia> e) {
+        estrategia_ = std::move(e);
+    }
+    int ejecutar(int a, int b) {
+        return estrategia_->ejecutar(a, b);
+    }
+};
+```
+
+##### Enfoque moderno con `std::function`
+
+Para estrategias simples, `std::function` evita crear clases adicionales:
+
+```cpp
+class Contexto {
+    std::function<int(int, int)> estrategia_;
+public:
+    void establecer(std::function<int(int, int)> e) {
+        estrategia_ = std::move(e);
+    }
+    int ejecutar(int a, int b) { return estrategia_(a, b); }
+};
+```
+
+#### Ventajas y Desventajas
+
+**Ventajas:**
+
+- **Intercambio en tiempo de ejecución:** Se pueden cambiar los algoritmos dinámicamente.
+- **Aislamiento:** El código del algoritmo está separado del contexto y de otros algoritmos.
+- **Principio Abierto/Cerrado:** Se pueden añadir nuevas estrategias sin modificar el contexto.
+- **Elimina condicionales:** Reemplaza cadenas de `if/else` o `switch` con polimorfismo.
+- **Testabilidad:** Cada estrategia se puede probar de forma aislada.
+
+**Desventajas:**
+
+- **Complejidad adicional:** Si solo tienes dos o tres algoritmos que raramente cambian, el patrón puede ser excesivo.
+- **El cliente debe conocer las diferencias:** El código cliente necesita saber qué estrategia elegir.
+- **Sobrecarga de clases:** Muchas estrategias pequeñas pueden proliferar el número de clases (mitigado con `std::function` y lambdas).
+
+#### Aplicación en Qt
+
+Qt utiliza el patrón Strategy en varios lugares del framework:
+
+- **`QValidator`:** Define diferentes reglas de validación para campos de entrada. `QIntValidator`, `QDoubleValidator`, `QRegularExpressionValidator` son estrategias concretas intercambiables.
+- **`QSortFilterProxyModel::lessThan()`:** Permite definir la estrategia de ordenación sobrescribiendo el método `lessThan()`. Diferentes implementaciones producen diferentes criterios de ordenación.
+- **`QTextCodec`:** Diferentes codecs para diferentes estrategias de codificación/decodificación de texto.
+- **`QStyle`:** Todo el sistema de estilos de Qt es Strategy: `QWindowsStyle`, `QFusionStyle`, etc., son estrategias intercambiables para renderizar controles.
+
+> **Nota:** En QML, el patrón Strategy se aplica naturalmente asignando funciones JavaScript como propiedades o usando `Component` dinámicos como estrategias intercambiables.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Interfaz de estrategia para ordenamiento
+class IEstrategiaOrden {
+public:
+    virtual ~IEstrategiaOrden() = default;
+    virtual void ordenar(std::vector<int>& datos) const = 0;
+    virtual std::string nombre() const = 0;
+};
+
+// Estrategia concreta: Ordenamiento burbuja
+class OrdenBurbuja : public IEstrategiaOrden {
+public:
+    void ordenar(std::vector<int>& datos) const override {
+        for (std::size_t i = 0; i < datos.size(); ++i) {
+            for (std::size_t j = 0; j < datos.size() - i - 1; ++j) {
+                if (datos[j] > datos[j + 1]) {
+                    std::swap(datos[j], datos[j + 1]);
+                }
+            }
+        }
+    }
+    std::string nombre() const override { return "Burbuja"; }
+};
+
+// Estrategia concreta: Ordenamiento por selección
+class OrdenSeleccion : public IEstrategiaOrden {
+public:
+    void ordenar(std::vector<int>& datos) const override {
+        for (std::size_t i = 0; i < datos.size(); ++i) {
+            std::size_t minIdx = i;
+            for (std::size_t j = i + 1; j < datos.size(); ++j) {
+                if (datos[j] < datos[minIdx]) {
+                    minIdx = j;
+                }
+            }
+            std::swap(datos[i], datos[minIdx]);
+        }
+    }
+    std::string nombre() const override { return "Seleccion"; }
+};
+
+// Contexto que usa la estrategia
+class Ordenador {
+private:
+    std::unique_ptr<IEstrategiaOrden> estrategia_;
+
+public:
+    void establecerEstrategia(std::unique_ptr<IEstrategiaOrden> estrategia) {
+        estrategia_ = std::move(estrategia);
+    }
+
+    void ordenar(std::vector<int>& datos) {
+        if (!estrategia_) {
+            std::cout << "No hay estrategia establecida!" << std::endl;
+            return;
+        }
+        std::cout << "Ordenando con: " << estrategia_->nombre() << std::endl;
+        estrategia_->ordenar(datos);
+    }
+};
+
+// Función auxiliar para imprimir vector
+void imprimir(const std::vector<int>& datos) {
+    for (int d : datos) {
+        std::cout << d << " ";
+    }
+    std::cout << std::endl;
+}
+
+int main() {
+    std::vector<int> datos = {64, 25, 12, 22, 11};
+
+    Ordenador ordenador;
+
+    // Usar estrategia de burbuja
+    std::cout << "Datos originales: ";
+    imprimir(datos);
+
+    ordenador.establecerEstrategia(std::make_unique<OrdenBurbuja>());
+    ordenador.ordenar(datos);
+    std::cout << "Resultado: ";
+    imprimir(datos);
+
+    // Cambiar a estrategia de selección
+    datos = {64, 25, 12, 22, 11};
+    std::cout << "\nDatos originales: ";
+    imprimir(datos);
+
+    ordenador.establecerEstrategia(std::make_unique<OrdenSeleccion>());
+    ordenador.ordenar(datos);
+    std::cout << "Resultado: ";
+    imprimir(datos);
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+Datos originales: 64 25 12 22 11
+Ordenando con: Burbuja
+Resultado: 11 12 22 25 64
+
+Datos originales: 64 25 12 22 11
+Ordenando con: Seleccion
+Resultado: 11 12 22 25 64
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+#include <cmath>
+#include <numeric>
+#include <algorithm>
+
+// Sistema de cálculo de precios con diferentes estrategias de descuento
+// Usa std::function para mayor flexibilidad (enfoque moderno)
+
+struct Producto {
+    std::string nombre;
+    double precio;
+    int cantidad;
+};
+
+// Tipo de la estrategia de descuento
+using EstrategiaDescuento = std::function<double(const std::vector<Producto>&)>;
+
+// Estrategias como funciones lambda o funciones normales
+
+// Estrategia 1: Sin descuento
+EstrategiaDescuento sinDescuento() {
+    return [](const std::vector<Producto>& productos) -> double {
+        double total = 0.0;
+        for (const auto& p : productos) {
+            total += p.precio * p.cantidad;
+        }
+        return total;
+    };
+}
+
+// Estrategia 2: Descuento porcentual fijo
+EstrategiaDescuento descuentoPorcentual(double porcentaje) {
+    return [porcentaje](const std::vector<Producto>& productos) -> double {
+        double total = 0.0;
+        for (const auto& p : productos) {
+            total += p.precio * p.cantidad;
+        }
+        return total * (1.0 - porcentaje / 100.0);
+    };
+}
+
+// Estrategia 3: Descuento por volumen (más cantidad = más descuento)
+EstrategiaDescuento descuentoVolumen() {
+    return [](const std::vector<Producto>& productos) -> double {
+        double total = 0.0;
+        for (const auto& p : productos) {
+            double descuento = 0.0;
+            if (p.cantidad >= 10) descuento = 0.15;       // 15% por 10+
+            else if (p.cantidad >= 5) descuento = 0.10;   // 10% por 5+
+            else if (p.cantidad >= 3) descuento = 0.05;   // 5% por 3+
+            total += p.precio * p.cantidad * (1.0 - descuento);
+        }
+        return total;
+    };
+}
+
+// Estrategia 4: Descuento "segundo a mitad de precio"
+EstrategiaDescuento segundoMitadPrecio() {
+    return [](const std::vector<Producto>& productos) -> double {
+        double total = 0.0;
+        for (const auto& p : productos) {
+            int precioCompleto = (p.cantidad + 1) / 2;  // Mitad redondeada arriba
+            int mitadPrecio = p.cantidad / 2;            // Mitad redondeada abajo
+            total += p.precio * precioCompleto + (p.precio * 0.5) * mitadPrecio;
+        }
+        return total;
+    };
+}
+
+// Contexto: Carrito de compras
+class CarritoCompras {
+private:
+    std::vector<Producto> productos_;
+    EstrategiaDescuento estrategia_;
+    std::string nombreEstrategia_;
+
+public:
+    void agregarProducto(const std::string& nombre, double precio, int cantidad) {
+        productos_.push_back({nombre, precio, cantidad});
+    }
+
+    void establecerEstrategia(EstrategiaDescuento estrategia,
+                               const std::string& nombre) {
+        estrategia_ = std::move(estrategia);
+        nombreEstrategia_ = nombre;
+    }
+
+    void mostrarResumen() const {
+        std::cout << "=== Carrito de Compras ===" << std::endl;
+        std::cout << "Estrategia: " << nombreEstrategia_ << std::endl;
+        std::cout << "--------------------------" << std::endl;
+
+        for (const auto& p : productos_) {
+            std::cout << p.nombre << " x" << p.cantidad
+                      << " @ $" << p.precio << std::endl;
+        }
+
+        double subtotal = 0.0;
+        for (const auto& p : productos_) {
+            subtotal += p.precio * p.cantidad;
+        }
+
+        double total = estrategia_(productos_);
+        double ahorro = subtotal - total;
+
+        std::cout << "--------------------------" << std::endl;
+        std::cout << "Subtotal:  $" << subtotal << std::endl;
+        std::cout << "Descuento: -$" << ahorro << std::endl;
+        std::cout << "Total:     $" << total << std::endl;
+        std::cout << std::endl;
+    }
+};
+
+int main() {
+    CarritoCompras carrito;
+    carrito.agregarProducto("Camiseta", 25.0, 4);
+    carrito.agregarProducto("Pantalon", 50.0, 2);
+    carrito.agregarProducto("Calcetines", 5.0, 10);
+
+    // Probar diferentes estrategias sin modificar el carrito
+    carrito.establecerEstrategia(sinDescuento(), "Sin descuento");
+    carrito.mostrarResumen();
+
+    carrito.establecerEstrategia(descuentoPorcentual(20.0), "20% descuento");
+    carrito.mostrarResumen();
+
+    carrito.establecerEstrategia(descuentoVolumen(), "Descuento por volumen");
+    carrito.mostrarResumen();
+
+    carrito.establecerEstrategia(segundoMitadPrecio(), "2do a mitad de precio");
+    carrito.mostrarResumen();
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Carrito de Compras ===
+Estrategia: Sin descuento
+--------------------------
+Camiseta x4 @ $25
+Pantalon x2 @ $50
+Calcetines x10 @ $5
+--------------------------
+Subtotal:  $250
+Descuento: -$0
+Total:     $250
+
+=== Carrito de Compras ===
+Estrategia: 20% descuento
+--------------------------
+Camiseta x4 @ $25
+Pantalon x2 @ $50
+Calcetines x10 @ $5
+--------------------------
+Subtotal:  $250
+Descuento: -$50
+Total:     $200
+
+=== Carrito de Compras ===
+Estrategia: Descuento por volumen
+--------------------------
+Camiseta x4 @ $25
+Pantalon x2 @ $50
+Calcetines x10 @ $5
+--------------------------
+Subtotal:  $250
+Descuento: -$12.5
+Total:     $237.5
+
+=== Carrito de Compras ===
+Estrategia: 2do a mitad de precio
+--------------------------
+Camiseta x4 @ $25
+Pantalon x2 @ $50
+Calcetines x10 @ $5
+--------------------------
+Subtotal:  $250
+Descuento: -$40
+Total:     $210
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QObject>
+#include <QDebug>
+#include <QValidator>
+#include <QIntValidator>
+#include <QDoubleValidator>
+#include <QRegularExpressionValidator>
+#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
+#include <QString>
+
+// ============================================================
+// Ejemplo: QValidator como patrón Strategy
+// Diferentes validadores = diferentes estrategias de validación
+// ============================================================
+
+// Clase que simula un campo de entrada con validación intercambiable
+class CampoEntrada : public QObject {
+    Q_OBJECT
+public:
+    explicit CampoEntrada(const QString& nombre, QObject* parent = nullptr)
+        : QObject(parent), nombre_(nombre), validador_(nullptr) {}
+
+    // Establecer la estrategia de validación (Strategy)
+    void establecerValidador(QValidator* validador) {
+        validador_ = validador;
+    }
+
+    // Validar un texto usando la estrategia actual
+    bool validar(const QString& texto) const {
+        if (!validador_) {
+            qDebug() << nombre_ << ": Sin validador, aceptando todo";
+            return true;
+        }
+
+        QString copia = texto;
+        int pos = 0;
+        QValidator::State resultado = validador_->validate(copia, pos);
+
+        switch (resultado) {
+        case QValidator::Acceptable:
+            qDebug() << nombre_ << ":" << texto << "-> VALIDO";
+            return true;
+        case QValidator::Intermediate:
+            qDebug() << nombre_ << ":" << texto << "-> PARCIAL";
+            return false;
+        case QValidator::Invalid:
+            qDebug() << nombre_ << ":" << texto << "-> INVALIDO";
+            return false;
+        }
+        return false;
+    }
+
+private:
+    QString nombre_;
+    QValidator* validador_;
+};
+
+// ============================================================
+// QSortFilterProxyModel con diferentes estrategias de ordenación
+// ============================================================
+
+// Estrategia: ordenar por longitud del texto
+class OrdenPorLongitud : public QSortFilterProxyModel {
+    Q_OBJECT
+public:
+    using QSortFilterProxyModel::QSortFilterProxyModel;
+
+protected:
+    // lessThan() es el "método estrategia" que redefinimos
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override {
+        QString izq = sourceModel()->data(left).toString();
+        QString der = sourceModel()->data(right).toString();
+        return izq.length() < der.length();
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // --- Ejemplo 1: QValidator como Strategy ---
+    qDebug() << "=== QValidator como Strategy ===";
+
+    CampoEntrada campoEdad("Edad");
+    CampoEntrada campoEmail("Email");
+    CampoEntrada campoPrecio("Precio");
+
+    // Estrategia 1: Validar enteros entre 0 y 150
+    QIntValidator validadorEdad(0, 150, nullptr);
+    campoEdad.establecerValidador(&validadorEdad);
+
+    // Estrategia 2: Validar formato de email con regex
+    QRegularExpressionValidator validadorEmail(
+        QRegularExpression(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"),
+        nullptr
+    );
+    campoEmail.establecerValidador(&validadorEmail);
+
+    // Estrategia 3: Validar decimales entre 0.01 y 9999.99
+    QDoubleValidator validadorPrecio(0.01, 9999.99, 2, nullptr);
+    campoPrecio.establecerValidador(&validadorPrecio);
+
+    // Probar validaciones
+    campoEdad.validar("25");
+    campoEdad.validar("200");
+    campoEdad.validar("abc");
+
+    campoEmail.validar("usuario@ejemplo.com");
+    campoEmail.validar("invalido");
+
+    campoPrecio.validar("49.99");
+    campoPrecio.validar("abc");
+
+    // --- Ejemplo 2: Modelo con diferentes estrategias de ordenación ---
+    qDebug() << "\n=== Ordenacion con Strategy ===";
+
+    QStandardItemModel modelo;
+    QStringList nombres = {"Ana", "Alejandro", "Bo", "Carolina", "Ed"};
+    for (const auto& nombre : nombres) {
+        modelo.appendRow(new QStandardItem(nombre));
+    }
+
+    // Estrategia: ordenar por longitud
+    OrdenPorLongitud proxyLongitud;
+    proxyLongitud.setSourceModel(&modelo);
+    proxyLongitud.sort(0);
+
+    qDebug() << "Ordenado por longitud:";
+    for (int i = 0; i < proxyLongitud.rowCount(); ++i) {
+        qDebug() << " " << proxyLongitud.data(proxyLongitud.index(i, 0)).toString();
+    }
+
+    return 0;
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+=== QValidator como Strategy ===
+Edad: "25" -> VALIDO
+Edad: "200" -> INVALIDO
+Edad: "abc" -> INVALIDO
+Email: "usuario@ejemplo.com" -> VALIDO
+Email: "invalido" -> INVALIDO
+Precio: "49.99" -> VALIDO
+Precio: "abc" -> INVALIDO
+
+=== Ordenacion con Strategy ===
+Ordenado por longitud:
+  "Bo"
+  "Ed"
+  "Ana"
+  "Carolina"
+  "Alejandro"

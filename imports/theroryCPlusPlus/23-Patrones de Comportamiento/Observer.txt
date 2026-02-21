@@ -1,0 +1,482 @@
+<---EXPLANATION--->
+### Patrón Observer (Observador)
+
+El patrón **Observer** es un patrón de diseño de comportamiento que define una relación de dependencia uno-a-muchos entre objetos, de manera que cuando un objeto (el **sujeto**) cambia de estado, todos sus dependientes (los **observadores**) son notificados y actualizados automáticamente. Este patrón es fundamental para implementar sistemas de eventos y es uno de los patrones más utilizados en el desarrollo de interfaces gráficas.
+
+#### Problema
+
+Imagina que tienes un sistema donde múltiples componentes necesitan reaccionar cuando ocurre un cambio en otro componente. Por ejemplo, una aplicación de datos financieros donde varios gráficos, tablas y alertas deben actualizarse cuando cambia el precio de una acción. Sin el patrón Observer, tendrías que:
+
+- Hacer **polling** constante (preguntar repetidamente si algo cambió), lo cual es ineficiente.
+- Acoplar fuertemente el emisor con todos los receptores, haciendo que el código sea difícil de mantener y extender.
+- Modificar el sujeto cada vez que se añade un nuevo componente interesado en sus cambios.
+
+#### Solución
+
+El patrón Observer resuelve esto estableciendo un mecanismo de **suscripción**:
+
+1. El **Sujeto** mantiene una lista de observadores suscritos.
+2. Cuando el estado del sujeto cambia, recorre la lista y notifica a cada observador.
+3. Los observadores pueden **suscribirse** y **desuscribirse** dinámicamente en tiempo de ejecución.
+4. El sujeto no necesita conocer los detalles concretos de sus observadores, solo su interfaz.
+
+```cpp
+// El sujeto notifica sin saber quién escucha
+sujeto->agregarObservador(observadorA);
+sujeto->agregarObservador(observadorB);
+sujeto->cambiarEstado("nuevo valor"); // Ambos son notificados
+```
+
+#### Estructura
+
+Los componentes principales del patrón Observer son:
+
+- **Subject (Sujeto):** Conoce a sus observadores y proporciona métodos para agregar, eliminar y notificar observadores. Mantiene el estado que los observadores desean monitorear.
+- **Observer (Observador):** Define una interfaz de actualización para los objetos que deben ser notificados de cambios en el sujeto.
+- **ConcreteSubject (Sujeto Concreto):** Almacena el estado de interés y envía notificaciones a sus observadores cuando su estado cambia.
+- **ConcreteObserver (Observador Concreto):** Implementa la interfaz Observer y reacciona a las notificaciones del sujeto concreto.
+
+#### Implementación en C++
+
+En C++ moderno, la implementación típica usa:
+
+- Una clase base abstracta `IObservador` con un método virtual puro `actualizar()`.
+- El sujeto almacena `std::vector<std::shared_ptr<IObservador>>` o `std::vector<std::weak_ptr<IObservador>>` (preferido para evitar ciclos de referencia).
+- Se puede usar `std::function` como alternativa más flexible a la interfaz de observador.
+
+```cpp
+// Interfaz del observador
+class IObservador {
+public:
+    virtual ~IObservador() = default;
+    virtual void actualizar(const std::string& mensaje) = 0;
+};
+
+// El sujeto mantiene la lista y notifica
+class Sujeto {
+    std::vector<std::weak_ptr<IObservador>> observadores_;
+public:
+    void notificar(const std::string& msg) {
+        for (auto& debil : observadores_) {
+            if (auto obs = debil.lock()) {
+                obs->actualizar(msg);
+            }
+        }
+    }
+};
+```
+
+#### Ventajas y Desventajas
+
+**Ventajas:**
+
+- **Bajo acoplamiento:** El sujeto y los observadores están débilmente acoplados. El sujeto solo conoce la interfaz `IObservador`.
+- **Extensibilidad:** Se pueden agregar nuevos observadores sin modificar el sujeto.
+- **Dinamismo:** Los observadores pueden suscribirse y desuscribirse en tiempo de ejecución.
+- **Principio Abierto/Cerrado:** El código está abierto a extensión pero cerrado a modificación.
+
+**Desventajas:**
+
+- **Orden de notificación:** No se garantiza un orden específico de notificación entre observadores.
+- **Actualizaciones en cascada:** Un cambio puede disparar una cadena de actualizaciones difícil de rastrear.
+- **Fugas de memoria:** Si los observadores no se desuscriben correctamente (usar `std::weak_ptr` mitiga esto).
+- **Rendimiento:** Con muchos observadores, la notificación puede ser costosa.
+
+#### Aplicación en Qt
+
+Qt implementa el patrón Observer de forma nativa a través de su sistema de **signals y slots**, que es una de las características más distintivas del framework:
+
+- **`signals/slots`:** Cada `QObject` puede emitir señales y conectar slots. `QObject::connect()` establece la relación observador-sujeto. Es thread-safe y type-safe.
+- **`Q_PROPERTY` con `NOTIFY`:** Las propiedades con señal NOTIFY implementan Observer automáticamente. Cuando una propiedad cambia y se emite la señal, todos los bindings de QML se actualizan.
+- **`QFileSystemWatcher`:** Observa cambios en archivos y directorios del sistema de archivos, emitiendo señales `fileChanged()` y `directoryChanged()`.
+
+> **Nota:** El sistema signals/slots de Qt es una implementación del patrón Observer mucho más robusta que la versión manual, ya que maneja automáticamente la desconexión cuando los objetos se destruyen, soporta conexiones entre hilos y permite conexiones por nombre en tiempo de ejecución.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <memory>
+#include <algorithm>
+
+// Interfaz del Observador
+class IObservador {
+public:
+    virtual ~IObservador() = default;
+    virtual void actualizar(const std::string& mensaje) = 0;
+};
+
+// Sujeto que mantiene y notifica observadores
+class Sujeto {
+private:
+    std::vector<std::shared_ptr<IObservador>> observadores_;
+    std::string estado_;
+
+public:
+    void agregar(std::shared_ptr<IObservador> obs) {
+        observadores_.push_back(obs);
+    }
+
+    void eliminar(std::shared_ptr<IObservador> obs) {
+        observadores_.erase(
+            std::remove(observadores_.begin(), observadores_.end(), obs),
+            observadores_.end()
+        );
+    }
+
+    void establecerEstado(const std::string& nuevoEstado) {
+        estado_ = nuevoEstado;
+        notificar();
+    }
+
+private:
+    void notificar() {
+        for (auto& obs : observadores_) {
+            obs->actualizar(estado_);
+        }
+    }
+};
+
+// Observador concreto: muestra el mensaje en consola
+class ObservadorConsola : public IObservador {
+private:
+    std::string nombre_;
+
+public:
+    ObservadorConsola(const std::string& nombre) : nombre_(nombre) {}
+
+    void actualizar(const std::string& mensaje) override {
+        std::cout << "[" << nombre_ << "] Notificado: " << mensaje << std::endl;
+    }
+};
+
+int main() {
+    Sujeto sujeto;
+
+    auto obs1 = std::make_shared<ObservadorConsola>("Observador A");
+    auto obs2 = std::make_shared<ObservadorConsola>("Observador B");
+    auto obs3 = std::make_shared<ObservadorConsola>("Observador C");
+
+    // Suscribir observadores
+    sujeto.agregar(obs1);
+    sujeto.agregar(obs2);
+    sujeto.agregar(obs3);
+
+    std::cout << "--- Primer cambio de estado ---" << std::endl;
+    sujeto.establecerEstado("Estado Activo");
+
+    // Eliminar un observador
+    sujeto.eliminar(obs2);
+
+    std::cout << "\n--- Segundo cambio (sin Observador B) ---" << std::endl;
+    sujeto.establecerEstado("Estado Inactivo");
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+--- Primer cambio de estado ---
+[Observador A] Notificado: Estado Activo
+[Observador B] Notificado: Estado Activo
+[Observador C] Notificado: Estado Activo
+
+--- Segundo cambio (sin Observador B) ---
+[Observador A] Notificado: Estado Inactivo
+[Observador C] Notificado: Estado Inactivo
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <memory>
+#include <functional>
+#include <unordered_map>
+#include <algorithm>
+
+// Sistema de eventos genérico con múltiples tipos de evento
+// Usa std::function para mayor flexibilidad
+
+enum class TipoEvento {
+    PrecioActualizado,
+    VolumenCambiado,
+    AlertaDisparada
+};
+
+// Evento con datos asociados
+struct Evento {
+    TipoEvento tipo;
+    std::string datos;
+    double valor;
+};
+
+// Gestor de eventos con suscripción por tipo
+class GestorEventos {
+public:
+    using ManejadorEvento = std::function<void(const Evento&)>;
+    using IdSuscripcion = int;
+
+private:
+    struct Suscripcion {
+        IdSuscripcion id;
+        ManejadorEvento manejador;
+    };
+
+    std::unordered_map<TipoEvento, std::vector<Suscripcion>> suscripciones_;
+    IdSuscripcion siguienteId_ = 0;
+
+public:
+    // Suscribirse a un tipo específico de evento
+    IdSuscripcion suscribir(TipoEvento tipo, ManejadorEvento manejador) {
+        IdSuscripcion id = siguienteId_++;
+        suscripciones_[tipo].push_back({id, std::move(manejador)});
+        return id;
+    }
+
+    // Desuscribirse usando el ID
+    void desuscribir(TipoEvento tipo, IdSuscripcion id) {
+        auto& subs = suscripciones_[tipo];
+        subs.erase(
+            std::remove_if(subs.begin(), subs.end(),
+                [id](const Suscripcion& s) { return s.id == id; }),
+            subs.end()
+        );
+    }
+
+    // Emitir evento a todos los suscriptores del tipo
+    void emitir(const Evento& evento) {
+        auto it = suscripciones_.find(evento.tipo);
+        if (it != suscripciones_.end()) {
+            for (auto& sub : it->second) {
+                sub.manejador(evento);
+            }
+        }
+    }
+};
+
+// Sujeto: Mercado de acciones
+class MercadoAcciones {
+private:
+    GestorEventos gestor_;
+    std::string simbolo_;
+    double precio_ = 0.0;
+    int volumen_ = 0;
+
+public:
+    MercadoAcciones(const std::string& simbolo) : simbolo_(simbolo) {}
+
+    GestorEventos& eventos() { return gestor_; }
+
+    void actualizarPrecio(double nuevoPrecio) {
+        double precioAnterior = precio_;
+        precio_ = nuevoPrecio;
+        gestor_.emitir({TipoEvento::PrecioActualizado, simbolo_, nuevoPrecio});
+
+        // Disparar alerta si el cambio es mayor al 5%
+        if (precioAnterior > 0) {
+            double cambio = std::abs(nuevoPrecio - precioAnterior) / precioAnterior * 100.0;
+            if (cambio > 5.0) {
+                gestor_.emitir({TipoEvento::AlertaDisparada,
+                    simbolo_ + " cambio significativo", cambio});
+            }
+        }
+    }
+
+    void actualizarVolumen(int nuevoVolumen) {
+        volumen_ = nuevoVolumen;
+        gestor_.emitir({TipoEvento::VolumenCambiado, simbolo_,
+            static_cast<double>(nuevoVolumen)});
+    }
+};
+
+int main() {
+    MercadoAcciones mercado("AAPL");
+
+    // Observador de precios (panel de cotización)
+    auto idPrecio = mercado.eventos().suscribir(
+        TipoEvento::PrecioActualizado,
+        [](const Evento& e) {
+            std::cout << "[Panel] " << e.datos
+                      << " precio: $" << e.valor << std::endl;
+        }
+    );
+
+    // Observador de volumen (analista)
+    mercado.eventos().suscribir(
+        TipoEvento::VolumenCambiado,
+        [](const Evento& e) {
+            std::cout << "[Analista] " << e.datos
+                      << " volumen: " << static_cast<int>(e.valor) << std::endl;
+        }
+    );
+
+    // Observador de alertas (sistema de alertas)
+    mercado.eventos().suscribir(
+        TipoEvento::AlertaDisparada,
+        [](const Evento& e) {
+            std::cout << "[ALERTA!] " << e.datos
+                      << " (" << e.valor << "%)" << std::endl;
+        }
+    );
+
+    std::cout << "--- Actualizaciones del mercado ---" << std::endl;
+    mercado.actualizarPrecio(150.0);
+    mercado.actualizarVolumen(1000000);
+    mercado.actualizarPrecio(155.0);  // Cambio ~3.3%, sin alerta
+    mercado.actualizarPrecio(170.0);  // Cambio ~9.7%, dispara alerta
+
+    // Desuscribir el panel de precios
+    mercado.eventos().desuscribir(TipoEvento::PrecioActualizado, idPrecio);
+    std::cout << "\n--- Sin panel de precios ---" << std::endl;
+    mercado.actualizarPrecio(180.0);  // Cambio ~5.9%, dispara alerta
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+--- Actualizaciones del mercado ---
+[Panel] AAPL precio: $150
+[Analista] AAPL volumen: 1000000
+[Panel] AAPL precio: $155
+[Panel] AAPL precio: $170
+[ALERTA!] AAPL cambio significativo (9.67742%)
+
+--- Sin panel de precios ---
+[ALERTA!] AAPL cambio significativo (5.88235%)
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QObject>
+#include <QDebug>
+#include <QTimer>
+#include <QFileSystemWatcher>
+
+// ============================================================
+// Ejemplo 1: Signals/Slots como Observer nativo de Qt
+// ============================================================
+
+// Sujeto: Sensor de temperatura
+class SensorTemperatura : public QObject {
+    Q_OBJECT
+    // Q_PROPERTY con NOTIFY implementa Observer automáticamente
+    Q_PROPERTY(double temperatura READ temperatura NOTIFY temperaturaChanged)
+
+public:
+    explicit SensorTemperatura(QObject* parent = nullptr)
+        : QObject(parent), temperatura_(20.0) {}
+
+    double temperatura() const { return temperatura_; }
+
+    // Simular lectura del sensor
+    void leer() {
+        // Simular cambio de temperatura
+        temperatura_ += (qrand() % 10 - 5) * 0.1;
+        emit temperaturaChanged(temperatura_);
+
+        if (temperatura_ > 25.0) {
+            emit alertaTemperatura("Temperatura alta: " +
+                QString::number(temperatura_, 'f', 1) + " C");
+        }
+    }
+
+signals:
+    void temperaturaChanged(double nuevaTemp);    // Signal = notificación Observer
+    void alertaTemperatura(const QString& mensaje);
+
+private:
+    double temperatura_;
+};
+
+// Observador 1: Pantalla de monitoreo
+class PantallaMonitoreo : public QObject {
+    Q_OBJECT
+public:
+    explicit PantallaMonitoreo(QObject* parent = nullptr)
+        : QObject(parent) {}
+
+public slots:
+    // Slot = método que reacciona a la notificación
+    void mostrarTemperatura(double temp) {
+        qDebug() << "[Pantalla] Temperatura actual:" << temp << "C";
+    }
+};
+
+// Observador 2: Sistema de alertas
+class SistemaAlertas : public QObject {
+    Q_OBJECT
+public:
+    explicit SistemaAlertas(QObject* parent = nullptr)
+        : QObject(parent) {}
+
+public slots:
+    void procesarAlerta(const QString& mensaje) {
+        qDebug() << "[ALERTA]" << mensaje;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // Crear sujeto y observadores
+    SensorTemperatura sensor;
+    PantallaMonitoreo pantalla;
+    SistemaAlertas alertas;
+
+    // Conectar signals/slots (suscribir observadores)
+    QObject::connect(&sensor, &SensorTemperatura::temperaturaChanged,
+                     &pantalla, &PantallaMonitoreo::mostrarTemperatura);
+    QObject::connect(&sensor, &SensorTemperatura::alertaTemperatura,
+                     &alertas, &SistemaAlertas::procesarAlerta);
+
+    // También podemos usar lambdas como observadores
+    QObject::connect(&sensor, &SensorTemperatura::temperaturaChanged,
+                     [](double temp) {
+        qDebug() << "[Logger] Registro:" << temp;
+    });
+
+    // Simular lecturas del sensor
+    qDebug() << "--- Lecturas del sensor ---";
+    for (int i = 0; i < 5; ++i) {
+        sensor.leer();
+    }
+
+    // ============================================================
+    // Ejemplo 2: QFileSystemWatcher como Observer de archivos
+    // ============================================================
+    QFileSystemWatcher watcher;
+    watcher.addPath("/tmp/config.txt");
+
+    QObject::connect(&watcher, &QFileSystemWatcher::fileChanged,
+                     [](const QString& ruta) {
+        qDebug() << "[FileWatcher] Archivo modificado:" << ruta;
+    });
+
+    // La notificación ocurre automáticamente cuando el archivo cambia
+
+    return 0; // No ejecutamos el event loop para este ejemplo
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+--- Lecturas del sensor ---
+[Pantalla] Temperatura actual: 19.7 C
+[Logger] Registro: 19.7
+[Pantalla] Temperatura actual: 20.1 C
+[Logger] Registro: 20.1
+[Pantalla] Temperatura actual: 19.8 C
+[Logger] Registro: 19.8
+[Pantalla] Temperatura actual: 20.3 C
+[Logger] Registro: 20.3
+[Pantalla] Temperatura actual: 20.0 C
+[Logger] Registro: 20.0

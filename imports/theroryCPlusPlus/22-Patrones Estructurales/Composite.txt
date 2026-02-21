@@ -1,0 +1,550 @@
+<---EXPLANATION--->
+### Patron Composite (Composicion)
+
+El patron **Composite** permite componer objetos en estructuras de arbol para representar jerarquias **parte-todo**. El cliente puede tratar objetos individuales y composiciones de objetos de manera uniforme a traves de una interfaz comun. Es ideal cuando tu modelo de datos puede representarse como un arbol donde hojas y ramas comparten comportamiento.
+
+#### Problema
+
+Imagina un sistema de archivos: tienes **archivos** (hojas) y **carpetas** (contenedores). Una carpeta puede contener archivos y otras carpetas. Quieres calcular el tamanio total de una carpeta, lo que implica sumar el tamanio de todos sus archivos y subcarpetas recursivamente. Sin Composite, necesitarias verificar el tipo de cada elemento antes de operar, generando codigo fragil lleno de condicionales `if/else` o `dynamic_cast`.
+
+Otros escenarios:
+- Menus con submenus anidados
+- Organizaciones jerarquicas (empresa > departamento > equipo > empleado)
+- Interfaces graficas con contenedores y widgets
+- Expresiones aritmeticas (operadores contienen operandos que pueden ser otros operadores)
+
+#### Solucion
+
+Composite define una interfaz comun (`Componente`) que tanto los elementos simples (`Hoja`) como los contenedores (`Compuesto`) implementan. El compuesto mantiene una coleccion de hijos y delega las operaciones a ellos recursivamente.
+
+```cpp
+class Componente {
+public:
+    virtual int operacion() const = 0; // Misma interfaz para hojas y compuestos
+};
+
+class Hoja : public Componente {
+    int operacion() const override { return valor_; }
+};
+
+class Compuesto : public Componente {
+    std::vector<std::shared_ptr<Componente>> hijos_;
+    int operacion() const override {
+        int total = 0;
+        for (auto& hijo : hijos_) total += hijo->operacion();
+        return total; // Delega recursivamente
+    }
+};
+```
+
+#### Estructura
+
+- **Component (Componente):** Interfaz comun que declara las operaciones para objetos simples y compuestos. Opcionalmente puede declarar metodos para acceder y gestionar hijos.
+- **Leaf (Hoja):** Elemento basico que no tiene hijos. Realiza el trabajo real.
+- **Composite (Compuesto):** Elemento que tiene hijos. Almacena componentes hijos y delega las operaciones a ellos. Implementa las operaciones de gestion de hijos (`agregar`, `eliminar`).
+- **Client (Cliente):** Trabaja con todos los elementos a traves de la interfaz Component, sin distinguir entre hojas y compuestos.
+
+##### Caracteristica Recursiva
+
+La clave del patron es que un `Composite` **es un** `Component` y **contiene** `Components`. Esta estructura recursiva permite construir arboles de profundidad arbitraria donde cada nodo se trata de la misma forma.
+
+#### Implementacion en C++
+
+En C++ se usa tipicamente `std::shared_ptr` o `std::unique_ptr` para manejar la propiedad de los hijos:
+
+```cpp
+class Compuesto : public Componente {
+    std::vector<std::shared_ptr<Componente>> hijos_;
+public:
+    void agregar(std::shared_ptr<Componente> hijo) {
+        hijos_.push_back(std::move(hijo));
+    }
+    void operacion() const override {
+        for (const auto& hijo : hijos_) {
+            hijo->operacion(); // Delegacion recursiva
+        }
+    }
+};
+```
+
+> **Nota:** Se prefiere `shared_ptr` cuando multiples composites pueden compartir hijos, y `unique_ptr` cuando la propiedad es exclusiva.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+- **Uniformidad:** El cliente trata hojas y compuestos de forma identica.
+- **Extensibilidad:** Es facil agregar nuevos tipos de componentes sin modificar el codigo existente.
+- **Simplicidad del cliente:** No necesita logica condicional para distinguir tipos.
+- **Estructuras arbitrarias:** Permite construir arboles de cualquier complejidad.
+
+##### Desventajas
+- **Dificultad para restringir tipos:** Es complicado limitar que tipos de componentes puede contener un compuesto.
+- **Interfaz inflada:** La interfaz comun puede incluir metodos que no tienen sentido para las hojas (como `agregar` o `eliminar`).
+- **Seguridad de tipos:** Se pierde algo de seguridad de tipos al tratar todo como `Componente`.
+
+#### Aplicacion en Qt
+
+Qt utiliza Composite como uno de sus patrones fundamentales:
+
+- **`QObject` (arbol padre-hijo):** Cada `QObject` puede tener un padre y multiples hijos. El metodo `children()` devuelve la lista de hijos, `parent()` devuelve el padre. Cuando un padre se destruye, **automaticamente destruye todos sus hijos**. Esta es la base del sistema de gestion de memoria de Qt.
+
+- **`QWidget` (jerarquia de widgets):** Extiende el concepto de `QObject`. Los widgets hijos se renderizan dentro del area de su padre. `layout()`, `addWidget()` y la jerarquia visual son Composite puro.
+
+- **`QGraphicsItemGroup`:** Agrupa items en una escena grafica. Puedes mover, escalar o rotar el grupo y todos sus hijos se transforman juntos.
+
+- **QML Item:** En QML, todos los elementos visuales tienen la propiedad `children` y `data`, formando un arbol Composite. Un `Column` contiene `Items` que a su vez pueden contener mas `Items`.
+
+> **Nota:** En QML, la propiedad `data` (default property) permite declarar hijos implicitamente entre las llaves del elemento padre, lo que es una manifestacion directa del patron Composite.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+// === Componente: Interfaz comun para archivos y carpetas ===
+class ElementoSistema {
+public:
+    virtual ~ElementoSistema() = default;
+    virtual std::string nombre() const = 0;
+    virtual int tamanio() const = 0;
+    virtual void mostrar(int nivel = 0) const = 0;
+};
+
+// === Hoja: Archivo (elemento simple) ===
+class Archivo : public ElementoSistema {
+    std::string nombre_;
+    int tamanio_; // en KB
+public:
+    Archivo(const std::string& nombre, int tamanio)
+        : nombre_(nombre), tamanio_(tamanio) {}
+
+    std::string nombre() const override { return nombre_; }
+    int tamanio() const override { return tamanio_; }
+
+    void mostrar(int nivel) const override {
+        std::string indent(nivel * 2, ' ');
+        std::cout << indent << "- " << nombre_ << " (" << tamanio_ << " KB)" << std::endl;
+    }
+};
+
+// === Composite: Carpeta (contenedor) ===
+class Carpeta : public ElementoSistema {
+    std::string nombre_;
+    std::vector<std::shared_ptr<ElementoSistema>> hijos_;
+public:
+    explicit Carpeta(const std::string& nombre) : nombre_(nombre) {}
+
+    void agregar(std::shared_ptr<ElementoSistema> elemento) {
+        hijos_.push_back(std::move(elemento));
+    }
+
+    std::string nombre() const override { return nombre_; }
+
+    // Tamanio = suma recursiva de todos los hijos
+    int tamanio() const override {
+        int total = 0;
+        for (const auto& hijo : hijos_) {
+            total += hijo->tamanio();
+        }
+        return total;
+    }
+
+    void mostrar(int nivel) const override {
+        std::string indent(nivel * 2, ' ');
+        std::cout << indent << "[" << nombre_ << "] (" << tamanio() << " KB total)" << std::endl;
+        for (const auto& hijo : hijos_) {
+            hijo->mostrar(nivel + 1);
+        }
+    }
+};
+
+int main() {
+    // Construir estructura de arbol
+    auto raiz = std::make_shared<Carpeta>("proyecto");
+
+    auto src = std::make_shared<Carpeta>("src");
+    src->agregar(std::make_shared<Archivo>("main.cpp", 12));
+    src->agregar(std::make_shared<Archivo>("utils.cpp", 8));
+    src->agregar(std::make_shared<Archivo>("utils.h", 3));
+
+    auto build = std::make_shared<Carpeta>("build");
+    build->agregar(std::make_shared<Archivo>("app.exe", 2048));
+    build->agregar(std::make_shared<Archivo>("app.pdb", 512));
+
+    auto docs = std::make_shared<Carpeta>("docs");
+    docs->agregar(std::make_shared<Archivo>("README.md", 5));
+
+    raiz->agregar(src);
+    raiz->agregar(build);
+    raiz->agregar(docs);
+    raiz->agregar(std::make_shared<Archivo>("CMakeLists.txt", 2));
+
+    // Mostrar arbol completo (trata todo uniformemente)
+    std::cout << "=== Sistema de Archivos ===" << std::endl;
+    raiz->mostrar();
+
+    // El tamanio se calcula recursivamente
+    std::cout << "\nTamanio total: " << raiz->tamanio() << " KB" << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Sistema de Archivos ===
+[proyecto] (2590 KB total)
+  [src] (23 KB total)
+    - main.cpp (12 KB)
+    - utils.cpp (8 KB)
+    - utils.h (3 KB)
+  [build] (2560 KB total)
+    - app.exe (2048 KB)
+    - app.pdb (512 KB)
+  [docs] (5 KB total)
+    - README.md (5 KB)
+  - CMakeLists.txt (2 KB)
+
+Tamanio total: 2590 KB
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+
+// === Componente: Elemento de interfaz grafica ===
+class ElementoUI {
+public:
+    virtual ~ElementoUI() = default;
+
+    virtual void renderizar(int profundidad = 0) const = 0;
+    virtual int ancho() const = 0;
+    virtual int alto() const = 0;
+    virtual int contarElementos() const = 0;
+    virtual std::string tipo() const = 0;
+
+protected:
+    std::string indentacion(int nivel) const {
+        return std::string(nivel * 3, ' ');
+    }
+};
+
+// === Hojas: Widgets simples ===
+class Boton : public ElementoUI {
+    std::string texto_;
+    int ancho_, alto_;
+public:
+    Boton(const std::string& texto, int ancho = 120, int alto = 40)
+        : texto_(texto), ancho_(ancho), alto_(alto) {}
+
+    void renderizar(int prof) const override {
+        std::cout << indentacion(prof) << "[Boton: \"" << texto_
+                  << "\" " << ancho_ << "x" << alto_ << "]" << std::endl;
+    }
+    int ancho() const override { return ancho_; }
+    int alto() const override { return alto_; }
+    int contarElementos() const override { return 1; }
+    std::string tipo() const override { return "Boton"; }
+};
+
+class Etiqueta : public ElementoUI {
+    std::string texto_;
+    int ancho_, alto_;
+public:
+    Etiqueta(const std::string& texto, int ancho = 200, int alto = 25)
+        : texto_(texto), ancho_(ancho), alto_(alto) {}
+
+    void renderizar(int prof) const override {
+        std::cout << indentacion(prof) << "[Etiqueta: \"" << texto_
+                  << "\"]" << std::endl;
+    }
+    int ancho() const override { return ancho_; }
+    int alto() const override { return alto_; }
+    int contarElementos() const override { return 1; }
+    std::string tipo() const override { return "Etiqueta"; }
+};
+
+class CampoTexto : public ElementoUI {
+    std::string placeholder_;
+    int ancho_, alto_;
+public:
+    CampoTexto(const std::string& ph, int ancho = 250, int alto = 35)
+        : placeholder_(ph), ancho_(ancho), alto_(alto) {}
+
+    void renderizar(int prof) const override {
+        std::cout << indentacion(prof) << "[CampoTexto: \""
+                  << placeholder_ << "\" " << ancho_ << "x" << alto_ << "]" << std::endl;
+    }
+    int ancho() const override { return ancho_; }
+    int alto() const override { return alto_; }
+    int contarElementos() const override { return 1; }
+    std::string tipo() const override { return "CampoTexto"; }
+};
+
+// === Composite: Contenedor que organiza hijos ===
+class Contenedor : public ElementoUI {
+public:
+    enum Direccion { VERTICAL, HORIZONTAL };
+
+private:
+    std::string nombre_;
+    Direccion dir_;
+    int espaciado_;
+    std::vector<std::shared_ptr<ElementoUI>> hijos_;
+
+public:
+    Contenedor(const std::string& nombre, Direccion dir, int espaciado = 10)
+        : nombre_(nombre), dir_(dir), espaciado_(espaciado) {}
+
+    void agregar(std::shared_ptr<ElementoUI> elem) {
+        hijos_.push_back(std::move(elem));
+    }
+
+    void renderizar(int prof) const override {
+        std::string dirStr = (dir_ == VERTICAL) ? "V" : "H";
+        std::cout << indentacion(prof) << "<" << nombre_
+                  << " [" << dirStr << "] " << ancho() << "x" << alto()
+                  << " (" << contarElementos() << " elementos)>" << std::endl;
+        for (const auto& hijo : hijos_) {
+            hijo->renderizar(prof + 1);
+        }
+        std::cout << indentacion(prof) << "</" << nombre_ << ">" << std::endl;
+    }
+
+    // Calculo de dimensiones segun la direccion del layout
+    int ancho() const override {
+        if (hijos_.empty()) return 0;
+        if (dir_ == HORIZONTAL) {
+            // Horizontal: suma anchos + espaciado
+            int total = 0;
+            for (const auto& h : hijos_) total += h->ancho();
+            return total + espaciado_ * (static_cast<int>(hijos_.size()) - 1);
+        } else {
+            // Vertical: maximo ancho
+            int maxAncho = 0;
+            for (const auto& h : hijos_) maxAncho = std::max(maxAncho, h->ancho());
+            return maxAncho;
+        }
+    }
+
+    int alto() const override {
+        if (hijos_.empty()) return 0;
+        if (dir_ == VERTICAL) {
+            int total = 0;
+            for (const auto& h : hijos_) total += h->alto();
+            return total + espaciado_ * (static_cast<int>(hijos_.size()) - 1);
+        } else {
+            int maxAlto = 0;
+            for (const auto& h : hijos_) maxAlto = std::max(maxAlto, h->alto());
+            return maxAlto;
+        }
+    }
+
+    int contarElementos() const override {
+        int total = 0;
+        for (const auto& h : hijos_) total += h->contarElementos();
+        return total;
+    }
+
+    std::string tipo() const override { return "Contenedor"; }
+};
+
+int main() {
+    // Construir formulario de login
+    auto formulario = std::make_shared<Contenedor>("Formulario", Contenedor::VERTICAL, 15);
+
+    formulario->agregar(std::make_shared<Etiqueta>("Iniciar Sesion", 300, 30));
+
+    // Grupo de usuario
+    auto grupoUsuario = std::make_shared<Contenedor>("GrupoUsuario", Contenedor::VERTICAL, 5);
+    grupoUsuario->agregar(std::make_shared<Etiqueta>("Usuario:"));
+    grupoUsuario->agregar(std::make_shared<CampoTexto>("Ingrese su usuario"));
+    formulario->agregar(grupoUsuario);
+
+    // Grupo de contrasenia
+    auto grupoPass = std::make_shared<Contenedor>("GrupoPassword", Contenedor::VERTICAL, 5);
+    grupoPass->agregar(std::make_shared<Etiqueta>("Contrasenia:"));
+    grupoPass->agregar(std::make_shared<CampoTexto>("Ingrese su contrasenia"));
+    formulario->agregar(grupoPass);
+
+    // Botones en fila horizontal
+    auto botones = std::make_shared<Contenedor>("Botones", Contenedor::HORIZONTAL, 20);
+    botones->agregar(std::make_shared<Boton>("Cancelar", 100, 40));
+    botones->agregar(std::make_shared<Boton>("Ingresar", 100, 40));
+    formulario->agregar(botones);
+
+    // Renderizar todo el arbol de UI
+    std::cout << "=== Formulario de Login (Composite UI) ===" << std::endl;
+    formulario->renderizar();
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Formulario de Login (Composite UI) ===
+<Formulario [V] 300x250 (6 elementos)>
+   [Etiqueta: "Iniciar Sesion"]
+   <GrupoUsuario [V] 250x65 (2 elementos)>
+      [Etiqueta: "Usuario:"]
+      [CampoTexto: "Ingrese su usuario" 250x35]
+   </GrupoUsuario>
+   <GrupoPassword [V] 250x65 (2 elementos)>
+      [Etiqueta: "Contrasenia:"]
+      [CampoTexto: "Ingrese su contrasenia" 250x35]
+   </GrupoPassword>
+   <Botones [H] 220x40 (2 elementos)>
+      [Boton: "Cancelar" 100x40]
+      [Boton: "Ingresar" 100x40]
+   </Botones>
+</Formulario>
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QObject>
+#include <QDebug>
+
+// =====================================================
+// Demostracion del Composite en Qt: QObject parent-child
+//
+// QObject implementa Composite nativamente:
+// - Cada QObject puede tener hijos (children())
+// - Al destruir un padre, se destruyen todos sus hijos
+// - findChildren<T>() busca recursivamente en el arbol
+// =====================================================
+
+// Clase personalizada que hereda QObject
+class Componente : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString descripcion READ descripcion CONSTANT)
+public:
+    explicit Componente(const QString& nombre, const QString& desc,
+                        QObject* parent = nullptr)
+        : QObject(parent), descripcion_(desc) {
+        setObjectName(nombre);
+    }
+
+    QString descripcion() const { return descripcion_; }
+
+    // Mostrar arbol recursivamente (Composite en accion)
+    void mostrarArbol(int nivel = 0) const {
+        QString indent(nivel * 3, ' ');
+        qDebug().noquote() << indent + "|- " + objectName()
+                           << "(" + descripcion_ + ")"
+                           << "[hijos:" << children().count() << "]";
+
+        // Delegar recursivamente a todos los hijos
+        for (QObject* hijo : children()) {
+            auto* comp = qobject_cast<Componente*>(hijo);
+            if (comp) {
+                comp->mostrarArbol(nivel + 1);
+            }
+        }
+    }
+
+    // Contar todos los componentes en el subarbol
+    int contarRecursivo() const {
+        int total = 1; // contarse a si mismo
+        for (QObject* hijo : children()) {
+            auto* comp = qobject_cast<Componente*>(hijo);
+            if (comp) total += comp->contarRecursivo();
+        }
+        return total;
+    }
+
+private:
+    QString descripcion_;
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // === Construir arbol de componentes (Composite) ===
+    // El padre toma propiedad de los hijos (gestion de memoria automatica)
+    auto* ventana = new Componente("VentanaPrincipal", "Ventana de la aplicacion");
+
+    auto* menuBar = new Componente("MenuBar", "Barra de menu", ventana);
+    new Componente("Archivo", "Menu Archivo", menuBar);
+    new Componente("Editar", "Menu Editar", menuBar);
+    new Componente("Ayuda", "Menu Ayuda", menuBar);
+
+    auto* central = new Componente("WidgetCentral", "Area central", ventana);
+    auto* panel = new Componente("PanelIzquierdo", "Panel de navegacion", central);
+    new Componente("ArbolArchivos", "Vista de archivos", panel);
+    new Componente("ListaFavoritos", "Lista de favoritos", panel);
+
+    auto* editor = new Componente("Editor", "Area de edicion", central);
+    new Componente("EditorTexto", "Editor de texto", editor);
+    new Componente("BarraHerramientas", "Herramientas del editor", editor);
+
+    auto* statusBar = new Componente("StatusBar", "Barra de estado", ventana);
+    new Componente("Indicador", "Indicador de estado", statusBar);
+
+    // === Mostrar arbol completo ===
+    qDebug() << "=== Arbol de Componentes Qt (Composite) ===";
+    ventana->mostrarArbol();
+
+    // === Busqueda recursiva con findChildren ===
+    qDebug() << "\n=== Busqueda con findChildren ===";
+    QList<Componente*> todos = ventana->findChildren<Componente*>();
+    qDebug() << "Total de componentes en el arbol:" << todos.count() + 1;
+
+    // Buscar por nombre
+    Componente* encontrado = ventana->findChild<Componente*>("EditorTexto");
+    if (encontrado) {
+        qDebug() << "Encontrado:" << encontrado->objectName()
+                 << "-" << encontrado->descripcion();
+    }
+
+    // === Demostracion de destruccion en cascada ===
+    qDebug() << "\n=== Destruccion en cascada ===";
+    qDebug() << "Componentes antes:" << ventana->contarRecursivo();
+
+    // Al eliminar 'central', se eliminan todos sus hijos automaticamente
+    delete central;
+    qDebug() << "Despues de eliminar WidgetCentral:" << ventana->contarRecursivo();
+
+    // Limpiar (elimina ventana y todos sus hijos restantes)
+    delete ventana;
+
+    return 0;
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+=== Arbol de Componentes Qt (Composite) ===
+|- VentanaPrincipal (Ventana de la aplicacion) [hijos: 3]
+   |- MenuBar (Barra de menu) [hijos: 3]
+      |- Archivo (Menu Archivo) [hijos: 0]
+      |- Editar (Menu Editar) [hijos: 0]
+      |- Ayuda (Menu Ayuda) [hijos: 0]
+   |- WidgetCentral (Area central) [hijos: 2]
+      |- PanelIzquierdo (Panel de navegacion) [hijos: 2]
+         |- ArbolArchivos (Vista de archivos) [hijos: 0]
+         |- ListaFavoritos (Lista de favoritos) [hijos: 0]
+      |- Editor (Area de edicion) [hijos: 2]
+         |- EditorTexto (Editor de texto) [hijos: 0]
+         |- BarraHerramientas (Herramientas del editor) [hijos: 0]
+   |- StatusBar (Barra de estado) [hijos: 1]
+      |- Indicador (Indicador de estado) [hijos: 0]
+
+=== Busqueda con findChildren ===
+Total de componentes en el arbol: 12
+Encontrado: "EditorTexto" - "Editor de texto"
+
+=== Destruccion en cascada ===
+Componentes antes: 12
+Despues de eliminar WidgetCentral: 6

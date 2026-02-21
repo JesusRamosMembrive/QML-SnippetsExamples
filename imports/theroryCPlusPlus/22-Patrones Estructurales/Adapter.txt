@@ -1,0 +1,456 @@
+<---EXPLANATION--->
+### Patron Adapter (Adaptador)
+
+El patron **Adapter** permite que objetos con interfaces incompatibles trabajen juntos. Actua como un **traductor** entre dos interfaces que no pueden comunicarse directamente. Es uno de los patrones estructurales mas utilizados porque resuelve un problema muy comun: integrar codigo existente (legacy) o bibliotecas de terceros sin modificar su codigo fuente.
+
+#### Problema
+
+Imagina que tienes un sistema que procesa datos en formato XML, pero necesitas integrar una biblioteca externa que solo trabaja con JSON. No puedes modificar la biblioteca externa, y reescribir tu sistema seria costoso. Necesitas una capa intermedia que **adapte** la interfaz de una clase para que sea compatible con la que tu sistema espera.
+
+Otros escenarios comunes:
+- Integrar una API antigua con una nueva interfaz
+- Hacer que clases de diferentes bibliotecas trabajen juntas
+- Reutilizar clases existentes que no cumplen con una interfaz requerida
+
+#### Solucion
+
+El Adapter envuelve uno de los objetos para ocultar la complejidad de la conversion. El objeto envuelto ni siquiera sabe que esta siendo adaptado. Existen dos variantes:
+
+- **Adapter de objeto (composicion):** El adapter contiene una instancia del objeto adaptado y delega las llamadas traduciendo la interfaz. Es la forma mas comun y flexible.
+- **Adapter de clase (herencia multiple):** El adapter hereda tanto de la interfaz objetivo como de la clase adaptada. Menos flexible pero evita la indirecta de la delegacion.
+
+```cpp
+// Interfaz que el cliente espera
+class InterfazObjetivo {
+public:
+    virtual std::string obtenerDatos() = 0;
+};
+
+// Adapter que traduce la interfaz
+class Adapter : public InterfazObjetivo {
+    ClaseExistente* adaptado;
+public:
+    std::string obtenerDatos() override {
+        // Traduce la llamada al formato del adaptado
+        return convertir(adaptado->obtenerDatosLegacy());
+    }
+};
+```
+
+#### Estructura
+
+Los componentes principales del patron Adapter son:
+
+- **Target (Objetivo):** La interfaz que el codigo cliente espera utilizar. Define el dominio especifico de metodos que el cliente invoca.
+- **Client (Cliente):** El codigo que utiliza la interfaz Target. No conoce la existencia del Adapter ni del Adaptee.
+- **Adaptee (Adaptado):** La clase existente con una interfaz incompatible. Contiene funcionalidad util pero con una API diferente.
+- **Adapter (Adaptador):** La clase que implementa Target y traduce las llamadas al Adaptee. Es el puente entre ambas interfaces.
+
+##### Flujo de Comunicacion
+
+1. El **Cliente** llama un metodo del **Target**
+2. El **Adapter** recibe la llamada (implementa Target)
+3. El **Adapter** traduce y delega al **Adaptee**
+4. El resultado del **Adaptee** es convertido y devuelto al **Cliente**
+
+#### Implementacion en C++
+
+En C++ moderno, el Adapter se implementa tipicamente mediante composicion:
+
+```cpp
+// Se prefiere composicion sobre herencia multiple
+class MiAdapter : public Target {
+private:
+    std::unique_ptr<Adaptee> adaptado_;
+public:
+    explicit MiAdapter(std::unique_ptr<Adaptee> a)
+        : adaptado_(std::move(a)) {}
+
+    void metodoEsperado() override {
+        adaptado_->metodoExistente(); // Traduce la llamada
+    }
+};
+```
+
+Tambien es posible usar **templates** para crear adaptadores genericos que funcionen con cualquier tipo que cumpla ciertos requisitos, aprovechando duck typing en tiempo de compilacion.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+- **Principio de responsabilidad unica:** Separa la logica de conversion de la logica de negocio.
+- **Principio abierto/cerrado:** Puedes introducir nuevos adaptadores sin modificar el codigo existente.
+- **Reutilizacion:** Permite usar clases existentes sin modificarlas.
+- **Flexibilidad:** Puedes adaptar varias clases con diferentes adaptadores.
+
+##### Desventajas
+- **Complejidad adicional:** Introduces nuevas clases e interfaces.
+- **Indirecta:** Las llamadas pasan por una capa adicional, lo que puede afectar el rendimiento en rutas criticas.
+- **Proliferacion:** Si tienes muchas clases por adaptar, puedes terminar con demasiados adaptadores.
+
+#### Aplicacion en Qt
+
+Qt utiliza el patron Adapter extensivamente:
+
+- **`QAbstractItemModel`:** Es el adaptador por excelencia en Qt. Adapta cualquier estructura de datos (listas, arboles, tablas, bases de datos) a la interfaz que las vistas (`QListView`, `QTreeView`, `QTableView`) esperan. Tu implementas los metodos `data()`, `rowCount()`, `columnCount()`, etc., y la vista sabe como mostrar tus datos.
+
+- **`QSortFilterProxyModel`:** Actua como un adaptador que envuelve otro modelo, adaptando su interfaz para agregar filtrado y ordenamiento sin modificar el modelo original.
+
+- **`QAbstractProxyModel`:** Base para crear adaptadores de modelos personalizados que transforman la estructura o los datos de un modelo fuente.
+
+> **Nota:** En QML, cuando escribes un `ListModel` o usas un modelo C++ con `Q_PROPERTY`, estas usando implicitamente el patron Adapter para traducir tus datos al formato que las vistas QML esperan.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+
+// === Adaptee: Clase existente con interfaz incompatible ===
+// Simula un servicio legacy que devuelve datos en un formato especifico
+class SensorLegacy {
+public:
+    // Devuelve temperatura en Fahrenheit como float
+    float leerTemperaturaF() const {
+        return 98.6f; // Temperatura corporal en Fahrenheit
+    }
+
+    // Devuelve humedad como entero (0-100)
+    int leerHumedadBruta() const {
+        return 65;
+    }
+};
+
+// === Target: Interfaz que el sistema nuevo espera ===
+class ISensor {
+public:
+    virtual ~ISensor() = default;
+    virtual double obtenerTemperaturaCelsius() const = 0;
+    virtual std::string obtenerHumedad() const = 0;
+};
+
+// === Adapter: Traduce la interfaz legacy a la nueva ===
+class SensorAdapter : public ISensor {
+private:
+    std::unique_ptr<SensorLegacy> sensorLegacy_;
+
+public:
+    explicit SensorAdapter(std::unique_ptr<SensorLegacy> sensor)
+        : sensorLegacy_(std::move(sensor)) {}
+
+    // Convierte Fahrenheit a Celsius
+    double obtenerTemperaturaCelsius() const override {
+        float fahrenheit = sensorLegacy_->leerTemperaturaF();
+        return (fahrenheit - 32.0) * 5.0 / 9.0;
+    }
+
+    // Formatea la humedad como string con porcentaje
+    std::string obtenerHumedad() const override {
+        int humedad = sensorLegacy_->leerHumedadBruta();
+        return std::to_string(humedad) + "%";
+    }
+};
+
+// === Cliente: Usa la interfaz ISensor sin conocer el legacy ===
+void mostrarLectura(const ISensor& sensor) {
+    std::cout << "Temperatura: " << sensor.obtenerTemperaturaCelsius() << " C" << std::endl;
+    std::cout << "Humedad: " << sensor.obtenerHumedad() << std::endl;
+}
+
+int main() {
+    // Crear el sensor legacy y envolverlo con el adaptador
+    auto sensorViejo = std::make_unique<SensorLegacy>();
+    SensorAdapter adaptador(std::move(sensorViejo));
+
+    std::cout << "=== Lectura del Sensor (adaptado) ===" << std::endl;
+    mostrarLectura(adaptador);
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Lectura del Sensor (adaptado) ===
+Temperatura: 37 C
+Humedad: 65%
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+#include <vector>
+#include <sstream>
+
+// === Adaptee 1: Biblioteca de pagos legacy (XML) ===
+class PasarelaPagoXML {
+public:
+    std::string procesarPagoXML(const std::string& xml) const {
+        // Simula procesamiento de pago con XML
+        std::cout << "  [PasarelaPagoXML] Procesando XML: " << xml << std::endl;
+        return "<respuesta><codigo>OK</codigo><id>PAY-001</id></respuesta>";
+    }
+};
+
+// === Adaptee 2: Servicio de pagos moderno (JSON) ===
+class ServicioPagoJSON {
+public:
+    struct Resultado {
+        bool exito;
+        std::string transaccionId;
+    };
+
+    Resultado enviarPago(const std::string& json) const {
+        std::cout << "  [ServicioPagoJSON] Enviando JSON: " << json << std::endl;
+        return {true, "TXN-12345"};
+    }
+};
+
+// === Target: Interfaz unificada de pagos ===
+class IProcesadorPago {
+public:
+    virtual ~IProcesadorPago() = default;
+
+    struct ResultadoPago {
+        bool exitoso;
+        std::string idTransaccion;
+        std::string mensaje;
+    };
+
+    virtual ResultadoPago procesar(double monto, const std::string& moneda) = 0;
+    virtual std::string nombre() const = 0;
+};
+
+// === Adapter 1: Adapta la pasarela XML ===
+class AdaptadorPagoXML : public IProcesadorPago {
+private:
+    std::unique_ptr<PasarelaPagoXML> pasarela_;
+
+    // Convierte parametros a XML
+    std::string construirXML(double monto, const std::string& moneda) const {
+        std::ostringstream oss;
+        oss << "<pago><monto>" << monto << "</monto><moneda>"
+            << moneda << "</moneda></pago>";
+        return oss.str();
+    }
+
+    // Parsea respuesta XML (simplificado)
+    ResultadoPago parsearRespuesta(const std::string& xml) const {
+        // En produccion usarias un parser XML real
+        bool exito = xml.find("OK") != std::string::npos;
+        return {exito, "PAY-001", exito ? "Pago exitoso (XML)" : "Error"};
+    }
+
+public:
+    explicit AdaptadorPagoXML(std::unique_ptr<PasarelaPagoXML> p)
+        : pasarela_(std::move(p)) {}
+
+    ResultadoPago procesar(double monto, const std::string& moneda) override {
+        std::string xml = construirXML(monto, moneda);
+        std::string respuesta = pasarela_->procesarPagoXML(xml);
+        return parsearRespuesta(respuesta);
+    }
+
+    std::string nombre() const override { return "Pasarela XML Legacy"; }
+};
+
+// === Adapter 2: Adapta el servicio JSON ===
+class AdaptadorPagoJSON : public IProcesadorPago {
+private:
+    std::unique_ptr<ServicioPagoJSON> servicio_;
+
+    std::string construirJSON(double monto, const std::string& moneda) const {
+        std::ostringstream oss;
+        oss << "{\"monto\":" << monto << ",\"moneda\":\"" << moneda << "\"}";
+        return oss.str();
+    }
+
+public:
+    explicit AdaptadorPagoJSON(std::unique_ptr<ServicioPagoJSON> s)
+        : servicio_(std::move(s)) {}
+
+    ResultadoPago procesar(double monto, const std::string& moneda) override {
+        std::string json = construirJSON(monto, moneda);
+        auto resultado = servicio_->enviarPago(json);
+        return {resultado.exito, resultado.transaccionId,
+                resultado.exito ? "Pago exitoso (JSON)" : "Error"};
+    }
+
+    std::string nombre() const override { return "Servicio JSON Moderno"; }
+};
+
+// === Cliente: Procesa pagos con cualquier procesador ===
+void realizarPago(IProcesadorPago& procesador, double monto,
+                  const std::string& moneda) {
+    std::cout << "\n--- Usando: " << procesador.nombre() << " ---" << std::endl;
+    auto resultado = procesador.procesar(monto, moneda);
+    std::cout << "  Exitoso: " << (resultado.exitoso ? "Si" : "No") << std::endl;
+    std::cout << "  ID: " << resultado.idTransaccion << std::endl;
+    std::cout << "  Mensaje: " << resultado.mensaje << std::endl;
+}
+
+int main() {
+    std::cout << "=== Sistema de Pagos Unificado ===" << std::endl;
+
+    // Crear adaptadores para cada servicio
+    AdaptadorPagoXML adapterXML(std::make_unique<PasarelaPagoXML>());
+    AdaptadorPagoJSON adapterJSON(std::make_unique<ServicioPagoJSON>());
+
+    // El cliente usa la misma interfaz para ambos
+    realizarPago(adapterXML, 150.00, "USD");
+    realizarPago(adapterJSON, 250.50, "EUR");
+
+    // Tambien podemos almacenarlos en un vector polimorfico
+    std::cout << "\n=== Procesamiento por Lotes ===" << std::endl;
+    std::vector<IProcesadorPago*> procesadores = {&adapterXML, &adapterJSON};
+    for (auto* p : procesadores) {
+        auto r = p->procesar(100.0, "MXN");
+        std::cout << "  -> " << p->nombre() << ": " << r.mensaje << std::endl;
+    }
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Sistema de Pagos Unificado ===
+
+--- Usando: Pasarela XML Legacy ---
+  [PasarelaPagoXML] Procesando XML: <pago><monto>150</monto><moneda>USD</moneda></pago>
+  Exitoso: Si
+  ID: PAY-001
+  Mensaje: Pago exitoso (XML)
+
+--- Usando: Servicio JSON Moderno ---
+  [ServicioPagoJSON] Enviando JSON: {"monto":250.5,"moneda":"EUR"}
+  Exitoso: Si
+  ID: TXN-12345
+  Mensaje: Pago exitoso (JSON)
+
+=== Procesamiento por Lotes ===
+  [PasarelaPagoXML] Procesando XML: <pago><monto>100</monto><moneda>MXN</moneda></pago>
+  -> Pasarela XML Legacy: Pago exitoso (XML)
+  [ServicioPagoJSON] Enviando JSON: {"monto":100,"moneda":"MXN"}
+  -> Servicio JSON Moderno: Pago exitoso (JSON)
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QAbstractListModel>
+#include <QDebug>
+#include <QStringList>
+#include <vector>
+#include <string>
+
+// === Adaptee: Estructura de datos legacy en std:: ===
+struct EmpleadoLegacy {
+    std::string nombre;
+    int edad;
+    double salario;
+};
+
+class BaseDatosLegacy {
+public:
+    std::vector<EmpleadoLegacy> obtenerEmpleados() const {
+        return {
+            {"Ana Garcia", 30, 45000.0},
+            {"Carlos Lopez", 25, 38000.0},
+            {"Maria Torres", 35, 52000.0},
+            {"Pedro Ruiz", 28, 41000.0}
+        };
+    }
+};
+
+// === Adapter: QAbstractListModel adapta los datos legacy para vistas Qt ===
+class EmpleadoModelAdapter : public QAbstractListModel {
+    Q_OBJECT
+public:
+    // Roles personalizados para acceder a los datos
+    enum Roles {
+        NombreRole = Qt::UserRole + 1,
+        EdadRole,
+        SalarioRole
+    };
+
+    explicit EmpleadoModelAdapter(QObject* parent = nullptr)
+        : QAbstractListModel(parent) {
+        // Cargar datos desde el sistema legacy
+        auto datosLegacy = baseDatos_.obtenerEmpleados();
+        for (const auto& emp : datosLegacy) {
+            empleados_.push_back(emp);
+        }
+    }
+
+    // --- Implementacion de la interfaz QAbstractListModel ---
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override {
+        Q_UNUSED(parent);
+        return static_cast<int>(empleados_.size());
+    }
+
+    QVariant data(const QModelIndex& index, int role) const override {
+        if (!index.isValid() || index.row() >= static_cast<int>(empleados_.size()))
+            return QVariant();
+
+        const auto& emp = empleados_[index.row()];
+
+        switch (role) {
+        case NombreRole:
+            return QString::fromStdString(emp.nombre);
+        case EdadRole:
+            return emp.edad;
+        case SalarioRole:
+            return emp.salario;
+        case Qt::DisplayRole:
+            return QString::fromStdString(emp.nombre) +
+                   " (Edad: " + QString::number(emp.edad) + ")";
+        default:
+            return QVariant();
+        }
+    }
+
+    QHash<int, QByteArray> roleNames() const override {
+        return {
+            {NombreRole, "nombre"},
+            {EdadRole, "edad"},
+            {SalarioRole, "salario"}
+        };
+    }
+
+private:
+    BaseDatosLegacy baseDatos_;
+    std::vector<EmpleadoLegacy> empleados_;
+};
+
+// === Cliente: Usa el modelo Qt sin conocer la base de datos legacy ===
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    EmpleadoModelAdapter modelo;
+
+    qDebug() << "=== Datos adaptados via QAbstractListModel ===";
+    qDebug() << "Total empleados:" << modelo.rowCount();
+
+    for (int i = 0; i < modelo.rowCount(); ++i) {
+        QModelIndex idx = modelo.index(i, 0);
+        qDebug() << "  -" << modelo.data(idx, Qt::DisplayRole).toString()
+                 << "| Salario:" << modelo.data(idx, EmpleadoModelAdapter::SalarioRole).toDouble();
+    }
+
+    return 0;
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+=== Datos adaptados via QAbstractListModel ===
+Total empleados: 4
+  - "Ana Garcia (Edad: 30)" | Salario: 45000
+  - "Carlos Lopez (Edad: 25)" | Salario: 38000
+  - "Maria Torres (Edad: 35)" | Salario: 52000
+  - "Pedro Ruiz (Edad: 28)" | Salario: 41000

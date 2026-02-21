@@ -1,0 +1,652 @@
+<---EXPLANATION--->
+### Patron Facade (Fachada)
+
+El patron **Facade** proporciona una interfaz simplificada a un sistema complejo de clases, una biblioteca o un framework. En lugar de obligar al cliente a interactuar con docenas de clases y sus dependencias, la fachada expone solo los metodos que el cliente realmente necesita, ocultando la complejidad interna detras de una **interfaz limpia y facil de usar**.
+
+#### Problema
+
+Imagina que necesitas convertir un video: debes inicializar un codec de audio, un codec de video, un muxer, configurar bitrates, abrir archivos temporales, sincronizar streams, cerrar recursos... Son 15 clases con 40 metodos diferentes que debes llamar en el orden correcto. Tu codigo de negocio se llena de detalles de bajo nivel que no le corresponden.
+
+Otros escenarios:
+- Inicializar un subsistema de renderizado (crear contexto, shaders, buffers, viewport)
+- Procesar un pedido en e-commerce (inventario, pago, facturacion, envio, notificacion)
+- Configurar una conexion de base de datos (driver, pool, transacciones, migraciones)
+
+#### Solucion
+
+La Fachada crea una clase que encapsula las interacciones con el subsistema complejo. No agrega funcionalidad nueva; simplemente **coordina** las clases existentes y las expone a traves de metodos de alto nivel:
+
+```cpp
+class FachadaConversionVideo {
+    CodecAudio audio_;
+    CodecVideo video_;
+    Muxer muxer_;
+    ArchivoTemporal temp_;
+public:
+    // Un solo metodo en lugar de 15 llamadas
+    bool convertir(const std::string& entrada, const std::string& salida,
+                   const std::string& formato) {
+        audio_.inicializar(formato);
+        video_.inicializar(formato);
+        // ... coordina todo internamente
+        return true;
+    }
+};
+```
+
+> **Importante:** La Fachada no impide el acceso al subsistema. Si el cliente necesita control fino, puede usar las clases internas directamente.
+
+#### Estructura
+
+- **Facade (Fachada):** Proporciona metodos de alto nivel que delegan el trabajo al subsistema. Sabe que clases del subsistema son responsables de cada tarea y en que orden deben invocarse.
+- **Subsystem Classes (Clases del Subsistema):** Las clases complejas que implementan la funcionalidad real. No conocen la existencia de la fachada. Operan de forma independiente.
+- **Client (Cliente):** Usa la fachada en lugar de interactuar directamente con el subsistema. Puede acceder al subsistema directamente si necesita mas control.
+
+##### Diferencia con Adapter
+
+El **Adapter** cambia la interfaz de un objeto existente para hacerlo compatible con otra interfaz. La **Fachada** simplifica una interfaz compleja sin cambiarla. Adapter trabaja con una sola clase; Facade coordina multiples clases.
+
+#### Implementacion en C++
+
+En C++ la fachada tipicamente posee (por composicion) las instancias del subsistema:
+
+```cpp
+class Fachada {
+private:
+    SubsistemaA a_;
+    SubsistemaB b_;
+    SubsistemaC c_;
+public:
+    // Metodo simplificado que coordina A, B y C
+    void operacionSimple() {
+        a_.iniciar();
+        b_.configurar(a_.obtenerConfig());
+        c_.ejecutar(b_.obtenerDatos());
+        a_.finalizar();
+    }
+};
+```
+
+Se puede complementar con el patron **Singleton** si solo se necesita una instancia de la fachada, o con **Builder** si la configuracion del subsistema es compleja.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+- **Simplicidad:** Reduce la curva de aprendizaje del subsistema complejo.
+- **Desacoplamiento:** El cliente no depende de las clases internas del subsistema.
+- **Organizacion:** Centraliza la logica de coordinacion en un solo lugar.
+- **Mantenimiento:** Cambios internos al subsistema no afectan al cliente si la fachada mantiene su interfaz.
+
+##### Desventajas
+- **Objeto dios:** La fachada puede convertirse en un "god object" si intenta hacer demasiado.
+- **Limitacion:** Si el cliente necesita funcionalidad que la fachada no expone, debe acceder al subsistema directamente.
+- **Capa extra:** Introduce una capa de indirecta que puede parecer innecesaria en sistemas simples.
+
+#### Aplicacion en Qt
+
+Qt usa Facade extensivamente para simplificar subsistemas complejos:
+
+- **`QFile`:** Es una fachada sobre `QIODevice` y `QFileDevice`. En lugar de trabajar con dispositivos de E/S a bajo nivel, `QFile` te da metodos simples como `open()`, `readAll()`, `write()`. Internamente coordina buffers, codificaciones y handles del sistema operativo.
+
+- **`QNetworkAccessManager`:** Fachada sobre el subsistema de red completo. En lugar de manejar sockets, DNS, SSL, HTTP, cookies y redireccionamientos manualmente, simplemente haces `manager->get(QNetworkRequest(url))`. Internamente coordina `QTcpSocket`, `QSslSocket`, `QNetworkReply`, `QNetworkCookieJar`, etc.
+
+- **`QSqlDatabase`:** Simplifica la interaccion con bases de datos. Oculta la complejidad de drivers, conexiones, pools y dialectos SQL detras de una interfaz unificada.
+
+- **`QMediaPlayer` (Qt Multimedia):** Fachada que oculta la complejidad de decodificacion de audio/video, sincronizacion de streams y renderizado multimedia.
+
+> **Nota:** En QML, componentes como `Image {}` son fachadas: ocultan la carga asincrona, decodificacion, cache de texturas y renderizado GPU detras de una simple propiedad `source`.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+
+// === Subsistema: Clases complejas de un sistema de cine en casa ===
+
+class Amplificador {
+public:
+    void encender() {
+        std::cout << "  Amplificador: Encendido" << std::endl;
+    }
+    void setVolumen(int nivel) {
+        std::cout << "  Amplificador: Volumen a " << nivel << std::endl;
+    }
+    void setEntrada(const std::string& fuente) {
+        std::cout << "  Amplificador: Entrada -> " << fuente << std::endl;
+    }
+    void apagar() {
+        std::cout << "  Amplificador: Apagado" << std::endl;
+    }
+};
+
+class ReproductorBluRay {
+public:
+    void encender() {
+        std::cout << "  BluRay: Encendido" << std::endl;
+    }
+    void reproducir(const std::string& pelicula) {
+        std::cout << "  BluRay: Reproduciendo \"" << pelicula << "\"" << std::endl;
+    }
+    void detener() {
+        std::cout << "  BluRay: Detenido" << std::endl;
+    }
+    void apagar() {
+        std::cout << "  BluRay: Apagado" << std::endl;
+    }
+};
+
+class Proyector {
+public:
+    void encender() {
+        std::cout << "  Proyector: Encendido" << std::endl;
+    }
+    void setModo(const std::string& modo) {
+        std::cout << "  Proyector: Modo -> " << modo << std::endl;
+    }
+    void apagar() {
+        std::cout << "  Proyector: Apagado" << std::endl;
+    }
+};
+
+class Luces {
+public:
+    void atenuar(int porcentaje) {
+        std::cout << "  Luces: Atenuadas al " << porcentaje << "%" << std::endl;
+    }
+    void encenderCompleto() {
+        std::cout << "  Luces: Encendidas al 100%" << std::endl;
+    }
+};
+
+class Pantalla {
+public:
+    void bajar() {
+        std::cout << "  Pantalla: Bajando" << std::endl;
+    }
+    void subir() {
+        std::cout << "  Pantalla: Subiendo" << std::endl;
+    }
+};
+
+// === Fachada: Simplifica la interaccion con todo el sistema ===
+class CineCasaFachada {
+    Amplificador amp_;
+    ReproductorBluRay bluray_;
+    Proyector proyector_;
+    Luces luces_;
+    Pantalla pantalla_;
+
+public:
+    // Un metodo en lugar de 8 llamadas separadas
+    void verPelicula(const std::string& pelicula) {
+        std::cout << "--- Preparando para ver pelicula ---" << std::endl;
+        pantalla_.bajar();
+        luces_.atenuar(15);
+        proyector_.encender();
+        proyector_.setModo("pelicula");
+        amp_.encender();
+        amp_.setEntrada("BluRay");
+        amp_.setVolumen(25);
+        bluray_.encender();
+        bluray_.reproducir(pelicula);
+        std::cout << "--- Listo! Disfruta la pelicula ---\n" << std::endl;
+    }
+
+    // Un metodo para apagar todo
+    void finPelicula() {
+        std::cout << "--- Apagando sistema ---" << std::endl;
+        bluray_.detener();
+        bluray_.apagar();
+        amp_.apagar();
+        proyector_.apagar();
+        luces_.encenderCompleto();
+        pantalla_.subir();
+        std::cout << "--- Sistema apagado ---" << std::endl;
+    }
+};
+
+int main() {
+    std::cout << "=== Cine en Casa (Patron Facade) ===\n" << std::endl;
+
+    CineCasaFachada cine;
+
+    // El cliente solo necesita dos llamadas simples
+    cine.verPelicula("Inception");
+    cine.finPelicula();
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Cine en Casa (Patron Facade) ===
+
+--- Preparando para ver pelicula ---
+  Pantalla: Bajando
+  Luces: Atenuadas al 15%
+  Proyector: Encendido
+  Proyector: Modo -> pelicula
+  Amplificador: Encendido
+  Amplificador: Entrada -> BluRay
+  Amplificador: Volumen a 25
+  BluRay: Encendido
+  BluRay: Reproduciendo "Inception"
+--- Listo! Disfruta la pelicula ---
+
+--- Apagando sistema ---
+  BluRay: Detenido
+  BluRay: Apagado
+  Amplificador: Apagado
+  Proyector: Apagado
+  Luces: Encendidas al 100%
+  Pantalla: Subiendo
+--- Sistema apagado ---
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+#include <sstream>
+#include <iomanip>
+
+// === Subsistema de E-Commerce: Multiples clases complejas ===
+
+class GestorInventario {
+public:
+    bool verificarStock(const std::string& producto, int cantidad) {
+        std::cout << "    [Inventario] Verificando stock: " << producto
+                  << " x" << cantidad << std::endl;
+        return true; // Simulacion: siempre hay stock
+    }
+    void reservar(const std::string& producto, int cantidad) {
+        std::cout << "    [Inventario] Reservado: " << producto
+                  << " x" << cantidad << std::endl;
+    }
+    void liberar(const std::string& producto, int cantidad) {
+        std::cout << "    [Inventario] Liberado: " << producto
+                  << " x" << cantidad << std::endl;
+    }
+};
+
+class ProcesadorPago {
+public:
+    bool validarTarjeta(const std::string& numero) {
+        std::cout << "    [Pago] Validando tarjeta: ****"
+                  << numero.substr(numero.size() - 4) << std::endl;
+        return true;
+    }
+    bool cobrar(double monto, const std::string& moneda) {
+        std::cout << "    [Pago] Cobrando $" << std::fixed << std::setprecision(2)
+                  << monto << " " << moneda << std::endl;
+        return true;
+    }
+    void reembolsar(double monto) {
+        std::cout << "    [Pago] Reembolso: $" << std::fixed << std::setprecision(2)
+                  << monto << std::endl;
+    }
+};
+
+class GeneradorFactura {
+public:
+    std::string generar(const std::string& cliente, double monto,
+                        const std::vector<std::string>& items) {
+        std::string id = "FAC-" + std::to_string(std::hash<std::string>{}(cliente) % 10000);
+        std::cout << "    [Factura] Generada: " << id << " para " << cliente << std::endl;
+        return id;
+    }
+    void enviarPorEmail(const std::string& facturaId, const std::string& email) {
+        std::cout << "    [Factura] Enviada " << facturaId << " a " << email << std::endl;
+    }
+};
+
+class ServicioEnvio {
+public:
+    std::string calcularCosto(const std::string& direccion, double peso) {
+        std::cout << "    [Envio] Calculando costo a: " << direccion << std::endl;
+        return "$50.00";
+    }
+    std::string crearGuia(const std::string& direccion) {
+        std::string guia = "GUIA-" + std::to_string(std::hash<std::string>{}(direccion) % 100000);
+        std::cout << "    [Envio] Guia creada: " << guia << std::endl;
+        return guia;
+    }
+};
+
+class ServicioNotificaciones {
+public:
+    void enviarEmail(const std::string& email, const std::string& asunto,
+                     const std::string& cuerpo) {
+        std::cout << "    [Notif] Email a " << email << ": " << asunto << std::endl;
+    }
+    void enviarSMS(const std::string& telefono, const std::string& mensaje) {
+        std::cout << "    [Notif] SMS a " << telefono << ": " << mensaje << std::endl;
+    }
+};
+
+// === Fachada: Simplifica el proceso de compra ===
+class TiendaFachada {
+    GestorInventario inventario_;
+    ProcesadorPago pagos_;
+    GeneradorFactura facturas_;
+    ServicioEnvio envios_;
+    ServicioNotificaciones notificaciones_;
+
+public:
+    struct DatosCliente {
+        std::string nombre;
+        std::string email;
+        std::string telefono;
+        std::string direccion;
+        std::string tarjeta;
+    };
+
+    struct ItemCarrito {
+        std::string producto;
+        int cantidad;
+        double precioUnitario;
+    };
+
+    // Fachada: un solo metodo para todo el proceso de compra
+    bool realizarCompra(const DatosCliente& cliente,
+                        const std::vector<ItemCarrito>& carrito) {
+        std::cout << "\n  [1/5] Verificando inventario..." << std::endl;
+        for (const auto& item : carrito) {
+            if (!inventario_.verificarStock(item.producto, item.cantidad)) {
+                std::cout << "  ERROR: Sin stock de " << item.producto << std::endl;
+                return false;
+            }
+            inventario_.reservar(item.producto, item.cantidad);
+        }
+
+        // Calcular total
+        double total = 0;
+        std::vector<std::string> nombres;
+        for (const auto& item : carrito) {
+            total += item.precioUnitario * item.cantidad;
+            nombres.push_back(item.producto);
+        }
+
+        std::cout << "\n  [2/5] Procesando pago..." << std::endl;
+        if (!pagos_.validarTarjeta(cliente.tarjeta)) {
+            // Liberar inventario reservado
+            for (const auto& item : carrito) {
+                inventario_.liberar(item.producto, item.cantidad);
+            }
+            return false;
+        }
+        pagos_.cobrar(total, "MXN");
+
+        std::cout << "\n  [3/5] Generando factura..." << std::endl;
+        std::string facturaId = facturas_.generar(cliente.nombre, total, nombres);
+        facturas_.enviarPorEmail(facturaId, cliente.email);
+
+        std::cout << "\n  [4/5] Preparando envio..." << std::endl;
+        envios_.calcularCosto(cliente.direccion, 2.5);
+        std::string guia = envios_.crearGuia(cliente.direccion);
+
+        std::cout << "\n  [5/5] Enviando notificaciones..." << std::endl;
+        notificaciones_.enviarEmail(cliente.email,
+            "Compra confirmada", "Factura: " + facturaId);
+        notificaciones_.enviarSMS(cliente.telefono,
+            "Compra confirmada. Guia: " + guia);
+
+        return true;
+    }
+};
+
+int main() {
+    std::cout << "=== Tienda Online (Patron Facade) ===" << std::endl;
+
+    TiendaFachada tienda;
+
+    TiendaFachada::DatosCliente cliente{
+        "Maria Garcia",
+        "maria@correo.com",
+        "+52-555-1234",
+        "Av. Reforma 123, CDMX",
+        "4111111111111234"
+    };
+
+    std::vector<TiendaFachada::ItemCarrito> carrito = {
+        {"Laptop Pro 15\"", 1, 22999.00},
+        {"Mouse Inalambrico", 2, 599.00},
+        {"Cable USB-C", 3, 199.00}
+    };
+
+    // El cliente solo llama un metodo para todo el proceso
+    bool exito = tienda.realizarCompra(cliente, carrito);
+
+    std::cout << "\n=== Resultado ===" << std::endl;
+    std::cout << "Compra " << (exito ? "exitosa" : "fallida") << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Tienda Online (Patron Facade) ===
+
+  [1/5] Verificando inventario...
+    [Inventario] Verificando stock: Laptop Pro 15" x1
+    [Inventario] Reservado: Laptop Pro 15" x1
+    [Inventario] Verificando stock: Mouse Inalambrico x2
+    [Inventario] Reservado: Mouse Inalambrico x2
+    [Inventario] Verificando stock: Cable USB-C x3
+    [Inventario] Reservado: Cable USB-C x3
+
+  [2/5] Procesando pago...
+    [Pago] Validando tarjeta: ****1234
+    [Pago] Cobrando $24794.00 MXN
+
+  [3/5] Generando factura...
+    [Factura] Generada: FAC-XXXX para Maria Garcia
+    [Factura] Enviada FAC-XXXX a maria@correo.com
+
+  [4/5] Preparando envio...
+    [Envio] Calculando costo a: Av. Reforma 123, CDMX
+    [Envio] Guia creada: GUIA-XXXXX
+
+  [5/5] Enviando notificaciones...
+    [Notif] Email a maria@correo.com: Compra confirmada
+    [Notif] SMS a +52-555-1234: Compra confirmada. Guia: GUIA-XXXXX
+
+=== Resultado ===
+Compra exitosa
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QFile>
+#include <QTextStream>
+#include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
+
+// =====================================================
+// Demostracion del Facade en Qt: Creacion de una fachada
+// que simplifica operaciones comunes de archivo + JSON.
+//
+// Qt ya usa Facade internamente:
+//   QFile = Fachada sobre QIODevice + QFileDevice
+//   QNetworkAccessManager = Fachada sobre sockets + SSL + HTTP
+//
+// Aqui creamos nuestra propia fachada para operaciones comunes.
+// =====================================================
+
+// === Subsistema Qt: Multiples clases para manejar config ===
+// (QFile, QTextStream, QJsonDocument, QJsonObject, QDir)
+
+// === Fachada: Simplifica la gestion de configuracion ===
+class ConfiguracionFachada {
+public:
+    // Cargar configuracion desde archivo JSON (una sola llamada)
+    static QJsonObject cargar(const QString& ruta) {
+        QFile archivo(ruta);
+        if (!archivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "No se pudo abrir:" << ruta;
+            return {};
+        }
+
+        QByteArray datos = archivo.readAll();
+        archivo.close();
+
+        QJsonParseError error;
+        QJsonDocument doc = QJsonDocument::fromJson(datos, &error);
+        if (error.error != QJsonParseError::NoError) {
+            qWarning() << "Error JSON:" << error.errorString();
+            return {};
+        }
+
+        return doc.object();
+    }
+
+    // Guardar configuracion a archivo JSON (una sola llamada)
+    static bool guardar(const QString& ruta, const QJsonObject& config) {
+        // Asegurar que el directorio existe
+        QDir dir = QFileInfo(ruta).absoluteDir();
+        if (!dir.exists()) {
+            dir.mkpath(".");
+        }
+
+        QFile archivo(ruta);
+        if (!archivo.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            qWarning() << "No se pudo escribir:" << ruta;
+            return false;
+        }
+
+        QJsonDocument doc(config);
+        QTextStream stream(&archivo);
+        stream << doc.toJson(QJsonDocument::Indented);
+        archivo.close();
+
+        return true;
+    }
+
+    // Obtener valor con ruta de puntos: "app.ventana.ancho"
+    static QVariant obtenerValor(const QJsonObject& config,
+                                 const QString& clave,
+                                 const QVariant& valorDefecto = {}) {
+        QStringList partes = clave.split('.');
+        QJsonObject actual = config;
+
+        for (int i = 0; i < partes.size() - 1; ++i) {
+            if (!actual.contains(partes[i])) return valorDefecto;
+            actual = actual[partes[i]].toObject();
+        }
+
+        QString ultimaClave = partes.last();
+        if (!actual.contains(ultimaClave)) return valorDefecto;
+
+        return actual[ultimaClave].toVariant();
+    }
+
+    // Establecer valor con ruta de puntos
+    static void establecerValor(QJsonObject& config,
+                                const QString& clave,
+                                const QJsonValue& valor) {
+        QStringList partes = clave.split('.');
+
+        if (partes.size() == 1) {
+            config[clave] = valor;
+            return;
+        }
+
+        // Navegar/crear la estructura anidada
+        QString primeraClave = partes.first();
+        QJsonObject subObj = config[primeraClave].toObject();
+
+        // Reconstruir la clave sin la primera parte
+        partes.removeFirst();
+        QString subClave = partes.join('.');
+
+        establecerValor(subObj, subClave, valor);
+        config[primeraClave] = subObj;
+    }
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    qDebug() << "=== Fachada de Configuracion Qt ===\n";
+
+    // Crear configuracion compleja con una estructura sencilla
+    QJsonObject config;
+
+    // Usar la fachada para establecer valores con notacion de puntos
+    ConfiguracionFachada::establecerValor(config, "app.nombre",
+                                          QJsonValue("MiApp"));
+    ConfiguracionFachada::establecerValor(config, "app.version",
+                                          QJsonValue("2.1.0"));
+    ConfiguracionFachada::establecerValor(config, "app.ventana.ancho",
+                                          QJsonValue(1280));
+    ConfiguracionFachada::establecerValor(config, "app.ventana.alto",
+                                          QJsonValue(720));
+    ConfiguracionFachada::establecerValor(config, "db.host",
+                                          QJsonValue("localhost"));
+    ConfiguracionFachada::establecerValor(config, "db.puerto",
+                                          QJsonValue(5432));
+
+    // Guardar (la fachada maneja QFile + QJsonDocument + QDir)
+    QString ruta = QDir::tempPath() + "/config_test.json";
+    qDebug() << "Guardando en:" << ruta;
+    ConfiguracionFachada::guardar(ruta, config);
+
+    // Cargar (la fachada maneja QFile + QJsonParseError + QJsonDocument)
+    qDebug() << "\nCargando configuracion...";
+    QJsonObject cargada = ConfiguracionFachada::cargar(ruta);
+
+    // Obtener valores con notacion de puntos
+    qDebug() << "\nValores obtenidos:";
+    qDebug() << "  app.nombre:"
+             << ConfiguracionFachada::obtenerValor(cargada, "app.nombre").toString();
+    qDebug() << "  app.ventana.ancho:"
+             << ConfiguracionFachada::obtenerValor(cargada, "app.ventana.ancho").toInt();
+    qDebug() << "  db.host:"
+             << ConfiguracionFachada::obtenerValor(cargada, "db.host").toString();
+    qDebug() << "  db.puerto:"
+             << ConfiguracionFachada::obtenerValor(cargada, "db.puerto").toInt();
+
+    // Valor por defecto cuando no existe
+    qDebug() << "  cache.activo (defecto):"
+             << ConfiguracionFachada::obtenerValor(cargada, "cache.activo", true).toBool();
+
+    // Limpiar archivo temporal
+    QFile::remove(ruta);
+
+    qDebug() << "\n=== Fachadas nativas de Qt ===";
+    qDebug() << "QFile: Fachada sobre QIODevice + QFileDevice + handles OS";
+    qDebug() << "QNetworkAccessManager: Fachada sobre sockets + SSL + HTTP + cookies";
+    qDebug() << "QSqlDatabase: Fachada sobre drivers + conexiones + pools SQL";
+
+    return 0;
+}
+```
+<---Ejemplo con Qt Result--->
+=== Fachada de Configuracion Qt ===
+
+Guardando en: "/tmp/config_test.json"
+
+Cargando configuracion...
+
+Valores obtenidos:
+  app.nombre: "MiApp"
+  app.ventana.ancho: 1280
+  db.host: "localhost"
+  db.puerto: 5432
+  cache.activo (defecto): true
+
+=== Fachadas nativas de Qt ===
+QFile: Fachada sobre QIODevice + QFileDevice + handles OS
+QNetworkAccessManager: Fachada sobre sockets + SSL + HTTP + cookies
+QSqlDatabase: Fachada sobre drivers + conexiones + pools SQL

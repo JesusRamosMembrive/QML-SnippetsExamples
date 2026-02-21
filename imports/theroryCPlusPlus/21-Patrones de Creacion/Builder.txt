@@ -1,0 +1,756 @@
+<---EXPLANATION--->
+### Builder
+
+El patrón **Builder** (Constructor) es un patrón de diseño creacional que permite **construir objetos complejos paso a paso**. A diferencia de otros patrones que crean objetos de una sola vez, Builder te permite producir distintas representaciones de un objeto usando el **mismo proceso de construcción**.
+
+#### Problema
+
+Imagina que necesitas crear objetos de tipo `Casa`. Una casa puede tener paredes, techo, puertas, ventanas, garaje, piscina, jardín, sistema de calefacción, etc. El problema aparece cuando:
+
+- **Constructor telescópico:** Terminas con constructores de 10+ parámetros, la mayoría opcionales: `Casa(paredes, techo, puertas, ventanas, garaje, piscina, jardin, calefaccion, ...)`.
+- **Orden de parámetros confuso:** `Casa(4, 1, 2, 6, true, false, true, true)` — imposible saber qué significa cada valor.
+- **Objetos en estado incompleto:** Si usas setters, el objeto puede usarse antes de estar completamente configurado.
+- **Múltiples representaciones:** Quieres crear casas de madera, de ladrillo y de cristal con el mismo proceso.
+
+#### Solución
+
+El patrón Builder separa la **construcción** del objeto de su **representación**:
+
+1. **Builder (interfaz):** Define los pasos de construcción (`construirParedes()`, `construirTecho()`, etc.).
+2. **Concrete Builder:** Implementa los pasos para una representación específica.
+3. **Producto:** El objeto complejo que se está construyendo.
+4. **Director (opcional):** Orquesta el orden de los pasos de construcción.
+
+```cpp
+// El builder define los pasos
+class CasaBuilder {
+public:
+    virtual CasaBuilder& construirParedes(int n) = 0;
+    virtual CasaBuilder& construirTecho(const std::string& tipo) = 0;
+    virtual CasaBuilder& agregarGaraje() = 0;
+    virtual Casa obtenerResultado() = 0;
+};
+```
+
+##### Fluent Interface
+
+Una variante muy popular es el **Fluent Builder**, donde cada método retorna una referencia al propio builder, permitiendo encadenar llamadas:
+
+```cpp
+auto casa = CasaBuilder()
+    .construirParedes(4)
+    .construirTecho("tejas")
+    .agregarGaraje()
+    .agregarJardin()
+    .build();
+```
+
+#### Estructura
+
+Los componentes del patrón Builder son:
+
+- **Builder (interfaz):** Declara los pasos de construcción comunes a todos los builders.
+- **ConcreteBuilder:** Proporciona implementación específica de los pasos. Puede producir productos que no comparten interfaz común.
+- **Product:** El objeto resultante. Los productos de distintos builders no necesitan pertenecer a la misma jerarquía.
+- **Director (opcional):** Clase que define el **orden** en que se ejecutan los pasos. Útil para reutilizar configuraciones específicas.
+
+#### Implementación en C++
+
+La implementación moderna suele usar la variante **Fluent** con retorno de referencia:
+
+```cpp
+class Consulta {
+    std::string tabla_;
+    std::string condicion_;
+    int limite_ = 0;
+public:
+    Consulta& desde(const std::string& tabla) {
+        tabla_ = tabla; return *this;
+    }
+    Consulta& donde(const std::string& cond) {
+        condicion_ = cond; return *this;
+    }
+    Consulta& limite(int n) {
+        limite_ = n; return *this;
+    }
+    std::string build() const { /* generar SQL */ }
+};
+```
+
+> **Nota:** En C++ moderno, el Builder es especialmente útil cuando combinas `std::optional` para parámetros opcionales y el builder garantiza que los obligatorios se establecen antes de llamar a `build()`.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+
+- **Construcción paso a paso:** Puedes diferir o ejecutar pasos condicionalmente.
+- **Reutilización de código:** El mismo código de construcción sirve para distintas representaciones.
+- **Principio de Responsabilidad Única:** Aísla la lógica de construcción compleja del código de negocio.
+- **Fluent interface:** Código más legible y expresivo al encadenar llamadas.
+- **Objetos inmutables:** Puedes construir paso a paso y producir un objeto `const` al final.
+
+##### Desventajas
+
+- **Más clases:** Necesitas clases adicionales (Builder, posiblemente Director).
+- **Duplicación de campos:** El builder suele duplicar los campos del producto.
+- **Overhead en productos simples:** Para objetos con pocos parámetros, un constructor normal es más apropiado.
+
+#### Aplicación en Qt
+
+Qt usa el patrón Builder en varios contextos:
+
+- **`QUrl`:** Se construye paso a paso con `setScheme()`, `setHost()`, `setPath()`, `setQuery()`.
+- **`QSqlQuery`:** Construyes la consulta progresivamente con `prepare()`, `bindValue()`, `exec()`.
+- **`QProcess`:** Configuras el proceso con `setProgram()`, `setArguments()`, `setWorkingDirectory()` antes de `start()`.
+- **`QNetworkRequest`:** Se configura con `setUrl()`, `setHeader()`, `setRawHeader()` antes de usarse.
+- **`QCommandLineParser`:** Patrón builder para definir opciones de línea de comandos.
+
+```cpp
+// QUrl como builder
+QUrl url;
+url.setScheme("https");
+url.setHost("api.ejemplo.com");
+url.setPath("/v1/usuarios");
+url.setQuery("activo=true&limite=10");
+// url.toString() -> "https://api.ejemplo.com/v1/usuarios?activo=true&limite=10"
+```
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+
+// === Producto ===
+class Pizza {
+public:
+    void setMasa(const std::string& masa) { masa_ = masa; }
+    void setSalsa(const std::string& salsa) { salsa_ = salsa; }
+    void setQueso(const std::string& queso) { queso_ = queso; }
+    void agregarTopping(const std::string& topping) {
+        toppings_.push_back(topping);
+    }
+
+    void mostrar() const {
+        std::cout << "  Pizza:" << std::endl;
+        std::cout << "    Masa: " << masa_ << std::endl;
+        std::cout << "    Salsa: " << salsa_ << std::endl;
+        std::cout << "    Queso: " << queso_ << std::endl;
+        std::cout << "    Toppings: ";
+        for (size_t i = 0; i < toppings_.size(); ++i) {
+            if (i > 0) std::cout << ", ";
+            std::cout << toppings_[i];
+        }
+        std::cout << std::endl;
+    }
+
+private:
+    std::string masa_;
+    std::string salsa_;
+    std::string queso_;
+    std::vector<std::string> toppings_;
+};
+
+// === Builder con Fluent Interface ===
+class PizzaBuilder {
+public:
+    PizzaBuilder& masa(const std::string& masa) {
+        pizza_.setMasa(masa);
+        return *this;
+    }
+
+    PizzaBuilder& salsa(const std::string& salsa) {
+        pizza_.setSalsa(salsa);
+        return *this;
+    }
+
+    PizzaBuilder& queso(const std::string& queso) {
+        pizza_.setQueso(queso);
+        return *this;
+    }
+
+    PizzaBuilder& topping(const std::string& topping) {
+        pizza_.agregarTopping(topping);
+        return *this;
+    }
+
+    // Construir y devolver el producto final
+    Pizza build() {
+        Pizza resultado = std::move(pizza_);
+        pizza_ = Pizza();  // Resetear para reutilizar el builder
+        return resultado;
+    }
+
+private:
+    Pizza pizza_;
+};
+
+// === Director (opcional) - define recetas predefinidas ===
+class Pizzero {
+public:
+    Pizza hacerMargarita(PizzaBuilder& builder) {
+        return builder
+            .masa("fina")
+            .salsa("tomate")
+            .queso("mozzarella fresca")
+            .topping("albahaca")
+            .topping("aceite de oliva")
+            .build();
+    }
+
+    Pizza hacerCuatroQuesos(PizzaBuilder& builder) {
+        return builder
+            .masa("gruesa")
+            .salsa("crema")
+            .queso("mozzarella")
+            .topping("gorgonzola")
+            .topping("parmesano")
+            .topping("emmental")
+            .build();
+    }
+};
+
+int main() {
+    std::cout << "=== Builder Basico ===" << std::endl;
+
+    PizzaBuilder builder;
+
+    // Construcción manual paso a paso
+    std::cout << "\n--- Pizza personalizada ---" << std::endl;
+    Pizza custom = builder
+        .masa("integral")
+        .salsa("barbacoa")
+        .queso("cheddar")
+        .topping("pollo")
+        .topping("cebolla")
+        .topping("pimiento")
+        .build();
+    custom.mostrar();
+
+    // Usando el Director para recetas predefinidas
+    Pizzero pizzero;
+
+    std::cout << "\n--- Pizza Margarita ---" << std::endl;
+    Pizza margarita = pizzero.hacerMargarita(builder);
+    margarita.mostrar();
+
+    std::cout << "\n--- Pizza Cuatro Quesos ---" << std::endl;
+    Pizza cuatroQuesos = pizzero.hacerCuatroQuesos(builder);
+    cuatroQuesos.mostrar();
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Builder Basico ===
+
+--- Pizza personalizada ---
+  Pizza:
+    Masa: integral
+    Salsa: barbacoa
+    Queso: cheddar
+    Toppings: pollo, cebolla, pimiento
+
+--- Pizza Margarita ---
+  Pizza:
+    Masa: fina
+    Salsa: tomate
+    Queso: mozzarella fresca
+    Toppings: albahaca, aceite de oliva
+
+--- Pizza Cuatro Quesos ---
+  Pizza:
+    Masa: gruesa
+    Salsa: crema
+    Queso: mozzarella
+    Toppings: gorgonzola, parmesano, emmental
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <optional>
+#include <memory>
+
+// =============================================
+// Producto: Consulta SQL
+// =============================================
+class ConsultaSQL {
+public:
+    std::string toString() const {
+        std::ostringstream ss;
+        ss << "SELECT " << (columnas_.empty() ? "*" : columnas_);
+        ss << " FROM " << tabla_;
+
+        if (!joins_.empty()) {
+            for (const auto& join : joins_) {
+                ss << " " << join;
+            }
+        }
+        if (condicion_.has_value()) {
+            ss << " WHERE " << condicion_.value();
+        }
+        if (ordenar_.has_value()) {
+            ss << " ORDER BY " << ordenar_.value();
+        }
+        if (limite_.has_value()) {
+            ss << " LIMIT " << limite_.value();
+        }
+        if (offset_.has_value()) {
+            ss << " OFFSET " << offset_.value();
+        }
+        ss << ";";
+        return ss.str();
+    }
+
+    // Campos accesibles para el builder
+    std::string tabla_;
+    std::string columnas_;
+    std::vector<std::string> joins_;
+    std::optional<std::string> condicion_;
+    std::optional<std::string> ordenar_;
+    std::optional<int> limite_;
+    std::optional<int> offset_;
+};
+
+// =============================================
+// Builder Fluent para consultas SQL
+// =============================================
+class QueryBuilder {
+public:
+    QueryBuilder& select(const std::string& columnas) {
+        consulta_.columnas_ = columnas;
+        return *this;
+    }
+
+    QueryBuilder& from(const std::string& tabla) {
+        consulta_.tabla_ = tabla;
+        return *this;
+    }
+
+    QueryBuilder& where(const std::string& condicion) {
+        consulta_.condicion_ = condicion;
+        return *this;
+    }
+
+    QueryBuilder& join(const std::string& tabla,
+                       const std::string& condicion) {
+        std::string joinStr = "JOIN " + tabla + " ON " + condicion;
+        consulta_.joins_.push_back(joinStr);
+        return *this;
+    }
+
+    QueryBuilder& leftJoin(const std::string& tabla,
+                           const std::string& condicion) {
+        std::string joinStr = "LEFT JOIN " + tabla + " ON " + condicion;
+        consulta_.joins_.push_back(joinStr);
+        return *this;
+    }
+
+    QueryBuilder& orderBy(const std::string& columna,
+                          const std::string& direccion = "ASC") {
+        consulta_.ordenar_ = columna + " " + direccion;
+        return *this;
+    }
+
+    QueryBuilder& limit(int n) {
+        consulta_.limite_ = n;
+        return *this;
+    }
+
+    QueryBuilder& offset(int n) {
+        consulta_.offset_ = n;
+        return *this;
+    }
+
+    // Construir la consulta final
+    ConsultaSQL build() {
+        ConsultaSQL resultado = std::move(consulta_);
+        consulta_ = ConsultaSQL();  // Resetear
+        return resultado;
+    }
+
+private:
+    ConsultaSQL consulta_;
+};
+
+// =============================================
+// Producto: Configuración de conexión HTTP
+// =============================================
+class HttpRequest {
+public:
+    void mostrar() const {
+        std::cout << "  " << metodo_ << " " << url_ << std::endl;
+        for (const auto& [clave, valor] : headers_) {
+            std::cout << "  " << clave << ": " << valor << std::endl;
+        }
+        if (!body_.empty()) {
+            std::cout << "  Body: " << body_ << std::endl;
+        }
+        std::cout << "  Timeout: " << timeout_ << "ms" << std::endl;
+    }
+
+    std::string metodo_ = "GET";
+    std::string url_;
+    std::vector<std::pair<std::string, std::string>> headers_;
+    std::string body_;
+    int timeout_ = 30000;
+};
+
+class HttpRequestBuilder {
+public:
+    HttpRequestBuilder& get(const std::string& url) {
+        request_.metodo_ = "GET";
+        request_.url_ = url;
+        return *this;
+    }
+
+    HttpRequestBuilder& post(const std::string& url) {
+        request_.metodo_ = "POST";
+        request_.url_ = url;
+        return *this;
+    }
+
+    HttpRequestBuilder& header(const std::string& clave,
+                               const std::string& valor) {
+        request_.headers_.emplace_back(clave, valor);
+        return *this;
+    }
+
+    HttpRequestBuilder& body(const std::string& body) {
+        request_.body_ = body;
+        return *this;
+    }
+
+    HttpRequestBuilder& timeout(int ms) {
+        request_.timeout_ = ms;
+        return *this;
+    }
+
+    HttpRequest build() {
+        HttpRequest resultado = std::move(request_);
+        request_ = HttpRequest();
+        return resultado;
+    }
+
+private:
+    HttpRequest request_;
+};
+
+int main() {
+    std::cout << "=== Builder Avanzado ===" << std::endl;
+
+    // ---- Ejemplo 1: Query Builder SQL ----
+    std::cout << "\n--- Query Builder ---" << std::endl;
+    QueryBuilder qb;
+
+    auto consulta1 = qb
+        .select("u.nombre, u.email, p.titulo")
+        .from("usuarios u")
+        .join("posts p", "p.usuario_id = u.id")
+        .where("u.activo = true")
+        .orderBy("u.nombre")
+        .limit(10)
+        .build();
+
+    std::cout << "Consulta 1:\n  " << consulta1.toString() << std::endl;
+
+    auto consulta2 = qb
+        .select("COUNT(*)")
+        .from("productos")
+        .where("precio > 100 AND categoria = 'electronica'")
+        .build();
+
+    std::cout << "\nConsulta 2:\n  " << consulta2.toString() << std::endl;
+
+    auto consulta3 = qb
+        .select("*")
+        .from("logs")
+        .leftJoin("usuarios", "usuarios.id = logs.user_id")
+        .orderBy("logs.fecha", "DESC")
+        .limit(50)
+        .offset(100)
+        .build();
+
+    std::cout << "\nConsulta 3:\n  " << consulta3.toString() << std::endl;
+
+    // ---- Ejemplo 2: HTTP Request Builder ----
+    std::cout << "\n--- HTTP Request Builder ---" << std::endl;
+    HttpRequestBuilder rb;
+
+    auto getReq = rb
+        .get("https://api.ejemplo.com/usuarios")
+        .header("Authorization", "Bearer token123")
+        .header("Accept", "application/json")
+        .timeout(5000)
+        .build();
+
+    std::cout << "GET Request:" << std::endl;
+    getReq.mostrar();
+
+    std::cout << std::endl;
+
+    auto postReq = rb
+        .post("https://api.ejemplo.com/usuarios")
+        .header("Content-Type", "application/json")
+        .header("Authorization", "Bearer token123")
+        .body("{\"nombre\": \"Carlos\", \"email\": \"c@mail.com\"}")
+        .timeout(10000)
+        .build();
+
+    std::cout << "POST Request:" << std::endl;
+    postReq.mostrar();
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Builder Avanzado ===
+
+--- Query Builder ---
+Consulta 1:
+  SELECT u.nombre, u.email, p.titulo FROM usuarios u JOIN posts p ON p.usuario_id = u.id WHERE u.activo = true ORDER BY u.nombre ASC LIMIT 10;
+
+Consulta 2:
+  SELECT COUNT(*) FROM productos WHERE precio > 100 AND categoria = 'electronica';
+
+Consulta 3:
+  SELECT * FROM logs LEFT JOIN usuarios ON usuarios.id = logs.user_id ORDER BY logs.fecha DESC LIMIT 50 OFFSET 100;
+
+--- HTTP Request Builder ---
+GET Request:
+  GET https://api.ejemplo.com/usuarios
+  Authorization: Bearer token123
+  Accept: application/json
+  Timeout: 5000ms
+
+POST Request:
+  POST https://api.ejemplo.com/usuarios
+  Content-Type: application/json
+  Authorization: Bearer token123
+  Body: {"nombre": "Carlos", "email": "c@mail.com"}
+  Timeout: 10000ms
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QDebug>
+#include <QUrl>
+#include <QUrlQuery>
+#include <QString>
+#include <QStringList>
+
+// =============================================
+// Builder personalizado para URLs de API REST
+// Similar a cómo Qt usa QUrl internamente
+// =============================================
+class ApiUrlBuilder {
+public:
+    ApiUrlBuilder& esquema(const QString& esquema) {
+        url_.setScheme(esquema);
+        return *this;
+    }
+
+    ApiUrlBuilder& host(const QString& host) {
+        url_.setHost(host);
+        return *this;
+    }
+
+    ApiUrlBuilder& puerto(int puerto) {
+        url_.setPort(puerto);
+        return *this;
+    }
+
+    ApiUrlBuilder& ruta(const QString& ruta) {
+        ruta_ = ruta;
+        return *this;
+    }
+
+    ApiUrlBuilder& segmento(const QString& segmento) {
+        if (!ruta_.endsWith('/')) ruta_ += '/';
+        ruta_ += segmento;
+        return *this;
+    }
+
+    ApiUrlBuilder& parametro(const QString& clave,
+                             const QString& valor) {
+        query_.addQueryItem(clave, valor);
+        return *this;
+    }
+
+    ApiUrlBuilder& version(int v) {
+        ruta_ = QString("/v%1").arg(v);
+        return *this;
+    }
+
+    QUrl build() {
+        url_.setPath(ruta_);
+        if (!query_.isEmpty()) {
+            url_.setQuery(query_);
+        }
+        QUrl resultado = url_;
+        // Resetear para reutilizar
+        url_ = QUrl();
+        ruta_.clear();
+        query_ = QUrlQuery();
+        return resultado;
+    }
+
+private:
+    QUrl url_;
+    QString ruta_;
+    QUrlQuery query_;
+};
+
+// =============================================
+// Builder para mensajes de log formateados
+// =============================================
+class LogMessageBuilder {
+public:
+    LogMessageBuilder& nivel(const QString& nivel) {
+        nivel_ = nivel;
+        return *this;
+    }
+
+    LogMessageBuilder& modulo(const QString& modulo) {
+        modulo_ = modulo;
+        return *this;
+    }
+
+    LogMessageBuilder& mensaje(const QString& msg) {
+        mensaje_ = msg;
+        return *this;
+    }
+
+    LogMessageBuilder& dato(const QString& clave,
+                            const QString& valor) {
+        datos_.append(QString("%1=%2").arg(clave, valor));
+        return *this;
+    }
+
+    QString build() {
+        QString resultado = QString("[%1][%2] %3")
+            .arg(nivel_, modulo_, mensaje_);
+
+        if (!datos_.isEmpty()) {
+            resultado += " {" + datos_.join(", ") + "}";
+        }
+
+        // Resetear
+        nivel_.clear();
+        modulo_.clear();
+        mensaje_.clear();
+        datos_.clear();
+
+        return resultado;
+    }
+
+private:
+    QString nivel_;
+    QString modulo_;
+    QString mensaje_;
+    QStringList datos_;
+};
+
+int main(int argc, char *argv[]) {
+    QCoreApplication app(argc, argv);
+
+    qDebug() << "=== Builder con Qt ===";
+
+    // --- Builder de URL usando QUrl internamente ---
+    qDebug() << "\n--- API URL Builder ---";
+    ApiUrlBuilder urlBuilder;
+
+    QUrl url1 = urlBuilder
+        .esquema("https")
+        .host("api.miapp.com")
+        .version(2)
+        .segmento("usuarios")
+        .parametro("activo", "true")
+        .parametro("limite", "25")
+        .build();
+
+    qDebug() << "URL 1:" << url1.toString();
+
+    QUrl url2 = urlBuilder
+        .esquema("https")
+        .host("api.miapp.com")
+        .puerto(8443)
+        .version(1)
+        .segmento("productos")
+        .segmento("categorias")
+        .parametro("orden", "precio")
+        .parametro("dir", "desc")
+        .build();
+
+    qDebug() << "URL 2:" << url2.toString();
+
+    // QUrl nativo también funciona como builder
+    qDebug() << "\n--- QUrl nativo como builder ---";
+    QUrl urlNativo;
+    urlNativo.setScheme("https");
+    urlNativo.setHost("ejemplo.com");
+    urlNativo.setPath("/api/datos");
+    QUrlQuery queryNativo;
+    queryNativo.addQueryItem("formato", "json");
+    queryNativo.addQueryItem("pagina", "3");
+    urlNativo.setQuery(queryNativo);
+    qDebug() << "URL nativo:" << urlNativo.toString();
+
+    // --- Log Message Builder ---
+    qDebug() << "\n--- Log Message Builder ---";
+    LogMessageBuilder logBuilder;
+
+    QString log1 = logBuilder
+        .nivel("INFO")
+        .modulo("BaseDatos")
+        .mensaje("Conexion establecida")
+        .dato("host", "localhost")
+        .dato("puerto", "5432")
+        .build();
+    qDebug().noquote() << log1;
+
+    QString log2 = logBuilder
+        .nivel("ERROR")
+        .modulo("Red")
+        .mensaje("Timeout en peticion")
+        .dato("url", "api.ejemplo.com/datos")
+        .dato("timeout", "5000ms")
+        .dato("intentos", "3")
+        .build();
+    qDebug().noquote() << log2;
+
+    QString log3 = logBuilder
+        .nivel("DEBUG")
+        .modulo("Cache")
+        .mensaje("Elemento almacenado")
+        .build();
+    qDebug().noquote() << log3;
+
+    return 0;
+}
+```
+<---Ejemplo con Qt Result--->
+=== Builder con Qt ===
+
+--- API URL Builder ---
+URL 1: "https://api.miapp.com/v2/usuarios?activo=true&limite=25"
+URL 2: "https://api.miapp.com:8443/v1/productos/categorias?orden=precio&dir=desc"
+
+--- QUrl nativo como builder ---
+URL nativo: "https://ejemplo.com/api/datos?formato=json&pagina=3"
+
+--- Log Message Builder ---
+[INFO][BaseDatos] Conexion establecida {host=localhost, puerto=5432}
+[ERROR][Red] Timeout en peticion {url=api.ejemplo.com/datos, timeout=5000ms, intentos=3}
+[DEBUG][Cache] Elemento almacenado

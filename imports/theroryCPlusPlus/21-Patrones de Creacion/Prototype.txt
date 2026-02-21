@@ -1,0 +1,821 @@
+<---EXPLANATION--->
+### Prototype
+
+El patrón **Prototype** (Prototipo) es un patrón de diseño creacional que permite **crear nuevos objetos clonando una instancia existente**, en lugar de crearlos desde cero. Esto es especialmente útil cuando la creación de un objeto es costosa o compleja, y necesitas producir copias con pequeñas variaciones.
+
+#### Problema
+
+Imagina que estás desarrollando un editor gráfico donde los usuarios pueden crear formas (círculos, rectángulos, líneas). Cada forma tiene muchas propiedades: color, grosor de borde, relleno, sombra, posición, transformaciones, etc. Los problemas que aparecen son:
+
+- **Configuración repetitiva:** El usuario configura una forma compleja (color especial, gradiente, sombra personalizada) y quiere crear varias copias similares.
+- **Clases desconocidas:** Tu código trabaja con la interfaz `Forma`, pero no sabe si es un `Circulo` o un `Rectangulo` — no puede usar `new Circulo(...)` directamente.
+- **Inicialización costosa:** Algunos objetos requieren lectura de archivos, cálculos pesados o conexiones de red para inicializarse.
+- **Subclases complejas:** Con muchas subclases, crear un factory para cada una se vuelve inmanejable.
+
+#### Solución
+
+El patrón Prototype resuelve esto delegando la clonación al propio objeto:
+
+1. **Interfaz Prototype:** Declara un método `clonar()` que retorna una copia del objeto.
+2. **Prototipos concretos:** Cada clase implementa `clonar()` copiando sus propios atributos.
+3. **Registro de prototipos (opcional):** Un almacén de prototipos pre-configurados que se pueden clonar bajo demanda.
+
+```cpp
+class Forma {
+public:
+    virtual ~Forma() = default;
+    virtual std::unique_ptr<Forma> clonar() const = 0;
+    virtual void dibujar() const = 0;
+};
+
+class Circulo : public Forma {
+public:
+    std::unique_ptr<Forma> clonar() const override {
+        return std::make_unique<Circulo>(*this);  // Copia
+    }
+};
+```
+
+#### Estructura
+
+Los componentes del patrón Prototype son:
+
+- **Prototype (interfaz):** Declara el método `clonar()`. Generalmente es una clase abstracta o interfaz.
+- **ConcretePrototype:** Implementa `clonar()` usando su propio constructor de copia. Cada subclase sabe cómo copiarse a sí misma.
+- **Cliente:** Crea nuevos objetos pidiendo a un prototipo que se clone, sin conocer la clase concreta.
+- **Registro de Prototipos (opcional):** Almacena prototipos pre-configurados indexados por clave (string, enum) para acceso rápido.
+
+##### Copia profunda vs copia superficial
+
+Es fundamental entender la diferencia:
+
+- **Copia superficial (shallow copy):** Copia los valores de los campos. Si hay punteros, copia la dirección (ambos objetos apuntan al mismo recurso).
+- **Copia profunda (deep copy):** Copia recursivamente todos los objetos referenciados, creando copias independientes.
+
+```cpp
+// Copia profunda: cada clon tiene su propia copia de los datos
+std::unique_ptr<Forma> clonar() const override {
+    auto copia = std::make_unique<FormaCompleja>(*this);
+    copia->datos_ = std::make_unique<Datos>(*this->datos_);  // Clonar datos internos
+    return copia;
+}
+```
+
+#### Implementación en C++
+
+En C++, el patrón Prototype se implementa usando el **constructor de copia** combinado con un método virtual `clonar()`:
+
+```cpp
+class Documento {
+public:
+    virtual ~Documento() = default;
+    // El método clonar() usa el constructor de copia internamente
+    virtual std::unique_ptr<Documento> clonar() const = 0;
+};
+
+class Informe : public Documento {
+    std::string titulo_;
+    std::vector<std::string> secciones_;
+public:
+    Informe(const std::string& titulo) : titulo_(titulo) {}
+
+    // Constructor de copia (generado o personalizado)
+    Informe(const Informe&) = default;
+
+    std::unique_ptr<Documento> clonar() const override {
+        // Usa el constructor de copia de la clase concreta
+        return std::make_unique<Informe>(*this);
+    }
+};
+```
+
+> **Nota:** El constructor de copia por defecto de C++ hace copia superficial. Si tu clase tiene `std::unique_ptr` u otros recursos, debes escribir un constructor de copia personalizado que haga copia profunda.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+
+- **Clonar sin acoplar:** El cliente clona objetos sin conocer sus clases concretas.
+- **Eliminar inicialización repetitiva:** Clonas un prototipo pre-configurado en lugar de repetir la configuración.
+- **Producir objetos complejos fácilmente:** Un objeto con muchas dependencias se clona en un paso.
+- **Alternativa a la herencia:** En lugar de crear subclases para cada configuración, clonas y modificas prototipos.
+
+##### Desventajas
+
+- **Copia profunda compleja:** Objetos con referencias circulares o recursos compartidos son difíciles de clonar correctamente.
+- **Constructor de copia necesario:** Cada clase debe implementar correctamente su constructor de copia.
+- **Oculta dependencias:** Al clonar, puedes copiar accidentalmente dependencias que no deberían compartirse.
+
+#### Aplicación en Qt
+
+Qt utiliza conceptos del patrón Prototype en varios contextos:
+
+- **`QMimeData`:** Se puede clonar para transferir datos entre operaciones de drag & drop.
+- **Implicit Sharing (Copy-on-Write):** Clases como `QString`, `QList`, `QImage` usan compartición implícita — la copia es barata (solo copia el puntero) hasta que uno de los objetos se modifica.
+- **`QGraphicsItem`:** Aunque no tiene `clone()` nativo, el patrón se usa frecuentemente para duplicar items en escenas gráficas.
+- **`QVariant`:** Almacena copias de valores de cualquier tipo, efectivamente clonando el dato original.
+- **Serialización:** `QDataStream` permite serializar y deserializar objetos, que es otra forma de clonar.
+
+```cpp
+// Implicit sharing de Qt es una forma optimizada del Prototype
+QString original = "Hola Mundo";
+QString copia = original;   // NO copia los datos (comparten memoria)
+copia[0] = 'h';             // AHORA se hace la copia real (CoW)
+// original sigue siendo "Hola Mundo"
+// copia es "hola Mundo"
+```
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// === Prototype: Forma geométrica ===
+class Forma {
+public:
+    virtual ~Forma() = default;
+
+    // Método clonar - el corazón del patrón Prototype
+    virtual std::unique_ptr<Forma> clonar() const = 0;
+
+    virtual void dibujar() const = 0;
+    virtual std::string tipo() const = 0;
+
+    // Propiedades comunes
+    void setColor(const std::string& color) { color_ = color; }
+    void setPosicion(double x, double y) { x_ = x; y_ = y; }
+    std::string color() const { return color_; }
+
+protected:
+    std::string color_ = "negro";
+    double x_ = 0.0;
+    double y_ = 0.0;
+};
+
+// === Prototipos concretos ===
+class Circulo : public Forma {
+public:
+    Circulo(double radio) : radio_(radio) {}
+
+    // Constructor de copia (usado internamente por clonar)
+    Circulo(const Circulo&) = default;
+
+    std::unique_ptr<Forma> clonar() const override {
+        // Usa el constructor de copia para crear un duplicado exacto
+        return std::make_unique<Circulo>(*this);
+    }
+
+    void dibujar() const override {
+        std::cout << "  Circulo[radio=" << radio_
+                  << ", color=" << color_
+                  << ", pos=(" << x_ << "," << y_ << ")]"
+                  << std::endl;
+    }
+
+    std::string tipo() const override { return "Circulo"; }
+
+    void setRadio(double r) { radio_ = r; }
+
+private:
+    double radio_;
+};
+
+class Rectangulo : public Forma {
+public:
+    Rectangulo(double ancho, double alto)
+        : ancho_(ancho), alto_(alto) {}
+
+    Rectangulo(const Rectangulo&) = default;
+
+    std::unique_ptr<Forma> clonar() const override {
+        return std::make_unique<Rectangulo>(*this);
+    }
+
+    void dibujar() const override {
+        std::cout << "  Rectangulo[" << ancho_ << "x" << alto_
+                  << ", color=" << color_
+                  << ", pos=(" << x_ << "," << y_ << ")]"
+                  << std::endl;
+    }
+
+    std::string tipo() const override { return "Rectangulo"; }
+
+private:
+    double ancho_, alto_;
+};
+
+int main() {
+    std::cout << "=== Prototype Basico ===" << std::endl;
+
+    // Crear un prototipo original con configuración compleja
+    auto circuloOriginal = std::make_unique<Circulo>(50.0);
+    circuloOriginal->setColor("rojo");
+    circuloOriginal->setPosicion(100, 200);
+
+    std::cout << "\nOriginal:" << std::endl;
+    circuloOriginal->dibujar();
+
+    // Clonar el prototipo (obtenemos una copia exacta)
+    auto clon1 = circuloOriginal->clonar();
+    std::cout << "\nClon 1 (copia exacta):" << std::endl;
+    clon1->dibujar();
+
+    // Clonar y modificar la copia
+    auto clon2 = circuloOriginal->clonar();
+    clon2->setColor("azul");
+    clon2->setPosicion(300, 200);
+    std::cout << "\nClon 2 (modificado):" << std::endl;
+    clon2->dibujar();
+
+    // El original no se modificó
+    std::cout << "\nOriginal (sin cambios):" << std::endl;
+    circuloOriginal->dibujar();
+
+    // Clonar un rectángulo
+    std::cout << "\n--- Rectangulo ---" << std::endl;
+    auto rectOriginal = std::make_unique<Rectangulo>(200, 100);
+    rectOriginal->setColor("verde");
+    rectOriginal->setPosicion(50, 50);
+
+    std::cout << "Original:" << std::endl;
+    rectOriginal->dibujar();
+
+    auto rectClon = rectOriginal->clonar();
+    rectClon->setPosicion(300, 50);
+    std::cout << "Clon (reposicionado):" << std::endl;
+    rectClon->dibujar();
+
+    // Clonar sin conocer la clase concreta
+    std::cout << "\n--- Clonacion polimorfica ---" << std::endl;
+    Forma* formaGenerica = circuloOriginal.get();
+    auto clonGenerico = formaGenerica->clonar();
+    std::cout << "Tipo clonado: " << clonGenerico->tipo() << std::endl;
+    clonGenerico->dibujar();
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Prototype Basico ===
+
+Original:
+  Circulo[radio=50, color=rojo, pos=(100,200)]
+
+Clon 1 (copia exacta):
+  Circulo[radio=50, color=rojo, pos=(100,200)]
+
+Clon 2 (modificado):
+  Circulo[radio=50, color=azul, pos=(300,200)]
+
+Original (sin cambios):
+  Circulo[radio=50, color=rojo, pos=(100,200)]
+
+--- Rectangulo ---
+Original:
+  Rectangulo[200x100, color=verde, pos=(50,50)]
+Clon (reposicionado):
+  Rectangulo[200x100, color=verde, pos=(300,50)]
+
+--- Clonacion polimorfica ---
+Tipo clonado: Circulo
+  Circulo[radio=50, color=rojo, pos=(100,200)]
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+// =============================================
+// Prototype con copia profunda y registro
+// =============================================
+
+// Componente interno que necesita copia profunda
+class Estilo {
+public:
+    Estilo(const std::string& colorBorde,
+           const std::string& colorRelleno,
+           int grosorBorde,
+           double opacidad)
+        : colorBorde_(colorBorde)
+        , colorRelleno_(colorRelleno)
+        , grosorBorde_(grosorBorde)
+        , opacidad_(opacidad) {}
+
+    void mostrar() const {
+        std::cout << "    Estilo: borde=" << colorBorde_
+                  << "(" << grosorBorde_ << "px)"
+                  << ", relleno=" << colorRelleno_
+                  << ", opacidad=" << opacidad_
+                  << std::endl;
+    }
+
+    // Getters para modificación post-clonación
+    void setColorRelleno(const std::string& c) { colorRelleno_ = c; }
+    void setOpacidad(double o) { opacidad_ = o; }
+
+private:
+    std::string colorBorde_;
+    std::string colorRelleno_;
+    int grosorBorde_;
+    double opacidad_;
+};
+
+// === Prototype base con copia profunda ===
+class ElementoGrafico {
+public:
+    ElementoGrafico(const std::string& nombre,
+                    std::unique_ptr<Estilo> estilo)
+        : nombre_(nombre)
+        , estilo_(std::move(estilo)) {}
+
+    // Constructor de copia PROFUNDA (obligatorio por unique_ptr)
+    ElementoGrafico(const ElementoGrafico& otro)
+        : nombre_(otro.nombre_)
+        , estilo_(std::make_unique<Estilo>(*otro.estilo_))
+        , etiquetas_(otro.etiquetas_) {}
+
+    virtual ~ElementoGrafico() = default;
+
+    virtual std::unique_ptr<ElementoGrafico> clonar() const = 0;
+    virtual void mostrar() const = 0;
+
+    void setNombre(const std::string& n) { nombre_ = n; }
+    std::string nombre() const { return nombre_; }
+    Estilo& estilo() { return *estilo_; }
+
+    void agregarEtiqueta(const std::string& etq) {
+        etiquetas_.push_back(etq);
+    }
+
+protected:
+    std::string nombre_;
+    std::unique_ptr<Estilo> estilo_;  // Requiere copia profunda
+    std::vector<std::string> etiquetas_;
+
+    void mostrarBase() const {
+        std::cout << "  Nombre: " << nombre_ << std::endl;
+        estilo_->mostrar();
+        if (!etiquetas_.empty()) {
+            std::cout << "    Etiquetas: ";
+            for (size_t i = 0; i < etiquetas_.size(); ++i) {
+                if (i > 0) std::cout << ", ";
+                std::cout << etiquetas_[i];
+            }
+            std::cout << std::endl;
+        }
+    }
+};
+
+// === Prototipos concretos ===
+class Icono : public ElementoGrafico {
+public:
+    Icono(const std::string& nombre,
+          std::unique_ptr<Estilo> estilo,
+          const std::string& recurso,
+          int tamano)
+        : ElementoGrafico(nombre, std::move(estilo))
+        , recurso_(recurso)
+        , tamano_(tamano) {}
+
+    Icono(const Icono&) = default;
+
+    std::unique_ptr<ElementoGrafico> clonar() const override {
+        return std::make_unique<Icono>(*this);
+    }
+
+    void mostrar() const override {
+        std::cout << "  [Icono]" << std::endl;
+        mostrarBase();
+        std::cout << "    Recurso: " << recurso_
+                  << " (" << tamano_ << "px)" << std::endl;
+    }
+
+    void setTamano(int t) { tamano_ = t; }
+
+private:
+    std::string recurso_;
+    int tamano_;
+};
+
+class Tarjeta : public ElementoGrafico {
+public:
+    Tarjeta(const std::string& nombre,
+            std::unique_ptr<Estilo> estilo,
+            const std::string& titulo,
+            const std::string& contenido)
+        : ElementoGrafico(nombre, std::move(estilo))
+        , titulo_(titulo)
+        , contenido_(contenido) {}
+
+    Tarjeta(const Tarjeta&) = default;
+
+    std::unique_ptr<ElementoGrafico> clonar() const override {
+        return std::make_unique<Tarjeta>(*this);
+    }
+
+    void mostrar() const override {
+        std::cout << "  [Tarjeta]" << std::endl;
+        mostrarBase();
+        std::cout << "    Titulo: " << titulo_ << std::endl;
+        std::cout << "    Contenido: " << contenido_ << std::endl;
+    }
+
+    void setTitulo(const std::string& t) { titulo_ = t; }
+    void setContenido(const std::string& c) { contenido_ = c; }
+
+private:
+    std::string titulo_;
+    std::string contenido_;
+};
+
+// =============================================
+// Registro de Prototipos
+// =============================================
+class RegistroPrototipos {
+public:
+    void registrar(const std::string& clave,
+                   std::unique_ptr<ElementoGrafico> prototipo) {
+        prototipos_[clave] = std::move(prototipo);
+    }
+
+    std::unique_ptr<ElementoGrafico> crear(
+            const std::string& clave) const {
+        auto it = prototipos_.find(clave);
+        if (it != prototipos_.end()) {
+            return it->second->clonar();
+        }
+        std::cerr << "  Prototipo '" << clave
+                  << "' no encontrado" << std::endl;
+        return nullptr;
+    }
+
+    void listar() const {
+        std::cout << "Prototipos registrados:" << std::endl;
+        for (const auto& [clave, proto] : prototipos_) {
+            std::cout << "  - " << clave << " ("
+                      << proto->nombre() << ")" << std::endl;
+        }
+    }
+
+private:
+    std::unordered_map<std::string,
+        std::unique_ptr<ElementoGrafico>> prototipos_;
+};
+
+int main() {
+    std::cout << "=== Prototype Avanzado ===" << std::endl;
+
+    // Crear el registro y registrar prototipos pre-configurados
+    RegistroPrototipos registro;
+
+    // Prototipo: Icono de acción principal
+    auto iconoAccion = std::make_unique<Icono>(
+        "icono-accion",
+        std::make_unique<Estilo>("#00D1A9", "transparent", 2, 1.0),
+        "action.svg", 24
+    );
+    iconoAccion->agregarEtiqueta("toolbar");
+    iconoAccion->agregarEtiqueta("accion");
+    registro.registrar("icono-accion", std::move(iconoAccion));
+
+    // Prototipo: Tarjeta de información
+    auto tarjetaInfo = std::make_unique<Tarjeta>(
+        "tarjeta-info",
+        std::make_unique<Estilo>("#333333", "#1E1E1E", 1, 0.95),
+        "Titulo por defecto",
+        "Contenido de ejemplo"
+    );
+    tarjetaInfo->agregarEtiqueta("dashboard");
+    registro.registrar("tarjeta-info", std::move(tarjetaInfo));
+
+    // Listar prototipos disponibles
+    registro.listar();
+
+    // Clonar y personalizar iconos
+    std::cout << "\n--- Creando iconos desde prototipo ---" << std::endl;
+
+    auto icono1 = registro.crear("icono-accion");
+    icono1->setNombre("boton-guardar");
+    std::cout << "\nIcono 1:" << std::endl;
+    icono1->mostrar();
+
+    auto icono2 = registro.crear("icono-accion");
+    icono2->setNombre("boton-eliminar");
+    icono2->estilo().setColorRelleno("#FF4444");
+    std::cout << "\nIcono 2 (modificado):" << std::endl;
+    icono2->mostrar();
+
+    // Clonar y personalizar tarjetas
+    std::cout << "\n--- Creando tarjetas desde prototipo ---" << std::endl;
+
+    auto tarjeta1 = registro.crear("tarjeta-info");
+    if (auto* t = dynamic_cast<Tarjeta*>(tarjeta1.get())) {
+        t->setTitulo("Usuarios Activos");
+        t->setContenido("1,234 usuarios conectados");
+    }
+    std::cout << "\nTarjeta 1:" << std::endl;
+    tarjeta1->mostrar();
+
+    auto tarjeta2 = registro.crear("tarjeta-info");
+    if (auto* t = dynamic_cast<Tarjeta*>(tarjeta2.get())) {
+        t->setTitulo("Rendimiento");
+        t->setContenido("CPU: 45% | RAM: 68%");
+        t->estilo().setOpacidad(0.85);
+    }
+    std::cout << "\nTarjeta 2:" << std::endl;
+    tarjeta2->mostrar();
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Prototype Avanzado ===
+Prototipos registrados:
+  - tarjeta-info (tarjeta-info)
+  - icono-accion (icono-accion)
+
+--- Creando iconos desde prototipo ---
+
+Icono 1:
+  [Icono]
+  Nombre: boton-guardar
+    Estilo: borde=#00D1A9(2px), relleno=transparent, opacidad=1
+    Etiquetas: toolbar, accion
+    Recurso: action.svg (24px)
+
+Icono 2 (modificado):
+  [Icono]
+  Nombre: boton-eliminar
+    Estilo: borde=#00D1A9(2px), relleno=#FF4444, opacidad=1
+    Etiquetas: toolbar, accion
+    Recurso: action.svg (24px)
+
+--- Creando tarjetas desde prototipo ---
+
+Tarjeta 1:
+  [Tarjeta]
+  Nombre: tarjeta-info
+    Estilo: borde=#333333(1px), relleno=#1E1E1E, opacidad=0.95
+    Etiquetas: dashboard
+    Titulo: Usuarios Activos
+    Contenido: 1,234 usuarios conectados
+
+Tarjeta 2:
+  [Tarjeta]
+  Nombre: tarjeta-info
+    Estilo: borde=#333333(1px), relleno=#1E1E1E, opacidad=0.85
+    Etiquetas: dashboard
+    Titulo: Rendimiento
+    Contenido: CPU: 45% | RAM: 68%
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QDebug>
+#include <QString>
+#include <QVariant>
+#include <QMap>
+#include <memory>
+
+// =============================================
+// Prototype en Qt: Sistema de plantillas de datos
+// Similar a cómo QMimeData y QVariant manejan copias
+// =============================================
+
+// Clase base clonable para elementos de datos
+class DatoBase {
+public:
+    virtual ~DatoBase() = default;
+    virtual std::unique_ptr<DatoBase> clonar() const = 0;
+    virtual void mostrar() const = 0;
+    virtual QString tipo() const = 0;
+};
+
+// Dato de texto enriquecido
+class DatoTexto : public DatoBase {
+public:
+    DatoTexto(const QString& texto, const QString& formato)
+        : texto_(texto), formato_(formato) {}
+
+    DatoTexto(const DatoTexto&) = default;
+
+    std::unique_ptr<DatoBase> clonar() const override {
+        return std::make_unique<DatoTexto>(*this);
+    }
+
+    void mostrar() const override {
+        qDebug() << "  [Texto]" << texto_ << "(" << formato_ << ")";
+    }
+
+    QString tipo() const override { return "texto"; }
+
+    void setTexto(const QString& t) { texto_ = t; }
+
+private:
+    QString texto_;
+    QString formato_;
+};
+
+// Dato de tabla con filas y columnas
+class DatoTabla : public DatoBase {
+public:
+    DatoTabla(int filas, int columnas, const QString& titulo)
+        : filas_(filas), columnas_(columnas), titulo_(titulo) {
+        // Llenar con datos de ejemplo
+        for (int i = 0; i < filas; ++i) {
+            QStringList fila;
+            for (int j = 0; j < columnas; ++j) {
+                fila << QString("C%1F%2").arg(j).arg(i);
+            }
+            datos_.append(fila);
+        }
+    }
+
+    DatoTabla(const DatoTabla&) = default;
+
+    std::unique_ptr<DatoBase> clonar() const override {
+        return std::make_unique<DatoTabla>(*this);
+    }
+
+    void mostrar() const override {
+        qDebug() << "  [Tabla]" << titulo_
+                 << "- Filas:" << filas_
+                 << "Cols:" << columnas_;
+        for (const auto& fila : datos_) {
+            qDebug() << "   " << fila.join(" | ");
+        }
+    }
+
+    QString tipo() const override { return "tabla"; }
+
+    void setTitulo(const QString& t) { titulo_ = t; }
+
+private:
+    int filas_;
+    int columnas_;
+    QString titulo_;
+    QList<QStringList> datos_;
+};
+
+// =============================================
+// Registro de plantillas (Prototype Registry)
+// =============================================
+class PlantillaRegistry {
+public:
+    void registrar(const QString& clave,
+                   std::unique_ptr<DatoBase> plantilla) {
+        plantillas_[clave] = std::move(plantilla);
+    }
+
+    std::unique_ptr<DatoBase> crear(const QString& clave) const {
+        auto it = plantillas_.find(clave);
+        if (it != plantillas_.end()) {
+            return it.value()->clonar();
+        }
+        qWarning() << "Plantilla no encontrada:" << clave;
+        return nullptr;
+    }
+
+    QStringList plantillasDisponibles() const {
+        return plantillas_.keys();
+    }
+
+private:
+    QMap<QString, std::unique_ptr<DatoBase>> plantillas_;
+};
+
+// =============================================
+// Demostración del Implicit Sharing de Qt
+// =============================================
+void demostrarImplicitSharing() {
+    qDebug() << "\n--- Implicit Sharing de Qt (Copy-on-Write) ---";
+
+    // QString usa compartición implícita
+    QString original = "Hola Mundo desde Qt";
+    QString copia1 = original;  // NO copia datos (comparten memoria)
+    QString copia2 = original;
+
+    qDebug() << "Original:" << original;
+    qDebug() << "Copia 1: " << copia1;
+    qDebug() << "Copia 2: " << copia2;
+
+    // Modificar una copia dispara la copia real (CoW)
+    copia1.replace("Hola", "Adios");
+    qDebug() << "\nDespues de modificar copia1:";
+    qDebug() << "Original:" << original;  // Sin cambios
+    qDebug() << "Copia 1: " << copia1;    // Modificada
+
+    // QVariant también clona al copiar
+    qDebug() << "\n--- QVariant como contenedor clonable ---";
+    QVariant v1 = QString("Texto en QVariant");
+    QVariant v2 = v1;  // Copia (con implicit sharing interno)
+    qDebug() << "v1:" << v1.toString();
+    qDebug() << "v2:" << v2.toString();
+    qDebug() << "Son iguales:" << (v1 == v2);
+}
+
+int main(int argc, char *argv[]) {
+    QCoreApplication app(argc, argv);
+
+    qDebug() << "=== Prototype con Qt ===";
+
+    // Crear registro de plantillas
+    PlantillaRegistry registro;
+
+    // Registrar plantillas pre-configuradas
+    registro.registrar("informe-basico",
+        std::make_unique<DatoTexto>(
+            "Informe generado automaticamente", "HTML"));
+
+    registro.registrar("tabla-usuarios",
+        std::make_unique<DatoTabla>(3, 4, "Usuarios del Sistema"));
+
+    registro.registrar("nota-rapida",
+        std::make_unique<DatoTexto>(
+            "Nota: ...", "PlainText"));
+
+    // Listar plantillas
+    qDebug() << "\nPlantillas disponibles:"
+             << registro.plantillasDisponibles();
+
+    // Clonar y personalizar plantillas
+    qDebug() << "\n--- Creando desde plantillas ---";
+
+    auto informe1 = registro.crear("informe-basico");
+    qDebug() << "\nInforme original:";
+    informe1->mostrar();
+
+    auto informe2 = registro.crear("informe-basico");
+    if (auto* t = dynamic_cast<DatoTexto*>(informe2.get())) {
+        t->setTexto("Reporte de ventas Q4 2025");
+    }
+    qDebug() << "\nInforme personalizado:";
+    informe2->mostrar();
+
+    auto tabla1 = registro.crear("tabla-usuarios");
+    qDebug() << "\nTabla clonada:";
+    tabla1->mostrar();
+
+    auto tabla2 = registro.crear("tabla-usuarios");
+    if (auto* t = dynamic_cast<DatoTabla*>(tabla2.get())) {
+        t->setTitulo("Productos en Stock");
+    }
+    qDebug() << "\nTabla renombrada:";
+    tabla2->mostrar();
+
+    // Demostrar implicit sharing de Qt
+    demostrarImplicitSharing();
+
+    return 0;
+}
+```
+<---Ejemplo con Qt Result--->
+=== Prototype con Qt ===
+
+Plantillas disponibles: ("informe-basico", "nota-rapida", "tabla-usuarios")
+
+--- Creando desde plantillas ---
+
+Informe original:
+  [Texto] "Informe generado automaticamente" ( "HTML" )
+
+Informe personalizado:
+  [Texto] "Reporte de ventas Q4 2025" ( "HTML" )
+
+Tabla clonada:
+  [Tabla] "Usuarios del Sistema" - Filas: 3 Cols: 4
+    "C0F0 | C1F0 | C2F0 | C3F0"
+    "C0F1 | C1F1 | C2F1 | C3F1"
+    "C0F2 | C1F2 | C2F2 | C3F2"
+
+Tabla renombrada:
+  [Tabla] "Productos en Stock" - Filas: 3 Cols: 4
+    "C0F0 | C1F0 | C2F0 | C3F0"
+    "C0F1 | C1F1 | C2F1 | C3F1"
+    "C0F2 | C1F2 | C2F2 | C3F2"
+
+--- Implicit Sharing de Qt (Copy-on-Write) ---
+Original: "Hola Mundo desde Qt"
+Copia 1:  "Hola Mundo desde Qt"
+Copia 2:  "Hola Mundo desde Qt"
+
+Despues de modificar copia1:
+Original: "Hola Mundo desde Qt"
+Copia 1:  "Adios Mundo desde Qt"
+
+--- QVariant como contenedor clonable ---
+v1: "Texto en QVariant"
+v2: "Texto en QVariant"
+Son iguales: true

@@ -1,0 +1,445 @@
+<---EXPLANATION--->
+### Singleton
+
+El patrón **Singleton** es un patrón de diseño creacional que garantiza que una clase tenga **una única instancia** en toda la aplicación y proporciona un **punto de acceso global** a dicha instancia. Es uno de los patrones más conocidos y, a la vez, más debatidos por sus implicaciones en el diseño de software.
+
+#### Problema
+
+Imagina que tienes un sistema de **logging** (registro de eventos) en tu aplicación. Necesitas que todos los módulos escriban en el mismo archivo de log, usando la misma configuración. Si cada módulo crea su propia instancia del logger, podrías terminar con:
+
+- **Múltiples archivos de log** abiertos simultáneamente.
+- **Conflictos de escritura** al acceder al mismo recurso.
+- **Configuraciones inconsistentes** entre distintas partes del programa.
+- **Desperdicio de memoria** al duplicar un recurso que debería ser único.
+
+Otros escenarios comunes: gestores de configuración, pools de conexiones a bases de datos, colas de impresión, o el objeto `QApplication` en Qt.
+
+#### Solución
+
+El patrón Singleton resuelve esto de la siguiente manera:
+
+1. **Constructor privado:** Impide que se creen instancias desde fuera de la clase.
+2. **Método estático de acceso:** `getInstance()` devuelve siempre la misma instancia.
+3. **Eliminación de copia y asignación:** Se borran el constructor de copia y el operador de asignación para evitar duplicados.
+
+```cpp
+// Esquema básico
+class Singleton {
+private:
+    Singleton() {}                                  // Constructor privado
+    static Singleton* instancia;
+
+public:
+    Singleton(const Singleton&) = delete;           // Sin copia
+    Singleton& operator=(const Singleton&) = delete; // Sin asignación
+
+    static Singleton& getInstance() {
+        static Singleton instancia;                 // Meyers' Singleton
+        return instancia;
+    }
+};
+```
+
+#### Estructura
+
+Los componentes del patrón Singleton son:
+
+- **Singleton (clase concreta):** La clase que se quiere restringir a una sola instancia.
+- **Constructor privado:** Evita la creación externa de objetos.
+- **Método estático `getInstance()`:** Punto de acceso único a la instancia.
+- **Instancia estática:** La única instancia de la clase, almacenada internamente.
+
+##### Variantes comunes
+
+- **Meyers' Singleton:** Usa una variable `static` local dentro de `getInstance()`. Es thread-safe desde C++11.
+- **Singleton con puntero estático:** Usa `new` y un puntero `static`. Requiere sincronización manual en entornos multihilo.
+- **Singleton con `std::call_once`:** Usa `std::once_flag` para garantizar inicialización única en entornos concurrentes.
+
+#### Implementación en C++
+
+La implementación moderna recomendada es el **Meyers' Singleton**, que aprovecha la garantía del estándar C++11 de que las variables `static` locales se inicializan de forma **thread-safe**:
+
+```cpp
+class MiSingleton {
+private:
+    MiSingleton() { /* inicialización */ }
+
+public:
+    MiSingleton(const MiSingleton&) = delete;
+    MiSingleton& operator=(const MiSingleton&) = delete;
+
+    static MiSingleton& getInstance() {
+        static MiSingleton instancia;  // Thread-safe desde C++11
+        return instancia;
+    }
+
+    void hacerAlgo() { /* ... */ }
+};
+```
+
+> **Nota:** Desde C++11, el estándar garantiza que la inicialización de variables `static` locales es thread-safe (§6.7 [stmt.dcl]). No necesitas mutex adicional para el Meyers' Singleton.
+
+#### Ventajas y Desventajas
+
+##### Ventajas
+
+- **Instancia única garantizada:** Imposible crear duplicados accidentalmente.
+- **Acceso global controlado:** Un solo punto de entrada, más ordenado que variables globales.
+- **Inicialización lazy:** La instancia se crea solo cuando se necesita por primera vez.
+- **Thread-safe (Meyers'):** Sin código adicional de sincronización en C++11+.
+
+##### Desventajas
+
+- **Dificulta las pruebas unitarias:** Al ser estado global, es difícil hacer mock o reset entre tests.
+- **Acoplamiento oculto:** Las dependencias no son explícitas en las interfaces.
+- **Viola el Principio de Responsabilidad Única:** La clase gestiona su propia instanciación además de su lógica.
+- **Problemas de orden de destrucción:** Si un Singleton depende de otro, el orden de destrucción puede causar errores.
+
+#### Aplicación en Qt
+
+Qt utiliza el patrón Singleton extensivamente:
+
+- **`QApplication` / `QCoreApplication`:** Solo puede existir una instancia. Se accede con `QCoreApplication::instance()`.
+- **`qmlRegisterSingletonType`:** Registra un tipo C++ como singleton accesible desde QML.
+- **`pragma Singleton` en QML:** Declara un componente QML como singleton (usado en este proyecto con `Style.qml`).
+- **`Q_GLOBAL_STATIC`:** Macro de Qt que crea un singleton global thread-safe con destrucción ordenada.
+
+```cpp
+// Registro de singleton C++ para QML
+qmlRegisterSingletonType<MiConfig>(
+    "com.app", 1, 0, "Config",
+    [](QQmlEngine*, QJSEngine*) -> QObject* {
+        return new MiConfig();
+    }
+);
+```
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <string>
+
+// Singleton básico usando el idioma de Meyers
+class Logger {
+private:
+    // Constructor privado - nadie puede crear instancias desde fuera
+    Logger() : nivel_("INFO") {
+        std::cout << "[Logger] Instancia creada" << std::endl;
+    }
+
+    // Destructor
+    ~Logger() {
+        std::cout << "[Logger] Instancia destruida" << std::endl;
+    }
+
+    std::string nivel_;
+
+public:
+    // Eliminar copia y asignación
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
+
+    // Punto de acceso único - Meyers' Singleton
+    static Logger& getInstance() {
+        static Logger instancia;  // Thread-safe en C++11+
+        return instancia;
+    }
+
+    void setNivel(const std::string& nivel) {
+        nivel_ = nivel;
+    }
+
+    void log(const std::string& mensaje) const {
+        std::cout << "[" << nivel_ << "] " << mensaje << std::endl;
+    }
+};
+
+int main() {
+    std::cout << "=== Singleton Basico ===" << std::endl;
+
+    // Obtener la instancia (se crea aquí por primera vez)
+    Logger& log1 = Logger::getInstance();
+    log1.log("Primera llamada al logger");
+
+    // Obtener otra referencia (es la MISMA instancia)
+    Logger& log2 = Logger::getInstance();
+    log2.setNivel("DEBUG");
+    log2.log("Segunda llamada al logger");
+
+    // Verificar que son la misma instancia
+    std::cout << "Misma instancia: "
+              << (&log1 == &log2 ? "SI" : "NO") << std::endl;
+
+    // Usar directamente sin variable
+    Logger::getInstance().log("Llamada directa");
+
+    std::cout << "=== Fin del programa ===" << std::endl;
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Singleton Basico ===
+[Logger] Instancia creada
+[INFO] Primera llamada al logger
+[DEBUG] Segunda llamada al logger
+Misma instancia: SI
+[DEBUG] Llamada directa
+=== Fin del programa ===
+[Logger] Instancia destruida
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <string>
+#include <map>
+#include <mutex>
+#include <sstream>
+
+// Singleton avanzado: Gestor de configuración thread-safe
+class ConfigManager {
+private:
+    ConfigManager() {
+        std::cout << "[ConfigManager] Inicializando..." << std::endl;
+        // Valores por defecto
+        config_["app.nombre"] = "MiAplicacion";
+        config_["app.version"] = "1.0.0";
+        config_["db.host"] = "localhost";
+        config_["db.puerto"] = "5432";
+    }
+
+    ~ConfigManager() {
+        std::cout << "[ConfigManager] Destruyendo..." << std::endl;
+    }
+
+    std::map<std::string, std::string> config_;
+    mutable std::mutex mutex_;  // Mutex para acceso concurrente
+
+public:
+    ConfigManager(const ConfigManager&) = delete;
+    ConfigManager& operator=(const ConfigManager&) = delete;
+
+    static ConfigManager& getInstance() {
+        static ConfigManager instancia;
+        return instancia;
+    }
+
+    // Establecer un valor de configuración (thread-safe)
+    void set(const std::string& clave, const std::string& valor) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        config_[clave] = valor;
+    }
+
+    // Obtener un valor (thread-safe)
+    std::string get(const std::string& clave,
+                    const std::string& defecto = "") const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = config_.find(clave);
+        if (it != config_.end()) {
+            return it->second;
+        }
+        return defecto;
+    }
+
+    // Verificar si existe una clave
+    bool existe(const std::string& clave) const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return config_.find(clave) != config_.end();
+    }
+
+    // Mostrar toda la configuración
+    void mostrarTodo() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        std::cout << "--- Configuracion actual ---" << std::endl;
+        for (const auto& [clave, valor] : config_) {
+            std::cout << "  " << clave << " = " << valor << std::endl;
+        }
+        std::cout << "----------------------------" << std::endl;
+    }
+};
+
+// Clase que usa el Singleton de configuración
+class ServicioBD {
+public:
+    void conectar() {
+        auto& config = ConfigManager::getInstance();
+        std::string host = config.get("db.host");
+        std::string puerto = config.get("db.puerto");
+        std::cout << "Conectando a BD en " << host
+                  << ":" << puerto << std::endl;
+    }
+};
+
+class ServicioWeb {
+public:
+    void iniciar() {
+        auto& config = ConfigManager::getInstance();
+        std::string nombre = config.get("app.nombre");
+        std::string version = config.get("app.version");
+        std::cout << "Iniciando " << nombre
+                  << " v" << version << std::endl;
+    }
+};
+
+int main() {
+    std::cout << "=== Singleton Avanzado ===" << std::endl;
+
+    // Modificar configuración antes de iniciar servicios
+    ConfigManager::getInstance().set("db.host", "192.168.1.100");
+    ConfigManager::getInstance().set("app.nombre", "ServidorQt");
+
+    // Los servicios usan la misma configuración
+    ServicioBD bd;
+    bd.conectar();
+
+    ServicioWeb web;
+    web.iniciar();
+
+    // Mostrar toda la configuración
+    ConfigManager::getInstance().mostrarTodo();
+
+    // Verificar existencia de claves
+    std::cout << "Existe 'db.host': "
+              << (ConfigManager::getInstance().existe("db.host") ? "SI" : "NO")
+              << std::endl;
+    std::cout << "Existe 'cache.ttl': "
+              << (ConfigManager::getInstance().existe("cache.ttl") ? "SI" : "NO")
+              << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Singleton Avanzado ===
+[ConfigManager] Inicializando...
+Conectando a BD en 192.168.1.100:5432
+Iniciando ServidorQt v1.0.0
+--- Configuracion actual ---
+  app.nombre = ServidorQt
+  app.version = 1.0.0
+  db.host = 192.168.1.100
+  db.puerto = 5432
+----------------------------
+Existe 'db.host': SI
+Existe 'cache.ttl': NO
+[ConfigManager] Destruyendo...
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QDebug>
+#include <QString>
+#include <QMap>
+#include <QMutex>
+#include <QMutexLocker>
+
+// Singleton usando Q_GLOBAL_STATIC (forma idiomática en Qt)
+class AppSettings {
+public:
+    void setValue(const QString& clave, const QString& valor) {
+        QMutexLocker locker(&mutex_);
+        datos_[clave] = valor;
+    }
+
+    QString value(const QString& clave,
+                  const QString& defecto = QString()) const {
+        QMutexLocker locker(&mutex_);
+        return datos_.value(clave, defecto);
+    }
+
+    void mostrar() const {
+        QMutexLocker locker(&mutex_);
+        qDebug() << "=== Configuracion ===";
+        for (auto it = datos_.constBegin(); it != datos_.constEnd(); ++it) {
+            qDebug() << " " << it.key() << "=" << it.value();
+        }
+    }
+
+private:
+    QMap<QString, QString> datos_;
+    mutable QMutex mutex_;
+};
+
+// Macro de Qt para crear un singleton global thread-safe
+// Equivalente a Meyers' Singleton pero con destrucción ordenada
+Q_GLOBAL_STATIC(AppSettings, globalSettings)
+
+// Simulación de módulos que usan el singleton
+class ModuloRed {
+public:
+    void configurar() {
+        globalSettings()->setValue("red.timeout", "5000");
+        globalSettings()->setValue("red.reintentos", "3");
+        qDebug() << "ModuloRed configurado";
+    }
+
+    void conectar() {
+        QString timeout = globalSettings()->value("red.timeout");
+        qDebug() << "Conectando con timeout:" << timeout << "ms";
+    }
+};
+
+class ModuloUI {
+public:
+    void configurar() {
+        globalSettings()->setValue("ui.tema", "oscuro");
+        globalSettings()->setValue("ui.idioma", "es");
+        qDebug() << "ModuloUI configurado";
+    }
+
+    void mostrarInfo() {
+        QString tema = globalSettings()->value("ui.tema");
+        QString idioma = globalSettings()->value("ui.idioma");
+        qDebug() << "Tema:" << tema << "| Idioma:" << idioma;
+    }
+};
+
+int main(int argc, char *argv[]) {
+    QCoreApplication app(argc, argv);
+
+    qDebug() << "=== Singleton con Qt ===";
+
+    // QCoreApplication es un singleton de Qt
+    qDebug() << "App:" << QCoreApplication::applicationFilePath();
+
+    // Usar nuestro singleton global
+    ModuloRed red;
+    red.configurar();
+
+    ModuloUI ui;
+    ui.configurar();
+
+    // Ambos módulos comparten la misma configuración
+    red.conectar();
+    ui.mostrarInfo();
+
+    // Mostrar toda la configuración
+    globalSettings()->mostrar();
+
+    // Verificar que QCoreApplication::instance() devuelve el singleton
+    qDebug() << "QCoreApplication::instance() =="
+             << (QCoreApplication::instance() == &app ? "app" : "otro");
+
+    return 0;
+}
+```
+<---Ejemplo con Qt Result--->
+=== Singleton con Qt ===
+App: "/ruta/al/ejecutable"
+ModuloRed configurado
+ModuloUI configurado
+Conectando con timeout: "5000" ms
+Tema: "oscuro" | Idioma: "es"
+=== Configuracion ===
+  "red.reintentos" = "3"
+  "red.timeout" = "5000"
+  "ui.idioma" = "es"
+  "ui.tema" = "oscuro"
+QCoreApplication::instance() == app

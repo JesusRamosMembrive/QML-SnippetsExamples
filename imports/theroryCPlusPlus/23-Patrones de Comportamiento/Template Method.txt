@@ -1,0 +1,772 @@
+<---EXPLANATION--->
+### Patrón Template Method (Método Plantilla)
+
+El patrón **Template Method** es un patrón de diseño de comportamiento que define el esqueleto de un algoritmo en una clase base, delegando la implementación de algunos pasos a las subclases. Permite que las subclases redefinan ciertos pasos del algoritmo sin cambiar su estructura general. Es uno de los patrones más simples y comunes en la programación orientada a objetos.
+
+#### Problema
+
+Imagina que estás desarrollando un framework de análisis de datos. Todos los análisis siguen los mismos pasos: abrir archivo, leer datos, procesar datos, generar reporte y cerrar archivo. Sin embargo, cada tipo de análisis (CSV, JSON, XML) tiene implementaciones diferentes para leer y procesar los datos. Sin el patrón Template Method:
+
+- Duplicarías la estructura del algoritmo en cada clase concreta.
+- Si necesitas cambiar el orden de los pasos o agregar un paso intermedio, deberías modificar **todas** las implementaciones.
+- No hay garantía de que todas las subclases sigan la misma secuencia de pasos.
+- La lógica común (abrir/cerrar archivo, logging) estaría duplicada en cada clase.
+
+#### Solución
+
+El patrón Template Method resuelve esto definiendo el algoritmo en un método de la clase base que llama a métodos virtuales:
+
+1. La **clase base abstracta** define el **método plantilla** (generalmente marcado como `final` para evitar que las subclases lo sobrescriban) que orquesta la secuencia de pasos.
+2. Algunos pasos son **abstractos** (virtuales puros): las subclases **deben** implementarlos.
+3. Otros pasos tienen implementación por defecto (**hooks**): las subclases **pueden** sobrescribirlos opcionalmente.
+4. Algunos pasos son concretos en la clase base y **no** se pueden cambiar.
+
+```cpp
+class AnalizadorDatos {
+public:
+    // Método plantilla: define la estructura (no sobrescribir)
+    void analizar() final {
+        abrirArchivo();
+        leerDatos();     // Abstracto: cada subclase implementa
+        procesarDatos(); // Abstracto
+        generarReporte();
+        cerrarArchivo();
+    }
+
+protected:
+    virtual void leerDatos() = 0;     // Paso obligatorio
+    virtual void procesarDatos() = 0; // Paso obligatorio
+    virtual void generarReporte() {}  // Hook opcional
+};
+```
+
+#### Estructura
+
+Los componentes principales del patrón Template Method son:
+
+- **AbstractClass (Clase Abstracta):** Define el método plantilla que contiene el esqueleto del algoritmo. Declara métodos abstractos para los pasos que las subclases deben implementar y puede proporcionar hooks con implementaciones por defecto.
+- **ConcreteClass (Clase Concreta):** Implementa los pasos abstractos del algoritmo. Puede sobrescribir los hooks opcionales. No puede modificar el método plantilla.
+
+##### Tipos de métodos en la clase base:
+
+- **Método plantilla:** El algoritmo completo, generalmente `final`.
+- **Operaciones abstractas:** Pasos que las subclases deben implementar (`= 0`).
+- **Operaciones concretas:** Pasos fijos que no cambian.
+- **Hooks:** Métodos con implementación vacía o por defecto que las subclases pueden opcionalmente sobrescribir.
+
+#### Implementación en C++
+
+En C++ se usa la combinación de métodos `virtual` puros, métodos `virtual` con implementación por defecto y el especificador `final`:
+
+```cpp
+class Plantilla {
+public:
+    virtual ~Plantilla() = default;
+
+    // Método plantilla (final para evitar sobrescritura)
+    void ejecutar() final {
+        paso1();
+        paso2();         // Abstracto
+        if (hookOpcional()) {
+            paso3();     // Abstracto
+        }
+        paso4();
+    }
+
+protected:
+    void paso1() { /* Implementación fija */ }
+    virtual void paso2() = 0;                 // Obligatorio
+    virtual void paso3() = 0;                 // Obligatorio
+    virtual bool hookOpcional() { return true; } // Hook
+    void paso4() { /* Implementación fija */ }
+};
+```
+
+> **Nota:** El uso de `final` en el método plantilla es una buena práctica pero no es obligatorio. En el diseño original de GoF se confiaba en la convención de no sobrescribir el método plantilla. C++11 introdujo `final` para hacer esto explícito.
+
+#### Ventajas y Desventajas
+
+**Ventajas:**
+
+- **Reutilización de código:** La lógica común se escribe una sola vez en la clase base.
+- **Principio de Hollywood:** "No nos llames, nosotros te llamamos". La clase base controla el flujo.
+- **Extensibilidad controlada:** Las subclases solo pueden modificar los puntos de extensión definidos.
+- **Consistencia:** Todos los algoritmos siguen la misma estructura.
+
+**Desventajas:**
+
+- **Rigidez:** La estructura del algoritmo está fijada. Si necesitas una variación radical, el patrón no aplica.
+- **Complejidad de comprensión:** Con muchos hooks y pasos opcionales, puede ser difícil entender el flujo completo.
+- **Violación de Liskov:** Si las subclases cambian drásticamente el comportamiento de los hooks, pueden violar el principio de sustitución.
+- **Herencia:** Depende de herencia, lo cual puede ser limitante (en C++ no hay herencia múltiple de implementación sin problemas).
+
+#### Aplicación en Qt
+
+Qt usa Template Method extensamente en sus clases abstractas:
+
+- **`QAbstractItemModel`:** Los métodos `data()`, `rowCount()`, `columnCount()`, `index()` y `parent()` son pasos abstractos que las subclases deben implementar. El framework llama a estos métodos cuando necesita datos. `headerData()`, `flags()`, `setData()` son hooks opcionales con implementaciones por defecto.
+- **`QThread::run()`:** El método `run()` es un template method que define lo que el hilo ejecuta. `start()` es el método plantilla que configura el hilo y luego llama a `run()`.
+- **`QAbstractListModel`:** Simplifica `QAbstractItemModel` proporcionando implementaciones por defecto de `index()` y `parent()`, dejando solo `data()` y `rowCount()` como pasos abstractos.
+- **`QWidget::paintEvent()`:** El sistema de pintado de Qt llama a `paintEvent()` como parte del ciclo de renderizado. Las subclases implementan este método para dibujar su contenido personalizado.
+
+<---FILES--->
+Ejemplo Basico
+Ejemplo Basico Result
+Ejemplo Avanzado
+Ejemplo Avanzado Result
+Ejemplo con Qt
+Ejemplo con Qt Result
+
+<---Ejemplo Basico--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+
+// Clase abstracta con el método plantilla para preparar bebidas
+class BebidaCaliente {
+public:
+    virtual ~BebidaCaliente() = default;
+
+    // Método plantilla: define la receta (no se puede sobrescribir)
+    void preparar() final {
+        hervirAgua();
+        prepararIngrediente();   // Abstracto
+        servirEnTaza();
+        agregarCondimentos();     // Hook opcional
+
+        if (quiereDecorar()) {    // Hook condicional
+            decorar();
+        }
+
+        std::cout << nombre() << " lista para servir!" << std::endl;
+        std::cout << "---" << std::endl;
+    }
+
+protected:
+    // Pasos abstractos (obligatorios)
+    virtual void prepararIngrediente() = 0;
+    virtual std::string nombre() const = 0;
+
+    // Pasos concretos (fijos, no se pueden cambiar)
+    void hervirAgua() {
+        std::cout << "Hirviendo agua..." << std::endl;
+    }
+
+    void servirEnTaza() {
+        std::cout << "Sirviendo en taza..." << std::endl;
+    }
+
+    // Hooks opcionales (implementación por defecto)
+    virtual void agregarCondimentos() {
+        // Por defecto no agrega nada
+    }
+
+    virtual bool quiereDecorar() { return false; }
+
+    virtual void decorar() {
+        std::cout << "Decorando..." << std::endl;
+    }
+};
+
+// Clase concreta: Té
+class Te : public BebidaCaliente {
+protected:
+    void prepararIngrediente() override {
+        std::cout << "Infusionando bolsita de te..." << std::endl;
+    }
+
+    std::string nombre() const override { return "Te"; }
+
+    void agregarCondimentos() override {
+        std::cout << "Agregando limon y miel..." << std::endl;
+    }
+};
+
+// Clase concreta: Café
+class Cafe : public BebidaCaliente {
+protected:
+    void prepararIngrediente() override {
+        std::cout << "Filtrando cafe molido..." << std::endl;
+    }
+
+    std::string nombre() const override { return "Cafe"; }
+
+    void agregarCondimentos() override {
+        std::cout << "Agregando azucar y leche..." << std::endl;
+    }
+
+    bool quiereDecorar() override { return true; }
+
+    void decorar() override {
+        std::cout << "Espolvoreando canela por encima..." << std::endl;
+    }
+};
+
+// Clase concreta: Chocolate caliente
+class ChocolateCaliente : public BebidaCaliente {
+protected:
+    void prepararIngrediente() override {
+        std::cout << "Disolviendo chocolate en polvo..." << std::endl;
+    }
+
+    std::string nombre() const override { return "Chocolate caliente"; }
+
+    bool quiereDecorar() override { return true; }
+
+    void decorar() override {
+        std::cout << "Agregando malvaviscos y crema batida..." << std::endl;
+    }
+};
+
+int main() {
+    std::cout << "=== Preparando Te ===" << std::endl;
+    Te te;
+    te.preparar();
+
+    std::cout << "\n=== Preparando Cafe ===" << std::endl;
+    Cafe cafe;
+    cafe.preparar();
+
+    std::cout << "\n=== Preparando Chocolate ===" << std::endl;
+    ChocolateCaliente chocolate;
+    chocolate.preparar();
+
+    // Uso polimórfico
+    std::cout << "\n=== Preparando todas con polimorfismo ===" << std::endl;
+    std::vector<BebidaCaliente*> bebidas = {&te, &cafe, &chocolate};
+    for (auto* bebida : bebidas) {
+        bebida->preparar();
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
+```
+<---Ejemplo Basico Result--->
+=== Preparando Te ===
+Hirviendo agua...
+Infusionando bolsita de te...
+Sirviendo en taza...
+Agregando limon y miel...
+Te lista para servir!
+---
+
+=== Preparando Cafe ===
+Hirviendo agua...
+Filtrando cafe molido...
+Sirviendo en taza...
+Agregando azucar y leche...
+Espolvoreando canela por encima...
+Cafe lista para servir!
+---
+
+=== Preparando Chocolate ===
+Hirviendo agua...
+Disolviendo chocolate en polvo...
+Sirviendo en taza...
+Agregando malvaviscos y crema batida...
+Chocolate caliente lista para servir!
+---
+
+=== Preparando todas con polimorfismo ===
+Hirviendo agua...
+Infusionando bolsita de te...
+Sirviendo en taza...
+Agregando limon y miel...
+Te lista para servir!
+---
+
+Hirviendo agua...
+Filtrando cafe molido...
+Sirviendo en taza...
+Agregando azucar y leche...
+Espolvoreando canela por encima...
+Cafe lista para servir!
+---
+
+Hirviendo agua...
+Disolviendo chocolate en polvo...
+Sirviendo en taza...
+Agregando malvaviscos y crema batida...
+Chocolate caliente lista para servir!
+---
+
+<---Ejemplo Avanzado--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <memory>
+#include <algorithm>
+#include <map>
+
+// Framework de procesamiento de datos con Template Method
+// Cada formato de datos implementa sus propios pasos de lectura/procesamiento
+
+struct Registro {
+    std::string clave;
+    double valor;
+};
+
+// Clase abstracta: procesador de datos
+class ProcesadorDatos {
+public:
+    virtual ~ProcesadorDatos() = default;
+
+    // Método plantilla principal
+    void procesar(const std::string& datosEntrada) final {
+        std::cout << "=== Procesador: " << nombreFormato() << " ===" << std::endl;
+
+        inicializar();
+        auto registros = parsear(datosEntrada);  // Abstracto
+
+        std::cout << "  Registros leidos: " << registros.size() << std::endl;
+
+        if (registros.empty()) {
+            std::cout << "  No hay datos para procesar" << std::endl;
+            finalizar();
+            return;
+        }
+
+        registros = filtrar(registros);      // Hook: filtrar datos
+        registros = transformar(registros);   // Hook: transformar datos
+        auto resultado = calcular(registros); // Abstracto
+
+        mostrarResultado(resultado);
+        alFinalizar(registros);              // Hook de notificación
+
+        finalizar();
+        std::cout << "=== Procesamiento completo ===" << std::endl << std::endl;
+    }
+
+protected:
+    // Pasos abstractos (obligatorios)
+    virtual std::vector<Registro> parsear(const std::string& datos) = 0;
+    virtual std::string calcular(const std::vector<Registro>& registros) = 0;
+    virtual std::string nombreFormato() const = 0;
+
+    // Pasos concretos (fijos)
+    void inicializar() {
+        std::cout << "  [Init] Iniciando procesamiento..." << std::endl;
+    }
+
+    void finalizar() {
+        std::cout << "  [End] Limpiando recursos..." << std::endl;
+    }
+
+    void mostrarResultado(const std::string& resultado) {
+        std::cout << "  [Resultado] " << resultado << std::endl;
+    }
+
+    // Hooks opcionales
+    virtual std::vector<Registro> filtrar(std::vector<Registro> registros) {
+        return registros;  // Por defecto: sin filtro
+    }
+
+    virtual std::vector<Registro> transformar(std::vector<Registro> registros) {
+        return registros;  // Por defecto: sin transformación
+    }
+
+    virtual void alFinalizar(const std::vector<Registro>&) {
+        // Por defecto: nada
+    }
+};
+
+// Procesador CSV: lee "clave,valor" por línea
+class ProcesadorCSV : public ProcesadorDatos {
+protected:
+    std::vector<Registro> parsear(const std::string& datos) override {
+        std::vector<Registro> registros;
+        std::istringstream stream(datos);
+        std::string linea;
+
+        while (std::getline(stream, linea)) {
+            auto pos = linea.find(',');
+            if (pos != std::string::npos) {
+                Registro r;
+                r.clave = linea.substr(0, pos);
+                r.valor = std::stod(linea.substr(pos + 1));
+                registros.push_back(r);
+            }
+        }
+        return registros;
+    }
+
+    std::string calcular(const std::vector<Registro>& registros) override {
+        double suma = 0;
+        for (const auto& r : registros) suma += r.valor;
+        double promedio = registros.empty() ? 0 : suma / registros.size();
+        return "Suma=" + std::to_string(suma) + " Promedio=" + std::to_string(promedio);
+    }
+
+    std::string nombreFormato() const override { return "CSV"; }
+};
+
+// Procesador de pares clave:valor con filtrado y transformación
+class ProcesadorKeyValue : public ProcesadorDatos {
+protected:
+    std::vector<Registro> parsear(const std::string& datos) override {
+        std::vector<Registro> registros;
+        std::istringstream stream(datos);
+        std::string linea;
+
+        while (std::getline(stream, linea)) {
+            auto pos = linea.find(':');
+            if (pos != std::string::npos) {
+                Registro r;
+                r.clave = linea.substr(0, pos);
+                r.valor = std::stod(linea.substr(pos + 1));
+                registros.push_back(r);
+            }
+        }
+        return registros;
+    }
+
+    // Hook: filtrar valores negativos
+    std::vector<Registro> filtrar(std::vector<Registro> registros) override {
+        std::cout << "  [Filtro] Eliminando valores negativos..." << std::endl;
+        registros.erase(
+            std::remove_if(registros.begin(), registros.end(),
+                [](const Registro& r) { return r.valor < 0; }),
+            registros.end()
+        );
+        return registros;
+    }
+
+    // Hook: duplicar todos los valores
+    std::vector<Registro> transformar(std::vector<Registro> registros) override {
+        std::cout << "  [Transform] Duplicando valores..." << std::endl;
+        for (auto& r : registros) {
+            r.valor *= 2;
+        }
+        return registros;
+    }
+
+    std::string calcular(const std::vector<Registro>& registros) override {
+        double maximo = 0;
+        std::string claveMax;
+        for (const auto& r : registros) {
+            if (r.valor > maximo) {
+                maximo = r.valor;
+                claveMax = r.clave;
+            }
+        }
+        return "Maximo: " + claveMax + "=" + std::to_string(maximo);
+    }
+
+    // Hook: mostrar resumen al final
+    void alFinalizar(const std::vector<Registro>& registros) override {
+        std::cout << "  [Resumen] Datos procesados:" << std::endl;
+        for (const auto& r : registros) {
+            std::cout << "    " << r.clave << " = " << r.valor << std::endl;
+        }
+    }
+
+    std::string nombreFormato() const override { return "KeyValue"; }
+};
+
+int main() {
+    // Datos de prueba en formato CSV
+    std::string datosCSV =
+        "ventas,1500.0\n"
+        "costos,800.0\n"
+        "marketing,300.0\n"
+        "soporte,200.0\n";
+
+    // Datos de prueba en formato clave:valor
+    std::string datosKV =
+        "temperatura:25.5\n"
+        "humedad:60.0\n"
+        "presion:-10.0\n"
+        "viento:15.3\n"
+        "error:-5.0\n";
+
+    // Procesar con diferentes implementaciones
+    ProcesadorCSV procesadorCSV;
+    procesadorCSV.procesar(datosCSV);
+
+    ProcesadorKeyValue procesadorKV;
+    procesadorKV.procesar(datosKV);
+
+    // Uso polimórfico
+    std::vector<std::unique_ptr<ProcesadorDatos>> procesadores;
+    procesadores.push_back(std::make_unique<ProcesadorCSV>());
+    procesadores.push_back(std::make_unique<ProcesadorKeyValue>());
+
+    std::cout << "=== Procesamiento polimorfico ===" << std::endl;
+    for (auto& p : procesadores) {
+        p->procesar(datosCSV);
+    }
+
+    return 0;
+}
+```
+<---Ejemplo Avanzado Result--->
+=== Procesador: CSV ===
+  [Init] Iniciando procesamiento...
+  Registros leidos: 4
+  [Resultado] Suma=2800.000000 Promedio=700.000000
+  [End] Limpiando recursos...
+=== Procesamiento completo ===
+
+=== Procesador: KeyValue ===
+  [Init] Iniciando procesamiento...
+  Registros leidos: 5
+  [Filtro] Eliminando valores negativos...
+  [Transform] Duplicando valores...
+  [Resultado] Maximo: humedad=120.000000
+  [Resumen] Datos procesados:
+    temperatura = 51
+    humedad = 120
+    viento = 30.6
+  [End] Limpiando recursos...
+=== Procesamiento completo ===
+
+=== Procesamiento polimorfico ===
+=== Procesador: CSV ===
+  [Init] Iniciando procesamiento...
+  Registros leidos: 4
+  [Resultado] Suma=2800.000000 Promedio=700.000000
+  [End] Limpiando recursos...
+=== Procesamiento completo ===
+
+=== Procesador: KeyValue ===
+  [Init] Iniciando procesamiento...
+  Registros leidos: 4
+  [Filtro] Eliminando valores negativos...
+  [Transform] Duplicando valores...
+  [Resultado] Maximo: ventas=3000.000000
+  [Resumen] Datos procesados:
+    ventas = 3000
+    costos = 1600
+    marketing = 600
+    soporte = 400
+  [End] Limpiando recursos...
+=== Procesamiento completo ===
+
+<---Ejemplo con Qt--->
+```cpp
+#include <QCoreApplication>
+#include <QAbstractListModel>
+#include <QDebug>
+#include <QStringList>
+#include <QThread>
+#include <QTimer>
+
+// ============================================================
+// Ejemplo 1: QAbstractListModel como Template Method
+// data() y rowCount() son los "pasos abstractos" que debemos implementar
+// ============================================================
+
+struct Tarea {
+    QString titulo;
+    bool completada;
+    int prioridad;  // 1=alta, 2=media, 3=baja
+};
+
+class ModeloTareas : public QAbstractListModel {
+    Q_OBJECT
+public:
+    // Roles personalizados
+    enum Roles {
+        TituloRole = Qt::UserRole + 1,
+        CompletadaRole,
+        PrioridadRole
+    };
+
+    explicit ModeloTareas(QObject* parent = nullptr)
+        : QAbstractListModel(parent) {}
+
+    void agregarTarea(const QString& titulo, int prioridad) {
+        // beginInsertRows/endInsertRows son pasos fijos del Template Method
+        // del sistema de vistas de Qt
+        beginInsertRows(QModelIndex(), rowCount(), rowCount());
+        tareas_.append({titulo, false, prioridad});
+        endInsertRows();
+    }
+
+    // *** Paso abstracto obligatorio: rowCount() ***
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override {
+        Q_UNUSED(parent)
+        return tareas_.size();
+    }
+
+    // *** Paso abstracto obligatorio: data() ***
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override {
+        if (!index.isValid() || index.row() >= tareas_.size())
+            return QVariant();
+
+        const Tarea& tarea = tareas_[index.row()];
+
+        switch (role) {
+        case Qt::DisplayRole:
+        case TituloRole:
+            return tarea.titulo;
+        case CompletadaRole:
+            return tarea.completada;
+        case PrioridadRole:
+            return tarea.prioridad;
+        default:
+            return QVariant();
+        }
+    }
+
+    // *** Hook opcional: roleNames() ***
+    // Qt proporciona una implementación por defecto, pero la sobrescribimos
+    // para que QML pueda acceder a los roles por nombre
+    QHash<int, QByteArray> roleNames() const override {
+        QHash<int, QByteArray> roles;
+        roles[TituloRole] = "titulo";
+        roles[CompletadaRole] = "completada";
+        roles[PrioridadRole] = "prioridad";
+        return roles;
+    }
+
+    // *** Hook opcional: flags() ***
+    Qt::ItemFlags flags(const QModelIndex& index) const override {
+        if (!index.isValid())
+            return Qt::NoItemFlags;
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+    }
+
+    // *** Hook opcional: setData() ***
+    bool setData(const QModelIndex& index, const QVariant& value,
+                 int role = Qt::EditRole) override {
+        if (!index.isValid() || index.row() >= tareas_.size())
+            return false;
+
+        Tarea& tarea = tareas_[index.row()];
+
+        switch (role) {
+        case CompletadaRole:
+            tarea.completada = value.toBool();
+            break;
+        case TituloRole:
+            tarea.titulo = value.toString();
+            break;
+        default:
+            return false;
+        }
+
+        // dataChanged es parte del Template Method del sistema de vistas
+        emit dataChanged(index, index, {role});
+        return true;
+    }
+
+private:
+    QList<Tarea> tareas_;
+};
+
+// ============================================================
+// Ejemplo 2: QThread::run() como Template Method
+// ============================================================
+
+class HiloCalculador : public QThread {
+    Q_OBJECT
+public:
+    HiloCalculador(int inicio, int fin, QObject* parent = nullptr)
+        : QThread(parent), inicio_(inicio), fin_(fin) {}
+
+    int resultado() const { return resultado_; }
+
+signals:
+    void progresoActualizado(int porcentaje);
+
+protected:
+    // run() es el Template Method que QThread llama internamente
+    // después de configurar el hilo. Nosotros implementamos
+    // "qué hace el hilo" sin preocuparnos de la gestión del hilo.
+    void run() override {
+        resultado_ = 0;
+        int total = fin_ - inicio_;
+
+        for (int i = inicio_; i <= fin_; ++i) {
+            resultado_ += i;
+
+            // Reportar progreso cada 25%
+            int progreso = ((i - inicio_) * 100) / total;
+            if (progreso % 25 == 0) {
+                emit progresoActualizado(progreso);
+            }
+
+            // Simular trabajo pesado
+            QThread::usleep(100);
+        }
+
+        emit progresoActualizado(100);
+    }
+
+private:
+    int inicio_;
+    int fin_;
+    int resultado_ = 0;
+};
+
+int main(int argc, char* argv[]) {
+    QCoreApplication app(argc, argv);
+
+    // --- Ejemplo 1: Usar el modelo ---
+    qDebug() << "=== QAbstractListModel como Template Method ===";
+
+    ModeloTareas modelo;
+    modelo.agregarTarea("Estudiar patrones de diseno", 1);
+    modelo.agregarTarea("Hacer compras", 3);
+    modelo.agregarTarea("Revisar codigo", 2);
+
+    // El framework de Qt llama a nuestros Template Methods
+    qDebug() << "Total de tareas:" << modelo.rowCount();
+
+    for (int i = 0; i < modelo.rowCount(); ++i) {
+        QModelIndex idx = modelo.index(i);
+        qDebug().noquote() << QString("  [%1] %2 (prioridad: %3)")
+            .arg(i)
+            .arg(modelo.data(idx, ModeloTareas::TituloRole).toString())
+            .arg(modelo.data(idx, ModeloTareas::PrioridadRole).toInt());
+    }
+
+    // Marcar tarea como completada usando setData (hook)
+    QModelIndex idx = modelo.index(0);
+    modelo.setData(idx, true, ModeloTareas::CompletadaRole);
+    qDebug() << "\nTarea 0 completada:"
+             << modelo.data(idx, ModeloTareas::CompletadaRole).toBool();
+
+    // --- Ejemplo 2: QThread con run() ---
+    qDebug() << "\n=== QThread::run() como Template Method ===";
+
+    HiloCalculador hilo(1, 100);
+
+    QObject::connect(&hilo, &HiloCalculador::progresoActualizado,
+                     [](int p) { qDebug() << "  Progreso:" << p << "%"; });
+
+    QObject::connect(&hilo, &HiloCalculador::finished, [&]() {
+        qDebug() << "  Resultado: suma(1..100) =" << hilo.resultado();
+        app.quit();
+    });
+
+    hilo.start();
+    // QThread internamente llama a nuestro run() como Template Method
+
+    return app.exec();
+}
+
+#include "main.moc"
+```
+<---Ejemplo con Qt Result--->
+=== QAbstractListModel como Template Method ===
+Total de tareas: 3
+  [0] Estudiar patrones de diseno (prioridad: 1)
+  [1] Hacer compras (prioridad: 3)
+  [2] Revisar codigo (prioridad: 2)
+
+Tarea 0 completada: true
+
+=== QThread::run() como Template Method ===
+  Progreso: 0 %
+  Progreso: 25 %
+  Progreso: 50 %
+  Progreso: 75 %
+  Progreso: 100 %
+  Resultado: suma(1..100) = 5050
