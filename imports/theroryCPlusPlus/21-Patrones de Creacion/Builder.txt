@@ -115,6 +115,20 @@ url.setQuery("activo=true&limite=10");
 // url.toString() -> "https://api.ejemplo.com/v1/usuarios?activo=true&limite=10"
 ```
 
+#### Cuándo usar y cuándo evitar
+
+##### Cuándo usar
+
+- Cuando el objeto final tiene muchos parámetros opcionales y algunos obligatorios.
+- Cuando la construcción requiere validaciones por etapas.
+- Cuando quieres una API más legible y segura que un constructor telescópico.
+
+##### Cuándo evitar
+
+- Si el objeto tiene pocos campos y no hay invariantes complejas.
+- Si no necesitas construir por pasos ni reutilizar recetas.
+- Si el costo de mantener clases extra supera el beneficio.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -122,6 +136,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -714,7 +730,7 @@ int main(int argc, char *argv[]) {
     QString log1 = logBuilder
         .nivel("INFO")
         .modulo("BaseDatos")
-        .mensaje("Conexion establecida")
+        .mensaje("Conexión establecida")
         .dato("host", "localhost")
         .dato("puerto", "5432")
         .build();
@@ -723,7 +739,7 @@ int main(int argc, char *argv[]) {
     QString log2 = logBuilder
         .nivel("ERROR")
         .modulo("Red")
-        .mensaje("Timeout en peticion")
+        .mensaje("Timeout en petición")
         .dato("url", "api.ejemplo.com/datos")
         .dato("timeout", "5000ms")
         .dato("intentos", "3")
@@ -751,6 +767,114 @@ URL 2: "https://api.miapp.com:8443/v1/productos/categorias?orden=precio&dir=desc
 URL nativo: "https://ejemplo.com/api/datos?formato=json&pagina=3"
 
 --- Log Message Builder ---
-[INFO][BaseDatos] Conexion establecida {host=localhost, puerto=5432}
-[ERROR][Red] Timeout en peticion {url=api.ejemplo.com/datos, timeout=5000ms, intentos=3}
+[INFO][BaseDatos] Conexión establecida {host=localhost, puerto=5432}
+[ERROR][Red] Timeout en petición {url=api.ejemplo.com/datos, timeout=5000ms, intentos=3}
 [DEBUG][Cache] Elemento almacenado
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <optional>
+#include <stdexcept>
+#include <string>
+
+// =============================================
+// Producto final
+// =============================================
+struct Usuario {
+    std::string nombre;
+    std::string email;
+    std::string rol = "usuario";
+    std::optional<int> edad;
+    bool notificaciones = true;
+
+    void mostrar() const {
+        std::cout << "Usuario{nombre=" << nombre
+                  << ", email=" << email
+                  << ", rol=" << rol
+                  << ", edad=" << (edad ? std::to_string(*edad) : "N/A")
+                  << ", notificaciones=" << (notificaciones ? "ON" : "OFF")
+                  << "}" << std::endl;
+    }
+};
+
+// =============================================
+// Builder con validación de obligatorios
+// =============================================
+class UsuarioBuilder {
+public:
+    UsuarioBuilder& nombre(const std::string& valor) {
+        usuario_.nombre = valor;
+        tieneNombre_ = true;
+        return *this;
+    }
+
+    UsuarioBuilder& email(const std::string& valor) {
+        usuario_.email = valor;
+        tieneEmail_ = true;
+        return *this;
+    }
+
+    UsuarioBuilder& rol(const std::string& valor) {
+        usuario_.rol = valor;
+        return *this;
+    }
+
+    UsuarioBuilder& edad(int valor) {
+        usuario_.edad = valor;
+        return *this;
+    }
+
+    UsuarioBuilder& notificaciones(bool valor) {
+        usuario_.notificaciones = valor;
+        return *this;
+    }
+
+    Usuario build() const {
+        if (!tieneNombre_) {
+            throw std::runtime_error("Falta campo obligatorio: nombre");
+        }
+        if (!tieneEmail_) {
+            throw std::runtime_error("Falta campo obligatorio: email");
+        }
+        return usuario_;
+    }
+
+private:
+    Usuario usuario_;
+    bool tieneNombre_ = false;
+    bool tieneEmail_ = false;
+};
+
+int main() {
+    std::cout << "=== Builder Extra ===" << std::endl;
+
+    UsuarioBuilder builder;
+
+    auto admin = builder
+        .nombre("Carla")
+        .email("carla@empresa.com")
+        .rol("admin")
+        .edad(31)
+        .notificaciones(true)
+        .build();
+    admin.mostrar();
+
+    try {
+        UsuarioBuilder incompleto;
+        auto invitado = incompleto
+            .nombre("Invitado")
+            .notificaciones(false)
+            .build();
+        invitado.mostrar();
+    } catch (const std::exception& ex) {
+        std::cout << "Error validacion: " << ex.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Builder Extra ===
+Usuario{nombre=Carla, email=carla@empresa.com, rol=admin, edad=31, notificaciones=ON}
+Error validacion: Falta campo obligatorio: email

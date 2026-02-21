@@ -95,17 +95,30 @@ public:
 
 Qt utiliza el Factory Method en varios lugares:
 
-- **`QItemEditorFactory`:** Crea widgets editores apropiados según el tipo de dato (`QVariant::Type`). Puedes registrar tus propios editores con `registerEditor()`.
-- **`QAbstractItemView::itemDelegate()`:** Los views crean delegados apropiados para cada tipo de dato.
-- **`QStyle::drawControl()`:** Cada estilo (Fusion, Windows, etc.) crea sus propios elementos visuales.
-- **Plugins de Qt:** `QPluginLoader` carga dinámicamente clases que implementan interfaces definidas — un Factory Method dinámico.
+- **`QItemEditorCreatorBase::createWidget(QWidget*)`:** Cada creador concreto decide qué editor concreto instanciar.
+- **`QStandardItemEditorCreator<T>`:** Implementa el Factory Method para crear un editor del tipo `T`.
+- **`QStylePlugin::create(const QString&)`:** Cada plugin de estilo implementa el método de creación para devolver su `QStyle`.
+- **Plugins de Qt en general:** El contrato de interfaz + método `create(...)` es una forma típica de Factory Method.
 
 ```cpp
-// Ejemplo: QItemEditorFactory decide qué widget crear según el tipo
-QItemEditorFactory *factory = new QItemEditorFactory;
-factory->registerEditor(QMetaType::QColor,
-    new QStandardItemEditorCreator<QColorDialog>());
+// Ejemplo: Factory Method real en Qt (QItemEditorCreatorBase)
+auto creator = std::make_unique<QStandardItemEditorCreator<QColorDialog>>();
+// Internamente, creator->createWidget(parent) instancia QColorDialog
 ```
+
+#### Cuándo usar y cuándo evitar
+
+##### Cuándo usar
+
+- Cuando una clase base define un flujo común y delega solo la creación del producto.
+- Cuando prevés nuevas variantes de producto sin modificar el cliente.
+- Cuando quieres abrir extensión vía plugins/subclases.
+
+##### Cuándo evitar
+
+- Si solo necesitas un `if/switch` local y estable (sobre-ingeniería).
+- Si no hay jerarquía real de creadores.
+- Si necesitas crear familias completas de objetos relacionados: ahí encaja mejor Abstract Factory.
 
 <---FILES--->
 Ejemplo Basico
@@ -114,6 +127,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -380,7 +395,7 @@ int main() {
     servicio.notificar("sms", "+34600123456", "Codigo: 1234");
     std::cout << std::endl;
 
-    servicio.notificar("push", "iPhone-ABC123", "Nueva actualizacion");
+    servicio.notificar("push", "iPhone-ABC123", "Nueva actualización");
     std::cout << std::endl;
 
     // Intentar un tipo no registrado
@@ -406,7 +421,7 @@ Enviando via SMS:
   [SMS] Tel: +34600123456 | Texto: Codigo: 1234
 
 Enviando via Push:
-  [PUSH] Dispositivo: iPhone-ABC123 | Alerta: Nueva actualizacion
+  [PUSH] Dispositivo: iPhone-ABC123 | Alerta: Nueva actualización
 
   Error: tipo 'telegram' no registrado
 
@@ -420,125 +435,88 @@ Notificacion masiva:
 #include <QCoreApplication>
 #include <QDebug>
 #include <QString>
-#include <QMap>
 #include <memory>
 
-// === Producto: Widget simulado ===
-class Widget {
+// === Producto (interfaz) ===
+class CampoFormulario {
 public:
-    virtual ~Widget() = default;
-    virtual QString nombre() const = 0;
+    virtual ~CampoFormulario() = default;
+    virtual QString tipo() const = 0;
     virtual void renderizar() const = 0;
 };
 
-class BotonWidget : public Widget {
+// === Productos concretos ===
+class CampoTexto : public CampoFormulario {
 public:
-    explicit BotonWidget(const QString& texto) : texto_(texto) {}
-    QString nombre() const override { return "QPushButton"; }
+    explicit CampoTexto(const QString& etiqueta) : etiqueta_(etiqueta) {}
+    QString tipo() const override { return "QLineEdit"; }
     void renderizar() const override {
-        qDebug() << "  [Boton]" << texto_;
+        qDebug() << "  [CampoTexto] etiqueta:" << etiqueta_;
     }
 private:
-    QString texto_;
+    QString etiqueta_;
 };
 
-class EntradaTextoWidget : public Widget {
+class CampoPassword : public CampoFormulario {
 public:
-    explicit EntradaTextoWidget(const QString& placeholder)
-        : placeholder_(placeholder) {}
-    QString nombre() const override { return "QLineEdit"; }
+    explicit CampoPassword(const QString& etiqueta) : etiqueta_(etiqueta) {}
+    QString tipo() const override { return "QLineEdit(password)"; }
     void renderizar() const override {
-        qDebug() << "  [EntradaTexto] placeholder:" << placeholder_;
+        qDebug() << "  [CampoPassword] etiqueta:" << etiqueta_;
     }
 private:
-    QString placeholder_;
+    QString etiqueta_;
 };
 
-class EtiquetaWidget : public Widget {
+// === Creador base con Factory Method ===
+class CampoCreator {
 public:
-    explicit EtiquetaWidget(const QString& texto) : texto_(texto) {}
-    QString nombre() const override { return "QLabel"; }
-    void renderizar() const override {
-        qDebug() << "  [Etiqueta]" << texto_;
+    virtual ~CampoCreator() = default;
+
+    // Factory Method: una subclase decide qué campo instanciar
+    virtual std::unique_ptr<CampoFormulario> crearCampo(
+            const QString& etiqueta) const = 0;
+
+    // Lógica de negocio que usa el Factory Method
+    void agregarAlFormulario(const QString& etiqueta) const {
+        auto campo = crearCampo(etiqueta);
+        qDebug() << "Agregando campo:" << campo->tipo();
+        campo->renderizar();
     }
-private:
-    QString texto_;
 };
 
-// === Factory de Widgets (similar a QItemEditorFactory) ===
-class WidgetFactory {
+// === Creadores concretos ===
+class CampoTextoCreator : public CampoCreator {
 public:
-    virtual ~WidgetFactory() = default;
-
-    // Factory Methods - uno por cada tipo de widget
-    virtual std::unique_ptr<Widget> crearBoton(
-        const QString& texto) const {
-        return std::make_unique<BotonWidget>(texto);
-    }
-
-    virtual std::unique_ptr<Widget> crearEntradaTexto(
-        const QString& placeholder) const {
-        return std::make_unique<EntradaTextoWidget>(placeholder);
-    }
-
-    virtual std::unique_ptr<Widget> crearEtiqueta(
-        const QString& texto) const {
-        return std::make_unique<EtiquetaWidget>(texto);
+    std::unique_ptr<CampoFormulario> crearCampo(
+            const QString& etiqueta) const override {
+        return std::make_unique<CampoTexto>(etiqueta);
     }
 };
 
-// === Factory para tema oscuro ===
-class DarkBotonWidget : public BotonWidget {
+class CampoPasswordCreator : public CampoCreator {
 public:
-    using BotonWidget::BotonWidget;
-    void renderizar() const override {
-        qDebug() << "  [Boton Oscuro] bg:#333 fg:#fff |"
-                 << nombre();
+    std::unique_ptr<CampoFormulario> crearCampo(
+            const QString& etiqueta) const override {
+        return std::make_unique<CampoPassword>(etiqueta);
     }
 };
-
-class DarkWidgetFactory : public WidgetFactory {
-public:
-    std::unique_ptr<Widget> crearBoton(
-        const QString& texto) const override {
-        return std::make_unique<DarkBotonWidget>(texto);
-    }
-    // Los demás widgets heredan la implementación base
-};
-
-// === Función que construye un formulario usando la fábrica ===
-void construirFormulario(const WidgetFactory& factory) {
-    qDebug() << "Construyendo formulario:";
-
-    auto etiqueta = factory.crearEtiqueta("Nombre de usuario:");
-    etiqueta->renderizar();
-
-    auto entrada = factory.crearEntradaTexto("Escribe tu nombre...");
-    entrada->renderizar();
-
-    auto boton = factory.crearBoton("Enviar");
-    boton->renderizar();
-}
 
 int main(int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
 
     qDebug() << "=== Factory Method con Qt ===";
 
-    // Formulario con tema por defecto
-    qDebug() << "\n--- Tema por defecto ---";
-    WidgetFactory factoryBase;
-    construirFormulario(factoryBase);
+    CampoTextoCreator textoCreator;
+    CampoPasswordCreator passwordCreator;
 
-    // Formulario con tema oscuro
-    qDebug() << "\n--- Tema oscuro ---";
-    DarkWidgetFactory factoryOscuro;
-    construirFormulario(factoryOscuro);
+    qDebug() << "\n--- Construcción de formulario ---";
+    textoCreator.agregarAlFormulario("Usuario");
+    passwordCreator.agregarAlFormulario("Contraseña");
 
-    // Ejemplo de cómo QStyleFactory funciona como factory
-    qDebug() << "\n--- Estilos disponibles en Qt ---";
-    qDebug() << "  (QStyleFactory::keys() devolveria los estilos instalados)";
-    qDebug() << "  Fusion, Windows, etc.";
+    qDebug() << "\n--- Nota Qt real ---";
+    qDebug() << "QItemEditorCreatorBase::createWidget(parent) es";
+    qDebug() << "un Factory Method usado por QItemEditorFactory.";
 
     return 0;
 }
@@ -546,18 +524,103 @@ int main(int argc, char *argv[]) {
 <---Ejemplo con Qt Result--->
 === Factory Method con Qt ===
 
---- Tema por defecto ---
-Construyendo formulario:
-  [Etiqueta] "Nombre de usuario:"
-  [EntradaTexto] placeholder: "Escribe tu nombre..."
-  [Boton] "Enviar"
+--- Construcción de formulario ---
+Agregando campo: "QLineEdit"
+  [CampoTexto] etiqueta: "Usuario"
+Agregando campo: "QLineEdit(password)"
+  [CampoPassword] etiqueta: "Contraseña"
 
---- Tema oscuro ---
-Construyendo formulario:
-  [Etiqueta] "Nombre de usuario:"
-  [EntradaTexto] placeholder: "Escribe tu nombre..."
-  [Boton Oscuro] bg:#333 fg:#fff | "QPushButton"
+--- Nota Qt real ---
+QItemEditorCreatorBase::createWidget(parent) es
+un Factory Method usado por QItemEditorFactory.
 
---- Estilos disponibles en Qt ---
-  (QStyleFactory::keys() devolveria los estilos instalados)
-  Fusion, Windows, etc.
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// =============================================
+// Producto (interfaz)
+// =============================================
+class Validador {
+public:
+    virtual ~Validador() = default;
+    virtual bool validar(const std::string& texto) const = 0;
+    virtual std::string nombre() const = 0;
+};
+
+class JsonValidador : public Validador {
+public:
+    bool validar(const std::string& texto) const override {
+        return !texto.empty() && texto.front() == '{' && texto.back() == '}';
+    }
+    std::string nombre() const override { return "JSON"; }
+};
+
+class XmlValidador : public Validador {
+public:
+    bool validar(const std::string& texto) const override {
+        return !texto.empty() && texto.front() == '<' && texto.back() == '>';
+    }
+    std::string nombre() const override { return "XML"; }
+};
+
+// =============================================
+// Creador base con Factory Method
+// =============================================
+class ValidadorCreator {
+public:
+    virtual ~ValidadorCreator() = default;
+    virtual std::unique_ptr<Validador> crearValidador() const = 0;
+
+    void procesarDocumento(const std::string& payload) const {
+        auto v = crearValidador();
+        bool ok = v->validar(payload);
+        std::cout << "  [" << v->nombre() << "] "
+                  << (ok ? "Valido" : "Invalido")
+                  << " -> " << payload << std::endl;
+    }
+};
+
+class JsonCreator : public ValidadorCreator {
+public:
+    std::unique_ptr<Validador> crearValidador() const override {
+        return std::make_unique<JsonValidador>();
+    }
+};
+
+class XmlCreator : public ValidadorCreator {
+public:
+    std::unique_ptr<Validador> crearValidador() const override {
+        return std::make_unique<XmlValidador>();
+    }
+};
+
+int main() {
+    std::cout << "=== Factory Method Extra ===" << std::endl;
+
+    JsonCreator jsonCreator;
+    XmlCreator xmlCreator;
+
+    std::cout << "\nPruebas JSON:" << std::endl;
+    jsonCreator.procesarDocumento("{\"ok\":true}");
+    jsonCreator.procesarDocumento("<xml/>");
+
+    std::cout << "\nPruebas XML:" << std::endl;
+    xmlCreator.procesarDocumento("<root/>");
+    xmlCreator.procesarDocumento("{\"bad\":false}");
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Factory Method Extra ===
+
+Pruebas JSON:
+  [JSON] Valido -> {"ok":true}
+  [JSON] Invalido -> <xml/>
+
+Pruebas XML:
+  [XML] Valido -> <root/>
+  [XML] Invalido -> {"bad":false}

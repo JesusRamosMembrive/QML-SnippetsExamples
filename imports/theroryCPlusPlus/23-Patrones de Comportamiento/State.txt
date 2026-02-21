@@ -104,6 +104,18 @@ transitions: Transition {
 }
 ```
 
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando el comportamiento cambia significativamente según el estado interno.
+- Cuando los condicionales por estado empiezan a crecer y repetirse.
+- Cuando necesitas transiciones explícitas y fáciles de evolucionar.
+
+##### Cuando evitar
+- Si hay muy pocos estados simples y estables.
+- Si las transiciones son triviales y no justifican clases extra.
+- Si la gestión de muchos objetos de estado complica más de lo que simplifica.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -111,6 +123,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -511,8 +525,6 @@ int main() {
 #include <QCoreApplication>
 #include <QStateMachine>
 #include <QState>
-#include <QFinalState>
-#include <QSignalTransition>
 #include <QObject>
 #include <QDebug>
 #include <QTimer>
@@ -595,7 +607,7 @@ int main(int argc, char* argv[]) {
         qDebug() << "=== VERDE === | Peatones: NO cruzar";
     });
     QObject::connect(amarillo, &QState::entered, [&]() {
-        qDebug() << "=== AMARILLO === | Peatones: NO cruzar (precaucion)";
+        qDebug() << "=== AMARILLO === | Peatones: NO cruzar (precaución)";
     });
 
     // Configurar máquina
@@ -605,7 +617,7 @@ int main(int argc, char* argv[]) {
     maquina.setInitialState(rojo);
 
     // Iniciar la máquina
-    qDebug() << "--- Iniciando semaforo ---";
+    qDebug() << "--- Iniciando semáforo ---";
     maquina.start();
 
     // Simular ciclos del semáforo con QTimer
@@ -619,7 +631,7 @@ int main(int argc, char* argv[]) {
 
         if (ciclos >= 6) {  // 2 ciclos completos
             timer.stop();
-            qDebug() << "\n--- Semaforo detenido tras 2 ciclos ---";
+            qDebug() << "\n--- Semáforo detenido tras 2 ciclos ---";
             qDebug() << "Color final:" << semaforo.color();
             qDebug() << "Peaton permitido:" << semaforo.peatonPermitido();
             app.quit();
@@ -637,14 +649,93 @@ int main(int argc, char* argv[]) {
 #include "main.moc"
 ```
 <---Ejemplo con Qt Result--->
---- Iniciando semaforo ---
+--- Iniciando semáforo ---
 === ROJO === | Peatones: PUEDEN cruzar
 === VERDE === | Peatones: NO cruzar
-=== AMARILLO === | Peatones: NO cruzar (precaucion)
+=== AMARILLO === | Peatones: NO cruzar (precaución)
 === ROJO === | Peatones: PUEDEN cruzar
 === VERDE === | Peatones: NO cruzar
-=== AMARILLO === | Peatones: NO cruzar (precaucion)
+=== AMARILLO === | Peatones: NO cruzar (precaución)
 
---- Semaforo detenido tras 2 ciclos ---
+--- Semáforo detenido tras 2 ciclos ---
 Color final: "Rojo"
 Peaton permitido: true
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+class TicketContext;
+
+class ITicketState {
+public:
+    virtual ~ITicketState() = default;
+    virtual void asignar(TicketContext& ctx) = 0;
+    virtual void resolver(TicketContext& ctx) = 0;
+    virtual std::string nombre() const = 0;
+};
+
+class TicketContext {
+public:
+    explicit TicketContext(std::unique_ptr<ITicketState> st) : estado_(std::move(st)) {}
+
+    void cambiar(std::unique_ptr<ITicketState> st) {
+        std::cout << "  [Transicion] " << estado_->nombre() << " -> " << st->nombre() << std::endl;
+        estado_ = std::move(st);
+    }
+
+    void asignar() { estado_->asignar(*this); }
+    void resolver() { estado_->resolver(*this); }
+    std::string estado() const { return estado_->nombre(); }
+
+private:
+    std::unique_ptr<ITicketState> estado_;
+};
+
+class NuevoState : public ITicketState {
+public:
+    void asignar(TicketContext& ctx) override;
+    void resolver(TicketContext&) override { std::cout << "  No se puede resolver sin asignar" << std::endl; }
+    std::string nombre() const override { return "Nuevo"; }
+};
+
+class AsignadoState : public ITicketState {
+public:
+    void asignar(TicketContext&) override { std::cout << "  Ya esta asignado" << std::endl; }
+    void resolver(TicketContext& ctx) override;
+    std::string nombre() const override { return "Asignado"; }
+};
+
+class ResueltoState : public ITicketState {
+public:
+    void asignar(TicketContext&) override { std::cout << "  Ticket cerrado" << std::endl; }
+    void resolver(TicketContext&) override { std::cout << "  Ya esta resuelto" << std::endl; }
+    std::string nombre() const override { return "Resuelto"; }
+};
+
+void NuevoState::asignar(TicketContext& ctx) { ctx.cambiar(std::make_unique<AsignadoState>()); }
+void AsignadoState::resolver(TicketContext& ctx) { ctx.cambiar(std::make_unique<ResueltoState>()); }
+
+int main() {
+    std::cout << "=== State Extra ===" << std::endl;
+    TicketContext ticket(std::make_unique<NuevoState>());
+
+    std::cout << "Estado: " << ticket.estado() << std::endl;
+    ticket.resolver();
+    ticket.asignar();
+    ticket.resolver();
+    ticket.asignar();
+    std::cout << "Estado final: " << ticket.estado() << std::endl;
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== State Extra ===
+Estado: Nuevo
+  No se puede resolver sin asignar
+  [Transicion] Nuevo -> Asignado
+  [Transicion] Asignado -> Resuelto
+  Ticket cerrado
+Estado final: Resuelto

@@ -87,11 +87,23 @@ Qt utiliza el patron Decorator en varios componentes:
 
 - **`QProxyStyle`:** Permite decorar el estilo visual de la aplicacion. Puedes sobreescribir solo los metodos de dibujo que quieras cambiar y delegar el resto al estilo base. Es un decorador puro.
 
-- **`QAbstractProxyModel`:** Decora modelos de datos agregando funcionalidad (filtrado, ordenamiento, transformacion) sin modificar el modelo original.
+- **`QAbstractProxyModel`:** Aunque suele etiquetarse como Proxy por su intencion, permite agregar capas de transformacion/comportamiento al modelo sin modificarlo.
 
-- **Event Filters (Filtros de eventos):** `QObject::installEventFilter()` es una forma de Decorator. Puedes agregar multiples filtros que procesan eventos antes de que lleguen al objeto original.
+- **Event Filters (Filtros de eventos):** `QObject::installEventFilter()` se usa como capa de intercepcion. Conceptualmente se parece a decorar comportamiento, aunque su forma canonica se acerca mas a interceptor/cadena de responsabilidad.
 
 > **Nota:** En QML, los `Behavior` y `Transition` actuan como decoradores que agregan animaciones al comportamiento de las propiedades sin modificar la logica del componente.
+
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando necesitas combinar responsabilidades opcionales dinamicamente.
+- Cuando quieres evitar una jerarquia enorme de subclases por combinaciones.
+- Cuando el orden de aplicacion de capas es parte del comportamiento.
+
+##### Cuando evitar
+- Si hay pocas variantes estables y simples.
+- Si la cadena de decoradores dificulta demasiado el debugging.
+- Si cada capa necesita conocer demasiados detalles internos del componente.
 
 <---FILES--->
 Ejemplo Basico
@@ -100,6 +112,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -578,3 +592,77 @@ Se pueden apilar estilos como decoradores.
 btn1: Estilo por defecto
 btn2: + EstiloBordeRedondeado
 btn3: + EstiloBordeRedondeado + EstiloConIcono
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+class IHttpClient {
+public:
+    virtual ~IHttpClient() = default;
+    virtual std::string get(const std::string& url) = 0;
+};
+
+class HttpClientBase : public IHttpClient {
+public:
+    std::string get(const std::string& url) override {
+        return "200 OK from " + url;
+    }
+};
+
+class HttpDecorator : public IHttpClient {
+public:
+    explicit HttpDecorator(std::unique_ptr<IHttpClient> inner)
+        : inner_(std::move(inner)) {}
+
+protected:
+    std::unique_ptr<IHttpClient> inner_;
+};
+
+class AuthDecorator : public HttpDecorator {
+public:
+    using HttpDecorator::HttpDecorator;
+    std::string get(const std::string& url) override {
+        return inner_->get(url) + " | auth=Bearer***";
+    }
+};
+
+class RetryDecorator : public HttpDecorator {
+public:
+    using HttpDecorator::HttpDecorator;
+    std::string get(const std::string& url) override {
+        return inner_->get(url) + " | retries=1";
+    }
+};
+
+class LogDecorator : public HttpDecorator {
+public:
+    using HttpDecorator::HttpDecorator;
+    std::string get(const std::string& url) override {
+        std::cout << "  [LOG] GET " << url << std::endl;
+        auto response = inner_->get(url);
+        std::cout << "  [LOG] RESP " << response << std::endl;
+        return response;
+    }
+};
+
+int main() {
+    std::cout << "=== Decorator Extra ===" << std::endl;
+
+    auto client = std::make_unique<LogDecorator>(
+        std::make_unique<RetryDecorator>(
+            std::make_unique<AuthDecorator>(
+                std::make_unique<HttpClientBase>())));
+
+    std::string response = client->get("https://api.miapp.com/health");
+    std::cout << "Final: " << response << std::endl;
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Decorator Extra ===
+  [LOG] GET https://api.miapp.com/health
+  [LOG] RESP 200 OK from https://api.miapp.com/health | auth=Bearer*** | retries=1
+Final: 200 OK from https://api.miapp.com/health | auth=Bearer*** | retries=1

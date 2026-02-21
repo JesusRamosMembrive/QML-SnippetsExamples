@@ -50,7 +50,9 @@
       "Bash(do if ! grep -Pq \"^// ={10,}\" \"$f\")",
       "Bash(then echo \"$f\")",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(wc:*)",
+      "Bash(tail:*)"
     ]
   }
 }

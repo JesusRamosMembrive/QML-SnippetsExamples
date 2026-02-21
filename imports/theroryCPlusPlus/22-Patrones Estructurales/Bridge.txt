@@ -87,6 +87,18 @@ Qt aplica Bridge en varios subsistemas fundamentales:
 
 > **Nota:** El Pimpl idiom en Qt es tan importante que tiene macros dedicadas: `Q_DECLARE_PRIVATE`, `Q_D`, etc.
 
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando tienes 2 o mas dimensiones de variacion independientes.
+- Cuando quieres evitar explosion de subclases por combinaciones.
+- Cuando necesitas cambiar implementacion en tiempo de ejecucion.
+
+##### Cuando evitar
+- Si solo hay una dimension de cambio clara.
+- Si la jerarquia es pequena y estable.
+- Si la separacion abstraccion/implementacion agrega mas complejidad que valor.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -94,6 +106,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -381,8 +395,9 @@ int main() {
 // =====================================================
 // Demostracion del Bridge en Qt: QPainter + QPaintDevice
 //
-// QPainter es la abstraccion (API de dibujo)
-// QPaintDevice es la implementacion (donde se dibuja)
+// QPaintDevice es la abstraccion (superficie de dibujo)
+// QPaintEngine es la implementacion concreta (interna de Qt)
+// QPainter actua como cliente que usa ese puente.
 //
 // El mismo codigo de dibujo funciona en QImage, QPixmap,
 // QSvgGenerator, QPrinter, QWidget, etc.
@@ -465,3 +480,83 @@ Qt usa el Bridge internamente con d-pointers:
   - Clase privada: QWidgetPrivate (implementacion)
   - Permite cambiar la implementacion sin romper ABI
   - Macros: Q_DECLARE_PRIVATE, Q_D(Clase)
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// Implementador: canal de envio
+class ICanal {
+public:
+    virtual ~ICanal() = default;
+    virtual void enviar(const std::string& destino,
+                        const std::string& payload) const = 0;
+};
+
+class CanalEmail : public ICanal {
+public:
+    void enviar(const std::string& destino,
+                const std::string& payload) const override {
+        std::cout << "  [Email] " << destino << " <- " << payload << std::endl;
+    }
+};
+
+class CanalSMS : public ICanal {
+public:
+    void enviar(const std::string& destino,
+                const std::string& payload) const override {
+        std::cout << "  [SMS] " << destino << " <- " << payload << std::endl;
+    }
+};
+
+// Abstraccion: tipo de mensaje
+class Mensaje {
+public:
+    explicit Mensaje(std::shared_ptr<ICanal> canal) : canal_(std::move(canal)) {}
+    virtual ~Mensaje() = default;
+    virtual void notificar(const std::string& destino) const = 0;
+
+protected:
+    std::shared_ptr<ICanal> canal_;
+};
+
+class MensajeAlerta : public Mensaje {
+public:
+    using Mensaje::Mensaje;
+    void notificar(const std::string& destino) const override {
+        canal_->enviar(destino, "ALERTA: CPU > 90%");
+    }
+};
+
+class MensajeInfo : public Mensaje {
+public:
+    using Mensaje::Mensaje;
+    void notificar(const std::string& destino) const override {
+        canal_->enviar(destino, "INFO: Backup completado");
+    }
+};
+
+int main() {
+    std::cout << "=== Bridge Extra ===" << std::endl;
+
+    auto email = std::make_shared<CanalEmail>();
+    auto sms = std::make_shared<CanalSMS>();
+
+    MensajeAlerta alertaPorEmail(email);
+    MensajeAlerta alertaPorSMS(sms);
+    MensajeInfo infoPorEmail(email);
+
+    alertaPorEmail.notificar("ops@empresa.com");
+    alertaPorSMS.notificar("+34123456789");
+    infoPorEmail.notificar("admin@empresa.com");
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Bridge Extra ===
+  [Email] ops@empresa.com <- ALERTA: CPU > 90%
+  [SMS] +34123456789 <- ALERTA: CPU > 90%
+  [Email] admin@empresa.com <- INFO: Backup completado

@@ -99,10 +99,22 @@ Qt utiliza el patrón Strategy en varios lugares del framework:
 
 - **`QValidator`:** Define diferentes reglas de validación para campos de entrada. `QIntValidator`, `QDoubleValidator`, `QRegularExpressionValidator` son estrategias concretas intercambiables.
 - **`QSortFilterProxyModel::lessThan()`:** Permite definir la estrategia de ordenación sobrescribiendo el método `lessThan()`. Diferentes implementaciones producen diferentes criterios de ordenación.
-- **`QTextCodec`:** Diferentes codecs para diferentes estrategias de codificación/decodificación de texto.
+- **`QCollator`:** Permite estrategias de comparación/ordenación dependientes de idioma y reglas locales.
 - **`QStyle`:** Todo el sistema de estilos de Qt es Strategy: `QWindowsStyle`, `QFusionStyle`, etc., son estrategias intercambiables para renderizar controles.
 
 > **Nota:** En QML, el patrón Strategy se aplica naturalmente asignando funciones JavaScript como propiedades o usando `Component` dinámicos como estrategias intercambiables.
+
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando tienes varias variantes de un algoritmo con la misma entrada/salida.
+- Cuando quieres cambiar el comportamiento en tiempo de ejecución.
+- Cuando quieres aislar reglas de negocio para probarlas por separado.
+
+##### Cuando evitar
+- Si el algoritmo prácticamente no cambia en el dominio.
+- Si el número de estrategias es mínimo y estable.
+- Si la elección de estrategia en cliente se vuelve más compleja que el beneficio.
 
 <---FILES--->
 Ejemplo Basico
@@ -111,6 +123,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -416,6 +430,7 @@ Total:     $210
 #include <QIntValidator>
 #include <QDoubleValidator>
 #include <QRegularExpressionValidator>
+#include <QRegularExpression>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QString>
@@ -427,7 +442,6 @@ Total:     $210
 
 // Clase que simula un campo de entrada con validación intercambiable
 class CampoEntrada : public QObject {
-    Q_OBJECT
 public:
     explicit CampoEntrada(const QString& nombre, QObject* parent = nullptr)
         : QObject(parent), nombre_(nombre), validador_(nullptr) {}
@@ -473,7 +487,6 @@ private:
 
 // Estrategia: ordenar por longitud del texto
 class OrdenPorLongitud : public QSortFilterProxyModel {
-    Q_OBJECT
 public:
     using QSortFilterProxyModel::QSortFilterProxyModel;
 
@@ -543,8 +556,6 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
-#include "main.moc"
 ```
 <---Ejemplo con Qt Result--->
 === QValidator como Strategy ===
@@ -563,3 +574,66 @@ Ordenado por longitud:
   "Ana"
   "Carolina"
   "Alejandro"
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+class IEstrategiaEnvio {
+public:
+    virtual ~IEstrategiaEnvio() = default;
+    virtual double costo(double pesoKg, double distanciaKm) const = 0;
+    virtual std::string nombre() const = 0;
+};
+
+class EnvioEconomico : public IEstrategiaEnvio {
+public:
+    double costo(double pesoKg, double distanciaKm) const override {
+        return 3.0 + pesoKg * 0.5 + distanciaKm * 0.02;
+    }
+    std::string nombre() const override { return "Economico"; }
+};
+
+class EnvioExpress : public IEstrategiaEnvio {
+public:
+    double costo(double pesoKg, double distanciaKm) const override {
+        return 8.0 + pesoKg * 1.2 + distanciaKm * 0.05;
+    }
+    std::string nombre() const override { return "Express"; }
+};
+
+class Cotizador {
+public:
+    void setEstrategia(std::unique_ptr<IEstrategiaEnvio> e) { estrategia_ = std::move(e); }
+
+    void cotizar(double pesoKg, double distanciaKm) const {
+        if (!estrategia_) {
+            std::cout << "Sin estrategia" << std::endl;
+            return;
+        }
+        std::cout << estrategia_->nombre() << ": $"
+                  << estrategia_->costo(pesoKg, distanciaKm) << std::endl;
+    }
+
+private:
+    std::unique_ptr<IEstrategiaEnvio> estrategia_;
+};
+
+int main() {
+    std::cout << "=== Strategy Extra ===" << std::endl;
+    Cotizador c;
+
+    c.setEstrategia(std::make_unique<EnvioEconomico>());
+    c.cotizar(4.0, 120.0);
+
+    c.setEstrategia(std::make_unique<EnvioExpress>());
+    c.cotizar(4.0, 120.0);
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Strategy Extra ===
+Economico: $7.4
+Express: $19.2

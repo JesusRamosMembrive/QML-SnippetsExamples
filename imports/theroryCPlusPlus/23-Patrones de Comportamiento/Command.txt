@@ -96,6 +96,18 @@ Qt proporciona una implementación completa del patrón Command:
 
 > **Nota:** `QUndoStack::push()` ejecuta el comando automáticamente (llama a `redo()`) y lo agrega al historial. No necesitas ejecutar el comando manualmente.
 
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando necesitas desacoplar emisores (UI, atajos, menús) de la lógica de negocio.
+- Cuando requieres historial de operaciones para `undo/redo`.
+- Cuando quieres encolar, registrar o componer acciones en macros.
+
+##### Cuando evitar
+- Si las acciones son mínimas y no requieren historial ni composición.
+- Si crear una clase por comando añade más complejidad que valor.
+- Si no existe una semántica clara de deshacer para las operaciones.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -103,6 +115,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -472,7 +486,6 @@ int main() {
 #include <QUndoStack>
 #include <QDebug>
 #include <QString>
-#include <QAction>
 
 // ============================================================
 // Editor de figuras con QUndoCommand y QUndoStack
@@ -622,7 +635,6 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-#include "main.moc"
 ```
 <---Ejemplo con Qt Result--->
 === Estado inicial ===
@@ -658,3 +670,75 @@ Puede deshacer: true
 Puede rehacer: true
 Texto undo: "Cambiar color de Circulo a verde"
 Texto redo: "Mover Cuadrado a (100, 200)"
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <queue>
+#include <string>
+
+class IComando {
+public:
+    virtual ~IComando() = default;
+    virtual void ejecutar() = 0;
+};
+
+class ServicioEmail {
+public:
+    void enviar(const std::string& para, const std::string& asunto) {
+        std::cout << "  [Email] para=" << para << " asunto=" << asunto << std::endl;
+    }
+};
+
+class ComandoEnviarEmail : public IComando {
+public:
+    ComandoEnviarEmail(ServicioEmail& svc, std::string para, std::string asunto)
+        : svc_(svc), para_(std::move(para)), asunto_(std::move(asunto)) {}
+
+    void ejecutar() override { svc_.enviar(para_, asunto_); }
+
+private:
+    ServicioEmail& svc_;
+    std::string para_;
+    std::string asunto_;
+};
+
+class ColaComandos {
+public:
+    void encolar(std::unique_ptr<IComando> cmd) {
+        cola_.push(std::move(cmd));
+    }
+
+    void ejecutarPendientes() {
+        while (!cola_.empty()) {
+            cola_.front()->ejecutar();
+            cola_.pop();
+        }
+    }
+
+private:
+    std::queue<std::unique_ptr<IComando>> cola_;
+};
+
+int main() {
+    std::cout << "=== Command Extra ===" << std::endl;
+
+    ServicioEmail email;
+    ColaComandos cola;
+
+    cola.encolar(std::make_unique<ComandoEnviarEmail>(
+        email, "ana@empresa.com", "Bienvenida"));
+    cola.encolar(std::make_unique<ComandoEnviarEmail>(
+        email, "ops@empresa.com", "Alerta nocturna"));
+
+    std::cout << "Procesando cola..." << std::endl;
+    cola.ejecutarPendientes();
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Command Extra ===
+Procesando cola...
+  [Email] para=ana@empresa.com asunto=Bienvenida
+  [Email] para=ops@empresa.com asunto=Alerta nocturna

@@ -89,7 +89,7 @@ public:
 };
 ```
 
-> **Nota:** El constructor de copia por defecto de C++ hace copia superficial. Si tu clase tiene `std::unique_ptr` u otros recursos, debes escribir un constructor de copia personalizado que haga copia profunda.
+> **Nota:** El constructor de copia por defecto de C++ hace copia miembro a miembro. Con punteros crudos eso suele implicar copia superficial; con `std::unique_ptr` la copia está deshabilitada. Si hay recursos propios, implementa copia profunda explícita.
 
 #### Ventajas y Desventajas
 
@@ -110,10 +110,11 @@ public:
 
 Qt utiliza conceptos del patrón Prototype en varios contextos:
 
-- **`QMimeData`:** Se puede clonar para transferir datos entre operaciones de drag & drop.
+- **`QImage` / `QPixmap`:** `copy()` permite obtener una instancia independiente del original.
 - **Implicit Sharing (Copy-on-Write):** Clases como `QString`, `QList`, `QImage` usan compartición implícita — la copia es barata (solo copia el puntero) hasta que uno de los objetos se modifica.
-- **`QGraphicsItem`:** Aunque no tiene `clone()` nativo, el patrón se usa frecuentemente para duplicar items en escenas gráficas.
-- **`QVariant`:** Almacena copias de valores de cualquier tipo, efectivamente clonando el dato original.
+- **`QVariant`:** Almacena y copia valores type-erased, conservando semántica de valor.
+- **`QGraphicsItem`:** No tiene `clone()` nativo, pero suele duplicarse aplicando Prototype en subclases propias.
+- **`QMimeData`:** No expone `clone()` directo; normalmente se recrea copiando formatos y payload.
 - **Serialización:** `QDataStream` permite serializar y deserializar objetos, que es otra forma de clonar.
 
 ```cpp
@@ -125,6 +126,20 @@ copia[0] = 'h';             // AHORA se hace la copia real (CoW)
 // copia es "hola Mundo"
 ```
 
+#### Cuándo usar y cuándo evitar
+
+##### Cuándo usar
+
+- Cuando crear el objeto desde cero es caro o repetitivo.
+- Cuando necesitas clonar sin conocer la clase concreta en tiempo de compilación.
+- Cuando quieres partir de plantillas preconfiguradas y aplicar pequeñas variaciones.
+
+##### Cuándo evitar
+
+- Si el objeto tiene recursos externos complejos (sockets, handles, transacciones activas).
+- Si la semántica de copia no está claramente definida.
+- Si la identidad del objeto es más importante que su estado (clonar puede ser engañoso).
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -132,6 +147,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -584,14 +601,16 @@ Tarjeta 2:
 ```cpp
 #include <QCoreApplication>
 #include <QDebug>
+#include <QList>
 #include <QString>
+#include <QStringList>
 #include <QVariant>
-#include <QMap>
+#include <map>
 #include <memory>
 
 // =============================================
 // Prototype en Qt: Sistema de plantillas de datos
-// Similar a cómo QMimeData y QVariant manejan copias
+// Similar a cómo Qt usa semántica de valor e implicit sharing
 // =============================================
 
 // Clase base clonable para elementos de datos
@@ -682,18 +701,22 @@ public:
     std::unique_ptr<DatoBase> crear(const QString& clave) const {
         auto it = plantillas_.find(clave);
         if (it != plantillas_.end()) {
-            return it.value()->clonar();
+            return it->second->clonar();
         }
         qWarning() << "Plantilla no encontrada:" << clave;
         return nullptr;
     }
 
     QStringList plantillasDisponibles() const {
-        return plantillas_.keys();
+        QStringList claves;
+        for (const auto& [clave, _] : plantillas_) {
+            claves.append(clave);
+        }
+        return claves;
     }
 
 private:
-    QMap<QString, std::unique_ptr<DatoBase>> plantillas_;
+    std::map<QString, std::unique_ptr<DatoBase>> plantillas_;
 };
 
 // =============================================
@@ -713,7 +736,7 @@ void demostrarImplicitSharing() {
 
     // Modificar una copia dispara la copia real (CoW)
     copia1.replace("Hola", "Adios");
-    qDebug() << "\nDespues de modificar copia1:";
+    qDebug() << "\nDespués de modificar copia1:";
     qDebug() << "Original:" << original;  // Sin cambios
     qDebug() << "Copia 1: " << copia1;    // Modificada
 
@@ -737,7 +760,7 @@ int main(int argc, char *argv[]) {
     // Registrar plantillas pre-configuradas
     registro.registrar("informe-basico",
         std::make_unique<DatoTexto>(
-            "Informe generado automaticamente", "HTML"));
+            "Informe generado automáticamente", "HTML"));
 
     registro.registrar("tabla-usuarios",
         std::make_unique<DatoTabla>(3, 4, "Usuarios del Sistema"));
@@ -789,7 +812,7 @@ Plantillas disponibles: ("informe-basico", "nota-rapida", "tabla-usuarios")
 --- Creando desde plantillas ---
 
 Informe original:
-  [Texto] "Informe generado automaticamente" ( "HTML" )
+  [Texto] "Informe generado automáticamente" ( "HTML" )
 
 Informe personalizado:
   [Texto] "Reporte de ventas Q4 2025" ( "HTML" )
@@ -811,7 +834,7 @@ Original: "Hola Mundo desde Qt"
 Copia 1:  "Hola Mundo desde Qt"
 Copia 2:  "Hola Mundo desde Qt"
 
-Despues de modificar copia1:
+Después de modificar copia1:
 Original: "Hola Mundo desde Qt"
 Copia 1:  "Adios Mundo desde Qt"
 
@@ -819,3 +842,123 @@ Copia 1:  "Adios Mundo desde Qt"
 v1: "Texto en QVariant"
 v2: "Texto en QVariant"
 Son iguales: true
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+class Firma {
+public:
+    explicit Firma(std::string remitente) : remitente_(std::move(remitente)) {}
+
+    void setRemitente(const std::string& r) { remitente_ = r; }
+    const std::string& remitente() const { return remitente_; }
+
+private:
+    std::string remitente_;
+};
+
+class EmailPrototype {
+public:
+    virtual ~EmailPrototype() = default;
+    virtual std::unique_ptr<EmailPrototype> clonar() const = 0;
+    virtual void mostrar() const = 0;
+};
+
+class EmailPlantilla : public EmailPrototype {
+public:
+    EmailPlantilla(std::string asunto,
+                   std::string cuerpo,
+                   std::unique_ptr<Firma> firma)
+        : asunto_(std::move(asunto))
+        , cuerpo_(std::move(cuerpo))
+        , firma_(std::move(firma)) {}
+
+    // Copia profunda de firma_ (unique_ptr)
+    EmailPlantilla(const EmailPlantilla& other)
+        : asunto_(other.asunto_)
+        , cuerpo_(other.cuerpo_)
+        , destinatario_(other.destinatario_)
+        , firma_(std::make_unique<Firma>(*other.firma_))
+        , adjuntos_(other.adjuntos_) {}
+
+    std::unique_ptr<EmailPrototype> clonar() const override {
+        return std::make_unique<EmailPlantilla>(*this);
+    }
+
+    void setDestinatario(const std::string& d) { destinatario_ = d; }
+    void setAsunto(const std::string& a) { asunto_ = a; }
+    void agregarAdjunto(const std::string& archivo) { adjuntos_.push_back(archivo); }
+    Firma& firma() { return *firma_; }
+
+    void mostrar() const override {
+        std::cout << "  To: " << destinatario_ << std::endl;
+        std::cout << "  Asunto: " << asunto_ << std::endl;
+        std::cout << "  Cuerpo: " << cuerpo_ << std::endl;
+        std::cout << "  Firma: " << firma_->remitente() << std::endl;
+        std::cout << "  Adjuntos: ";
+        for (size_t i = 0; i < adjuntos_.size(); ++i) {
+            if (i > 0) std::cout << ", ";
+            std::cout << adjuntos_[i];
+        }
+        std::cout << std::endl;
+    }
+
+private:
+    std::string asunto_;
+    std::string cuerpo_;
+    std::string destinatario_ = "sin-destino";
+    std::unique_ptr<Firma> firma_;
+    std::vector<std::string> adjuntos_;
+};
+
+int main() {
+    std::cout << "=== Prototype Extra ===" << std::endl;
+
+    std::unordered_map<std::string, std::unique_ptr<EmailPrototype>> plantillas;
+    plantillas["alerta"] = std::make_unique<EmailPlantilla>(
+        "Alerta del sistema",
+        "Se detecto un evento importante.",
+        std::make_unique<Firma>("NOC <noc@empresa.com>")
+    );
+
+    auto correo1 = plantillas["alerta"]->clonar();
+    auto* e1 = dynamic_cast<EmailPlantilla*>(correo1.get());
+    e1->setDestinatario("soporte@empresa.com");
+    e1->agregarAdjunto("incidente-771.log");
+
+    auto correo2 = plantillas["alerta"]->clonar();
+    auto* e2 = dynamic_cast<EmailPlantilla*>(correo2.get());
+    e2->setDestinatario("cto@empresa.com");
+    e2->setAsunto("Alerta critica");
+    e2->firma().setRemitente("OnCall <oncall@empresa.com>");
+
+    std::cout << "\nCorreo 1:" << std::endl;
+    correo1->mostrar();
+
+    std::cout << "\nCorreo 2:" << std::endl;
+    correo2->mostrar();
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Prototype Extra ===
+
+Correo 1:
+  To: soporte@empresa.com
+  Asunto: Alerta del sistema
+  Cuerpo: Se detecto un evento importante.
+  Firma: NOC <noc@empresa.com>
+  Adjuntos: incidente-771.log
+
+Correo 2:
+  To: cto@empresa.com
+  Asunto: Alerta critica
+  Cuerpo: Se detecto un evento importante.
+  Firma: OnCall <oncall@empresa.com>
+  Adjuntos:

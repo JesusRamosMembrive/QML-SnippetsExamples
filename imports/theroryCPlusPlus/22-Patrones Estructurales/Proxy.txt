@@ -92,13 +92,25 @@ Qt utiliza proxies en varios subsistemas:
 
 - **`QSortFilterProxyModel`:** Es el proxy mas utilizado en Qt. Se interpone entre un modelo de datos y una vista, permitiendo filtrar y ordenar filas sin modificar el modelo original. Implementa la misma interfaz `QAbstractItemModel` que el modelo fuente.
 
-- **Lazy loading con `QPixmap`:** Qt carga pixmaps de forma diferida internamente. Cuando asignas un archivo a un `QPixmap`, la decodificacion real puede ocurrir cuando realmente se necesita dibujar. `QPixmap::isNull()` permite verificar sin forzar la carga.
+- **`QIdentityProxyModel`:** Proxy transparente que reexpone un modelo fuente sin transformar datos; base util para agregar logica incremental sin tocar el modelo original.
 
-- **`QNetworkReply`:** Actua como proxy de un recurso remoto. Representa los datos que aun no han llegado del servidor. La interfaz es sincrona (puedes leer datos), pero internamente los datos llegan asincronamente.
+- **`QNetworkReply`:** Representa un recurso remoto y encapsula la interaccion con red de forma asincrona. Funciona como representante local de datos que llegan de manera diferida.
 
 - **`QQmlComponent`:** En QML, los componentes se cargan de forma diferida con `Loader {}`, que es esencialmente un proxy virtual que crea el componente real solo cuando es necesario (cuando `active` es `true` o `source` cambia).
 
 > **Nota:** En QML, el componente `Loader` es un proxy virtual clasico: controla cuando se crea y destruye el componente real. `Loader { active: false; source: "Pesado.qml" }` no carga nada hasta que `active` se pone en `true`.
+
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando necesitas lazy loading o inicializacion diferida.
+- Cuando quieres agregar control de acceso sin tocar el sujeto real.
+- Cuando deseas cachear resultados costosos de forma transparente.
+
+##### Cuando evitar
+- Si la latencia de primera llamada rompe requisitos de UX.
+- Si la politica de cache/invalidez es dificil de mantener.
+- Si el proxy solo reenvia llamadas sin aportar control real.
 
 <---FILES--->
 Ejemplo Basico
@@ -107,6 +119,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -196,7 +210,7 @@ public:
 
     std::string info() const override {
         if (imagenReal_) return imagenReal_->info();
-        return ruta_ + " (no cargada aun)";
+        return ruta_ + " (no cargada aún)";
     }
 };
 
@@ -243,9 +257,9 @@ int main() {
   [Proxy] Proxy creado para: retrato_familia.jpg (sin cargar imagen)
 
 --- Info sin cargar ---
-  img1: foto_vacaciones.jpg (no cargada aun)
-  img2: panorama_montana.jpg (no cargada aun)
-  img3: retrato_familia.jpg (no cargada aun)
+  img1: foto_vacaciones.jpg (no cargada aún)
+  img2: panorama_montana.jpg (no cargada aún)
+  img3: retrato_familia.jpg (no cargada aún)
 
 --- Mostrando solo img1 ---
   [Proxy] Primera solicitud -> creando imagen real
@@ -262,7 +276,7 @@ int main() {
   Alto: 2160
 
 --- img3 nunca se cargo ---
-  img3: retrato_familia.jpg (no cargada aun)
+  img3: retrato_familia.jpg (no cargada aún)
 
 <---Ejemplo Avanzado--->
 ```cpp
@@ -586,7 +600,10 @@ void mostrarModelo(QAbstractItemModel* modelo, const QString& titulo) {
         QString nombre = modelo->data(modelo->index(fila, 0)).toString();
         QString depto = modelo->data(modelo->index(fila, 1)).toString();
         QString salario = modelo->data(modelo->index(fila, 2)).toString();
-        qDebug().noquote() << QString("  %-20s %-15s $%1").arg(nombre, depto, salario);
+        qDebug().noquote() << QString("  %1 %2 $%3")
+                              .arg(nombre, -20)
+                              .arg(depto, -15)
+                              .arg(salario);
     }
     qDebug().noquote() << "  Total filas:" << modelo->rowCount();
 }
@@ -706,3 +723,73 @@ int main(int argc, char* argv[]) {
   Proxy fila 1 -> Fuente fila 2: Maria Torres
   Proxy fila 2 -> Fuente fila 4: Laura Diaz
   Proxy fila 3 -> Fuente fila 7: Diego Vargas
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+class ICatalogo {
+public:
+    virtual ~ICatalogo() = default;
+    virtual std::string detalleProducto(const std::string& sku) = 0;
+};
+
+class CatalogoReal : public ICatalogo {
+public:
+    std::string detalleProducto(const std::string& sku) override {
+        std::cout << "  [CatalogoReal] Consultando BD para " << sku << std::endl;
+        return "Producto{" + sku + ", precio=199.99}";
+    }
+};
+
+class CatalogoProxy : public ICatalogo {
+public:
+    CatalogoProxy(std::string rol, std::unique_ptr<ICatalogo> real)
+        : rol_(std::move(rol)), real_(std::move(real)) {}
+
+    std::string detalleProducto(const std::string& sku) override {
+        if (rol_ != "admin" && rol_ != "ventas") {
+            return "ERROR: acceso denegado";
+        }
+
+        auto it = cache_.find(sku);
+        if (it != cache_.end()) {
+            std::cout << "  [Proxy] Cache HIT para " << sku << std::endl;
+            return it->second;
+        }
+
+        std::cout << "  [Proxy] Cache MISS para " << sku << std::endl;
+        std::string value = real_->detalleProducto(sku);
+        cache_[sku] = value;
+        return value;
+    }
+
+private:
+    std::string rol_;
+    std::unique_ptr<ICatalogo> real_;
+    std::unordered_map<std::string, std::string> cache_;
+};
+
+int main() {
+    std::cout << "=== Proxy Extra ===" << std::endl;
+
+    CatalogoProxy proxyVentas("ventas", std::make_unique<CatalogoReal>());
+    std::cout << proxyVentas.detalleProducto("SKU-100") << std::endl;
+    std::cout << proxyVentas.detalleProducto("SKU-100") << std::endl;
+
+    CatalogoProxy proxyInvitado("guest", std::make_unique<CatalogoReal>());
+    std::cout << proxyInvitado.detalleProducto("SKU-200") << std::endl;
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Proxy Extra ===
+  [Proxy] Cache MISS para SKU-100
+  [CatalogoReal] Consultando BD para SKU-100
+Producto{SKU-100, precio=199.99}
+  [Proxy] Cache HIT para SKU-100
+Producto{SKU-100, precio=199.99}
+ERROR: acceso denegado

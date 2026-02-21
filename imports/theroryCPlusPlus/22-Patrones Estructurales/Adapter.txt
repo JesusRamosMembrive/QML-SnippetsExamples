@@ -93,11 +93,23 @@ Qt utiliza el patron Adapter extensivamente:
 
 - **`QAbstractItemModel`:** Es el adaptador por excelencia en Qt. Adapta cualquier estructura de datos (listas, arboles, tablas, bases de datos) a la interfaz que las vistas (`QListView`, `QTreeView`, `QTableView`) esperan. Tu implementas los metodos `data()`, `rowCount()`, `columnCount()`, etc., y la vista sabe como mostrar tus datos.
 
-- **`QSortFilterProxyModel`:** Actua como un adaptador que envuelve otro modelo, adaptando su interfaz para agregar filtrado y ordenamiento sin modificar el modelo original.
+- **`QSortFilterProxyModel`:** Por intencion se clasifica mas como Proxy, pero tambien funciona como adaptacion de un modelo fuente hacia una vista filtrada/ordenada sin tocar el original.
 
-- **`QAbstractProxyModel`:** Base para crear adaptadores de modelos personalizados que transforman la estructura o los datos de un modelo fuente.
+- **`QAbstractProxyModel`:** Base para crear capas de adaptacion/transformacion sobre un modelo fuente cuando necesitas exponer otra forma de los datos.
 
 > **Nota:** En QML, cuando escribes un `ListModel` o usas un modelo C++ con `Q_PROPERTY`, estas usando implicitamente el patron Adapter para traducir tus datos al formato que las vistas QML esperan.
+
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando debes integrar codigo legacy o de terceros que no puedes modificar.
+- Cuando necesitas mantener estable la interfaz de tu dominio.
+- Cuando quieres migrar sistemas gradualmente sin romper clientes existentes.
+
+##### Cuando evitar
+- Si controlas ambas interfaces y puedes unificarlas directamente.
+- Si el mapeo entre interfaces es demasiado complejo o ambiguo.
+- Si el adaptador termina absorbiendo demasiada logica de negocio.
 
 <---FILES--->
 Ejemplo Basico
@@ -106,6 +118,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -389,12 +403,16 @@ public:
     // --- Implementacion de la interfaz QAbstractListModel ---
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override {
-        Q_UNUSED(parent);
+        if (parent.isValid()) {
+            return 0;
+        }
         return static_cast<int>(empleados_.size());
     }
 
     QVariant data(const QModelIndex& index, int role) const override {
-        if (!index.isValid() || index.row() >= static_cast<int>(empleados_.size()))
+        if (!index.isValid()
+            || index.row() < 0
+            || index.row() >= static_cast<int>(empleados_.size()))
             return QVariant();
 
         const auto& emp = empleados_[index.row()];
@@ -454,3 +472,72 @@ Total empleados: 4
   - "Carlos Lopez (Edad: 25)" | Salario: 38000
   - "Maria Torres (Edad: 35)" | Salario: 52000
   - "Pedro Ruiz (Edad: 28)" | Salario: 41000
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+
+// Sistema nuevo espera esta interfaz
+class IRepositorioUsuarios {
+public:
+    virtual ~IRepositorioUsuarios() = default;
+    virtual std::vector<std::string> listarActivos() const = 0;
+};
+
+// Sistema legacy devuelve texto crudo separado por ';'
+class LegacyUsuariosApi {
+public:
+    std::string obtenerActivosRaw() const {
+        return "ana;pedro;maria";
+    }
+};
+
+// Adapter: traduce raw string -> vector<string>
+class RepositorioUsuariosAdapter : public IRepositorioUsuarios {
+public:
+    explicit RepositorioUsuariosAdapter(std::shared_ptr<LegacyUsuariosApi> api)
+        : api_(std::move(api)) {}
+
+    std::vector<std::string> listarActivos() const override {
+        std::vector<std::string> out;
+        std::string raw = api_->obtenerActivosRaw();
+        std::string token;
+        for (char ch : raw) {
+            if (ch == ';') {
+                if (!token.empty()) out.push_back(token);
+                token.clear();
+            } else {
+                token.push_back(ch);
+            }
+        }
+        if (!token.empty()) out.push_back(token);
+        return out;
+    }
+
+private:
+    std::shared_ptr<LegacyUsuariosApi> api_;
+};
+
+int main() {
+    std::cout << "=== Adapter Extra ===" << std::endl;
+
+    auto legacy = std::make_shared<LegacyUsuariosApi>();
+    RepositorioUsuariosAdapter repo(legacy);
+
+    auto activos = repo.listarActivos();
+    std::cout << "Usuarios activos: ";
+    for (size_t i = 0; i < activos.size(); ++i) {
+        if (i > 0) std::cout << ", ";
+        std::cout << activos[i];
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Adapter Extra ===
+Usuarios activos: ana, pedro, maria

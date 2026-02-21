@@ -109,6 +109,20 @@ QApplication::setStyle(estilo);
 // Todos los widgets ahora usan el estilo Fusion consistentemente
 ```
 
+#### Cuándo usar y cuándo evitar
+
+##### Cuándo usar
+
+- Cuando necesitas cambiar una **familia completa** de objetos de forma consistente (por ejemplo, tema, plataforma o motor).
+- Cuando quieres impedir combinaciones inválidas de productos (evitar mezclar componentes incompatibles).
+- Cuando buscas eliminar `if/switch` repetidos de creación en el cliente.
+
+##### Cuándo evitar
+
+- Si solo creas **un tipo** de producto: suele bastar con Factory Method.
+- Si el conjunto de productos cambia muy seguido: modificar todas las fábricas puede ser costoso.
+- Si aún no conoces bien las familias estables del dominio: puedes sobre-diseñar demasiado pronto.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -116,6 +130,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -156,10 +172,10 @@ public:
 class CheckboxWindows : public Checkbox {
 public:
     void renderizar() const override {
-        std::cout << "  [Win] Checkbox cuadrado clasico" << std::endl;
+        std::cout << "  [Win] Checkbox cuadrado clásico" << std::endl;
     }
     void toggle() const override {
-        std::cout << "  [Win] Toggle con marca de verificacion" << std::endl;
+        std::cout << "  [Win] Toggle con marca de verificación" << std::endl;
     }
 };
 
@@ -258,8 +274,8 @@ int main() {
 Estilo: Windows
   [Win] Boton con borde 3D
   [Win] Click con sonido del sistema
-  [Win] Checkbox cuadrado clasico
-  [Win] Toggle con marca de verificacion
+  [Win] Checkbox cuadrado clásico
+  [Win] Toggle con marca de verificación
 
 --- Interfaz macOS ---
 Estilo: macOS
@@ -655,8 +671,8 @@ int main(int argc, char *argv[]) {
     // Nota sobre Qt real
     qDebug() << "\n--- Nota sobre Qt ---";
     qDebug() << "En Qt real, QStyleFactory::create('Fusion')";
-    qDebug() << "actua como Abstract Factory para todos los";
-    qDebug() << "elementos visuales de la aplicacion.";
+    qDebug() << "actúa como Abstract Factory para todos los";
+    qDebug() << "elementos visuales de la aplicación.";
 
     return 0;
 }
@@ -684,5 +700,127 @@ Construyendo ventana con tema: "Oscuro"
 
 --- Nota sobre Qt ---
 En Qt real, QStyleFactory::create('Fusion')
-actua como Abstract Factory para todos los
-elementos visuales de la aplicacion.
+actúa como Abstract Factory para todos los
+elementos visuales de la aplicación.
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+// =============================================
+// Productos abstractos de una familia de persistencia
+// =============================================
+class ConexionDB {
+public:
+    virtual ~ConexionDB() = default;
+    virtual void abrir() const = 0;
+};
+
+class InsertBuilder {
+public:
+    virtual ~InsertBuilder() = default;
+    virtual std::string insertarUsuario(const std::string& nombre) const = 0;
+};
+
+// =============================================
+// Abstract Factory
+// =============================================
+class PersistenciaFactory {
+public:
+    virtual ~PersistenciaFactory() = default;
+    virtual std::unique_ptr<ConexionDB> crearConexion() const = 0;
+    virtual std::unique_ptr<InsertBuilder> crearInsertBuilder() const = 0;
+    virtual std::string nombre() const = 0;
+};
+
+// =============================================
+// Familia MySQL
+// =============================================
+class MySqlConexion : public ConexionDB {
+public:
+    void abrir() const override {
+        std::cout << "  [MySQL] Conexion abierta" << std::endl;
+    }
+};
+
+class MySqlInsertBuilder : public InsertBuilder {
+public:
+    std::string insertarUsuario(const std::string& nombre) const override {
+        return "INSERT INTO `usuarios` (`nombre`, `creado_en`) VALUES ('" +
+               nombre + "', NOW());";
+    }
+};
+
+class MySqlFactory : public PersistenciaFactory {
+public:
+    std::unique_ptr<ConexionDB> crearConexion() const override {
+        return std::make_unique<MySqlConexion>();
+    }
+    std::unique_ptr<InsertBuilder> crearInsertBuilder() const override {
+        return std::make_unique<MySqlInsertBuilder>();
+    }
+    std::string nombre() const override { return "MySQL"; }
+};
+
+// =============================================
+// Familia PostgreSQL
+// =============================================
+class PgConexion : public ConexionDB {
+public:
+    void abrir() const override {
+        std::cout << "  [PostgreSQL] Conexion abierta" << std::endl;
+    }
+};
+
+class PgInsertBuilder : public InsertBuilder {
+public:
+    std::string insertarUsuario(const std::string& nombre) const override {
+        return "INSERT INTO \"usuarios\" (\"nombre\", \"creado_en\") VALUES ('" +
+               nombre + "', CURRENT_TIMESTAMP);";
+    }
+};
+
+class PgFactory : public PersistenciaFactory {
+public:
+    std::unique_ptr<ConexionDB> crearConexion() const override {
+        return std::make_unique<PgConexion>();
+    }
+    std::unique_ptr<InsertBuilder> crearInsertBuilder() const override {
+        return std::make_unique<PgInsertBuilder>();
+    }
+    std::string nombre() const override { return "PostgreSQL"; }
+};
+
+void guardarUsuario(const PersistenciaFactory& factory, const std::string& nombre) {
+    std::cout << "\n--- Guardando usuario con familia " << factory.nombre() << " ---" << std::endl;
+    auto conexion = factory.crearConexion();
+    auto insertBuilder = factory.crearInsertBuilder();
+
+    conexion->abrir();
+    std::cout << "  SQL: " << insertBuilder->insertarUsuario(nombre) << std::endl;
+}
+
+int main() {
+    std::cout << "=== Abstract Factory Extra ===" << std::endl;
+
+    MySqlFactory mysql;
+    PgFactory postgres;
+
+    guardarUsuario(mysql, "ana");
+    guardarUsuario(postgres, "ana");
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Abstract Factory Extra ===
+
+--- Guardando usuario con familia MySQL ---
+  [MySQL] Conexion abierta
+  SQL: INSERT INTO `usuarios` (`nombre`, `creado_en`) VALUES ('ana', NOW());
+
+--- Guardando usuario con familia PostgreSQL ---
+  [PostgreSQL] Conexion abierta
+  SQL: INSERT INTO "usuarios" ("nombre", "creado_en") VALUES ('ana', CURRENT_TIMESTAMP);

@@ -90,11 +90,23 @@ Qt usa Facade extensivamente para simplificar subsistemas complejos:
 
 - **`QNetworkAccessManager`:** Fachada sobre el subsistema de red completo. En lugar de manejar sockets, DNS, SSL, HTTP, cookies y redireccionamientos manualmente, simplemente haces `manager->get(QNetworkRequest(url))`. Internamente coordina `QTcpSocket`, `QSslSocket`, `QNetworkReply`, `QNetworkCookieJar`, etc.
 
-- **`QSqlDatabase`:** Simplifica la interaccion con bases de datos. Oculta la complejidad de drivers, conexiones, pools y dialectos SQL detras de una interfaz unificada.
+- **`QSqlDatabase`:** Simplifica la interaccion con bases de datos. Oculta la complejidad de drivers, conexiones y dialectos SQL detras de una interfaz unificada.
 
 - **`QMediaPlayer` (Qt Multimedia):** Fachada que oculta la complejidad de decodificacion de audio/video, sincronizacion de streams y renderizado multimedia.
 
 > **Nota:** En QML, componentes como `Image {}` son fachadas: ocultan la carga asincrona, decodificacion, cache de texturas y renderizado GPU detras de una simple propiedad `source`.
+
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando un subsistema requiere demasiados pasos y orden estricto.
+- Cuando quieres exponer operaciones de alto nivel al dominio.
+- Cuando deseas reducir el acoplamiento del cliente con APIs internas.
+
+##### Cuando evitar
+- Si la fachada empieza a concentrar demasiadas responsabilidades.
+- Si ocultar detalle impide casos de uso avanzados importantes.
+- Si el subsistema ya es pequeno y facil de consumir directamente.
 
 <---FILES--->
 Ejemplo Basico
@@ -103,6 +115,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -466,6 +480,7 @@ Compra exitosa
 ```cpp
 #include <QCoreApplication>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QDir>
 #include <QJsonDocument>
@@ -627,7 +642,7 @@ int main(int argc, char* argv[]) {
     qDebug() << "\n=== Fachadas nativas de Qt ===";
     qDebug() << "QFile: Fachada sobre QIODevice + QFileDevice + handles OS";
     qDebug() << "QNetworkAccessManager: Fachada sobre sockets + SSL + HTTP + cookies";
-    qDebug() << "QSqlDatabase: Fachada sobre drivers + conexiones + pools SQL";
+    qDebug() << "QSqlDatabase: Fachada sobre drivers + conexiones + SQL";
 
     return 0;
 }
@@ -649,4 +664,66 @@ Valores obtenidos:
 === Fachadas nativas de Qt ===
 QFile: Fachada sobre QIODevice + QFileDevice + handles OS
 QNetworkAccessManager: Fachada sobre sockets + SSL + HTTP + cookies
-QSqlDatabase: Fachada sobre drivers + conexiones + pools SQL
+QSqlDatabase: Fachada sobre drivers + conexiones + SQL
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <string>
+
+class GitSubsystem {
+public:
+    bool pull() { std::cout << "  [Git] pull origin main" << std::endl; return true; }
+};
+
+class BuildSubsystem {
+public:
+    bool compile() { std::cout << "  [Build] cmake --build ." << std::endl; return true; }
+};
+
+class TestSubsystem {
+public:
+    bool run() { std::cout << "  [Test] ctest --output-on-failure" << std::endl; return true; }
+};
+
+class DeploySubsystem {
+public:
+    bool pushArtifact(const std::string& env) {
+        std::cout << "  [Deploy] Subiendo artefacto a " << env << std::endl;
+        return true;
+    }
+};
+
+class PipelineFacade {
+public:
+    bool deploy(const std::string& env) {
+        std::cout << "--- Pipeline deploy (" << env << ") ---" << std::endl;
+        if (!git_.pull()) return false;
+        if (!build_.compile()) return false;
+        if (!test_.run()) return false;
+        return deploy_.pushArtifact(env);
+    }
+
+private:
+    GitSubsystem git_;
+    BuildSubsystem build_;
+    TestSubsystem test_;
+    DeploySubsystem deploy_;
+};
+
+int main() {
+    std::cout << "=== Facade Extra ===" << std::endl;
+    PipelineFacade pipeline;
+    bool ok = pipeline.deploy("staging");
+    std::cout << "Resultado: " << (ok ? "OK" : "ERROR") << std::endl;
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Facade Extra ===
+--- Pipeline deploy (staging) ---
+  [Git] pull origin main
+  [Build] cmake --build .
+  [Test] ctest --output-on-failure
+  [Deploy] Subiendo artefacto a staging
+Resultado: OK

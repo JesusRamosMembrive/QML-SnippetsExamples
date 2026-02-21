@@ -109,6 +109,18 @@ Qt usa Template Method extensamente en sus clases abstractas:
 - **`QAbstractListModel`:** Simplifica `QAbstractItemModel` proporcionando implementaciones por defecto de `index()` y `parent()`, dejando solo `data()` y `rowCount()` como pasos abstractos.
 - **`QWidget::paintEvent()`:** El sistema de pintado de Qt llama a `paintEvent()` como parte del ciclo de renderizado. Las subclases implementan este método para dibujar su contenido personalizado.
 
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando varios flujos comparten la misma secuencia general de pasos.
+- Cuando quieres definir puntos de extensión controlados (hooks).
+- Cuando buscas consistencia obligatoria en el orden del algoritmo.
+
+##### Cuando evitar
+- Si las variaciones entre algoritmos son demasiado grandes.
+- Si la herencia introduce rigidez innecesaria en tu diseño.
+- Si una composición con Strategy da mayor flexibilidad en tu caso.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -116,6 +128,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -554,7 +568,6 @@ int main() {
 #include <QDebug>
 #include <QStringList>
 #include <QThread>
-#include <QTimer>
 
 // ============================================================
 // Ejemplo 1: QAbstractListModel como Template Method
@@ -590,7 +603,9 @@ public:
 
     // *** Paso abstracto obligatorio: rowCount() ***
     int rowCount(const QModelIndex& parent = QModelIndex()) const override {
-        Q_UNUSED(parent)
+        if (parent.isValid()) {
+            return 0;
+        }
         return tareas_.size();
     }
 
@@ -682,6 +697,9 @@ protected:
     void run() override {
         resultado_ = 0;
         int total = fin_ - inicio_;
+        if (total <= 0) {
+            total = 1;
+        }
 
         for (int i = inicio_; i <= fin_; ++i) {
             resultado_ += i;
@@ -712,9 +730,9 @@ int main(int argc, char* argv[]) {
     qDebug() << "=== QAbstractListModel como Template Method ===";
 
     ModeloTareas modelo;
-    modelo.agregarTarea("Estudiar patrones de diseno", 1);
+    modelo.agregarTarea("Estudiar patrones de diseño", 1);
     modelo.agregarTarea("Hacer compras", 3);
-    modelo.agregarTarea("Revisar codigo", 2);
+    modelo.agregarTarea("Revisar código", 2);
 
     // El framework de Qt llama a nuestros Template Methods
     qDebug() << "Total de tareas:" << modelo.rowCount();
@@ -757,9 +775,9 @@ int main(int argc, char* argv[]) {
 <---Ejemplo con Qt Result--->
 === QAbstractListModel como Template Method ===
 Total de tareas: 3
-  [0] Estudiar patrones de diseno (prioridad: 1)
+  [0] Estudiar patrones de diseño (prioridad: 1)
   [1] Hacer compras (prioridad: 3)
-  [2] Revisar codigo (prioridad: 2)
+  [2] Revisar código (prioridad: 2)
 
 Tarea 0 completada: true
 
@@ -770,3 +788,89 @@ Tarea 0 completada: true
   Progreso: 75 %
   Progreso: 100 %
   Resultado: suma(1..100) = 5050
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <string>
+
+class ImportadorBase {
+public:
+    virtual ~ImportadorBase() = default;
+
+    void importar() final {
+        abrir();
+        leer();
+        validar();
+        transformar();
+        if (debeAuditar()) {
+            auditar();
+        }
+        guardar();
+        cerrar();
+    }
+
+protected:
+    virtual void leer() = 0;
+    virtual void validar() = 0;
+    virtual void transformar() = 0;
+    virtual void guardar() = 0;
+
+    virtual bool debeAuditar() { return false; }
+    virtual void auditar() { std::cout << "  [Audit] auditoria base" << std::endl; }
+
+    void abrir() { std::cout << "  [Start] abrir recurso" << std::endl; }
+    void cerrar() { std::cout << "  [End] cerrar recurso" << std::endl; }
+};
+
+class ImportadorCSV : public ImportadorBase {
+protected:
+    void leer() override { std::cout << "  [Read] CSV" << std::endl; }
+    void validar() override { std::cout << "  [Validate] columnas requeridas" << std::endl; }
+    void transformar() override { std::cout << "  [Transform] normalizar fechas" << std::endl; }
+    void guardar() override { std::cout << "  [Save] bulk insert" << std::endl; }
+};
+
+class ImportadorJSON : public ImportadorBase {
+protected:
+    void leer() override { std::cout << "  [Read] JSON" << std::endl; }
+    void validar() override { std::cout << "  [Validate] schema v2" << std::endl; }
+    void transformar() override { std::cout << "  [Transform] mapear campos" << std::endl; }
+    void guardar() override { std::cout << "  [Save] upsert" << std::endl; }
+    bool debeAuditar() override { return true; }
+    void auditar() override { std::cout << "  [Audit] hash + usuario" << std::endl; }
+};
+
+int main() {
+    std::cout << "=== Template Method Extra ===" << std::endl;
+
+    std::cout << "\nImportando CSV:" << std::endl;
+    ImportadorCSV csv;
+    csv.importar();
+
+    std::cout << "\nImportando JSON:" << std::endl;
+    ImportadorJSON json;
+    json.importar();
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Template Method Extra ===
+
+Importando CSV:
+  [Start] abrir recurso
+  [Read] CSV
+  [Validate] columnas requeridas
+  [Transform] normalizar fechas
+  [Save] bulk insert
+  [End] cerrar recurso
+
+Importando JSON:
+  [Start] abrir recurso
+  [Read] JSON
+  [Validate] schema v2
+  [Transform] mapear campos
+  [Audit] hash + usuario
+  [Save] upsert
+  [End] cerrar recurso

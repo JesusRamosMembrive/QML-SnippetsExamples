@@ -114,6 +114,20 @@ qmlRegisterSingletonType<MiConfig>(
 );
 ```
 
+#### Cuándo usar y cuándo evitar
+
+##### Cuándo usar
+
+- Cuando existe una restricción real de instancia única en todo el proceso.
+- Cuando centralizas configuración o recursos globales con ciclo de vida bien definido.
+- Cuando el acceso global es un requisito explícito del diseño.
+
+##### Cuándo evitar
+
+- Si puedes inyectar dependencias explícitamente (suele ser más testeable).
+- Si necesitas múltiples instancias por contexto (tenant, request, entorno).
+- Si el estado global mutable puede provocar acoplamiento y condiciones de carrera.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -121,6 +135,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -257,7 +273,7 @@ public:
     // Mostrar toda la configuración
     void mostrarTodo() const {
         std::lock_guard<std::mutex> lock(mutex_);
-        std::cout << "--- Configuracion actual ---" << std::endl;
+        std::cout << "--- Configuración actual ---" << std::endl;
         for (const auto& [clave, valor] : config_) {
             std::cout << "  " << clave << " = " << valor << std::endl;
         }
@@ -321,7 +337,7 @@ int main() {
 [ConfigManager] Inicializando...
 Conectando a BD en 192.168.1.100:5432
 Iniciando ServidorQt v1.0.0
---- Configuracion actual ---
+--- Configuración actual ---
   app.nombre = ServidorQt
   app.version = 1.0.0
   db.host = 192.168.1.100
@@ -356,7 +372,7 @@ public:
 
     void mostrar() const {
         QMutexLocker locker(&mutex_);
-        qDebug() << "=== Configuracion ===";
+        qDebug() << "=== Configuración ===";
         for (auto it = datos_.constBegin(); it != datos_.constEnd(); ++it) {
             qDebug() << " " << it.key() << "=" << it.value();
         }
@@ -437,9 +453,107 @@ ModuloRed configurado
 ModuloUI configurado
 Conectando con timeout: "5000" ms
 Tema: "oscuro" | Idioma: "es"
-=== Configuracion ===
+=== Configuración ===
   "red.reintentos" = "3"
   "red.timeout" = "5000"
   "ui.idioma" = "es"
   "ui.tema" = "oscuro"
 QCoreApplication::instance() == app
+
+<---Ejemplo Extra--->
+```cpp
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <sstream>
+#include <string>
+
+// =============================================
+// Interfaz de reloj para hacer el singleton testeable
+// =============================================
+class ClockProvider {
+public:
+    virtual ~ClockProvider() = default;
+    virtual std::string now() const = 0;
+};
+
+class SystemClockProvider : public ClockProvider {
+public:
+    std::string now() const override {
+        std::time_t t = std::time(nullptr);
+        std::tm tm{};
+#if defined(_WIN32)
+        localtime_s(&tm, &t);
+#else
+        localtime_r(&t, &tm);
+#endif
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+        return oss.str();
+    }
+};
+
+class FixedClockProvider : public ClockProvider {
+public:
+    explicit FixedClockProvider(std::string fixed) : fixed_(std::move(fixed)) {}
+    std::string now() const override { return fixed_; }
+private:
+    std::string fixed_;
+};
+
+// =============================================
+// Singleton con punto de acceso global y seam de pruebas
+// =============================================
+class AppClock {
+public:
+    AppClock(const AppClock&) = delete;
+    AppClock& operator=(const AppClock&) = delete;
+
+    static AppClock& instance() {
+        static AppClock self;
+        return self;
+    }
+
+    static std::string now() {
+        return instance().provider_->now();
+    }
+
+    static void useForTests(std::unique_ptr<ClockProvider> fake) {
+        std::lock_guard<std::mutex> lock(instance().mutex_);
+        instance().provider_ = std::move(fake);
+    }
+
+    static void restoreSystemClock() {
+        std::lock_guard<std::mutex> lock(instance().mutex_);
+        instance().provider_ = std::make_unique<SystemClockProvider>();
+    }
+
+private:
+    AppClock() : provider_(std::make_unique<SystemClockProvider>()) {}
+
+    std::unique_ptr<ClockProvider> provider_;
+    std::mutex mutex_;
+};
+
+int main() {
+    std::cout << "=== Singleton Extra ===" << std::endl;
+
+    std::cout << "Hora del sistema: " << AppClock::now() << std::endl;
+
+    AppClock::useForTests(
+        std::make_unique<FixedClockProvider>("2026-02-21 10:30:00"));
+    std::cout << "Hora en test: " << AppClock::now() << std::endl;
+
+    AppClock::restoreSystemClock();
+    std::cout << "Hora restaurada: " << AppClock::now() << std::endl;
+
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Singleton Extra ===
+Hora del sistema: 2026-02-21 16:08:12
+Hora en test: 2026-02-21 10:30:00
+Hora restaurada: 2026-02-21 16:08:12

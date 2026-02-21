@@ -96,6 +96,18 @@ Qt utiliza Composite como uno de sus patrones fundamentales:
 
 > **Nota:** En QML, la propiedad `data` (default property) permite declarar hijos implicitamente entre las llaves del elemento padre, lo que es una manifestacion directa del patron Composite.
 
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando tu dominio es naturalmente jerarquico (parte-todo).
+- Cuando quieres operar sobre hojas y compuestos con la misma API.
+- Cuando necesitas recorrer estructuras recursivas con reglas uniformes.
+
+##### Cuando evitar
+- Si la estructura no es arbol sino grafo con ciclos complejos.
+- Si necesitas reglas de tipos muy estrictas por nivel.
+- Si el costo de una interfaz comun supera la simplicidad de casos puntuales.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -103,6 +115,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -548,3 +562,90 @@ Encontrado: "EditorTexto" - "Editor de texto"
 === Destruccion en cascada ===
 Componentes antes: 12
 Despues de eliminar WidgetCentral: 6
+
+<---Ejemplo Extra--->
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+class Tarea {
+public:
+    virtual ~Tarea() = default;
+    virtual int horasEstimadas() const = 0;
+    virtual void imprimir(int nivel = 0) const = 0;
+};
+
+class TareaSimple : public Tarea {
+public:
+    TareaSimple(std::string nombre, int horas)
+        : nombre_(std::move(nombre)), horas_(horas) {}
+
+    int horasEstimadas() const override { return horas_; }
+
+    void imprimir(int nivel) const override {
+        std::cout << std::string(nivel * 2, ' ')
+                  << "- " << nombre_ << " (" << horas_ << "h)" << std::endl;
+    }
+
+private:
+    std::string nombre_;
+    int horas_;
+};
+
+class Epic : public Tarea {
+public:
+    explicit Epic(std::string nombre) : nombre_(std::move(nombre)) {}
+
+    void agregar(std::shared_ptr<Tarea> hijo) { hijos_.push_back(std::move(hijo)); }
+
+    int horasEstimadas() const override {
+        int total = 0;
+        for (const auto& h : hijos_) total += h->horasEstimadas();
+        return total;
+    }
+
+    void imprimir(int nivel) const override {
+        std::cout << std::string(nivel * 2, ' ')
+                  << "[" << nombre_ << "] " << horasEstimadas() << "h" << std::endl;
+        for (const auto& h : hijos_) h->imprimir(nivel + 1);
+    }
+
+private:
+    std::string nombre_;
+    std::vector<std::shared_ptr<Tarea>> hijos_;
+};
+
+int main() {
+    std::cout << "=== Composite Extra ===" << std::endl;
+
+    auto sprint = std::make_shared<Epic>("Sprint 42");
+    auto backend = std::make_shared<Epic>("Backend");
+    auto frontend = std::make_shared<Epic>("Frontend");
+
+    backend->agregar(std::make_shared<TareaSimple>("Endpoint /orders", 6));
+    backend->agregar(std::make_shared<TareaSimple>("Test de integracion", 4));
+    frontend->agregar(std::make_shared<TareaSimple>("Pantalla pedidos", 5));
+    frontend->agregar(std::make_shared<TareaSimple>("Ajustes UX", 3));
+
+    sprint->agregar(backend);
+    sprint->agregar(frontend);
+    sprint->agregar(std::make_shared<TareaSimple>("Demo interna", 2));
+
+    sprint->imprimir();
+    std::cout << "Total sprint: " << sprint->horasEstimadas() << "h" << std::endl;
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Composite Extra ===
+[Sprint 42] 20h
+  [Backend] 10h
+    - Endpoint /orders (6h)
+    - Test de integracion (4h)
+  [Frontend] 8h
+    - Pantalla pedidos (5h)
+    - Ajustes UX (3h)
+  - Demo interna (2h)
+Total sprint: 20h

@@ -92,6 +92,18 @@ Qt implementa el patrón Observer de forma nativa a través de su sistema de **s
 
 > **Nota:** El sistema signals/slots de Qt es una implementación del patrón Observer mucho más robusta que la versión manual, ya que maneja automáticamente la desconexión cuando los objetos se destruyen, soporta conexiones entre hilos y permite conexiones por nombre en tiempo de ejecución.
 
+#### Cuando usar y cuando evitar
+
+##### Cuando usar
+- Cuando varios módulos deben reaccionar a cambios de un emisor común.
+- Cuando quieres desacoplar productores de eventos y consumidores.
+- Cuando la suscripción/desuscripción dinámica es un requisito funcional.
+
+##### Cuando evitar
+- Si el flujo de llamadas es simple y explícito entre pocos componentes.
+- Si el orden estricto de ejecución entre receptores es crítico.
+- Si hay riesgo alto de cascadas difíciles de diagnosticar sin observabilidad.
+
 <---FILES--->
 Ejemplo Basico
 Ejemplo Basico Result
@@ -99,6 +111,8 @@ Ejemplo Avanzado
 Ejemplo Avanzado Result
 Ejemplo con Qt
 Ejemplo con Qt Result
+Ejemplo Extra
+Ejemplo Extra Result
 
 <---Ejemplo Basico--->
 ```cpp
@@ -360,6 +374,8 @@ int main() {
 #include <QDebug>
 #include <QTimer>
 #include <QFileSystemWatcher>
+#include <QRandomGenerator>
+#include <QDir>
 
 // ============================================================
 // Ejemplo 1: Signals/Slots como Observer nativo de Qt
@@ -380,7 +396,7 @@ public:
     // Simular lectura del sensor
     void leer() {
         // Simular cambio de temperatura
-        temperatura_ += (qrand() % 10 - 5) * 0.1;
+        temperatura_ += (QRandomGenerator::global()->bounded(11) - 5) * 0.1;
         emit temperaturaChanged(temperatura_);
 
         if (temperatura_ > 25.0) {
@@ -454,7 +470,7 @@ int main(int argc, char* argv[]) {
     // Ejemplo 2: QFileSystemWatcher como Observer de archivos
     // ============================================================
     QFileSystemWatcher watcher;
-    watcher.addPath("/tmp/config.txt");
+    watcher.addPath(QDir::tempPath() + "/config.txt");
 
     QObject::connect(&watcher, &QFileSystemWatcher::fileChanged,
                      [](const QString& ruta) {
@@ -480,3 +496,69 @@ int main(int argc, char* argv[]) {
 [Logger] Registro: 20.3
 [Pantalla] Temperatura actual: 20.0 C
 [Logger] Registro: 20.0
+
+<---Ejemplo Extra--->
+```cpp
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+class ISubscriber {
+public:
+    virtual ~ISubscriber() = default;
+    virtual void onMensaje(const std::string& canal, const std::string& msg) = 0;
+};
+
+class Broker {
+public:
+    void suscribir(std::shared_ptr<ISubscriber> s) { subs_.push_back(std::move(s)); }
+
+    void desuscribir(const std::shared_ptr<ISubscriber>& s) {
+        subs_.erase(std::remove(subs_.begin(), subs_.end(), s), subs_.end());
+    }
+
+    void publicar(const std::string& canal, const std::string& msg) {
+        for (const auto& s : subs_) {
+            s->onMensaje(canal, msg);
+        }
+    }
+
+private:
+    std::vector<std::shared_ptr<ISubscriber>> subs_;
+};
+
+class ConsolaSub : public ISubscriber {
+public:
+    explicit ConsolaSub(std::string nombre) : nombre_(std::move(nombre)) {}
+
+    void onMensaje(const std::string& canal, const std::string& msg) override {
+        std::cout << "[" << nombre_ << "] " << canal << " -> " << msg << std::endl;
+    }
+
+private:
+    std::string nombre_;
+};
+
+int main() {
+    std::cout << "=== Observer Extra ===" << std::endl;
+
+    Broker broker;
+    auto a = std::make_shared<ConsolaSub>("SubA");
+    auto b = std::make_shared<ConsolaSub>("SubB");
+
+    broker.suscribir(a);
+    broker.suscribir(b);
+    broker.publicar("deploy", "release-2026.02 lista");
+
+    broker.desuscribir(b);
+    broker.publicar("deploy", "rollback aplicado");
+    return 0;
+}
+```
+<---Ejemplo Extra Result--->
+=== Observer Extra ===
+[SubA] deploy -> release-2026.02 lista
+[SubB] deploy -> release-2026.02 lista
+[SubA] deploy -> rollback aplicado
