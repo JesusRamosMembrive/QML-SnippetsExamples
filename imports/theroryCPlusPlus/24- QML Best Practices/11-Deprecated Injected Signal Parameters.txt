@@ -1,0 +1,169 @@
+<---EXPLANATION--->
+### Deprecated Injected Signal Parameters
+
+En QML "**injected signal parameters**" se refiere a un comportamiento histórico: **en un handler de señal podías usar los parámetros de la señal como "variables mágicas" dentro del bloque**, sin declararlos explícitamente.
+
+Eso se está **deprecando** en Qt 6 (y el tooling lo penaliza) porque genera código:
+
+* ambiguo (colisiones con propiedades/ids/variables del scope),
+* difícil de analizar estáticamente (qmllint / QML LS / qmltc),
+* frágil al refactorizar (cambiar nombre de parámetro rompe handlers sin que se vea).
+
+La recomendación actual es: **declara los parámetros explícitamente** (función o arrow function).
+
+---
+
+#### 1. Qué es "inyección" (lo deprecado)
+
+Si tienes una señal:
+
+```qml
+QtObject {
+    signal valueChanged(newValue: int)
+}
+```
+
+Antes era común escribir:
+
+```qml
+onValueChanged: {
+    console.log(newValue)   // "newValue" está inyectado
+}
+```
+
+Aquí **no hay función con argumentos**, y aun así `newValue` aparece como variable disponible. Eso es la "inyección".
+
+##### Problema práctico
+
+Si en ese mismo scope existe también una propiedad `newValue`, un `id` o una variable local con ese nombre, el significado puede ser confuso o directamente incorrecto.
+
+---
+
+#### 2. Migración correcta (lo recomendado)
+
+##### Opción A: handler como función explícita
+
+```qml
+onValueChanged: function(newValue) {
+    console.log(newValue)
+}
+```
+
+##### Opción B: arrow function (más compacta)
+
+```qml
+onValueChanged: (newValue) => {
+    console.log(newValue)
+}
+```
+
+Ambas eliminan la ambigüedad: el parámetro **es local** al handler.
+
+---
+
+#### 3. Caso típico: MouseArea / Pointer Handlers
+
+##### Deprecado
+
+```qml
+MouseArea {
+    onClicked: {
+        console.log(mouse.x, mouse.y) // "mouse" inyectado
+    }
+}
+```
+
+##### Recomendado
+
+```qml
+MouseArea {
+    onClicked: (mouse) => {
+        console.log(mouse.x, mouse.y)
+    }
+}
+```
+
+---
+
+#### 4. `Connections`: el patrón más robusto
+
+Cuando conectas señales de un objeto externo, evita el estilo antiguo y usa **métodos con firma**.
+
+##### Recomendado (Qt 6)
+
+```qml
+Connections {
+    target: backend
+    function onStateChanged(state) {
+        console.log(state)
+    }
+}
+```
+
+Esto es particularmente importante en proyectos grandes porque:
+
+* es analizable por tooling,
+* es más "buscable" (refactor),
+* evita colisiones de nombres con propiedades del componente.
+
+---
+
+#### 5. Por qué NO debes ignorar esto (impacto real)
+
+##### Colisiones silenciosas
+
+```qml
+Item {
+    property int state: 0
+    Connections {
+        target: backend
+        onStateChanged: {
+            console.log(state) // ¿propiedad `state` o parámetro `state`?
+        }
+    }
+}
+```
+
+Con firma explícita se elimina el riesgo:
+
+```qml
+Connections {
+    target: backend
+    onStateChanged: (newState) => console.log(newState)
+}
+```
+
+##### Tooling / qmltc
+
+La inyección dificulta el análisis estático y la compilación AOT.
+
+---
+
+#### 6. Regla operativa
+
+**Siempre** que uses una señal con parámetros:
+
+* **No** uses el bloque `{ ... }` esperando variables inyectadas.
+* **Sí** usa `function(...) { ... }` o `(…) => { … }`.
+
+```qml
+onTextChanged: (text) => console.log(text)
+onError: function(code, message) { log(code, message) }
+```
+
+---
+
+#### 7. Checklist para auditar tu código
+
+Busca y refactoriza:
+
+* `onClicked: { ... mouse ... }`
+* `onTriggered: { ... checked ... }`
+* `Connections { onXxx: { ... paramName ... } }`
+
+y conviértelo a:
+
+* `onXxx: (paramName) => { ... }`
+* o `function onXxx(paramName) { ... }` en `Connections`
+
+<---FILES--->

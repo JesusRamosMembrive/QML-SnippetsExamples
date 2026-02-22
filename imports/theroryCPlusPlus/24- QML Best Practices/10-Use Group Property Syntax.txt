@@ -1,0 +1,235 @@
+<---EXPLANATION--->
+### Use Group Property Syntax
+
+**Group Property Syntax** consiste en usar la forma agrupada de propiedades cuando un tipo expone una propiedad compuesta (sub-propiedades), en lugar de asignarlas una por una con prefijo repetido.
+
+No es solo estética: mejora legibilidad, reduce errores y hace más explícito el contrato del tipo.
+
+---
+
+#### 1. Qué es una propiedad "group"
+
+Muchos tipos QML exponen propiedades que son objetos compuestos con sub-propiedades:
+
+* `anchors`
+* `font`
+* `border`
+* `gradient`
+* `Layout`
+* `layer`
+* `ScrollBar.vertical`
+* `ScrollBar.horizontal`
+
+En vez de escribir:
+
+```qml
+Rectangle {
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+}
+```
+
+Usa sintaxis agrupada:
+
+```qml
+Rectangle {
+    anchors {
+        left: parent.left
+        right: parent.right
+        top: parent.top
+        bottom: parent.bottom
+    }
+}
+```
+
+---
+
+#### 2. Beneficios reales
+
+##### Cohesión visual
+
+Agrupa semánticamente lo relacionado.
+
+```qml
+// Sin agrupar
+font.pixelSize: 14
+font.bold: true
+font.family: "Inter"
+
+// Agrupado
+font {
+    pixelSize: 14
+    bold: true
+    family: "Inter"
+}
+```
+
+##### Menos duplicación
+
+```qml
+// Sin agrupar
+border.width: 1
+border.color: "red"
+
+// Agrupado
+border {
+    width: 1
+    color: "red"
+}
+```
+
+##### Mejor mantenibilidad
+
+Si mañana agregas más propiedades del mismo grupo, todo queda en el mismo bloque.
+
+---
+
+#### 3. Ejemplos comunes
+
+##### anchors
+
+```qml
+Item {
+    anchors {
+        fill: parent
+        margins: 10
+    }
+}
+```
+
+##### font
+
+```qml
+Text {
+    font {
+        family: "Roboto"
+        pixelSize: 16
+        bold: true
+    }
+}
+```
+
+##### border
+
+```qml
+Rectangle {
+    border {
+        width: 2
+        color: "orange"
+    }
+}
+```
+
+##### Layout (QtQuick.Layouts)
+
+```qml
+import QtQuick.Layouts
+
+Item {
+    Layout {
+        fillWidth: true
+        preferredHeight: 40
+    }
+}
+```
+
+##### layer
+
+```qml
+Rectangle {
+    layer {
+        enabled: true
+        smooth: true
+        mipmap: true
+    }
+}
+```
+
+---
+
+#### 4. Cuándo es obligatorio usar group syntax
+
+Algunas propiedades son **read-only object properties** (por ejemplo `anchors`).
+No puedes hacer:
+
+```qml
+anchors = something   // inválido
+```
+
+Solo puedes modificar sub-propiedades. La sintaxis agrupada es natural.
+
+---
+
+#### 5. Error frecuente
+
+##### Mezclar estilos
+
+```qml
+border.width: 1
+border {
+    color: "red"
+}
+```
+
+Inconsistente. Elige uno y sé coherente.
+
+---
+
+#### 6. Cuándo NO usar group syntax
+
+Si solo estás asignando una propiedad del grupo:
+
+```qml
+font.pixelSize: 14
+```
+
+Pero en componentes reutilizables o UI complejas, la agrupación mejora claridad.
+
+---
+
+#### 7. Ejemplo completo bien estructurado
+
+```qml
+Rectangle {
+    width: 200
+    height: 80
+    color: "#1A1D23"
+
+    anchors {
+        horizontalCenter: parent.horizontalCenter
+        top: parent.top
+        topMargin: 20
+    }
+
+    border {
+        width: 1
+        color: "#2E3440"
+    }
+
+    Text {
+        anchors.centerIn: parent
+
+        font {
+            family: "Inter"
+            pixelSize: 16
+            bold: true
+        }
+
+        color: "white"
+        text: "Dashboard"
+    }
+}
+```
+
+---
+
+#### 8. Regla práctica
+
+* Si modificas más de una sub-propiedad → usa group syntax.
+* No mezcles estilos.
+* Mantén coherencia en todo el proyecto.
+* Úsalo especialmente en componentes reutilizables.
+
+<---FILES--->

@@ -1,0 +1,245 @@
+<---EXPLANATION--->
+### Use Typed List Properties
+
+"Typed list properties" significa **declarar listas con un tipo explícito** en QML, en lugar de usar `var` o listas heterogéneas. En Qt/QML esto impacta directamente en:
+
+* **robustez** (contratos claros)
+* **tooling** (qmllint / autocompletado / QML LS)
+* **rendimiento** (menos checks dinámicos)
+* **integración C++/QML** (modelos y APIs predecibles)
+
+---
+
+#### 1. Qué NO es una lista tipada (anti-patrón)
+
+```qml
+Item {
+    property var items: []
+}
+```
+
+Problemas:
+
+* `items` puede contener cualquier cosa (mezcla de tipos).
+* Errores se descubren tarde (runtime).
+* Tooling pierde capacidad de análisis.
+* Es un imán para duck typing.
+
+Otro anti-patrón común:
+
+```qml
+property var points: [Qt.point(0,0), "oops", 123]
+```
+
+Eso compila y luego te explota cuando lo usas.
+
+---
+
+#### 2. Qué es una lista tipada en QML
+
+##### `list<T>` (Qt 6 / QML moderno)
+
+```qml
+Item {
+    property list<int> values: [1, 2, 3]
+    property list<real> gains: [0.5, 1.0, 1.5]
+    property list<string> names: ["cam1", "cam2"]
+}
+```
+
+Ventajas:
+
+* Contrato: **solo esos tipos**.
+* Mejor diagnóstico.
+* Menos coerción dinámica.
+
+> Nota: En QML, `real` es el tipo de coma flotante "standard" (double).
+
+---
+
+##### Listas de objetos QML
+
+Puedes tipar listas de elementos QML/QtQuick:
+
+```qml
+import QtQuick
+
+Item {
+    property list<Item> nodes: []
+}
+```
+
+---
+
+#### 3. Caso clave: `default property list<T>` (composición)
+
+Este patrón es muy potente para APIs declarativas (tipo "layout/container").
+
+```qml
+import QtQuick
+
+Item {
+    id: root
+    default property list<Item> content
+}
+```
+
+Uso:
+
+```qml
+MyContainer {
+    Rectangle { width: 10; height: 10 }
+    Text { text: "Hello" }
+}
+```
+
+---
+
+#### 4. Diferencia importante: `list<T>` vs `children`
+
+`children` ya es una lista de hijos (Items) manejada por Qt, pero:
+
+* No siempre quieres mezclar "hijos visuales" con "colección lógica".
+* `children` incluye cosas que no esperas (por ejemplo, elementos creados internamente).
+
+Crear tu propia lista tipada te permite un contrato claro:
+
+```qml
+property list<Item> sensorsUI
+```
+
+---
+
+#### 5. Typed list properties vs Model (no confundas conceptos)
+
+**Lista tipada** (`list<T>`) es una colección simple.
+
+Para UI repetitiva con delegates, a menudo conviene un **modelo**:
+
+* `ListModel` (QML)
+* `QAbstractListModel` (C++)
+
+Regla práctica:
+
+* Si solo necesitas "agrupar referencias" → `property list<T>`.
+* Si necesitas "representar datos para views" (ListView/Repeater) → modelo.
+
+---
+
+#### 6. Ejemplos reales útiles (producción)
+
+##### Lista tipada de IDs o nombres
+
+```qml
+Item {
+    property list<string> cameraIds: ["IR_0", "IR_1", "IR_2"]
+}
+```
+
+##### Lista tipada de puntos para dibujar
+
+```qml
+Item {
+    property list<point> polyline: [
+        Qt.point(0, 0),
+        Qt.point(50, 20),
+        Qt.point(80, 60)
+    ]
+}
+```
+
+##### Lista tipada de "dispositivos" (tipo registrado desde C++)
+
+Si registras un tipo `Device`:
+
+```cpp
+qmlRegisterType<Device>("App", 1, 0, "Device");
+```
+
+En QML:
+
+```qml
+import App 1.0
+
+Item {
+    property list<Device> devices: []
+}
+```
+
+---
+
+#### 7. Errores típicos y cómo corregirlos
+
+##### Error 1: usar `var` por comodidad
+
+```qml
+// mal
+property var thresholds: []
+
+// bien
+property list<real> thresholds: [0.2, 0.5, 0.8]
+```
+
+---
+
+##### Error 2: mezclar "datos" y "UI objects"
+
+Lista de `Item` debería contener UI, no datos puros.
+
+* Datos → `list<int>`, `list<real>`, `list<string>`, o modelo.
+* UI objects → `list<Item>` o tipo derivado.
+
+---
+
+##### Error 3: pensar que `list<T>` es mutable como JS
+
+Las `list<T>` en QML no se manipulan igual que un array JS. Dependiendo del caso, es mejor:
+
+* construir la lista completa y asignarla
+* o usar un `ListModel` / `QAbstractListModel` si necesitas inserciones/eliminaciones frecuentes con notificación.
+
+---
+
+#### 8. Patrón recomendado: lista tipada + propiedad derivada
+
+```qml
+Item {
+    property list<real> values: [1.0, 2.0, 3.0]
+    property real average: {
+        if (values.length === 0) return 0
+        let sum = 0
+        for (let i = 0; i < values.length; ++i) sum += values[i]
+        return sum / values.length
+    }
+}
+```
+
+Aquí `average` es declarativo (binding), no imperativo.
+
+---
+
+#### 9. Pros / Contras (criterio de elección)
+
+##### Pros
+
+* Contrato explícito (menos duck typing).
+* Mejor tooling y mantenimiento.
+* Mejor optimización.
+* APIs QML más "declarativas".
+
+##### Contras
+
+* Menos flexible si realmente necesitas heterogeneidad.
+* Para colecciones dinámicas complejas, un modelo es superior.
+
+---
+
+#### 10. Checklist para aplicarlo bien
+
+* Evitar `property var list = []` si hay tipo claro.
+* Usar `property list<T>` para colecciones simples.
+* Usar `default property list<Item>` para composición declarativa.
+* Para views, preferir `ListModel` / `QAbstractListModel`.
+* No mezclar datos y UI en la misma colección.
+
+<---FILES--->

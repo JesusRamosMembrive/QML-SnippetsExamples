@@ -1,0 +1,188 @@
+<---EXPLANATION--->
+### Use Compile-Time Style Selection
+
+En **Qt Quick Controls 2**, el *style* (Material, Fusion, Imagine, iOS, etc.) puede elegirse:
+
+* en **runtime** (variable de entorno, `QQuickStyle::setStyle()`)
+* en **compile time** (configuración del build / qtquickcontrols2.conf / flags)
+
+La recomendación para aplicaciones serias es:
+
+> Seleccionar el style en compile-time siempre que sea posible.
+
+---
+
+#### 1. Qué significa realmente "compile-time style selection"
+
+Significa que el style queda **fijado en el binario** y no depende de:
+
+* variable de entorno (`QT_QUICK_CONTROLS_STYLE`)
+* código dinámico
+* sistema operativo
+* configuración externa
+
+Ejemplo típico (C++):
+
+```cpp
+#include <QQuickStyle>
+
+int main(int argc, char *argv[])
+{
+    QQuickStyle::setStyle("Material");  // se fija antes de crear la app
+    QGuiApplication app(argc, argv);
+    ...
+}
+```
+
+O mediante `qtquickcontrols2.conf`.
+
+---
+
+#### 2. Por qué es importante
+
+##### Determinismo visual
+
+Si no lo fijas:
+
+* En Linux puede salir Fusion.
+* En Windows puede salir Windows style.
+* En macOS puede salir macOS style.
+
+Tu UI cambia sin que tú lo controles.
+
+##### Rendimiento y tamaño
+
+Cuando el style es fijo:
+
+* Solo se incluye el style seleccionado.
+* No se cargan assets innecesarios.
+* El arranque es más predecible.
+
+##### Compatibilidad con qmltc / AOT
+
+La compilación estática de QML funciona mejor si el style es fijo.
+
+---
+
+#### 3. Problema con selección en runtime
+
+```bash
+QT_QUICK_CONTROLS_STYLE=Material ./app
+```
+
+O:
+
+```cpp
+if (someConfig)
+    QQuickStyle::setStyle("Material");
+else
+    QQuickStyle::setStyle("Fusion");
+```
+
+Esto:
+
+* multiplica combinaciones a testear
+* complica QA
+* rompe consistencia visual
+
+---
+
+#### 4. Cómo hacerlo correctamente
+
+##### Opción 1: `qtquickcontrols2.conf` (recomendado)
+
+```
+[Controls]
+Style=Material
+```
+
+Colócalo en recursos (`qrc`) o junto al ejecutable.
+
+##### Opción 2: Forzar en `main.cpp`
+
+```cpp
+QQuickStyle::setStyle("Material");
+```
+
+Debe hacerse **antes** de crear `QGuiApplication`.
+
+##### Opción 3: CMake (control de dependencias)
+
+Controlar qué styles se construyen y limitar dependencias innecesarias.
+
+---
+
+#### 5. Qué styles existen
+
+En Qt 6 (Qt Quick Controls 2):
+
+* Material
+* Fusion
+* Imagine
+* iOS
+* macOS
+* Universal
+
+Cada uno tiene métricas, espaciados, animaciones y assets distintos.
+
+---
+
+#### 6. Errores frecuentes
+
+##### Mezclar estilos dinámicamente
+
+```cpp
+QQuickStyle::setStyle(userPreference);
+```
+
+Convierte tu UI en no determinista.
+
+##### Confiar en style por defecto del SO
+
+Si no defines nada, Qt puede elegir automáticamente. Mala práctica en software profesional.
+
+##### Ajustar layout "a ojo" sin fijar style
+
+Si no fijas style y mueves app a otra plataforma: spacing cambia, tipografía cambia, layout se rompe.
+
+---
+
+#### 7. Cuándo sí usar selección dinámica
+
+Solo si:
+
+* Estás desarrollando una app "consumer" multiplataforma.
+* Quieres que la app imite el sistema operativo.
+* El equipo acepta la variabilidad visual.
+
+---
+
+#### 8. Recomendación arquitectónica fuerte
+
+En proyectos profesionales:
+
+1. Elegir un style.
+2. Fijarlo en build.
+3. Diseñar UI sobre ese style.
+4. No permitir override externo.
+
+Eso simplifica: Testing, CI, Mantenimiento, Soporte multiplataforma.
+
+---
+
+#### 9. Resumen técnico
+
+No dependas de:
+
+* variable de entorno
+* SO
+* configuración externa
+
+Fija el style en:
+
+* `qtquickcontrols2.conf`
+* o `main.cpp`
+
+Haz la UI determinista.
+
+<---FILES--->

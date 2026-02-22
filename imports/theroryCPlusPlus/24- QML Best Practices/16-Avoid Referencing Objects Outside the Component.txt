@@ -1,0 +1,238 @@
+<---EXPLANATION--->
+### Avoid Referencing Objects Outside the Component
+
+Este principio significa: **un componente QML no debe "alcanzar" (reach out) y usar IDs/objetos que están fuera de su propio archivo/componente**, porque eso rompe el encapsulamiento y convierte tu UI en una red de dependencias implícitas.
+
+---
+
+#### 1. Qué se considera "referenciar fuera del componente"
+
+```qml
+// MyWidget.qml
+Item {
+    Text { text: header.title }     // header es un id del padre (fuera)
+    Button { onClicked: stack.pop() } // stack es un id del padre (fuera)
+}
+```
+
+Este `MyWidget` **no es reutilizable**: solo funciona si el padre tiene `id: header` y `id: stack`.
+
+---
+
+#### 2. Por qué es un problema
+
+##### Acoplamiento duro y frágil
+
+Cambias el nombre del `id` o reestructuras el padre y el componente explota.
+
+##### Reutilización cero
+
+No puedes mover ese componente a otra pantalla o proyecto.
+
+##### Tooling y refactor pobres
+
+El QML LS / qmllint no puede inferir bien contratos.
+
+##### Bugs sutiles por scopes / shadowing
+
+Si el componente se carga con `Loader` o en otro contexto, el lookup puede fallar.
+
+---
+
+#### 3. Forma correcta: inyección explícita de dependencias
+
+##### Patrón A: `required property` (recomendado)
+
+```qml
+// MyWidget.qml
+Item {
+    id: root
+    required property string title
+    required property var navigator
+
+    Column {
+        Text { text: root.title }
+        Button {
+            text: "Back"
+            onClicked: () => root.navigator.pop()
+        }
+    }
+}
+```
+
+Uso:
+
+```qml
+MyWidget {
+    title: header.title
+    navigator: stack
+}
+```
+
+---
+
+##### Patrón B: exponer señales en vez de llamar "hacia fuera"
+
+```qml
+// MyWidget.qml
+Item {
+    id: root
+    required property string title
+    signal backRequested()
+
+    Column {
+        Text { text: root.title }
+        Button {
+            text: "Back"
+            onClicked: () => root.backRequested()
+        }
+    }
+}
+```
+
+Uso:
+
+```qml
+MyWidget {
+    title: header.title
+    onBackRequested: stack.pop()
+}
+```
+
+Este es el patrón más limpio.
+
+---
+
+#### 4. Caso típico: componente que necesita backend
+
+##### Anti-patrón
+
+```qml
+Text { text: backend.temperature }
+Button { onClicked: backend.start() }
+```
+
+##### Correcto
+
+```qml
+Item {
+    id: root
+    required property Backend backend
+
+    Text { text: `${root.backend.temperature.toFixed(1)} °C` }
+    Button { text: "Start"; onClicked: () => root.backend.start() }
+}
+```
+
+O mejor aún con señales:
+
+```qml
+signal startRequested()
+Button { onClicked: () => root.startRequested() }
+```
+
+---
+
+#### 5. Delegates: el sitio donde más se rompe
+
+##### Incorrecto
+
+```qml
+delegate: Item {
+    MouseArea { onClicked: detailsPanel.show(model.id) }
+}
+```
+
+##### Correcto
+
+```qml
+delegate: Item {
+    required property string deviceId
+    signal clicked(deviceId: string)
+
+    MouseArea { onClicked: () => clicked(deviceId) }
+}
+```
+
+Y en el `ListView`:
+
+```qml
+ListView {
+    delegate: MyDelegate {
+        deviceId: model.deviceId
+        onClicked: (id) => detailsPanel.show(id)
+    }
+}
+```
+
+---
+
+#### 6. Excepciones razonables
+
+##### Singletons intencionales (App-wide)
+
+Si defines un **Singleton** como dependencia global deliberada:
+
+* `Theme`, `Localization/I18n`, `AppSettings`
+
+```qml
+Text { color: Theme.textPrimary }
+```
+
+Esto no es "outside object" accidental; es una dependencia global explícita por diseño.
+
+**Regla:** si es global, debe ser global *de verdad* (Singleton importado), no un `id` del padre.
+
+##### `parent` / `anchors` / APIs del framework
+
+Referenciar `parent` es normal para layout. Pero no para lógica:
+
+* `anchors.fill: parent` → OK
+* `parent.backend.doStuff()` → NO
+
+---
+
+#### 7. Regla operativa
+
+Dentro de un componente reutilizable (`Foo.qml`):
+
+* Referencia: `root.<prop>` / `id` internos / singletons importados / `Qt.*`
+* No referencia: IDs que no están declarados en el archivo
+
+Si necesitas algo externo:
+
+1. `required property T dep` **o**
+2. `signal intent()` y el padre actúa.
+
+---
+
+#### 8. Ejemplo "antes / después"
+
+##### Antes (acoplado)
+
+```qml
+// ControlPanel.qml
+Item {
+    Button { text: "Connect"; onClicked: backend.connect() }
+    Text { text: statusLabel.text }
+}
+```
+
+##### Después (encapsulado)
+
+```qml
+// ControlPanel.qml
+Item {
+    id: root
+    required property Backend backend
+    required property string statusText
+    signal connectRequested()
+
+    Button { text: "Connect"; onClicked: () => root.connectRequested() }
+    Text { text: root.statusText }
+}
+```
+
+Esto escala y es testeable.
+
+<---FILES--->

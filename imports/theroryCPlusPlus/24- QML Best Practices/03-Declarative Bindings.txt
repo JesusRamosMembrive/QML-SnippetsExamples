@@ -1,0 +1,321 @@
+<---EXPLANATION--->
+### Declarative Bindings Rather Than Imperative Assignments
+
+Este principio es **central** en QML.
+Si no lo interiorizas, acabas escribiendo "JavaScript con UI" en lugar de aprovechar el motor declarativo.
+
+---
+
+#### 1. Modelo mental correcto
+
+QML no está pensado para:
+
+> "Cuando pasa X, entonces asigno Y"
+
+Está pensado para:
+
+> "Y depende de X"
+
+Eso cambia completamente la arquitectura.
+
+---
+
+#### 2. Imperativo (incorrecto en la mayoría de casos)
+
+```qml
+Rectangle {
+    id: rect
+    width: 100
+    height: 100
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            rect.color = "red"
+        }
+    }
+}
+```
+
+Aquí estás:
+
+* Ejecutando código
+* Mutando estado
+* Rompiendo posible binding previo
+* Introduciendo dependencia manual
+
+Es un enfoque reactivo manual.
+
+---
+
+#### 3. Declarativo (correcto)
+
+```qml
+Rectangle {
+    id: rect
+    width: 100
+    height: 100
+
+    property bool pressed: false
+    color: pressed ? "red" : "blue"
+
+    MouseArea {
+        anchors.fill: parent
+        onPressed: rect.pressed = true
+        onReleased: rect.pressed = false
+    }
+}
+```
+
+Ahora:
+
+* `color` no se asigna
+* `color` depende de `pressed`
+* El motor mantiene coherencia automáticamente
+
+Eso es un **binding declarativo**.
+
+---
+
+#### 4. Qué es realmente un binding
+
+Cuando escribes:
+
+```qml
+color: pressed ? "red" : "blue"
+```
+
+No estás asignando un valor.
+Estás registrando una **expresión reactiva**.
+
+El motor:
+
+1. Analiza dependencias (`pressed`)
+2. Construye un grafo
+3. Recalcula automáticamente cuando cambia
+
+---
+
+#### 5. Problema grave: romper bindings sin querer
+
+Caso clásico:
+
+```qml
+color: someCondition ? "red" : "blue"
+```
+
+Luego en algún sitio:
+
+```qml
+rect.color = "green"
+```
+
+Acabas de romper el binding.
+
+Desde ese momento:
+
+* `color` deja de depender de `someCondition`
+* El sistema deja de ser declarativo
+* Debugging difícil
+
+Este error es muy común.
+
+---
+
+#### 6. Regla de oro
+
+> No reasignes propiedades que ya tienen binding.
+
+Si necesitas cambiar comportamiento:
+
+* Cambia la fuente
+* No cambies el resultado
+
+---
+
+#### 7. Ejemplo típico de arquitectura mala
+
+```qml
+Text {
+    id: label
+    text: "Idle"
+}
+
+Connections {
+    target: backend
+    function onStateChanged(newState) {
+        if (newState === 0)
+            label.text = "Idle"
+        else if (newState === 1)
+            label.text = "Running"
+        else
+            label.text = "Error"
+    }
+}
+```
+
+Esto es imperativo.
+
+---
+
+#### 8. Reescritura declarativa
+
+```qml
+Text {
+    text: {
+        switch (backend.state) {
+        case 0: return "Idle"
+        case 1: return "Running"
+        default: return "Error"
+        }
+    }
+}
+```
+
+Ahora:
+
+* `text` depende de `backend.state`
+* No hay mutaciones
+* No hay riesgo de incoherencia
+
+---
+
+#### 9. Cuándo sí usar imperativo
+
+Solo cuando:
+
+* Necesitas efectos laterales
+* Lógica transaccional
+* Inicialización compleja
+* Interacción con C++
+* Animaciones controladas manualmente
+
+Pero nunca para estado derivado.
+
+---
+
+#### 10. Arquitectura recomendada (nivel serio)
+
+Separar:
+
+##### Estado base (source of truth)
+
+```qml
+property int state
+property real temperature
+property bool connected
+```
+
+##### Estado derivado (solo bindings)
+
+```qml
+property bool isOverheated: temperature > 80
+property bool canStart: connected && state === 0
+```
+
+##### UI depende de estado derivado
+
+```qml
+Button {
+    enabled: canStart
+}
+```
+
+Eso elimina lógica imperativa dispersa.
+
+---
+
+#### 11. Binding avanzado: Qt.binding()
+
+Si necesitas restaurar un binding roto:
+
+```qml
+rect.color = Qt.binding(function() {
+    return pressed ? "red" : "blue"
+})
+```
+
+Pero si necesitas esto, probablemente tu arquitectura ya está mal.
+
+---
+
+#### 12. Errores típicos que debes evitar
+
+##### Lógica en `onXChanged` que solo actualiza otra propiedad
+
+Eso debería ser binding.
+
+---
+
+##### Cascadas manuales
+
+```qml
+onAChanged: b = computeFromA()
+onBChanged: c = computeFromB()
+```
+
+Esto es frágil.
+
+---
+
+##### Alternativa
+
+```qml
+property int b: computeFromA(a)
+property int c: computeFromB(b)
+```
+
+El motor gestiona dependencias.
+
+---
+
+#### 13. Impacto en rendimiento
+
+Bindings declarativos:
+
+* Se evalúan solo cuando cambian dependencias
+* Están optimizados en C++
+* Son más eficientes que JS imperativo repetitivo
+
+---
+
+#### 14. Relación con otros principios
+
+Este principio está directamente conectado con:
+
+* Strong typing
+* Avoid duck typing
+* Unidirectional data flow
+* Single source of truth
+* Arquitectura tipo Store
+
+Si los combinas, tu QML se vuelve:
+
+* Predecible
+* Escalable
+* Analizable estáticamente
+* Optimizable
+
+---
+
+#### Resumen técnico
+
+| Imperativo             | Declarativo           |
+| ---------------------- | --------------------- |
+| Mutación manual        | Dependencia declarada |
+| onXChanged actualiza Y | Y depende de X        |
+| Estado disperso        | Estado derivado       |
+| Difícil debugging      | Flujo predecible      |
+| Rompe bindings         | Mantiene reactividad  |
+
+---
+
+#### Conclusión
+
+Declarative bindings no es estilo.
+Es la esencia del motor QML.
+
+Si empiezas a escribir demasiados `onXChanged`,
+estás programando contra el framework.
+
+<---FILES--->

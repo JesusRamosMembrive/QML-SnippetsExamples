@@ -1,0 +1,196 @@
+<---EXPLANATION--->
+### Avoid Shadowing Properties
+
+**Shadowing** ocurre cuando introduces un identificador (variable, parámetro, `id`, `property`, `function` local) con el **mismo nombre** que una propiedad accesible en el scope. El resultado es que **dejas de referirte a la propiedad** sin darte cuenta.
+
+En QML esto es especialmente peligroso porque:
+
+* los scopes (QML + JS) se mezclan,
+* el motor permite nombres "válidos" aunque semánticamente sean una trampa,
+* el tooling pierde capacidad de análisis,
+* aparecen bugs silenciosos (bindings que "parecen" bien, pero leen otra cosa).
+
+---
+
+#### 1. Ejemplo mínimo: parámetro que sombrea una propiedad
+
+```qml
+Item {
+    id: root
+    property int value: 10
+
+    function setValue(value) {   // 'value' parámetro SOMBRA root.value
+        value = value + 1        // modifica el parámetro, NO root.value
+    }
+}
+```
+
+##### Corrección
+
+```qml
+Item {
+    id: root
+    property int value: 10
+
+    function setValue(newValue: int): void {
+        root.value = newValue
+    }
+}
+```
+
+---
+
+#### 2. Shadowing en handlers de señales (muy típico)
+
+```qml
+Item {
+    id: root
+    property int index: 5
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: (index) => {     // parámetro 'index' sombrea root.index
+            console.log(index)
+        }
+    }
+}
+```
+
+##### Corrección
+
+```qml
+onClicked: (mouse) => {
+    console.log(root.index)
+}
+```
+
+Evita nombres como `index`, `checked`, `value`, `text`, `state` como parámetros si ya existen en el componente.
+
+---
+
+#### 3. Shadowing con variables locales en bindings/JS
+
+```qml
+Item {
+    id: root
+    property int count: 3
+
+    Component.onCompleted: {
+        let count = 10        // sombrea root.count en este bloque
+        console.log(count)    // 10, no 3
+    }
+}
+```
+
+##### Corrección
+
+Usa nombres locales con prefijo (`localCount`, `tmpCount`) o usa `root.count`.
+
+---
+
+#### 4. Shadowing en delegates (frecuente y confuso)
+
+En un `ListView`, el delegate recibe `index` automáticamente.
+
+```qml
+ListView {
+    model: 10
+    delegate: Item {
+        property int index: 123   // MAL: sombrea el index del delegate
+        Text { text: index }
+    }
+}
+```
+
+##### Corrección
+
+No definas propiedades con nombres reservados/implícitos del delegate (`index`, `model`, `modelData`).
+
+```qml
+delegate: Item {
+    property int rowIndex: index
+    Text { text: rowIndex }
+}
+```
+
+---
+
+#### 5. Shadowing con `id`
+
+Si pones un `id` con el mismo nombre que una propiedad "conocida" del tipo, te creas un infierno semántico.
+
+Ejemplo típico: usar `id: parent` o `id: text` (mala idea).
+
+Regla práctica: `id`s con semántica clara y única (`root`, `view`, `delegateRoot`, `content`, `backend`).
+
+---
+
+#### 6. Por qué es un problema serio en QML
+
+##### Bugs silenciosos
+
+No crashea: simplemente lee/escribe en el sitio equivocado.
+
+##### Rompe mantenibilidad
+
+Un refactor puede introducir un nombre que antes no existía y cambiar significado.
+
+##### Tooling más débil
+
+`qmllint`/QML LS no siempre pueden inferir intención si hay nombres colisionando.
+
+---
+
+#### 7. Reglas operativas para evitarlo
+
+1. **Siempre usa un `id` raíz** (`id: root`) y referencia propiedades con `root.` en código JS sensible.
+2. **Parámetros con prefijo**: `newValue`, `isChecked`, `mouseEvent`, `activatedIndex`.
+3. En delegates, evita definir propiedades llamadas:
+   * `index`, `model`, `modelData`
+   * y también `width`, `height`, `x`, `y`, `visible`, `enabled`
+4. Si un handler recibe un parámetro, **nómbralo explícitamente** y no uses nombres de propiedades existentes.
+
+---
+
+#### 8. Ejemplo "antes/después" realista
+
+##### Antes (shadowing + bug)
+
+```qml
+Item {
+    id: root
+    property bool enabled: true
+
+    function setEnabled(enabled) {
+        enabled = enabled  // no hace nada útil; sombrea root.enabled
+    }
+}
+```
+
+##### Después
+
+```qml
+Item {
+    id: root
+    property bool enabled: true
+
+    function setEnabled(isEnabled: bool): void {
+        root.enabled = isEnabled
+    }
+}
+```
+
+---
+
+#### 9. Checklist rápido para revisar tu QML
+
+Busca en tu código:
+
+* `function foo(value) { ... value ... }` cuando existe `property ... value`
+* `onXxx: (index) => ...` cuando existe `property index` o estás en un delegate
+* `let text = ...` dentro de un componente que tiene propiedad `text`
+* delegates con `property int index: ...`
+
+Si aparece, refactor inmediato.
+
+<---FILES--->

@@ -1,0 +1,322 @@
+<---EXPLANATION--->
+### Avoid Duck Typing en QML
+
+En QML, "avoid duck typing" significa **no depender de que un objeto "tenga ciertas propiedades" en runtime sin que exista un contrato tipado explícito**.
+
+Duck typing =
+
+> "Si parece un pato y camina como un pato, entonces es un pato."
+
+En JavaScript esto es habitual.
+En QML de producción (Qt 6, C++ integration, tooling moderno) es una mala práctica arquitectónica.
+
+---
+
+#### 1. Qué es duck typing en QML
+
+Ejemplo típico:
+
+```qml
+function process(item) {
+    item.value += 1
+    item.reset()
+}
+```
+
+Aquí:
+
+* `item` no tiene tipo
+* No existe contrato
+* Se asume que tiene `.value`
+* Se asume que tiene `.reset()`
+
+Si no lo tiene → error en runtime.
+
+Esto es **duck typing**.
+
+---
+
+#### 2. Por qué es problemático en QML
+
+En un sistema serio (industrial UI, instrumentación, dashboards, embebido):
+
+##### Errores tardíos
+
+Falla solo cuando se ejecuta.
+
+##### Sin validación estática
+
+qmllint no puede ayudarte.
+
+##### Sin autocompletado
+
+El Language Server pierde información.
+
+##### Peor optimización
+
+El engine no puede inferir tipos.
+
+##### Rompe contrato C++/QML
+
+Si C++ expone Q_PROPERTY tipadas, no tiene sentido ignorarlo.
+
+---
+
+#### 3. Ejemplo real de mala práctica
+
+```qml
+property var backend
+
+Component.onCompleted: {
+    backend.start()
+}
+```
+
+Si `backend` no tiene `start()`:
+
+* Crash silencioso
+* Difícil debugging
+* No detectable en análisis estático
+
+Esto es arquitectura débil.
+
+---
+
+#### 4. Alternativa correcta: Strong contracts
+
+##### Tipado explícito
+
+```qml
+property Backend backend
+```
+
+Donde `Backend` es un tipo registrado desde C++:
+
+```cpp
+class Backend : public QObject {
+    Q_OBJECT
+    Q_INVOKABLE void start();
+};
+```
+
+Ahora:
+
+* Si `start()` no existe → error inmediato
+* Tooling funciona
+* Contrato claro
+
+---
+
+#### 5. Duck typing con señales (error frecuente)
+
+##### Incorrecto
+
+```qml
+signal dataReady(data)
+```
+
+El parámetro puede ser cualquier cosa.
+
+##### Correcto
+
+```qml
+signal dataReady(data: int)
+```
+
+O si es objeto:
+
+```qml
+signal dataReady(data: BackendData)
+```
+
+---
+
+#### 6. Duck typing en modelos
+
+##### Muy común
+
+```qml
+delegate: Text {
+    text: model.name
+}
+```
+
+Si el modelo cambia y ya no tiene `name`:
+
+→ fallo silencioso
+
+##### Mejor
+
+Usar `required property`
+
+```qml
+delegate: Item {
+    required property string name
+    Text { text: name }
+}
+```
+
+Ahora el delegado exige contrato.
+
+---
+
+#### 7. Duck typing con `var` (el mayor problema)
+
+```qml
+property var config
+```
+
+Luego:
+
+```qml
+if (config.enabled)
+    start()
+```
+
+Si `config` no tiene `enabled`:
+
+→ undefined
+→ comportamiento inesperado
+
+---
+
+#### 8. Cómo eliminar duck typing en proyectos serios
+
+##### Usar tipos concretos en properties
+
+```qml
+property int
+property real
+property string
+property color
+property url
+```
+
+##### Registrar tipos C++ bien definidos
+
+```cpp
+qmlRegisterType<Backend>("App", 1, 0, "Backend");
+```
+
+Y usar:
+
+```qml
+property Backend backend
+```
+
+---
+
+##### Usar `required property` en delegados
+
+Esto es clave en Qt 6.
+
+```qml
+required property string title
+required property int value
+```
+
+---
+
+##### Tipar funciones
+
+```qml
+function compute(value: int): real {
+    return value * 1.5
+}
+```
+
+---
+
+##### Tipar listas
+
+```qml
+property list<int> values
+property list<Backend> devices
+```
+
+---
+
+#### 9. Caso práctico: Dashboard industrial
+
+##### Arquitectura débil
+
+```qml
+function updateDevice(device) {
+    device.temperature = 42
+    device.refresh()
+}
+```
+
+No hay contrato.
+
+---
+
+##### Arquitectura robusta
+
+```qml
+function updateDevice(device: Device): void {
+    device.temperature = 42
+    device.refresh()
+}
+```
+
+Si `Device` está registrado:
+
+* Validación estática
+* Mejor tooling
+* Más mantenible
+
+---
+
+#### 10. Cuándo duck typing puede ser aceptable
+
+Solo en:
+
+* JSON dinámico externo
+* Prototipado rápido
+* Código experimental
+
+Pero en producción:
+
+> Siempre modelar datos y contratos.
+
+---
+
+#### 11. Relación con qmltc y AOT
+
+Duck typing impide:
+
+* Compilación eficiente
+* Análisis estático fuerte
+* Eliminación de checks dinámicos
+
+Si quieres QML cercano a C++ en robustez,
+duck typing es un obstáculo.
+
+---
+
+#### 12. Resumen técnico
+
+| Duck Typing                | Strong Contract    |
+| -------------------------- | ------------------ |
+| `var`                      | tipo explícito     |
+| parámetros sin tipo        | parámetros tipados |
+| señales sin tipo           | señales tipadas    |
+| acceso libre a propiedades | required property  |
+| errores runtime            | errores estáticos  |
+
+---
+
+#### Conclusión
+
+Avoid duck typing no es una recomendación estilística.
+Es una decisión de diseño arquitectónico.
+
+En sistemas industriales, UI complejas o aplicaciones embebidas, usar duck typing:
+
+* Reduce confiabilidad
+* Aumenta deuda técnica
+* Empeora tooling
+* Limita optimización
+
+<---FILES--->

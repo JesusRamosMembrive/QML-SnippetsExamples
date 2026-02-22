@@ -1,0 +1,224 @@
+<---EXPLANATION--->
+### Use Explicit URL Resolution
+
+En QML, "Use Explicit URL Resolution" significa **no depender de la resolución implícita de rutas relativas**, sino declarar de forma clara y determinista cómo se resuelven los recursos (`url`, `source`, `Loader`, `Image`, `FontLoader`, etc.).
+
+Esto es especialmente crítico en:
+
+* proyectos grandes con muchos módulos QML
+* aplicaciones que usan `qmldir` / módulos versionados
+* `qrc` (Qt Resource System)
+* despliegues multiplataforma
+* `qmltc` / compilación AOT
+
+---
+
+#### 1. El problema: resolución implícita ambigua
+
+QML resuelve rutas relativas según:
+
+1. El archivo actual
+2. El `baseUrl` del motor
+3. El módulo desde el que se importa
+4. El sistema de recursos (`qrc:`)
+
+Ejemplo ambiguo:
+
+```qml
+Image {
+    source: "icons/warning.png"
+}
+```
+
+¿Desde dónde se resuelve?
+
+* Desde el archivo actual.
+* Pero si mueves el archivo, se rompe.
+* Si cambias estructura modular, se rompe.
+* Si compilas con `qmltc`, puede comportarse diferente.
+
+---
+
+#### 2. Enfoque correcto: URLs explícitas
+
+##### Usar `qrc:/` explícito
+
+```qml
+Image {
+    source: "qrc:/icons/warning.png"
+}
+```
+
+Esto es determinista, independiente de la ubicación del archivo y seguro frente a refactorizaciones.
+
+---
+
+##### Usar `Qt.resolvedUrl()`
+
+```qml
+Image {
+    source: Qt.resolvedUrl("icons/warning.png")
+}
+```
+
+Fuerza la resolución contra el archivo actual de manera explícita.
+
+---
+
+##### Usar `import` modular correcto
+
+```qml
+import MyApp 1.0
+```
+
+Y referenciar recursos desde el módulo con rutas claras.
+
+---
+
+#### 3. Caso crítico: `Loader`
+
+##### Implícito
+
+```qml
+Loader {
+    source: "MyPage.qml"
+}
+```
+
+##### Explícito
+
+```qml
+Loader {
+    source: "qrc:/pages/MyPage.qml"
+}
+```
+
+O:
+
+```qml
+Loader {
+    source: Qt.resolvedUrl("MyPage.qml")
+}
+```
+
+---
+
+#### 4. Diferencia entre tipos de URL
+
+En QML, `url` es un tipo real, no un string.
+
+```qml
+property url endpoint: "http://localhost:8080/api"
+```
+
+Evita:
+
+```qml
+property string endpoint
+```
+
+Si es una URL, usa `url`. Esto permite validación y coherencia semántica.
+
+---
+
+#### 5. Evitar dependencias ocultas de estructura
+
+```qml
+// Frágil
+Image { source: "../icons/needle.png" }
+
+// Robusto
+Image { source: "qrc:/icons/needle.png" }
+```
+
+---
+
+#### 6. Relación con qmltc y compilación estática
+
+Con Qt 6 y `qmltc`:
+
+* Las rutas implícitas pueden no resolverse como esperas.
+* Los módulos deben ser deterministas.
+* El uso explícito mejora el análisis estático.
+
+---
+
+#### 7. Caso especial: recursos externos vs internos
+
+Si cargas imágenes desde red:
+
+```qml
+Image {
+    source: `http://${host}:${port}/image`
+}
+```
+
+Pero si es asset interno: usa `qrc:/`.
+
+No mezcles ambos conceptos.
+
+---
+
+#### 8. Patrón recomendado (estructura limpia)
+
+##### Recursos siempre en `qrc`
+
+* icons, fonts, imágenes, QML estático
+
+Y siempre referenciados como `"qrc:/icons/..."`.
+
+##### Componentes dinámicos siempre con URL explícita
+
+```qml
+Loader {
+    source: Qt.resolvedUrl("SubView.qml")
+}
+```
+
+---
+
+#### 9. Errores típicos
+
+##### Usar rutas relativas profundas
+
+```qml
+source: "../../../../../icons/x.png"
+```
+
+##### Confiar en el working directory
+
+En producción, el working directory puede cambiar.
+
+##### Usar string en vez de `url`
+
+Si algo es conceptualmente una URL, tiparlo como `url`.
+
+---
+
+#### 10. Resumen técnico
+
+No confíes en:
+
+* resolución implícita
+* ubicación actual del archivo
+* baseUrl del engine
+* working directory
+
+Confía en:
+
+* `qrc:/`
+* `Qt.resolvedUrl()`
+* tipos `url`
+* módulos bien definidos
+
+---
+
+#### 11. Regla arquitectónica fuerte
+
+En proyectos medianos/grandes:
+
+* Ningún recurso crítico debe depender de rutas relativas ambiguas.
+* Ningún Loader debe usar rutas implícitas.
+* Toda URL importante debe ser determinista.
+
+<---FILES--->

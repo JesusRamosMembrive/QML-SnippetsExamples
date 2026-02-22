@@ -1,0 +1,201 @@
+<---EXPLANATION--->
+### Use String Interpolation
+
+En QML (Qt 6), usar **string interpolation** significa utilizar *template literals* de JavaScript:
+
+```js
+`texto ${expresión} texto`
+```
+
+en lugar de concatenación clásica con `+`.
+
+No es una preferencia estética.
+Tiene implicaciones en:
+
+* legibilidad
+* mantenimiento
+* reducción de errores
+* claridad declarativa
+* menor ruido sintáctico en bindings
+
+---
+
+#### 1. Problema con concatenación clásica
+
+##### Concatenación manual
+
+```qml
+Text {
+    text: "Temperature: " + temperature + " °C"
+}
+```
+
+Problemas:
+
+* Menos legible
+* Conversión implícita poco clara
+* Fácil introducir espacios erróneos
+* Difícil escalar a múltiples variables
+
+---
+
+#### 2. Forma correcta: Template literals
+
+##### Interpolación
+
+```qml
+Text {
+    text: `Temperature: ${temperature} °C`
+}
+```
+
+Ejemplo complejo:
+
+```qml
+Text {
+    text: `Device ${deviceId} | State: ${state} | FPS: ${fps.toFixed(1)}`
+}
+```
+
+Más claro. Más mantenible. Más declarativo.
+
+---
+
+#### 3. Ventajas técnicas reales
+
+##### Legibilidad estructural
+
+```qml
+// concatenación
+"Gain: " + gain + " | Offset: " + offset
+
+// interpolación
+`Gain: ${gain} | Offset: ${offset}`
+```
+
+##### Mejor manejo de expresiones
+
+```qml
+text: `Average: ${(sum / count).toFixed(2)}`
+```
+
+##### Multilínea
+
+```qml
+text: `
+Device: ${deviceId}
+Temperature: ${temperature} °C
+Status: ${status}
+`
+```
+
+---
+
+#### 4. Interpolación dentro de bindings declarativos
+
+QML bindings funcionan perfectamente con template literals:
+
+```qml
+property string statusLabel: `State: ${backend.state}`
+```
+
+Esto sigue siendo un binding reactivo.
+
+---
+
+#### 5. Casos donde es especialmente recomendable
+
+##### Logs
+
+```qml
+console.log(`Device ${id} changed state to ${state}`)
+```
+
+##### URLs dinámicas
+
+```qml
+property url endpoint: `http://${host}:${port}/api`
+```
+
+##### Keys o identificadores
+
+```qml
+property string key: `${deviceId}_${channel}`
+```
+
+---
+
+#### 6. Errores comunes
+
+##### Usar comillas normales en vez de backticks
+
+```qml
+text: "Value: ${value}"   // NO interpola
+text: `Value: ${value}`   // Correcto
+```
+
+##### Mezclar concatenación e interpolación
+
+```qml
+text: "Value: " + `${value}`  // innecesario
+```
+
+##### Abusar de lógica compleja dentro de `${}`
+
+```qml
+// Mal
+text: `${computeVeryComplexThing(a, b, c)}`
+
+// Mejor
+property string displayText: computeVeryComplexThing(a, b, c)
+Text { text: displayText }
+```
+
+---
+
+#### 7. Rendimiento
+
+No hay penalización relevante respecto a concatenación.
+
+El coste real viene de:
+
+* complejidad de la expresión
+* número de re-evaluaciones
+* dependencias del binding
+
+---
+
+#### 8. Regla práctica para proyectos serios
+
+En QML moderno:
+
+* Nunca uses `+` para strings salvo casos extremadamente simples.
+* Siempre usa template literals.
+* Mantén las expresiones cortas.
+* Extrae lógica compleja a propiedades derivadas.
+
+---
+
+#### 9. Ejemplo final bien diseñado
+
+```qml
+Item {
+    property string deviceId
+    property real temperature
+    property real fps
+    property int state
+
+    readonly property string statusText:
+        `Device ${deviceId} | FPS ${fps.toFixed(1)} | Temp ${temperature.toFixed(1)} °C | State ${state}`
+
+    Text {
+        text: statusText
+    }
+}
+```
+
+Estado base → propiedades simples
+Estado derivado → interpolación declarativa
+UI → depende solo de estado derivado
+
+<---FILES--->

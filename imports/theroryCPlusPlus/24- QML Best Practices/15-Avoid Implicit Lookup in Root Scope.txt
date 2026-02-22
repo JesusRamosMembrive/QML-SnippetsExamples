@@ -1,0 +1,198 @@
+<---EXPLANATION--->
+### Avoid Implicit Lookup in the Root Scope
+
+En QML, "implicit lookup in the root scope" es cuando escribes un identificador **sin calificar** (sin `root.` / `someId.` / `Qt.` / `MySingleton.`) y confías en que el motor lo encuentre "por arte de magia" en el *scope chain*.
+
+Ejemplos típicos de lookup implícito:
+
+* `width`, `height`, `x`, `y`, `parent`, `index` usados "a pelo"
+* `someFunction()` sin `root.someFunction()`
+* `backend` sin `root.backend`
+* `state` sin calificar
+
+La recomendación es:
+
+> En código que no sea trivial, **no dependas de la resolución implícita** del root scope. Usa referencias explícitas.
+
+---
+
+#### 1. Por qué es un problema
+
+##### Ambigüedad y bugs silenciosos
+
+QML resuelve nombres buscando en varios sitios (local scope JS → ids → propiedades del objeto actual → scopes padres → context properties → singletons/imports…).
+Pequeños cambios pueden cambiar **qué símbolo se está resolviendo**.
+
+##### Shadowing accidental
+
+Un `let value` o un parámetro `value` puede sombrear una propiedad `value` "visible" por lookup implícito.
+
+##### Tooling y qmltc
+
+`qmllint`, QML Language Server y compilación AOT trabajan mucho mejor cuando las referencias son explícitas.
+
+---
+
+#### 2. Ejemplos concretos
+
+##### Función sin calificar
+
+```qml
+Item {
+    id: root
+    property int value: 10
+
+    function bump(): void { value += 1 }
+
+    Component.onCompleted: {
+        bump()          // lookup implícito
+        console.log(value) // lookup implícito
+    }
+}
+```
+
+**Correcto (explícito):**
+
+```qml
+Component.onCompleted: {
+    root.bump()
+    console.log(root.value)
+}
+```
+
+---
+
+##### `Connections` / señales externas
+
+```qml
+Item {
+    id: root
+    property int state: 0
+
+    Connections {
+        target: backend
+        function onStateChanged(state) {
+            // "state" aquí es el parámetro, no root.state
+        }
+    }
+}
+```
+
+**Correcto:**
+
+```qml
+function onStateChanged(newState) {
+    root.state = newState
+}
+```
+
+---
+
+#### 3. Patrón recomendado: `id: root` + acceso explícito
+
+1. En cada componente, define `id: root`.
+2. En JS (handlers, funciones, bindings complejos), referencia **siempre** con `root.`.
+3. Para objetos externos, referencia por `id` o singleton **siempre explícito**.
+
+```qml
+Item {
+    id: root
+    property int counter: 0
+
+    function increment(step: int): void {
+        root.counter += step
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: () => root.increment(1)
+    }
+
+    Text {
+        text: `Counter: ${root.counter}`
+    }
+}
+```
+
+---
+
+#### 4. Import alias / singletons: explicitidad a nivel módulo
+
+```qml
+import QtQuick as QQ
+
+QQ.Item {
+    // ...
+}
+```
+
+Para singletons, acceso explícito:
+
+```qml
+import MyApp.Stores 1.0
+
+Text { text: MyStore.userName }  // no "userName" suelto
+```
+
+---
+
+#### 5. Qué sí puede ser implícito (pragmático)
+
+No hace falta escribir `root.width` siempre. En QML idiomático es normal:
+
+* dentro de un `Item`, usar `width`, `height`, `parent`, `anchors` sin calificar
+* bindings muy simples
+
+Pero en cuanto entras en:
+
+* JS (handlers, funciones, `Connections`, `Component.onCompleted`)
+* delegates
+* componentes reutilizables con APIs grandes
+* código con riesgo de shadowing
+
+**califica**.
+
+Regla pragmática:
+
+* **Bindings simples:** OK implícito.
+* **Código JS / lógica:** explícito casi siempre.
+
+---
+
+#### 6. Anti-patrón típico y corrección
+
+##### Anti-patrón
+
+```qml
+onClicked: backend.start()
+```
+
+Si mañana `backend` deja de existir como context property, falla.
+
+##### Correcto
+
+```qml
+Item {
+    id: root
+    required property Backend backend
+
+    Button {
+        onClicked: () => root.backend.start()
+    }
+}
+```
+
+---
+
+#### Conclusión
+
+"Avoid Implicit Lookup in the Root Scope" es básicamente: **no escribas QML como si tuviera variables globales mágicas**. En cuanto hay lógica, usa referencias explícitas (`root.` / `id.` / `Singleton.`). Ganas:
+
+* determinismo
+* refactor seguro
+* menos bugs intermitentes
+* mejor tooling
+
+<---FILES--->

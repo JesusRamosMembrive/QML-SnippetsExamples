@@ -1,0 +1,238 @@
+<---EXPLANATION--->
+### Prefer UI Interaction Signals Over Changed Signals
+
+Este principio es sutil pero fundamental en aplicaciones bien diseñadas:
+
+> Cuando reacciones a una acción del usuario, usa la señal de interacción específica (`clicked`, `toggled`, `editingFinished`, `activated`, etc.) en lugar de la señal genérica `onXChanged`.
+
+El motivo es separar claramente:
+
+* **interacción del usuario**
+* **cambios de estado**
+* **actualizaciones programáticas**
+
+Si mezclas ambos, introduces efectos colaterales difíciles de controlar.
+
+---
+
+#### 1. El problema con `onXChanged`
+
+Muchos controles exponen:
+
+```qml
+property bool checked
+signal toggled(bool checked)
+```
+
+Y es común ver esto:
+
+```qml
+CheckBox {
+    onCheckedChanged: {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+##### Problema
+
+`checked` puede cambiar:
+
+* Por clic del usuario.
+* Por actualización desde el backend.
+* Por binding reactivo.
+* Por inicialización.
+
+No sabes el origen del cambio. Eso rompe el flujo unidireccional.
+
+---
+
+#### 2. La forma correcta
+
+Usa la señal específica de interacción:
+
+```qml
+CheckBox {
+    onToggled: (checked) => {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+Ahora:
+
+* Solo reaccionas cuando el usuario interactúa.
+* No cuando el estado cambia programáticamente.
+* No generas loops involuntarios.
+
+---
+
+#### 3. Ejemplo real de bug típico
+
+```qml
+CheckBox {
+    checked: backend.featureEnabled
+
+    onCheckedChanged: {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+Secuencia posible:
+
+1. Usuario hace clic.
+2. `checked` cambia.
+3. `setFeatureEnabled` se llama.
+4. Backend emite señal.
+5. `checked` vuelve a cambiar.
+6. `onCheckedChanged` se vuelve a disparar.
+
+Puedes crear: loops, doble escritura, tráfico innecesario, glitches visuales.
+
+---
+
+#### 4. Versión robusta
+
+```qml
+CheckBox {
+    checked: backend.featureEnabled
+
+    onToggled: (checked) => {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+El binding mantiene sincronización.
+La señal de interacción comunica intención.
+
+---
+
+#### 5. Ejemplos por tipo de control
+
+##### Button
+
+```qml
+// Incorrecto: onPressedChanged: { doSomething() }
+// Correcto:
+onClicked: { doSomething() }
+```
+
+##### TextField
+
+```qml
+// Incorrecto: onTextChanged → se dispara en cada carácter
+// Correcto:
+onEditingFinished: {
+    backend.setName(text)
+}
+```
+
+##### ComboBox
+
+```qml
+// Incorrecto: onCurrentIndexChanged → puede cambiar por binding
+// Correcto:
+onActivated: (index) => {
+    backend.setMode(index)
+}
+```
+
+---
+
+#### 6. Diferencia conceptual clave
+
+| Señal                                     | Significado                           |
+| ----------------------------------------- | ------------------------------------- |
+| `onXChanged`                              | El estado cambió (origen desconocido) |
+| `onClicked` / `onToggled` / `onActivated` | El usuario interactuó                 |
+
+No son equivalentes.
+
+---
+
+#### 7. Regla arquitectónica fuerte
+
+UI debe comunicar **intención del usuario**, no reaccionar a cambios de estado.
+
+Flujo correcto:
+
+Usuario → señal de interacción → backend
+Backend → actualiza estado → binding actualiza UI
+
+Nunca:
+
+UI → reacciona a cambio → backend → backend → UI → loop
+
+---
+
+#### 8. Caso industrial: Slider con ganancia
+
+##### Incorrecto
+
+```qml
+Slider {
+    value: backend.gain
+    onValueChanged: {
+        backend.setGain(value)
+    }
+}
+```
+
+Si backend cambia gain, disparas setGain otra vez.
+
+##### Correcto
+
+```qml
+Slider {
+    value: backend.gain
+    onMoved: (value) => {
+        backend.setGain(value)
+    }
+}
+```
+
+Solo cuando el usuario mueve.
+
+---
+
+#### 9. Cuándo sí usar `onXChanged`
+
+Solo para:
+
+* animaciones
+* logging
+* efectos secundarios puramente visuales
+* cálculos derivados internos
+
+Nunca para comunicar intención al backend.
+
+---
+
+#### 10. Checklist práctico
+
+Revisa en tu proyecto:
+
+* `onCheckedChanged`
+* `onCurrentIndexChanged`
+* `onValueChanged`
+* `onTextChanged`
+
+¿Estás reaccionando a interacción o a cambio de estado?
+
+Si es interacción → usa señal específica.
+
+---
+
+#### 11. Resumen técnico
+
+Preferir señales de interacción:
+
+* evita loops
+* evita ambigüedad de origen
+* refuerza arquitectura unidireccional
+* mejora claridad semántica
+* reduce bugs intermitentes
+
+<---FILES--->

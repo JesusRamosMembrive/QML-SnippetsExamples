@@ -1,0 +1,5361 @@
+<---EXPLANATION--->
+### Strong Typing en QML
+
+En QML, “strong typing” significa declarar explícitamente el tipo de cada propiedad, señal y función, en lugar de usar var o depender de coerciones dinámicas del motor JavaScript.
+
+Aunque QML está basado en JavaScript (dinámico), el sistema de tipos de Qt (meta-object system) permite un modelo fuertemente tipado que mejora:
+
+Rendimiento
+
+Seguridad en tiempo de compilación
+
+Soporte del tooling (qmllint, qmltc, QML Language Server)
+
+## Strong Typing en QML
+
+En QML, “strong typing” significa **declarar explícitamente el tipo de cada propiedad, señal y función**, en lugar de usar `var` o depender de coerciones dinámicas del motor JavaScript.
+
+Aunque QML está basado en JavaScript (dinámico), el sistema de tipos de Qt (meta-object system) permite un **modelo fuertemente tipado** que mejora:
+
+* Rendimiento
+* Seguridad en tiempo de compilación
+* Soporte del tooling (qmllint, qmltc, QML Language Server)
+* Integración con C++
+
+---
+
+## 1. Tipado débil vs fuerte en QML
+
+### ❌ Débil (dinámico)
+
+```qml
+Item {
+    property var value: 10
+}
+```
+
+Problemas:
+
+* Puede almacenar cualquier tipo.
+* Cambios de tipo en runtime.
+* Menor optimización.
+* Errores detectados tarde.
+
+Ejemplo peligroso:
+
+```qml
+value = "hello"
+value = 42
+value = Qt.rect(0,0,10,10)
+```
+
+El motor lo permite.
+
+---
+
+### ✅ Fuerte (recomendado)
+
+```qml
+Item {
+    property int value: 10
+}
+```
+
+Ahora:
+
+* Solo acepta `int`
+* Error inmediato si asignas otro tipo
+* Mejor optimización por el engine
+
+---
+
+## 2. Tipos básicos recomendados
+
+En QML debes usar siempre:
+
+| Tipo QML                | Equivalente       |
+| ----------------------- | ----------------- |
+| `int`                   | entero 32 bits    |
+| `real`                  | double            |
+| `bool`                  | boolean           |
+| `string`                | QString           |
+| `color`                 | QColor            |
+| `url`                   | QUrl              |
+| `date`                  | QDateTime         |
+| `point`, `rect`, `size` | tipos geométricos |
+| `list<Type>`            | lista tipada      |
+
+---
+
+## 3. Tipado en propiedades
+
+### ✔ Correcto
+
+```qml
+Rectangle {
+    property int count: 0
+    property real opacityFactor: 0.8
+    property string title: "Dashboard"
+    property color background: "#1A1D23"
+}
+```
+
+### ❌ Evitar
+
+```qml
+property var count
+property var config
+property var model
+```
+
+Salvo que realmente necesites polimorfismo dinámico.
+
+---
+
+## 4. Tipado en funciones (QML moderno)
+
+Desde Qt 6 puedes tipar parámetros y retorno:
+
+```qml
+function add(a: int, b: int): int {
+    return a + b
+}
+```
+
+Beneficios:
+
+* Detección estática de errores
+* Mejor integración con C++
+* Mejores diagnósticos en QML Language Server
+
+---
+
+## 5. Tipado en signals
+
+```qml
+signal valueChanged(newValue: int)
+```
+
+En lugar de:
+
+```qml
+signal valueChanged(newValue)
+```
+
+Esto evita errores silenciosos.
+
+---
+
+## 6. Listas tipadas
+
+Muy importante para modelos:
+
+```qml
+property list<int> values: [1, 2, 3]
+```
+
+O para objetos:
+
+```qml
+property list<Item> childrenItems
+```
+
+Evita:
+
+```qml
+property var items
+```
+
+---
+
+## 7. Strong typing + C++
+
+Aquí es donde realmente gana valor.
+
+Si tienes en C++:
+
+```cpp
+Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
+```
+
+En QML:
+
+```qml
+property int count: backend.count
+```
+
+El sistema mantiene consistencia fuerte entre ambos mundos.
+
+---
+
+## 8. Beneficios reales en producción
+
+### 1️⃣ Rendimiento
+
+El motor puede optimizar bindings porque:
+
+* Sabe el tipo
+* No necesita hacer coerciones dinámicas
+* Reduce boxing/unboxing
+
+Esto importa en:
+
+* UIs complejas
+* Dashboards industriales
+* Gráficos en tiempo real
+* Aplicaciones embebidas
+
+En tu contexto (Qt + cámaras IR + visualización), esto **sí impacta**.
+
+---
+
+### 2️⃣ qmltc / compilación AOT
+
+Qt 6 permite compilar QML a C++.
+
+Eso requiere tipado fuerte.
+
+Si usas `var` por todas partes, pierdes muchas ventajas del compilador.
+
+---
+
+### 3️⃣ qmllint y tooling
+
+Con strong typing:
+
+* Detección de tipos incorrectos
+* Detección de propiedades inexistentes
+* Mejor autocompletado
+
+---
+
+## 9. Cuándo usar `var`
+
+Solo cuando:
+
+* Manejas JSON dinámico
+* Recibes datos externos no estructurados
+* Haces meta-programación
+* Necesitas polimorfismo real
+
+Ejemplo válido:
+
+```qml
+property var jsonConfig: ({})
+```
+
+Pero incluso aquí, en sistemas grandes, es mejor:
+
+* Parsear
+* Mapear a un objeto tipado
+* Usar una Store bien definida
+
+---
+
+## 10. Error conceptual común
+
+Muchos desarrolladores creen que:
+
+> “QML es JavaScript, así que uso var para todo”
+
+Eso es un error arquitectónico.
+
+QML es declarativo + fuertemente integrado con el sistema de tipos de Qt.
+
+Si lo usas como JS suelto:
+
+* Pierdes robustez
+* Pierdes tooling
+* Introduces errores silenciosos
+* Dificultas mantenimiento
+
+---
+
+## 11. Recomendaciones prácticas (nivel producción)
+
+Para tu perfil técnico y objetivos:
+
+1. Evita `var` salvo necesidad real.
+2. Tipar siempre señales.
+3. Tipar funciones.
+4. Usar `required property` cuando aplique.
+5. Alinear tipos QML con Q_PROPERTY en C++.
+6. Activar `qmllint` en CI.
+7. Evaluar `qmltc` en proyectos grandes.
+
+---
+
+## 12. Ejemplo completo correcto
+
+```qml
+// Counter.qml
+import QtQuick
+
+Item {
+    id: root
+
+    required property int initialValue
+    property int value: initialValue
+
+    signal valueChanged(newValue: int)
+
+    function increment(step: int): void {
+        value += step
+        valueChanged(value)
+    }
+}
+```
+
+Uso:
+
+```qml
+Counter {
+    initialValue: 10
+    onValueChanged: console.log("New value:", newValue)
+}
+```
+
+Todo tipado.
+Cero ambigüedad.
+Máxima claridad.
+
+---
+
+## Conclusión
+
+Strong typing en QML no es una recomendación estética.
+Es una decisión arquitectónica.
+
+En sistemas industriales, UI complejas o aplicaciones que integran C++ (como en tu caso), no usarlo es técnicamente inferior.
+
+Si quieres, podemos profundizar en:
+
+* Strong typing + Models
+* Strong typing + Singleton stores (Neptune-like)
+* Strong typing + QML/C++ boundary
+* Impacto real en performance en sistemas embebidos
+
+Elige el siguiente nivel.
+
+
+
+
+## Avoid Duck Typing en QML
+
+En QML, “avoid duck typing” significa **no depender de que un objeto “tenga ciertas propiedades” en runtime sin que exista un contrato tipado explícito**.
+
+Duck typing =
+
+> “Si parece un pato y camina como un pato, entonces es un pato.”
+
+En JavaScript esto es habitual.
+En QML de producción (Qt 6, C++ integration, tooling moderno) es una mala práctica arquitectónica.
+
+---
+
+# 1. ¿Qué es duck typing en QML?
+
+Ejemplo típico:
+
+```qml
+function process(item) {
+    item.value += 1
+    item.reset()
+}
+```
+
+Aquí:
+
+* `item` no tiene tipo
+* No existe contrato
+* Se asume que tiene `.value`
+* Se asume que tiene `.reset()`
+
+Si no lo tiene → error en runtime.
+
+Esto es **duck typing**.
+
+---
+
+# 2. Por qué es problemático en QML
+
+En un sistema serio (industrial UI, instrumentación, dashboards, embebido):
+
+### ❌ 1. Errores tardíos
+
+Falla solo cuando se ejecuta.
+
+### ❌ 2. Sin validación estática
+
+qmllint no puede ayudarte.
+
+### ❌ 3. Sin autocompletado
+
+El Language Server pierde información.
+
+### ❌ 4. Peor optimización
+
+El engine no puede inferir tipos.
+
+### ❌ 5. Rompe contrato C++/QML
+
+Si C++ expone Q_PROPERTY tipadas, no tiene sentido ignorarlo.
+
+---
+
+# 3. Ejemplo real de mala práctica
+
+```qml
+property var backend
+
+Component.onCompleted: {
+    backend.start()
+}
+```
+
+Si `backend` no tiene `start()`:
+
+* Crash silencioso
+* Difícil debugging
+* No detectable en análisis estático
+
+Esto es arquitectura débil.
+
+---
+
+# 4. Alternativa correcta: Strong contracts
+
+## ✔ Tipado explícito
+
+```qml
+property Backend backend
+```
+
+Donde `Backend` es un tipo registrado desde C++:
+
+```cpp
+class Backend : public QObject {
+    Q_OBJECT
+    Q_INVOKABLE void start();
+};
+```
+
+Ahora:
+
+* Si `start()` no existe → error inmediato
+* Tooling funciona
+* Contrato claro
+
+---
+
+# 5. Duck typing con señales (error frecuente)
+
+### ❌ Incorrecto
+
+```qml
+signal dataReady(data)
+```
+
+El parámetro puede ser cualquier cosa.
+
+### ✔ Correcto
+
+```qml
+signal dataReady(data: int)
+```
+
+O si es objeto:
+
+```qml
+signal dataReady(data: BackendData)
+```
+
+---
+
+# 6. Duck typing en modelos
+
+### ❌ Muy común
+
+```qml
+delegate: Text {
+    text: model.name
+}
+```
+
+Si el modelo cambia y ya no tiene `name`:
+
+→ fallo silencioso
+
+### ✔ Mejor
+
+Usar `required property`
+
+```qml
+delegate: Item {
+    required property string name
+    Text { text: name }
+}
+```
+
+Ahora el delegado exige contrato.
+
+---
+
+# 7. Duck typing con `var` (el mayor problema)
+
+```qml
+property var config
+```
+
+Luego:
+
+```qml
+if (config.enabled)
+    start()
+```
+
+Si `config` no tiene `enabled`:
+
+→ undefined
+→ comportamiento inesperado
+
+---
+
+# 8. Cómo eliminar duck typing en proyectos serios
+
+## 1️⃣ Usar tipos concretos en properties
+
+```qml
+property int
+property real
+property string
+property color
+property url
+```
+
+## 2️⃣ Registrar tipos C++ bien definidos
+
+```cpp
+qmlRegisterType<Backend>("App", 1, 0, "Backend");
+```
+
+Y usar:
+
+```qml
+property Backend backend
+```
+
+---
+
+## 3️⃣ Usar `required property` en delegados
+
+Esto es clave en Qt 6.
+
+```qml
+required property string title
+required property int value
+```
+
+---
+
+## 4️⃣ Tipar funciones
+
+```qml
+function compute(value: int): real {
+    return value * 1.5
+}
+```
+
+---
+
+## 5️⃣ Tipar listas
+
+```qml
+property list<int> values
+property list<Backend> devices
+```
+
+---
+
+# 9. Caso práctico: Dashboard industrial
+
+### ❌ Arquitectura débil
+
+```qml
+function updateDevice(device) {
+    device.temperature = 42
+    device.refresh()
+}
+```
+
+No hay contrato.
+
+---
+
+### ✔ Arquitectura robusta
+
+```qml
+function updateDevice(device: Device): void {
+    device.temperature = 42
+    device.refresh()
+}
+```
+
+Si `Device` está registrado:
+
+* Validación estática
+* Mejor tooling
+* Más mantenible
+
+---
+
+# 10. Cuándo duck typing puede ser aceptable
+
+Solo en:
+
+* JSON dinámico externo
+* Prototipado rápido
+* Código experimental
+
+Pero en producción:
+
+> Siempre modelar datos y contratos.
+
+---
+
+# 11. Relación con qmltc y AOT
+
+Duck typing impide:
+
+* Compilación eficiente
+* Análisis estático fuerte
+* Eliminación de checks dinámicos
+
+Si quieres QML cercano a C++ en robustez,
+duck typing es un obstáculo.
+
+---
+
+# 12. Error conceptual frecuente
+
+Muchos desarrolladores piensan:
+
+> “QML es JS, así que escribo JS dinámico”
+
+Incorrecto.
+
+QML es:
+
+* Declarativo
+* Tipado
+* Integrado con C++
+* Diseñado para tooling
+
+Si lo usas como JS suelto, pierdes sus ventajas.
+
+---
+
+# 13. Resumen técnico
+
+| Duck Typing                | Strong Contract    |
+| -------------------------- | ------------------ |
+| `var`                      | tipo explícito     |
+| parámetros sin tipo        | parámetros tipados |
+| señales sin tipo           | señales tipadas    |
+| acceso libre a propiedades | required property  |
+| errores runtime            | errores estáticos  |
+
+---
+
+## Conclusión
+
+Avoid duck typing no es una recomendación estilística.
+Es una decisión de diseño arquitectónico.
+
+En sistemas industriales, IR cameras, UI complejas o aplicaciones embebidas (tu contexto real), usar duck typing:
+
+* Reduce confiabilidad
+* Aumenta deuda técnica
+* Empeora tooling
+* Limita optimización
+
+# Declarative Bindings Rather Than Imperative Assignments (QML)
+
+Este principio es **central** en QML.
+Si no lo interiorizas, acabas escribiendo “JavaScript con UI” en lugar de aprovechar el motor declarativo.
+
+---
+
+# 1. Modelo mental correcto
+
+QML no está pensado para:
+
+> “Cuando pasa X, entonces asigno Y”
+
+Está pensado para:
+
+> “Y depende de X”
+
+Eso cambia completamente la arquitectura.
+
+---
+
+# 2. Imperativo (incorrecto en la mayoría de casos)
+
+```qml
+Rectangle {
+    id: rect
+    width: 100
+    height: 100
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            rect.color = "red"
+        }
+    }
+}
+```
+
+Aquí estás:
+
+* Ejecutando código
+* Mutando estado
+* Rompiendo posible binding previo
+* Introduciendo dependencia manual
+
+Es un enfoque reactivo manual.
+
+---
+
+# 3. Declarativo (correcto)
+
+```qml
+Rectangle {
+    id: rect
+    width: 100
+    height: 100
+
+    property bool pressed: false
+    color: pressed ? "red" : "blue"
+
+    MouseArea {
+        anchors.fill: parent
+        onPressed: rect.pressed = true
+        onReleased: rect.pressed = false
+    }
+}
+```
+
+Ahora:
+
+* `color` no se asigna
+* `color` depende de `pressed`
+* El motor mantiene coherencia automáticamente
+
+Eso es un **binding declarativo**.
+
+---
+
+# 4. Qué es realmente un binding
+
+Cuando escribes:
+
+```qml
+color: pressed ? "red" : "blue"
+```
+
+No estás asignando un valor.
+Estás registrando una **expresión reactiva**.
+
+El motor:
+
+1. Analiza dependencias (`pressed`)
+2. Construye un grafo
+3. Recalcula automáticamente cuando cambia
+
+---
+
+# 5. Problema grave: romper bindings sin querer
+
+Caso clásico:
+
+```qml
+color: someCondition ? "red" : "blue"
+```
+
+Luego en algún sitio:
+
+```qml
+rect.color = "green"
+```
+
+Acabas de romper el binding.
+
+Desde ese momento:
+
+* `color` deja de depender de `someCondition`
+* El sistema deja de ser declarativo
+* Debugging difícil
+
+Este error es muy común.
+
+---
+
+# 6. Regla de oro
+
+> No reasignes propiedades que ya tienen binding.
+
+Si necesitas cambiar comportamiento:
+
+* Cambia la fuente
+* No cambies el resultado
+
+---
+
+# 7. Ejemplo típico de arquitectura mala
+
+```qml
+Text {
+    id: label
+    text: "Idle"
+}
+
+Connections {
+    target: backend
+    function onStateChanged(newState) {
+        if (newState === 0)
+            label.text = "Idle"
+        else if (newState === 1)
+            label.text = "Running"
+        else
+            label.text = "Error"
+    }
+}
+```
+
+Esto es imperativo.
+
+---
+
+# 8. Reescritura declarativa
+
+```qml
+Text {
+    text: {
+        switch (backend.state) {
+        case 0: return "Idle"
+        case 1: return "Running"
+        default: return "Error"
+        }
+    }
+}
+```
+
+Ahora:
+
+* `text` depende de `backend.state`
+* No hay mutaciones
+* No hay riesgo de incoherencia
+
+---
+
+# 9. Caso real: UI industrial (tu contexto)
+
+Supón que tienes:
+
+* Cámara IR
+* Estado de adquisición
+* Nivel de ganancia
+* Temperatura del sensor
+
+Mal enfoque:
+
+```qml
+onTemperatureChanged: {
+    if (temperature > 80)
+        warning.visible = true
+    else
+        warning.visible = false
+}
+```
+
+Correcto:
+
+```qml
+warning.visible: temperature > 80
+```
+
+Eso es robusto.
+Eso escala.
+Eso mantiene coherencia.
+
+---
+
+# 10. ¿Cuándo sí usar imperativo?
+
+Solo cuando:
+
+* Necesitas efectos laterales
+* Lógica transaccional
+* Inicialización compleja
+* Interacción con C++
+* Animaciones controladas manualmente
+
+Pero nunca para estado derivado.
+
+---
+
+# 11. Arquitectura recomendada (nivel serio)
+
+Separar:
+
+### 🔹 Estado base (source of truth)
+
+```qml
+property int state
+property real temperature
+property bool connected
+```
+
+### 🔹 Estado derivado (solo bindings)
+
+```qml
+property bool isOverheated: temperature > 80
+property bool canStart: connected && state === 0
+```
+
+### 🔹 UI depende de estado derivado
+
+```qml
+Button {
+    enabled: canStart
+}
+```
+
+Eso elimina lógica imperativa dispersa.
+
+---
+
+# 12. Binding avanzado: Qt.binding()
+
+Si necesitas restaurar un binding roto:
+
+```qml
+rect.color = Qt.binding(function() {
+    return pressed ? "red" : "blue"
+})
+```
+
+Pero si necesitas esto, probablemente tu arquitectura ya está mal.
+
+---
+
+# 13. Errores típicos que debes evitar
+
+## ❌ 1. Lógica en `onXChanged` que solo actualiza otra propiedad
+
+Eso debería ser binding.
+
+---
+
+## ❌ 2. Cascadas manuales
+
+```qml
+onAChanged: b = computeFromA()
+onBChanged: c = computeFromB()
+```
+
+Esto es frágil.
+
+---
+
+## ✔ Alternativa
+
+```qml
+property int b: computeFromA(a)
+property int c: computeFromB(b)
+```
+
+El motor gestiona dependencias.
+
+---
+
+# 14. Impacto en rendimiento
+
+Bindings declarativos:
+
+* Se evalúan solo cuando cambian dependencias
+* Están optimizados en C++
+* Son más eficientes que JS imperativo repetitivo
+
+En sistemas de alto refresco (video IR, gráficos en tiempo real), esto importa.
+
+---
+
+# 15. Relación con otros principios
+
+Este principio está directamente conectado con:
+
+* Strong typing
+* Avoid duck typing
+* Unidirectional data flow
+* Single source of truth
+* Arquitectura tipo Store
+
+Si los combinas, tu QML se vuelve:
+
+* Predecible
+* Escalable
+* Analizable estáticamente
+* Optimizable
+
+---
+
+# 16. Patrón recomendado para ti (nivel avanzado)
+
+Dado tu perfil y tus proyectos Qt/C++:
+
+1. C++ mantiene estado real.
+2. QML solo declara dependencias.
+3. Cero lógica imperativa de UI.
+4. Cero mutaciones cruzadas.
+
+Eso te acerca a una arquitectura tipo:
+
+* Neptune 3 UI
+* MVVM fuerte
+* Store-based design
+
+---
+
+# Resumen técnico
+
+| Imperativo             | Declarativo           |
+| ---------------------- | --------------------- |
+| Mutación manual        | Dependencia declarada |
+| onXChanged actualiza Y | Y depende de X        |
+| Estado disperso        | Estado derivado       |
+| Difícil debugging      | Flujo predecible      |
+| Rompe bindings         | Mantiene reactividad  |
+
+---
+
+## Conclusión
+
+Declarative bindings no es estilo.
+Es la esencia del motor QML.
+
+Si empiezas a escribir demasiados `onXChanged`,
+estás programando contra el framework.
+
+# Property Evaluation and Signal Emission Order Must Not Be Relied On (QML)
+
+Este principio es crítico en QML y suele ignorarse hasta que aparece un bug no determinista.
+
+> No debes basar tu lógica en el orden en que se evalúan bindings ni en el orden en que se emiten señales.
+
+El motor QML es reactivo y dirigido por un grafo de dependencias.
+No es un flujo imperativo secuencial garantizado.
+
+---
+
+# 1. El problema real
+
+Muchos desarrolladores asumen implícitamente que:
+
+* Primero cambia A
+* Luego cambia B
+* Luego se ejecuta onAChanged
+* Luego onBChanged
+
+Eso **no está garantizado**.
+
+El motor:
+
+* Recalcula bindings según dependencias
+* Puede reordenar evaluaciones
+* Puede agrupar cambios
+* Puede optimizar ciclos
+
+Especialmente en Qt 6 con optimizaciones más agresivas.
+
+---
+
+# 2. Ejemplo clásico incorrecto
+
+```qml
+Item {
+    property int a: 0
+    property int b: a + 1
+
+    onAChanged: {
+        console.log("A changed, B is:", b)
+    }
+}
+```
+
+Aquí estás asumiendo que cuando `onAChanged` se ejecuta:
+
+* `b` ya se ha recalculado.
+
+Eso **no es contractual**.
+
+Puede funcionar hoy.
+Puede romper mañana.
+
+---
+
+# 3. Caso más peligroso: lógica dependiente del orden
+
+```qml
+Item {
+    property int a: 0
+    property int b: 0
+
+    onAChanged: {
+        b = a + 1
+    }
+
+    onBChanged: {
+        if (b > 10)
+            a = 0
+    }
+}
+```
+
+Esto introduce:
+
+* Dependencia circular
+* Comportamiento no determinista
+* Posibles loops
+* Orden dependiente del motor
+
+Es frágil.
+
+---
+
+# 4. Qué hace realmente el motor
+
+Cuando cambia una propiedad:
+
+1. Marca dependencias como “dirty”
+2. Evalúa grafo
+3. Ejecuta handlers
+4. Puede colapsar evaluaciones
+
+No es una secuencia lineal simple.
+
+---
+
+# 5. Solución: eliminar dependencia del orden
+
+## ❌ Incorrecto (orden implícito)
+
+```qml
+onXChanged: {
+    y = computeFromX()
+}
+```
+
+## ✔ Correcto (declarativo)
+
+```qml
+property int y: computeFromX(x)
+```
+
+Ahora:
+
+* No importa cuándo se evalúe
+* y siempre es coherente con x
+* No dependes del orden de señales
+
+---
+
+# 6. Otro ejemplo realista (UI industrial)
+
+Supón:
+
+```qml
+property real temperature
+property bool overheated
+
+onTemperatureChanged: {
+    overheated = temperature > 80
+}
+```
+
+Estás confiando en:
+
+* Que temperature cambie antes
+* Que overheated se asigne después
+* Que no haya interferencias
+
+Correcto:
+
+```qml
+property bool overheated: temperature > 80
+```
+
+Orden irrelevante.
+Estado consistente.
+
+---
+
+# 7. Problema con múltiples dependencias
+
+Ejemplo incorrecto:
+
+```qml
+property int a
+property int b
+property int sum
+
+onAChanged: sum = a + b
+onBChanged: sum = a + b
+```
+
+Estás asumiendo:
+
+* Que no se ejecutarán en orden inesperado
+* Que no habrá evaluaciones intermedias inconsistentes
+
+Correcto:
+
+```qml
+property int sum: a + b
+```
+
+---
+
+# 8. Signal emission order
+
+Si tienes:
+
+```qml
+Connections {
+    target: backend
+
+    function onStateChanged() {
+        updateUI()
+    }
+
+    function onTemperatureChanged() {
+        updateWarning()
+    }
+}
+```
+
+No puedes asumir que:
+
+* onStateChanged se ejecuta antes que onTemperatureChanged
+* O viceversa
+
+Especialmente si ambos cambios vienen de C++ en una misma transacción.
+
+---
+
+# 9. Error conceptual frecuente
+
+Muchos piensan:
+
+> “Si llamo setA() en C++, luego setB(), en QML se verán en ese orden.”
+
+No necesariamente.
+
+Qt puede:
+
+* Emitir señales
+* Procesarlas en el event loop
+* Agrupar evaluaciones
+
+El orden observable puede variar.
+
+---
+
+# 10. Patrón correcto: estado derivado puro
+
+Siempre que una propiedad dependa de otras:
+
+→ binding declarativo
+
+Nunca:
+
+→ asignación en onXChanged
+
+---
+
+# 11. Cuando sí usar onXChanged
+
+Solo para:
+
+* Logging
+* Efectos secundarios (I/O, animaciones)
+* Interacción externa
+* Debug
+
+Nunca para mantener coherencia interna de estado.
+
+---
+
+# 12. Caso crítico: inicialización
+
+Este bug es muy común:
+
+```qml
+Component.onCompleted: {
+    derived = compute(base)
+}
+```
+
+Pero si `base` cambia después:
+
+→ derived queda inconsistente.
+
+Correcto:
+
+```qml
+property int derived: compute(base)
+```
+
+---
+
+# 13. Impacto en sistemas grandes
+
+En proyectos complejos (cámaras IR, dashboards en tiempo real, integración OPC UA, etc.):
+
+Confiar en orden:
+
+* Introduce bugs intermitentes
+* Dificulta testeo
+* Rompe con optimizaciones futuras
+* Hace que el sistema sea no determinista
+
+---
+
+# 14. Regla arquitectónica
+
+Estado base → propiedades simples
+Estado derivado → bindings
+Efectos secundarios → handlers
+
+Nunca mezclar.
+
+---
+
+# 15. Señales en C++ (muy importante)
+
+Si en C++ haces:
+
+```cpp
+setA(10);
+setB(20);
+```
+
+Y ambos emiten señales:
+
+QML puede recibirlos:
+
+* Separadamente
+* En orden no esperado
+* Incluso colapsados
+
+Si tu lógica depende del orden, estás mal diseñado.
+
+---
+
+# 16. Versión robusta del ejemplo anterior
+
+En vez de:
+
+```qml
+onAChanged: sum = a + b
+onBChanged: sum = a + b
+```
+
+Haz:
+
+```qml
+property int sum: a + b
+```
+
+Y si necesitas efecto:
+
+```qml
+onSumChanged: {
+    console.log("Sum updated:", sum)
+}
+```
+
+---
+
+# 17. Conexión con principios anteriores
+
+Este principio está ligado a:
+
+* Declarative bindings
+* Strong typing
+* Avoid duck typing
+* Single source of truth
+* Unidirectional data flow
+
+Todos forman un bloque coherente.
+
+---
+
+# 18. Resumen técnico
+
+No debes confiar en:
+
+* Orden de evaluación de bindings
+* Orden de ejecución de onXChanged
+* Orden de emisión de señales
+* Orden de señales C++ → QML
+
+Debes confiar en:
+
+* Grafo declarativo
+* Dependencias explícitas
+* Estado derivado puro
+
+---
+
+# Conclusión
+
+Si tu diseño depende del orden de señales o evaluación,
+estás programando contra el modelo de ejecución de QML.
+
+QML es reactivo y basado en dependencias, no secuencial.
+
+
+
+# Use Typed List Properties (QML)
+
+“Typed list properties” significa **declarar listas con un tipo explícito** en QML, en lugar de usar `var` o listas heterogéneas. En Qt/QML esto impacta directamente en:
+
+* **robustez** (contratos claros)
+* **tooling** (qmllint / autocompletado / QML LS)
+* **rendimiento** (menos checks dinámicos)
+* **integración C++/QML** (modelos y APIs predecibles)
+
+---
+
+## 1. Qué NO es una lista tipada (anti-patrón)
+
+```qml
+Item {
+    property var items: []
+}
+```
+
+Problemas:
+
+* `items` puede contener cualquier cosa (mezcla de tipos).
+* Errores se descubren tarde (runtime).
+* Tooling pierde capacidad de análisis.
+* Es un imán para duck typing.
+
+Otro anti-patrón común:
+
+```qml
+property var points: [Qt.point(0,0), "oops", 123]
+```
+
+Eso compila y luego te explota cuando lo usas.
+
+---
+
+## 2. Qué es una lista tipada en QML
+
+### 2.1 `list<T>` (Qt 6 / QML moderno)
+
+```qml
+Item {
+    property list<int> values: [1, 2, 3]
+    property list<real> gains: [0.5, 1.0, 1.5]
+    property list<string> names: ["cam1", "cam2"]
+}
+```
+
+Ventajas:
+
+* Contrato: **solo esos tipos**.
+* Mejor diagnóstico.
+* Menos coerción dinámica.
+
+> Nota: En QML, `real` es el tipo de coma flotante “standard” (double).
+
+---
+
+### 2.2 Listas de objetos QML
+
+Puedes tipar listas de elementos QML/QtQuick:
+
+```qml
+import QtQuick
+
+Item {
+    property list<Item> nodes: []
+}
+```
+
+Y luego almacenar instancias de `Item` (u otros tipos compatibles).
+
+---
+
+## 3. Caso clave: `default property list<T>` (composición)
+
+Este patrón es muy potente para APIs declarativas (tipo “layout/container”).
+
+```qml
+import QtQuick
+
+Item {
+    id: root
+    default property list<Item> content
+
+    // root.content contiene los Items declarados dentro
+}
+```
+
+Uso:
+
+```qml
+MyContainer {
+    Rectangle { width: 10; height: 10 }
+    Text { text: "Hello" }
+}
+```
+
+Aquí, todo lo que metas dentro se agrega a `content` con tipo `Item`.
+
+---
+
+## 4. Diferencia importante: `list<T>` vs `children`
+
+`children` ya es una lista de hijos (Items) manejada por Qt, pero:
+
+* No siempre quieres mezclar “hijos visuales” con “colección lógica”.
+* `children` incluye cosas que no esperas (por ejemplo, elementos creados internamente).
+
+Crear tu propia lista tipada te permite un contrato claro:
+
+```qml
+property list<Item> sensorsUI
+```
+
+---
+
+## 5. Typed list properties vs Model (no confundas conceptos)
+
+**Lista tipada** (`list<T>`) es una colección simple.
+
+Para UI repetitiva con delegates, a menudo conviene un **modelo**:
+
+* `ListModel` (QML)
+* `QAbstractListModel` (C++)
+
+Regla práctica:
+
+* Si solo necesitas “agrupar referencias” → `property list<T>`.
+* Si necesitas “representar datos para views” (ListView/Repeater) → modelo.
+
+Ejemplo: UI repetitiva → mejor un modelo, no una lista de Items.
+
+---
+
+## 6. Ejemplos reales útiles (producción)
+
+### 6.1 Lista tipada de IDs o nombres
+
+```qml
+Item {
+    property list<string> cameraIds: ["IR_0", "IR_1", "IR_2"]
+}
+```
+
+### 6.2 Lista tipada de puntos para dibujar
+
+```qml
+Item {
+    property list<point> polyline: [
+        Qt.point(0, 0),
+        Qt.point(50, 20),
+        Qt.point(80, 60)
+    ]
+}
+```
+
+### 6.3 Lista tipada de “dispositivos” (tipo registrado desde C++)
+
+Si registras un tipo `Device`:
+
+```cpp
+qmlRegisterType<Device>("App", 1, 0, "Device");
+```
+
+En QML:
+
+```qml
+import App 1.0
+
+Item {
+    property list<Device> devices: []
+}
+```
+
+Ahora `devices` solo admite `Device`.
+
+---
+
+## 7. Errores típicos y cómo corregirlos
+
+### Error 1: usar `var` por comodidad
+
+**Corrección:** si sabes el tipo, tipa.
+
+```qml
+// mal
+property var thresholds: []
+
+// bien
+property list<real> thresholds: [0.2, 0.5, 0.8]
+```
+
+---
+
+### Error 2: mezclar “datos” y “UI objects”
+
+Lista de `Item` debería contener UI, no datos puros.
+
+* Datos → `list<int>`, `list<real>`, `list<string>`, o modelo.
+* UI objects → `list<Item>` o tipo derivado.
+
+---
+
+### Error 3: pensar que `list<T>` es mutable como JS
+
+Las `list<T>` en QML no se manipulan igual que un array JS. Dependiendo del caso, es mejor:
+
+* construir la lista completa y asignarla
+* o usar un `ListModel` / `QAbstractListModel` si necesitas inserciones/eliminaciones frecuentes con notificación.
+
+---
+
+## 8. Patrón recomendado: lista tipada + propiedad derivada
+
+Evita recalcular manualmente.
+
+```qml
+Item {
+    property list<real> values: [1.0, 2.0, 3.0]
+    property real average: {
+        if (values.length === 0) return 0
+        let sum = 0
+        for (let i = 0; i < values.length; ++i) sum += values[i]
+        return sum / values.length
+    }
+}
+```
+
+Aquí `average` es declarativo (binding), no imperativo.
+
+---
+
+## 9. Pros / Contras (criterio de elección)
+
+### ✅ Pros
+
+* Contrato explícito (menos duck typing).
+* Mejor tooling y mantenimiento.
+* Mejor optimización.
+* APIs QML más “declarativas”.
+
+### ⚠️ Contras
+
+* Menos flexible si realmente necesitas heterogeneidad.
+* Para colecciones dinámicas complejas, un modelo es superior.
+
+---
+
+## 10. Checklist para aplicarlo bien
+
+* [ ] Evitar `property var list = []` si hay tipo claro.
+* [ ] Usar `property list<T>` para colecciones simples.
+* [ ] Usar `default property list<Item>` para composición declarativa.
+* [ ] Para views, preferir `ListModel` / `QAbstractListModel`.
+* [ ] No mezclar datos y UI en la misma colección.
+
+---
+
+
+
+# Use `required` Properties in Components and Delegates (QML)
+
+`required` es una característica (Qt 6) para declarar **propiedades obligatorias**: el componente **no puede instanciarse** sin que esas propiedades reciban un valor (normalmente por binding) en el punto de uso.
+
+Esto es una herramienta de diseño para:
+
+* imponer **contratos explícitos**
+* eliminar **duck typing**
+* detectar fallos **al cargar QML** (no tarde en runtime)
+* endurecer delegates frente a cambios de modelo
+
+---
+
+## 1. Problema que resuelve
+
+### ❌ Delegate frágil (sin contrato)
+
+```qml
+delegate: Text {
+    text: model.name
+}
+```
+
+Si mañana el modelo cambia `name` por `displayName`:
+
+* `model.name` pasa a `undefined`
+* UI “funciona” pero enseña vacío
+* bug silencioso
+
+Esto es deuda técnica.
+
+---
+
+## 2. Delegate robusto con `required`
+
+### ✅ Delegate con contrato
+
+```qml
+delegate: Item {
+    required property string name
+    required property int age
+
+    Row {
+        Text { text: name }
+        Text { text: age.toString() }
+    }
+}
+```
+
+Uso (ejemplo con `ListView` + `ListModel`):
+
+```qml
+ListView {
+    model: ListModel {
+        ListElement { name: "Alice"; age: 30 }
+        ListElement { name: "Bob";   age: 28 }
+    }
+
+    delegate: Item {
+        required property string name
+        required property int age
+        // ...
+    }
+}
+```
+
+Ahora, si el modelo no proporciona `name` o `age`, QML lo considera un **error** (fallo temprano).
+
+---
+
+## 3. `required` en componentes reutilizables
+
+### 3.1 Sin `required` (API blanda)
+
+```qml
+// WarningBadge.qml
+import QtQuick
+
+Rectangle {
+    property string text: ""
+    property color badgeColor: "red"
+}
+```
+
+Puedes instanciarlo sin `text` y te quedas con un componente “vacío”.
+
+### 3.2 Con `required` (API dura)
+
+```qml
+// WarningBadge.qml
+import QtQuick
+
+Rectangle {
+    required property string text
+    property color badgeColor: "red"
+
+    Text {
+        anchors.centerIn: parent
+        text: parent.text
+    }
+}
+```
+
+Uso correcto:
+
+```qml
+WarningBadge {
+    text: "Overheat"
+}
+```
+
+Si alguien olvida `text`, se detecta al cargar.
+
+---
+
+## 4. `required` en `Component` + `Loader`
+
+Cuando tienes componentes cargados dinámicamente, `required` te evita instancias incompletas.
+
+```qml
+Component {
+    id: cardComponent
+    Rectangle {
+        required property string title
+        required property int value
+        // ...
+    }
+}
+
+Loader {
+    sourceComponent: cardComponent
+    onLoaded: {
+        item.title = "Temp"   // OJO: esto es imperativo y además llega tarde
+        item.value = 42
+    }
+}
+```
+
+**Crítica importante:** asignar después en `onLoaded` es lo contrario de un contrato declarativo. Si el componente tiene `required`, lo ideal es **pasar propiedades antes** (ver siguiente sección).
+
+---
+
+## 5. Cómo “pasar” required properties correctamente
+
+### 5.1 Patrón recomendado: `Loader` + `setSource()` con `properties` (Qt 6)
+
+En Qt 6, `Loader.setSource(url, properties)` (o `setSourceComponent`) permite inyectar propiedades en creación.
+
+Ejemplo conceptual:
+
+```qml
+Loader {
+    id: loader
+    sourceComponent: cardComponent
+    Component.onCompleted: {
+        loader.setSourceComponent(cardComponent, {
+            "title": "Temp",
+            "value": 42
+        })
+    }
+}
+```
+
+Esto satisface `required` **en creación**, no después.
+
+> Si tu versión concreta de Qt o tu estilo arquitectónico no usa `setSourceComponent` con map, entonces la alternativa es no usar `required` para ese caso o refactorizar a composición declarativa (más típico).
+
+### 5.2 Alternativa: composición directa (mejor en UI declarativa)
+
+```qml
+Rectangle {
+    Card {
+        title: "Temp"
+        value: 42
+    }
+}
+```
+
+---
+
+## 6. `required` + tipos: obligación doble
+
+`required` sin tipado es menos útil. El combo correcto es:
+
+```qml
+required property int index
+required property string displayName
+required property real temperature
+```
+
+Esto elimina:
+
+* ausencia del valor
+* tipo incorrecto
+
+---
+
+## 7. `required` y Delegates: contrato contra “model drift”
+
+El mejor caso de uso es delegates, porque el modelo cambia con frecuencia.
+
+### ✅ Delegate blindado
+
+```qml
+delegate: Row {
+    required property string label
+    required property real value
+
+    Text { text: label }
+    Text { text: value.toFixed(1) }
+}
+```
+
+Si alguien cambia el modelo, el delegate falla temprano, no “miente” mostrando vacío.
+
+---
+
+## 8. Errores típicos con `required`
+
+### Error 1: intentar asignar la required property dentro del propio componente
+
+```qml
+Rectangle {
+    required property string title
+    Component.onCompleted: title = "default" // MAL
+}
+```
+
+Esto contradice el contrato: la idea es que **el usuario del componente** lo provea.
+
+Si necesitas default, entonces **no es required** (o necesitas dos propiedades: una required que alimenta otra derivada con fallback explícito, pero eso ya es diseño de API).
+
+---
+
+### Error 2: mezclar `required` con `var`
+
+```qml
+required property var data // flojo
+```
+
+Si es required, normalmente sabes el tipo. Si no lo sabes, probablemente estás aceptando JSON dinámico y tu componente ya no es “contract-driven”.
+
+---
+
+### Error 3: romper el flujo declarativo con asignaciones tardías
+
+Si usas `required`, no la “rellenes” a posteriori con `onLoaded`.
+
+---
+
+## 9. Criterios de uso (pragmáticos)
+
+Usa `required` cuando:
+
+* el componente no tiene sentido sin ese dato (ej: `title`, `model`, `backend`, `deviceId`)
+* el delegate depende de roles concretos
+* quieres que el fallo sea inmediato y visible
+
+No lo uses cuando:
+
+* el componente puede tener defaults útiles
+* la propiedad es opcional
+* el valor llega asincrónico y no controlas la creación (en ese caso diseña un “placeholder state” en lugar de `required`)
+
+---
+
+## 10. Patrón recomendado de “placeholder” (cuando el dato llega tarde)
+
+En lugar de `required`, si el dato llega después:
+
+```qml
+Item {
+    property string title: ""
+    readonly property bool ready: title.length > 0
+
+    Text { text: ready ? title : "Loading..." }
+}
+```
+
+Esto es explícito y evita falsos contratos.
+
+---
+
+## 11. Resumen operativo
+
+* `required property T x` = contrato obligatorio en creación.
+* En delegates, evita “UI silenciosamente rota”.
+* En componentes reutilizables, endurece la API y reduce errores de wiring.
+* No lo combines con asignación tardía imperativa: eso es un antipatrón.
+
+---
+
+# Use String Interpolation (QML / JavaScript)
+
+En QML (Qt 6), usar **string interpolation** significa utilizar *template literals* de JavaScript:
+
+```js
+`texto ${expresión} texto`
+```
+
+en lugar de concatenación clásica con `+`.
+
+No es una preferencia estética.
+Tiene implicaciones en:
+
+* legibilidad
+* mantenimiento
+* reducción de errores
+* claridad declarativa
+* menor ruido sintáctico en bindings
+
+---
+
+# 1. Problema con concatenación clásica
+
+### ❌ Concatenación manual
+
+```qml
+Text {
+    text: "Temperature: " + temperature + " °C"
+}
+```
+
+Problemas:
+
+* Menos legible
+* Conversión implícita poco clara
+* Fácil introducir espacios erróneos
+* Difícil escalar a múltiples variables
+
+Ejemplo más complejo:
+
+```qml
+text: "Device " + id + " | State: " + state + " | FPS: " + fps.toFixed(1)
+```
+
+Esto degrada rápidamente.
+
+---
+
+# 2. Forma correcta: Template literals
+
+### ✅ Interpolación
+
+```qml
+Text {
+    text: `Temperature: ${temperature} °C`
+}
+```
+
+Ejemplo complejo:
+
+```qml
+Text {
+    text: `Device ${deviceId} | State: ${state} | FPS: ${fps.toFixed(1)}`
+}
+```
+
+Más claro.
+Más mantenible.
+Más declarativo.
+
+---
+
+# 3. Ventajas técnicas reales
+
+## 3.1 Legibilidad estructural
+
+Comparación:
+
+```qml
+// concatenación
+"Gain: " + gain + " | Offset: " + offset
+
+// interpolación
+`Gain: ${gain} | Offset: ${offset}`
+```
+
+La interpolación:
+
+* Elimina ruido visual
+* Reduce errores de orden
+* Evita olvidar espacios
+
+---
+
+## 3.2 Mejor manejo de expresiones
+
+```qml
+text: `Average: ${(sum / count).toFixed(2)}`
+```
+
+Con concatenación sería:
+
+```qml
+text: "Average: " + (sum / count).toFixed(2)
+```
+
+Interpolación mantiene estructura natural.
+
+---
+
+## 3.3 Multilínea
+
+```qml
+text: `
+Device: ${deviceId}
+Temperature: ${temperature} °C
+Status: ${status}
+`
+```
+
+Esto es imposible con concatenación limpia.
+
+---
+
+# 4. Interpolación dentro de bindings declarativos
+
+QML bindings funcionan perfectamente con template literals:
+
+```qml
+property string statusLabel: `State: ${backend.state}`
+```
+
+Esto sigue siendo un binding reactivo.
+
+---
+
+# 5. Caso real: UI industrial (tu contexto)
+
+Supón que tienes:
+
+* frame rate
+* temperatura
+* ganancia
+* estado
+
+### ❌ Imperativo + concatenación
+
+```qml
+onDataUpdated: {
+    label.text = "FPS: " + fps + " | Temp: " + temp + " | Gain: " + gain
+}
+```
+
+Mal por:
+
+* imperativo
+* concatenación
+* romper binding
+
+### ✅ Declarativo + interpolación
+
+```qml
+Text {
+    text: `FPS: ${fps} | Temp: ${temperature} °C | Gain: ${gain}`
+}
+```
+
+Robusto.
+Reactivo.
+Claro.
+
+---
+
+# 6. Casos donde es especialmente recomendable
+
+## 6.1 Logs
+
+```qml
+console.log(`Device ${id} changed state to ${state}`)
+```
+
+## 6.2 URLs dinámicas
+
+```qml
+property url endpoint: `http://${host}:${port}/api`
+```
+
+## 6.3 Keys o identificadores
+
+```qml
+property string key: `${deviceId}_${channel}`
+```
+
+---
+
+# 7. Errores comunes
+
+## ❌ Usar comillas normales en vez de backticks
+
+Incorrecto:
+
+```qml
+text: "Value: ${value}"
+```
+
+Esto NO interpola.
+
+Correcto:
+
+```qml
+text: `Value: ${value}`
+```
+
+---
+
+## ❌ Mezclar concatenación e interpolación
+
+```qml
+text: "Value: " + `${value}`  // innecesario
+```
+
+Si usas template literal, úsalo completo.
+
+---
+
+## ❌ Abusar de lógica compleja dentro de `${}`
+
+Esto es mala práctica:
+
+```qml
+text: `${computeVeryComplexThing(a, b, c)}`
+```
+
+Mejor:
+
+```qml
+property string displayText: computeVeryComplexThing(a, b, c)
+Text { text: displayText }
+```
+
+Mantén bindings limpios.
+
+---
+
+# 8. Rendimiento
+
+No hay penalización relevante respecto a concatenación.
+
+El coste real viene de:
+
+* complejidad de la expresión
+* número de re-evaluaciones
+* dependencias del binding
+
+No del uso de interpolación.
+
+---
+
+# 9. Relación con principios anteriores
+
+String interpolation encaja con:
+
+* Declarative bindings
+* Strong typing
+* Evitar lógica imperativa innecesaria
+* Código expresivo y mantenible
+
+Es coherente con una arquitectura declarativa fuerte.
+
+---
+
+# 10. Regla práctica para proyectos serios
+
+En QML moderno:
+
+* Nunca uses `+` para strings salvo casos extremadamente simples.
+* Siempre usa template literals.
+* Mantén las expresiones cortas.
+* Extrae lógica compleja a propiedades derivadas.
+
+---
+
+# 11. Ejemplo final bien diseñado
+
+```qml
+Item {
+    property string deviceId
+    property real temperature
+    property real fps
+    property int state
+
+    readonly property string statusText:
+        `Device ${deviceId} | FPS ${fps.toFixed(1)} | Temp ${temperature.toFixed(1)} °C | State ${state}`
+
+    Text {
+        text: statusText
+    }
+}
+```
+
+Estado base → propiedades simples
+Estado derivado → interpolación declarativa
+UI → depende solo de estado derivado
+
+Sin imperativo.
+Sin concatenación.
+Sin orden implícito.
+
+---
+
+# Use Explicit URL Resolution (QML)
+
+En QML, “Use Explicit URL Resolution” significa **no depender de la resolución implícita de rutas relativas**, sino declarar de forma clara y determinista cómo se resuelven los recursos (`url`, `source`, `Loader`, `Image`, `FontLoader`, etc.).
+
+Esto es especialmente crítico en:
+
+* proyectos grandes con muchos módulos QML
+* aplicaciones que usan `qmldir` / módulos versionados
+* `qrc` (Qt Resource System)
+* despliegues multiplataforma
+* `qmltc` / compilación AOT
+
+---
+
+# 1. El problema: resolución implícita ambigua
+
+QML resuelve rutas relativas según:
+
+1. El archivo actual
+2. El `baseUrl` del motor
+3. El módulo desde el que se importa
+4. El sistema de recursos (`qrc:`)
+
+Ejemplo ambiguo:
+
+```qml
+Image {
+    source: "icons/warning.png"
+}
+```
+
+¿Desde dónde se resuelve?
+
+* Desde el archivo actual.
+* Pero si mueves el archivo, se rompe.
+* Si cambias estructura modular, se rompe.
+* Si compilas con `qmltc`, puede comportarse diferente.
+
+Eso introduce fragilidad.
+
+---
+
+# 2. Enfoque correcto: URLs explícitas
+
+## 2.1 Usar `qrc:/` explícito
+
+Si el recurso está en el sistema de recursos:
+
+```qml
+Image {
+    source: "qrc:/icons/warning.png"
+}
+```
+
+Esto es:
+
+* Determinista
+* Independiente de la ubicación del archivo
+* Seguro frente a refactorizaciones
+
+---
+
+## 2.2 Usar `Qt.resolvedUrl()`
+
+Cuando necesitas mantener relativa pero explícita:
+
+```qml
+Image {
+    source: Qt.resolvedUrl("icons/warning.png")
+}
+```
+
+Esto fuerza la resolución contra el archivo actual de manera explícita.
+
+Útil cuando el componente puede cargarse dinámicamente.
+
+---
+
+## 2.3 Usar `import` modular correcto
+
+Si tienes un módulo QML:
+
+```
+MyApp/
+  assets/
+  components/
+  qmldir
+```
+
+Mejor importar el módulo:
+
+```qml
+import MyApp 1.0
+```
+
+Y referenciar recursos desde el módulo con rutas claras.
+
+---
+
+# 3. Caso crítico: `Loader`
+
+### ❌ Implícito
+
+```qml
+Loader {
+    source: "MyPage.qml"
+}
+```
+
+Esto depende del contexto actual.
+
+---
+
+### ✅ Explícito
+
+Si es recurso:
+
+```qml
+Loader {
+    source: "qrc:/pages/MyPage.qml"
+}
+```
+
+Si es relativo al archivo actual:
+
+```qml
+Loader {
+    source: Qt.resolvedUrl("MyPage.qml")
+}
+```
+
+---
+
+# 4. Caso real: proyectos industriales grandes
+
+En aplicaciones con:
+
+* Múltiples carpetas
+* Plugins QML
+* Submódulos
+* Backend C++ que crea QQmlComponent
+
+La resolución implícita puede fallar porque:
+
+* El `baseUrl` cambia
+* El componente se carga desde C++
+* El contexto no es el que creías
+
+Ejemplo típico en C++:
+
+```cpp
+QQmlComponent comp(&engine, QUrl("MyPage.qml"));
+```
+
+Si no es explícito, puede no encontrar el archivo en producción.
+
+Correcto:
+
+```cpp
+QQmlComponent comp(&engine, QUrl("qrc:/pages/MyPage.qml"));
+```
+
+---
+
+# 5. Diferencia entre tipos de URL
+
+En QML, `url` es un tipo real, no un string.
+
+Ejemplo:
+
+```qml
+property url endpoint: "http://localhost:8080/api"
+```
+
+Evita:
+
+```qml
+property string endpoint
+```
+
+Si es una URL, usa `url`.
+
+Esto permite validación y coherencia semántica.
+
+---
+
+# 6. Evitar dependencias ocultas de estructura
+
+Supón:
+
+```
+views/
+  Dashboard.qml
+  components/
+    Gauge.qml
+```
+
+Dentro de `Gauge.qml`:
+
+```qml
+Image { source: "../icons/needle.png" }
+```
+
+Esto es frágil.
+
+Si mueves `Gauge.qml`, se rompe.
+
+Mejor:
+
+```qml
+Image { source: "qrc:/icons/needle.png" }
+```
+
+---
+
+# 7. Relación con qmltc y compilación estática
+
+Con Qt 6 y `qmltc`:
+
+* Las rutas implícitas pueden no resolverse como esperas.
+* Los módulos deben ser deterministas.
+* El uso explícito mejora el análisis estático.
+
+En sistemas donde quieres máxima robustez (por ejemplo UI para cámaras IR, herramientas industriales, etc.), esto importa.
+
+---
+
+# 8. Caso especial: recursos externos vs internos
+
+Si cargas imágenes desde red:
+
+```qml
+Image {
+    source: `http://${host}:${port}/image`
+}
+```
+
+Aquí sí tiene sentido interpolación dinámica.
+
+Pero si es asset interno:
+
+→ usa `qrc:/`.
+
+No mezcles ambos conceptos.
+
+---
+
+# 9. Patrón recomendado (estructura limpia)
+
+## 9.1 Recursos siempre en `qrc`
+
+* icons
+* fonts
+* imágenes
+* QML estático
+
+Y siempre referenciados como:
+
+```qml
+"qrc:/icons/..."
+```
+
+---
+
+## 9.2 Componentes dinámicos siempre con URL explícita
+
+```qml
+Loader {
+    source: Qt.resolvedUrl("SubView.qml")
+}
+```
+
+o
+
+```qml
+source: "qrc:/views/SubView.qml"
+```
+
+---
+
+# 10. Errores típicos
+
+### ❌ Usar rutas relativas profundas
+
+```qml
+source: "../../../../../icons/x.png"
+```
+
+Eso es una bomba futura.
+
+---
+
+### ❌ Confiar en el working directory
+
+En producción, el working directory puede cambiar.
+
+---
+
+### ❌ Usar string en vez de `url`
+
+Si algo es conceptualmente una URL, tiparlo como `url`.
+
+---
+
+# 11. Resumen técnico
+
+No confíes en:
+
+* resolución implícita
+* ubicación actual del archivo
+* baseUrl del engine
+* working directory
+
+Confía en:
+
+* `qrc:/`
+* `Qt.resolvedUrl()`
+* tipos `url`
+* módulos bien definidos
+
+---
+
+# 12. Regla arquitectónica fuerte
+
+En proyectos medianos/grandes:
+
+* Ningún recurso crítico debe depender de rutas relativas ambiguas.
+* Ningún Loader debe usar rutas implícitas.
+* Toda URL importante debe ser determinista.
+
+---
+
+# Delegates Should Not Store State (QML)
+
+Este principio es crítico en cualquier UI basada en `ListView`, `GridView`, `Repeater`, etc.
+
+> Un delegate no es una entidad de datos.
+> Es una representación visual temporal de un elemento del modelo.
+
+Si un delegate almacena estado interno, introduces:
+
+* incoherencias
+* bugs intermitentes
+* problemas con reciclado (view recycling)
+* pérdida de sincronización con el modelo
+
+---
+
+# 1. Por qué este principio existe
+
+En `ListView` y similares:
+
+* Los delegates se **crean y destruyen dinámicamente**
+* Se **reciclan** cuando haces scroll
+* No existe una instancia fija por elemento del modelo
+
+Por tanto:
+
+> El delegate no es el dueño del estado.
+
+---
+
+# 2. Error clásico
+
+```qml
+ListView {
+    model: myModel
+
+    delegate: Item {
+        property bool selected: false
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: selected = !selected
+        }
+
+        Rectangle {
+            color: selected ? "blue" : "white"
+        }
+    }
+}
+```
+
+Esto parece correcto.
+
+Pero cuando haces scroll:
+
+* El delegate se recicla.
+* `selected` puede quedarse en `true`.
+* El elemento visual ahora representa otro índice.
+* Resultado: selección incorrecta.
+
+Bug típico.
+
+---
+
+# 3. Regla fundamental
+
+> El estado pertenece al modelo, no al delegate.
+
+---
+
+# 4. Solución correcta: mover estado al modelo
+
+### 4.1 Con `ListModel` QML
+
+```qml
+ListModel {
+    id: myModel
+    ListElement { name: "A"; selected: false }
+    ListElement { name: "B"; selected: false }
+}
+```
+
+Delegate:
+
+```qml
+delegate: Item {
+    required property bool selected
+    required property string name
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            myModel.setProperty(index, "selected", !selected)
+        }
+    }
+
+    Rectangle {
+        color: selected ? "blue" : "white"
+    }
+}
+```
+
+Ahora:
+
+* El estado vive en el modelo.
+* El delegate solo refleja estado.
+* El reciclado no rompe nada.
+
+---
+
+# 5. Con modelo C++ (`QAbstractListModel`)
+
+Lo correcto es exponer el rol `selected`.
+
+En C++:
+
+```cpp
+enum Roles {
+    NameRole = Qt::UserRole + 1,
+    SelectedRole
+};
+```
+
+Delegate:
+
+```qml
+delegate: Item {
+    required property bool selected
+    required property string name
+
+    Rectangle {
+        color: selected ? "blue" : "white"
+    }
+}
+```
+
+El estado está centralizado.
+
+---
+
+# 6. Qué sí puede tener un delegate
+
+El delegate puede tener:
+
+* estado puramente visual efímero
+* animaciones
+* hover temporal
+* propiedades derivadas
+
+Ejemplo válido:
+
+```qml
+property bool hovered: false
+```
+
+Si solo controla efecto visual temporal y no representa estado lógico persistente.
+
+---
+
+# 7. Diferencia clave: estado persistente vs efímero
+
+| Tipo de estado        | ¿Debe ir en delegate? |
+| --------------------- | --------------------- |
+| Selección             | ❌ No                  |
+| Activado/desactivado  | ❌ No                  |
+| Datos del dispositivo | ❌ No                  |
+| Hover                 | ✔ Sí                  |
+| Animación activa      | ✔ Sí                  |
+| Opacidad temporal     | ✔ Sí                  |
+
+---
+
+# 8. Error más sutil: almacenar datos derivados
+
+Ejemplo incorrecto:
+
+```qml
+property real computedValue
+
+Component.onCompleted: {
+    computedValue = expensiveCalculation(model.value)
+}
+```
+
+Si `model.value` cambia:
+
+* `computedValue` queda desincronizado.
+
+Correcto:
+
+```qml
+property real computedValue: expensiveCalculation(model.value)
+```
+
+Binding declarativo.
+Sin almacenamiento interno.
+
+---
+
+# 9. Interacción con reciclado (muy importante)
+
+`ListView` puede:
+
+* reutilizar delegates
+* reasignar nuevos `modelData`
+* cambiar `index`
+
+Si el delegate guarda estado interno, ese estado:
+
+* no corresponde al nuevo elemento
+* produce comportamiento errático
+
+---
+
+# 10. Patrón correcto: Unidirectional Data Flow
+
+Modelo → Delegate → Usuario → Modelo
+
+Nunca:
+
+Delegate → mantiene estado interno → Modelo opcional
+
+Siempre:
+
+Delegate comunica intención → Modelo cambia → Delegate reacciona
+
+---
+
+# 11. Ejemplo completo bien diseñado
+
+```qml
+ListView {
+    model: deviceModel
+
+    delegate: Rectangle {
+        required property string deviceId
+        required property bool active
+
+        color: active ? "green" : "gray"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                deviceModel.toggleActive(index)
+            }
+        }
+    }
+}
+```
+
+El delegate:
+
+* no almacena nada
+* solo refleja `active`
+* notifica intención
+
+---
+
+# 12. Caso complejo: selección única
+
+Nunca hagas esto:
+
+```qml
+property bool selected
+```
+
+Haz esto en el modelo:
+
+```qml
+ListModel {
+    property int selectedIndex: -1
+}
+```
+
+Y el delegate:
+
+```qml
+color: index === myModel.selectedIndex ? "blue" : "white"
+```
+
+Esto elimina estados duplicados.
+
+---
+
+# 13. Relación con principios anteriores
+
+Este principio está alineado con:
+
+* Declarative bindings
+* Single source of truth
+* Avoid duck typing
+* Required properties
+* No reliance on evaluation order
+
+Todos apuntan a lo mismo:
+
+> El estado debe ser único y centralizado.
+
+---
+
+# 14. Excepción legítima
+
+En `Repeater` (no reciclado), el riesgo es menor.
+
+Pero incluso ahí:
+
+* Si el estado es lógico, debe estar fuera.
+* Solo estado puramente visual puede estar dentro.
+
+---
+
+# 15. Resumen técnico
+
+No almacenar en delegate:
+
+* selección
+* flags persistentes
+* datos del backend
+* resultados de cálculo
+
+Sí puede almacenar:
+
+* hover
+* animaciones
+* estados transitorios puramente visuales
+
+---
+
+# Conclusión
+
+Un delegate es una vista efímera del modelo.
+
+Si almacena estado persistente, estás violando el diseño de QML.
+
+En aplicaciones complejas (dashboards industriales, cámaras, paneles con cientos de items), ignorar este principio produce bugs muy difíciles de rastrear.
+
+---
+
+# Use Group Property Syntax (QML)
+
+**Group Property Syntax** consiste en usar la forma agrupada de propiedades cuando un tipo expone una propiedad compuesta (sub-propiedades), en lugar de asignarlas una por una con prefijo repetido.
+
+No es solo estética: mejora legibilidad, reduce errores y hace más explícito el contrato del tipo.
+
+---
+
+## 1. Qué es una propiedad “group”
+
+Muchos tipos QML exponen propiedades que son objetos compuestos con sub-propiedades:
+
+* `anchors`
+* `font`
+* `border`
+* `gradient`
+* `Layout`
+* `layer`
+* `ScrollBar.vertical`
+* `ScrollBar.horizontal`
+
+En vez de escribir:
+
+```qml
+Rectangle {
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+}
+```
+
+Usa sintaxis agrupada:
+
+```qml
+Rectangle {
+    anchors {
+        left: parent.left
+        right: parent.right
+        top: parent.top
+        bottom: parent.bottom
+    }
+}
+```
+
+---
+
+## 2. Beneficios reales
+
+### 2.1 Cohesión visual
+
+Agrupa semánticamente lo relacionado.
+
+Comparación:
+
+```qml
+font.pixelSize: 14
+font.bold: true
+font.family: "Inter"
+```
+
+vs
+
+```qml
+font {
+    pixelSize: 14
+    bold: true
+    family: "Inter"
+}
+```
+
+La segunda comunica claramente: *estoy configurando la fuente*.
+
+---
+
+### 2.2 Menos duplicación
+
+Evita repetir el prefijo:
+
+```qml
+border.width: 1
+border.color: "red"
+```
+
+vs
+
+```qml
+border {
+    width: 1
+    color: "red"
+}
+```
+
+Menos ruido, menos posibilidad de error tipográfico.
+
+---
+
+### 2.3 Mejor mantenibilidad
+
+Si mañana agregas más propiedades del mismo grupo:
+
+```qml
+border {
+    width: 1
+    color: "red"
+    pixelAligned: true
+}
+```
+
+Todo queda en el mismo bloque.
+
+---
+
+## 3. Ejemplos comunes
+
+### 3.1 anchors
+
+Correcto:
+
+```qml
+Item {
+    anchors {
+        fill: parent
+        margins: 10
+    }
+}
+```
+
+---
+
+### 3.2 font
+
+```qml
+Text {
+    font {
+        family: "Roboto"
+        pixelSize: 16
+        bold: true
+    }
+}
+```
+
+---
+
+### 3.3 border
+
+```qml
+Rectangle {
+    border {
+        width: 2
+        color: "orange"
+    }
+}
+```
+
+---
+
+### 3.4 Layout (QtQuick.Layouts)
+
+```qml
+import QtQuick.Layouts
+
+Item {
+    Layout {
+        fillWidth: true
+        preferredHeight: 40
+    }
+}
+```
+
+Mucho más limpio que repetir `Layout.`.
+
+---
+
+### 3.5 layer
+
+```qml
+Rectangle {
+    layer {
+        enabled: true
+        smooth: true
+        mipmap: true
+    }
+}
+```
+
+---
+
+## 4. Cuándo es obligatorio usar group syntax
+
+Algunas propiedades son **read-only object properties** (por ejemplo `anchors`).
+No puedes hacer:
+
+```qml
+anchors = something   // inválido
+```
+
+Solo puedes modificar sub-propiedades.
+
+En estos casos, la sintaxis agrupada es natural.
+
+---
+
+## 5. Error frecuente
+
+### ❌ Mezclar estilos
+
+```qml
+border.width: 1
+border {
+    color: "red"
+}
+```
+
+Inconsistente.
+
+Elige uno y sé coherente.
+
+---
+
+## 6. Cuándo NO usar group syntax
+
+Si solo estás asignando una propiedad del grupo y no hay previsión de más, ambas formas son válidas:
+
+```qml
+font.pixelSize: 14
+```
+
+Pero en componentes reutilizables o UI complejas, la agrupación mejora claridad.
+
+---
+
+## 7. Relación con diseño declarativo
+
+Group property syntax:
+
+* Refuerza cohesión semántica
+* Reduce ruido
+* Hace que el archivo QML sea más declarativo
+* Facilita escaneo visual (muy importante en UIs grandes)
+
+En proyectos industriales con cientos de líneas por componente, esto impacta directamente en mantenibilidad.
+
+---
+
+## 8. Ejemplo completo bien estructurado
+
+```qml
+Rectangle {
+    width: 200
+    height: 80
+    color: "#1A1D23"
+
+    anchors {
+        horizontalCenter: parent.horizontalCenter
+        top: parent.top
+        topMargin: 20
+    }
+
+    border {
+        width: 1
+        color: "#2E3440"
+    }
+
+    Text {
+        anchors.centerIn: parent
+
+        font {
+            family: "Inter"
+            pixelSize: 16
+            bold: true
+        }
+
+        color: "white"
+        text: "Dashboard"
+    }
+}
+```
+
+Todo agrupado por intención.
+
+---
+
+## 9. Impacto arquitectónico
+
+Este principio, junto con:
+
+* Strong typing
+* Required properties
+* Declarative bindings
+
+apunta a lo mismo:
+
+> Código QML expresivo, coherente y fácil de razonar.
+
+No cambia el runtime, pero cambia drásticamente la calidad del código.
+
+---
+
+## 10. Regla práctica
+
+* Si modificas más de una sub-propiedad → usa group syntax.
+* No mezcles estilos.
+* Mantén coherencia en todo el proyecto.
+* Úsalo especialmente en componentes reutilizables.
+
+---
+
+# Deprecated Injected Signal Parameters (QML)
+
+En QML “**injected signal parameters**” se refiere a un comportamiento histórico: **en un handler de señal podías usar los parámetros de la señal como “variables mágicas” dentro del bloque**, sin declararlos explícitamente.
+
+Eso se está **deprecando** en Qt 6 (y el tooling lo penaliza) porque genera código:
+
+* ambiguo (colisiones con propiedades/ids/variables del scope),
+* difícil de analizar estáticamente (qmllint / QML LS / qmltc),
+* frágil al refactorizar (cambiar nombre de parámetro rompe handlers sin que se vea).
+
+La recomendación actual es: **declara los parámetros explícitamente** (función o arrow function).
+
+---
+
+## 1) Qué es “inyección” (lo deprecado)
+
+Si tienes una señal:
+
+```qml
+QtObject {
+    signal valueChanged(newValue: int)
+}
+```
+
+Antes era común escribir:
+
+```qml
+onValueChanged: {
+    console.log(newValue)   // <-- "newValue" está inyectado
+}
+```
+
+Aquí **no hay función con argumentos**, y aun así `newValue` aparece como variable disponible. Eso es la “inyección”.
+
+### Problema práctico
+
+Si en ese mismo scope existe también una propiedad `newValue`, un `id` o una variable local con ese nombre, el significado puede ser confuso o directamente incorrecto.
+
+---
+
+## 2) Migración correcta (lo recomendado)
+
+### Opción A: handler como función explícita (clara y compatible)
+
+```qml
+onValueChanged: function(newValue) {
+    console.log(newValue)
+}
+```
+
+### Opción B: arrow function (más compacta)
+
+```qml
+onValueChanged: (newValue) => {
+    console.log(newValue)
+}
+```
+
+Ambas eliminan la ambigüedad: el parámetro **es local** al handler.
+
+---
+
+## 3) Caso típico: MouseArea / Pointer Handlers
+
+Ejemplo clásico con `MouseArea.clicked(mouse)`:
+
+### ❌ (inyección) deprecado
+
+```qml
+MouseArea {
+    onClicked: {
+        console.log(mouse.x, mouse.y) // "mouse" inyectado
+    }
+}
+```
+
+### ✅ recomendado
+
+```qml
+MouseArea {
+    onClicked: (mouse) => {
+        console.log(mouse.x, mouse.y)
+    }
+}
+```
+
+---
+
+## 4) `Connections`: el patrón más robusto
+
+Cuando conectas señales de un objeto externo, evita el estilo antiguo y usa **métodos con firma**.
+
+### ✅ recomendado (Qt 6)
+
+```qml
+Connections {
+    target: backend
+    function onStateChanged(state) {
+        console.log(state)
+    }
+}
+```
+
+Esto es particularmente importante en proyectos grandes porque:
+
+* es analizables por tooling,
+* es más “buscable” (refactor),
+* evita colisiones de nombres con propiedades del componente.
+
+---
+
+## 5) Por qué NO debes ignorar esto (impacto real)
+
+### 5.1 Colisiones silenciosas
+
+Si tienes:
+
+```qml
+Item {
+    property int state: 0
+    Connections {
+        target: backend
+        onStateChanged: {
+            console.log(state) // ¿propiedad `state` o parámetro `state`?
+        }
+    }
+}
+```
+
+Ese “state” es una bomba: depende de reglas de scope y nombres.
+
+Con firma explícita se elimina el riesgo:
+
+```qml
+Connections {
+    target: backend
+    onStateChanged: (newState) => console.log(newState)
+}
+```
+
+### 5.2 Tooling / qmltc
+
+La inyección dificulta el análisis estático y la compilación AOT. En código serio, eso se traduce en menos warnings útiles y más bugs tardíos.
+
+---
+
+## 6) Regla operativa
+
+**Siempre** que uses una señal con parámetros:
+
+* **No** uses el bloque `{ ... }` esperando variables inyectadas.
+* **Sí** usa `function(...) { ... }` o `(…) => { … }`.
+
+Ejemplos rápidos:
+
+```qml
+onTextChanged: (text) => console.log(text)
+onError: function(code, message) { log(code, message) }
+```
+
+---
+
+## 7) Checklist para auditar tu código
+
+Busca y refactoriza:
+
+* `onClicked: { ... mouse ... }`
+* `onTriggered: { ... checked ... }`
+* `Connections { onXxx: { ... paramName ... } }`
+
+y conviértelo a:
+
+* `onXxx: (paramName) => { ... }`
+* o `function onXxx(paramName) { ... }` en `Connections`
+
+---
+
+# Prefer UI Interaction Signals Over Changed Signals (QML)
+
+Este principio es sutil pero fundamental en aplicaciones bien diseñadas:
+
+> Cuando reacciones a una acción del usuario, usa la señal de interacción específica (`clicked`, `toggled`, `editingFinished`, `activated`, etc.) en lugar de la señal genérica `onXChanged`.
+
+El motivo es separar claramente:
+
+* **interacción del usuario**
+* **cambios de estado**
+* **actualizaciones programáticas**
+
+Si mezclas ambos, introduces efectos colaterales difíciles de controlar.
+
+---
+
+# 1. El problema con `onXChanged`
+
+Muchos controles exponen:
+
+```qml
+property bool checked
+signal toggled(bool checked)
+```
+
+Y es común ver esto:
+
+```qml
+CheckBox {
+    onCheckedChanged: {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+Esto parece correcto, pero no lo es.
+
+## Problema:
+
+`checked` puede cambiar:
+
+* Por clic del usuario.
+* Por actualización desde el backend.
+* Por binding reactivo.
+* Por inicialización.
+
+No sabes el origen del cambio.
+
+Eso rompe el flujo unidireccional.
+
+---
+
+# 2. La forma correcta
+
+Usa la señal específica de interacción:
+
+```qml
+CheckBox {
+    onToggled: (checked) => {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+Ahora:
+
+* Solo reaccionas cuando el usuario interactúa.
+* No cuando el estado cambia programáticamente.
+* No generas loops involuntarios.
+
+---
+
+# 3. Ejemplo real de bug típico
+
+Supón arquitectura bidireccional mal diseñada:
+
+```qml
+CheckBox {
+    checked: backend.featureEnabled
+
+    onCheckedChanged: {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+Secuencia posible:
+
+1. Usuario hace clic.
+2. `checked` cambia.
+3. `setFeatureEnabled` se llama.
+4. Backend emite señal.
+5. `checked` vuelve a cambiar.
+6. `onCheckedChanged` se vuelve a disparar.
+
+Puedes crear:
+
+* loops
+* doble escritura
+* tráfico innecesario
+* glitches visuales
+
+---
+
+# 4. Versión robusta
+
+```qml
+CheckBox {
+    checked: backend.featureEnabled
+
+    onToggled: (checked) => {
+        backend.setFeatureEnabled(checked)
+    }
+}
+```
+
+El binding mantiene sincronización.
+La señal de interacción comunica intención.
+
+Separación clara.
+
+---
+
+# 5. Ejemplos por tipo de control
+
+## 5.1 Button
+
+❌ Incorrecto:
+
+```qml
+onPressedChanged: { doSomething() }
+```
+
+✅ Correcto:
+
+```qml
+onClicked: { doSomething() }
+```
+
+---
+
+## 5.2 TextField
+
+❌ Incorrecto:
+
+```qml
+onTextChanged: {
+    backend.setName(text)
+}
+```
+
+Esto se dispara en cada carácter.
+
+✅ Mejor:
+
+```qml
+onEditingFinished: {
+    backend.setName(text)
+}
+```
+
+O si quieres respuesta inmediata:
+
+```qml
+onAccepted: { ... }
+```
+
+Depende del caso.
+
+---
+
+## 5.3 ComboBox
+
+❌ Incorrecto:
+
+```qml
+onCurrentIndexChanged: {
+    backend.setMode(currentIndex)
+}
+```
+
+Puede cambiar por binding.
+
+✅ Correcto:
+
+```qml
+onActivated: (index) => {
+    backend.setMode(index)
+}
+```
+
+---
+
+## 6. Diferencia conceptual clave
+
+| Señal                                     | Significado                           |
+| ----------------------------------------- | ------------------------------------- |
+| `onXChanged`                              | El estado cambió (origen desconocido) |
+| `onClicked` / `onToggled` / `onActivated` | El usuario interactuó                 |
+
+No son equivalentes.
+
+---
+
+# 7. Regla arquitectónica fuerte
+
+UI debe comunicar **intención del usuario**, no reaccionar a cambios de estado.
+
+Flujo correcto:
+
+Usuario → señal de interacción → backend
+Backend → actualiza estado → binding actualiza UI
+
+Nunca:
+
+UI → reacciona a cambio → backend → backend → UI → loop
+
+---
+
+# 8. Caso industrial (tu contexto real)
+
+Supón:
+
+* Slider controla ganancia de cámara.
+* Backend puede cambiar ganancia automáticamente (auto-exposure).
+
+❌ Incorrecto:
+
+```qml
+Slider {
+    value: backend.gain
+
+    onValueChanged: {
+        backend.setGain(value)
+    }
+}
+```
+
+Si backend cambia gain, disparas setGain otra vez.
+
+---
+
+✅ Correcto:
+
+```qml
+Slider {
+    value: backend.gain
+
+    onMoved: (value) => {
+        backend.setGain(value)
+    }
+}
+```
+
+Ahora:
+
+* Solo cuando el usuario mueve.
+* No cuando backend ajusta automáticamente.
+
+Sistema estable.
+
+---
+
+# 9. Cuándo sí usar `onXChanged`
+
+Solo para:
+
+* animaciones
+* logging
+* efectos secundarios puramente visuales
+* cálculos derivados internos
+
+Nunca para comunicar intención al backend.
+
+---
+
+# 10. Relación con principios anteriores
+
+Este principio encaja con:
+
+* Declarative bindings
+* Delegates should not store state
+* Avoid duck typing
+* No reliance on signal order
+* Single source of truth
+
+Todos refuerzan el mismo modelo:
+
+> Estado centralizado + UI declarativa + interacción explícita.
+
+---
+
+# 11. Checklist práctico
+
+En tu proyecto, revisa:
+
+* `onCheckedChanged`
+* `onCurrentIndexChanged`
+* `onValueChanged`
+* `onTextChanged`
+
+Y evalúa:
+
+¿Estoy reaccionando a interacción o a cambio de estado?
+
+Si es interacción → usa señal específica.
+
+---
+
+# 12. Resumen técnico
+
+Preferir señales de interacción:
+
+* evita loops
+* evita ambigüedad de origen
+* refuerza arquitectura unidireccional
+* mejora claridad semántica
+* reduce bugs intermitentes
+
+---
+
+# Use Compile-Time Style Selection (Qt Quick Controls)
+
+En **Qt Quick Controls 2**, el *style* (Material, Fusion, Imagine, iOS, etc.) puede elegirse:
+
+* en **runtime** (variable de entorno, `QQuickStyle::setStyle()`)
+* en **compile time** (configuración del build / qtquickcontrols2.conf / flags)
+
+La recomendación para aplicaciones serias es:
+
+> Seleccionar el style en compile-time siempre que sea posible.
+
+---
+
+# 1. Qué significa realmente “compile-time style selection”
+
+Significa que el style queda **fijado en el binario** y no depende de:
+
+* variable de entorno (`QT_QUICK_CONTROLS_STYLE`)
+* código dinámico
+* sistema operativo
+* configuración externa
+
+Ejemplo típico (C++):
+
+```cpp
+#include <QQuickStyle>
+
+int main(int argc, char *argv[])
+{
+    QQuickStyle::setStyle("Material");  // se fija antes de crear la app
+    QGuiApplication app(argc, argv);
+    ...
+}
+```
+
+O mediante `qtquickcontrols2.conf`.
+
+En cambio, si permites que el style se elija dinámicamente por entorno, ya no es compile-time puro.
+
+---
+
+# 2. Por qué es importante
+
+## 2.1 Determinismo visual
+
+Si no lo fijas:
+
+* En Linux puede salir Fusion.
+* En Windows puede salir Windows style.
+* En macOS puede salir macOS style.
+
+Tu UI cambia sin que tú lo controles.
+
+En sistemas industriales o herramientas técnicas esto es inaceptable.
+
+---
+
+## 2.2 Rendimiento y tamaño
+
+Cuando el style es fijo:
+
+* Solo se incluye el style seleccionado.
+* No se cargan assets innecesarios.
+* El arranque es más predecible.
+
+En entornos embebidos esto importa.
+
+---
+
+## 2.3 Compatibilidad con qmltc / AOT
+
+La compilación estática de QML funciona mejor si el style es fijo.
+
+La selección dinámica:
+
+* dificulta análisis estático
+* complica empaquetado
+* introduce dependencias ocultas
+
+---
+
+# 3. Problema con selección en runtime
+
+Ejemplo incorrecto:
+
+```bash
+QT_QUICK_CONTROLS_STYLE=Material ./app
+```
+
+O:
+
+```cpp
+if (someConfig)
+    QQuickStyle::setStyle("Material");
+else
+    QQuickStyle::setStyle("Fusion");
+```
+
+Esto:
+
+* multiplica combinaciones a testear
+* complica QA
+* rompe consistencia visual
+
+---
+
+# 4. Cómo hacerlo correctamente
+
+## Opción 1: `qtquickcontrols2.conf` (recomendado)
+
+Archivo:
+
+```
+qtquickcontrols2.conf
+```
+
+Contenido:
+
+```
+[Controls]
+Style=Material
+```
+
+Colócalo en recursos (`qrc`) o junto al ejecutable.
+
+Esto fija el style de forma determinista.
+
+---
+
+## Opción 2: Forzar en `main.cpp`
+
+```cpp
+QQuickStyle::setStyle("Material");
+```
+
+Debe hacerse **antes** de crear `QGuiApplication`.
+
+---
+
+## Opción 3: CMake (control de dependencias)
+
+En proyectos grandes puedes controlar qué styles se construyen:
+
+```cmake
+qt_add_qml_module(...)
+```
+
+Y limitar dependencias innecesarias.
+
+---
+
+# 5. Qué styles existen
+
+En Qt 6 (Qt Quick Controls 2):
+
+* Material
+* Fusion
+* Imagine
+* iOS
+* macOS
+* Universal
+
+Cada uno tiene:
+
+* métricas distintas
+* espaciados distintos
+* animaciones distintas
+* assets distintos
+
+No son equivalentes visualmente.
+
+---
+
+# 6. Caso real (dashboard industrial)
+
+Si tu aplicación controla:
+
+* cámaras
+* hardware
+* sistemas de producción
+
+No quieres que:
+
+* el padding cambie
+* el tamaño de botones cambie
+* el comportamiento del focus cambie
+
+Un cambio de style puede romper layout cuidadosamente ajustado.
+
+---
+
+# 7. Errores frecuentes
+
+## ❌ Mezclar estilos dinámicamente
+
+```cpp
+QQuickStyle::setStyle(userPreference);
+```
+
+Esto convierte tu UI en no determinista.
+
+---
+
+## ❌ Confiar en style por defecto del SO
+
+Si no defines nada, Qt puede elegir automáticamente.
+
+Eso es mala práctica en software profesional.
+
+---
+
+## ❌ Ajustar layout “a ojo” sin fijar style
+
+Si no fijas style y luego mueves app a otra plataforma:
+
+* spacing cambia
+* tipografía cambia
+* layout se rompe
+
+---
+
+# 8. Cuándo sí usar selección dinámica
+
+Solo si:
+
+* Estás desarrollando una app “consumer” multiplataforma.
+* Quieres que la app imite el sistema operativo.
+* El equipo acepta la variabilidad visual.
+
+En sistemas técnicos, no suele ser el caso.
+
+---
+
+# 9. Relación con otros principios
+
+Compile-time style selection refuerza:
+
+* Determinismo
+* Reproducibilidad
+* Single source of truth
+* Eliminación de dependencias implícitas
+* Robustez en despliegue
+
+Es coherente con:
+
+* Explicit URL resolution
+* Strong typing
+* No reliance on evaluation order
+
+---
+
+# 10. Recomendación arquitectónica fuerte
+
+En proyectos profesionales:
+
+1. Elegir un style.
+2. Fijarlo en build.
+3. Diseñar UI sobre ese style.
+4. No permitir override externo.
+
+Eso simplifica:
+
+* Testing
+* CI
+* Mantenimiento
+* Soporte multiplataforma
+
+---
+
+# 11. Resumen técnico
+
+No dependas de:
+
+* variable de entorno
+* SO
+* configuración externa
+
+Fija el style en:
+
+* `qtquickcontrols2.conf`
+* o `main.cpp`
+
+Haz la UI determinista.
+
+---
+
+# Avoid Shadowing Properties (QML)
+
+**Shadowing** ocurre cuando introduces un identificador (variable, parámetro, `id`, `property`, `function` local) con el **mismo nombre** que una propiedad accesible en el scope. El resultado es que **dejas de referirte a la propiedad** sin darte cuenta.
+
+En QML esto es especialmente peligroso porque:
+
+* los scopes (QML + JS) se mezclan,
+* el motor permite nombres “válidos” aunque semánticamente sean una trampa,
+* el tooling pierde capacidad de análisis,
+* aparecen bugs silenciosos (bindings que “parecen” bien, pero leen otra cosa).
+
+---
+
+## 1) Ejemplo mínimo: parámetro que sombrea una propiedad
+
+```qml
+Item {
+    id: root
+    property int value: 10
+
+    function setValue(value) {   // <-- 'value' parámetro SOMBRA root.value
+        value = value + 1        // modifica el parámetro, NO root.value
+    }
+}
+```
+
+**Qué pasa realmente:** dentro de `setValue`, `value` es el parámetro. La propiedad `root.value` queda inaccesible por nombre simple.
+
+### Corrección
+
+* Cambia el nombre del parámetro.
+* O referencia explícitamente con `root.value`.
+
+```qml
+Item {
+    id: root
+    property int value: 10
+
+    function setValue(newValue: int): void {
+        root.value = newValue
+    }
+}
+```
+
+---
+
+## 2) Shadowing en handlers de señales (muy típico)
+
+```qml
+Item {
+    id: root
+    property int index: 5
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: (index) => {     // <-- parámetro 'index' sombrea root.index
+            console.log(index)      // imprime parámetro, NO root.index
+        }
+    }
+}
+```
+
+### Corrección
+
+```qml
+onClicked: (mouse) => {
+    console.log(root.index)
+}
+```
+
+Y evita nombres como `index`, `checked`, `value`, `text`, `state` como parámetros si ya existen en el componente.
+
+---
+
+## 3) Shadowing con variables locales en bindings/JS
+
+```qml
+Item {
+    id: root
+    property int count: 3
+
+    Component.onCompleted: {
+        let count = 10        // <-- sombrea root.count en este bloque
+        console.log(count)    // 10, no 3
+    }
+}
+```
+
+Esto puede ser aceptable si es intencional, pero en QML suele ser un accidente.
+
+### Corrección
+
+* Usa nombres locales con prefijo (`localCount`, `tmpCount`).
+* O usa `root.count` siempre que sea propiedad.
+
+---
+
+## 4) Shadowing en delegates (frecuente y confuso)
+
+En un `ListView`, el delegate recibe `index` automáticamente. Si además tú defines algo con el mismo nombre, creas ambigüedad.
+
+```qml
+ListView {
+    model: 10
+    delegate: Item {
+        property int index: 123   // <-- MAL: sombrea el index del delegate
+        Text { text: index }      // ¿123 o el índice del modelo? -> tu propiedad
+    }
+}
+```
+
+### Corrección
+
+* No definas propiedades con nombres reservados/implícitos del delegate (`index`, `model`, `modelData`).
+* Usa `rowIndex`, `itemIndex` si necesitas almacenar algo.
+
+```qml
+delegate: Item {
+    property int rowIndex: index
+    Text { text: rowIndex }
+}
+```
+
+---
+
+## 5) Shadowing con `id` (sí, también)
+
+Si pones un `id` con el mismo nombre que una propiedad “conocida” del tipo o una propiedad que usas mucho, te creas un infierno semántico.
+
+Ejemplo típico: usar `id: parent` o `id: text` (mala idea).
+
+Regla práctica: `id`s con semántica clara y única (`root`, `view`, `delegateRoot`, `content`, `backend`).
+
+---
+
+## 6) Por qué es un problema serio en QML
+
+### Bugs silenciosos
+
+No crashea: simplemente lee/escribe en el sitio equivocado.
+
+### Rompe mantenibilidad
+
+Un refactor puede introducir un nombre que antes no existía y cambiar significado.
+
+### Tooling más débil
+
+`qmllint`/QML LS no siempre pueden inferir intención si hay nombres colisionando.
+
+---
+
+## 7) Reglas operativas para evitarlo
+
+1. **Siempre usa un `id` raíz** (`id: root`) y referencia propiedades con `root.` en código JS sensible.
+2. **Parámetros con prefijo**: `newValue`, `isChecked`, `mouseEvent`, `activatedIndex`.
+3. En delegates, evita definir propiedades llamadas:
+
+   * `index`, `model`, `modelData`
+   * y también `width`, `height`, `x`, `y`, `visible`, `enabled` (porque son propiedades del Item y confunden al leer).
+4. Si un handler recibe un parámetro, **nómbralo explícitamente** (y no uses nombres de propiedades existentes). Esto además evita el tema de *deprecated injected signal parameters*.
+
+---
+
+## 8) Ejemplo “antes/después” realista (producción)
+
+### ❌ Antes (shadowing + bug)
+
+```qml
+Item {
+    id: root
+    property bool enabled: true
+
+    function setEnabled(enabled) {
+        enabled = enabled  // no hace nada útil; sombrea root.enabled
+    }
+}
+```
+
+### ✅ Después
+
+```qml
+Item {
+    id: root
+    property bool enabled: true
+
+    function setEnabled(isEnabled: bool): void {
+        root.enabled = isEnabled
+    }
+}
+```
+
+---
+
+## 9) Checklist rápido para revisar tu QML
+
+Busca en tu código:
+
+* `function foo(value) { ... value ... }` cuando existe `property ... value`
+* `onXxx: (index) => ...` cuando existe `property index` o estás en un delegate
+* `let text = ...` dentro de un componente que tiene `Text { id: text ... }` (o propiedad `text`)
+* delegates con `property int index: ...`
+
+Si aparece, refactor inmediato.
+
+---
+
+
+# Avoid Implicit Lookup in the Root Scope (QML)
+
+En QML, “implicit lookup in the root scope” es cuando escribes un identificador **sin calificar** (sin `root.` / `someId.` / `Qt.` / `MySingleton.`) y confías en que el motor lo encuentre “por arte de magia” en el *scope chain*.
+
+Ejemplos típicos de lookup implícito:
+
+* `width`, `height`, `x`, `y`, `parent`, `index` usados “a pelo”
+* `someFunction()` sin `root.someFunction()`
+* `backend` sin `root.backend` (o sin `MyStore.backend`)
+* `state` sin calificar (cuando hay varios `state` posibles)
+* `foo` que el motor resuelve en root/ids/context properties/imports… según reglas de scope
+
+La recomendación es:
+
+> En código que no sea trivial, **no dependas de la resolución implícita** del root scope. Usa referencias explícitas.
+
+---
+
+## 1) Por qué es un problema (de verdad)
+
+### 1.1 Ambigüedad y bugs silenciosos
+
+QML resuelve nombres buscando en varios sitios (local scope JS → ids → propiedades del objeto actual → scopes padres → context properties → singletons/imports…).
+Pequeños cambios (añadir una propiedad, renombrar un id, introducir un parámetro) pueden cambiar **qué símbolo se está resolviendo**.
+
+Resultado: compila/carga, pero hace otra cosa.
+
+### 1.2 Shadowing accidental
+
+Este principio está directamente conectado con *Avoid Shadowing Properties*:
+un `let value` o un parámetro `value` puede sombrear una propiedad `value` “visible” por lookup implícito. Si no calificas, te puedes estar refiriendo al símbolo equivocado.
+
+### 1.3 Tooling y qmltc
+
+`qmllint`, QML Language Server y compilación AOT (qmltc) trabajan mucho mejor cuando las referencias son explícitas:
+
+* menos falsos positivos/negativos
+* refactors más seguros
+* detección temprana de errores
+
+### 1.4 Rendimiento (secundario pero real)
+
+La resolución implícita puede implicar más trabajo (búsqueda en cadena de scopes). No suele ser el cuello de botella, pero en UI grande y muy dinámica suma.
+
+---
+
+## 2) Ejemplos concretos de lookup implícito peligroso
+
+### Ejemplo A: función sin calificar
+
+```qml
+Item {
+    id: root
+    property int value: 10
+
+    function bump(): void { value += 1 }
+
+    Component.onCompleted: {
+        bump()          // lookup implícito: ¿root.bump() u otra cosa?
+        console.log(value) // lookup implícito: ¿root.value o variable sombreada?
+    }
+}
+```
+
+**Correcto (explícito):**
+
+```qml
+Component.onCompleted: {
+    root.bump()
+    console.log(root.value)
+}
+```
+
+---
+
+### Ejemplo B: `Connections` / señales externas
+
+```qml
+Item {
+    id: root
+    property int state: 0
+
+    Connections {
+        target: backend
+        function onStateChanged(state) {
+            // "state" aquí es el parámetro, no root.state
+            if (state === 2) console.log("error")
+        }
+    }
+}
+```
+
+Aquí el bug es por shadowing, pero se vuelve más difícil de ver si encima usas `state` sin `root.` en más sitios.
+
+**Correcto:**
+
+```qml
+function onStateChanged(newState) {
+    root.state = newState
+}
+```
+
+---
+
+### Ejemplo C: delegates y `index`
+
+En delegates existen símbolos implícitos (`index`, `model`, `modelData`). Si además hay un `index` en otro scope y no calificas, el código se vuelve frágil.
+
+**Recomendación en delegates:**
+
+* Usa `index` solo cuando estés **seguro** de que es el `index` del delegate.
+* Si lo vas a pasar a funciones del root, pásalo explícitamente: `root.handleClicked(index)` y dentro usa `index` como parámetro pero **con nombre no ambiguo** (`rowIndex`).
+
+---
+
+## 3) Patrón recomendado: `id: root` + acceso explícito
+
+Regla operativa simple:
+
+1. En cada componente, define `id: root`.
+2. En JS (handlers, funciones, bindings complejos), referencia **siempre** con `root.` lo que sea propiedad/función del componente.
+3. Para objetos externos, referencia por `id` o singleton (`backend`, `Store`, etc.) **siempre explícito**.
+
+Ejemplo:
+
+```qml
+Item {
+    id: root
+    property int counter: 0
+
+    function increment(step: int): void {
+        root.counter += step
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: () => root.increment(1)
+    }
+
+    Text {
+        text: `Counter: ${root.counter}`
+    }
+}
+```
+
+---
+
+## 4) Import alias / singletons: explicitidad a nivel módulo
+
+Otro caso clásico de lookup implícito es cuando dependes de nombres “globales” por imports.
+
+**Mejor: usar alias de import cuando hay riesgo de colisión o quieres claridad:**
+
+```qml
+import QtQuick as QQ
+
+QQ.Item {
+    // ...
+}
+```
+
+Y para singletons, preferir acceso explícito:
+
+```qml
+import MyApp.Stores 1.0
+
+Text { text: MyStore.userName }  // no "userName" suelto
+```
+
+---
+
+## 5) Qué sí puede ser implícito (pragmático)
+
+No hace falta escribir `root.width` siempre. En QML idiomático es normal:
+
+* dentro de un `Item`, usar `width`, `height`, `parent`, `anchors` sin calificar
+* bindings muy simples
+
+Pero en cuanto entras en:
+
+* JS (handlers, funciones, `Connections`, `Component.onCompleted`)
+* delegates
+* componentes reutilizables con APIs grandes
+* código con riesgo de shadowing
+
+**califica**.
+
+Regla pragmática:
+
+* **Bindings simples:** OK implícito.
+* **Código JS / lógica:** explícito casi siempre.
+
+---
+
+## 6) Checklist de refactor inmediato
+
+Busca y cambia:
+
+* `someFunc()` → `root.someFunc()` (si es tu función)
+* `value` → `root.value` (si es tu propiedad) **en JS**
+* `state`, `index`, `checked`, `text`, `enabled` usados sin calificar en handlers
+* `Connections { onXxx: { ... } }` con variables “mágicas” no explícitas
+
+---
+
+## 7) Anti-patrón típico y corrección
+
+### ❌ Anti-patrón
+
+“Dependo de que el root tenga un `backend` en el contexto y lo llamo como si fuera global.”
+
+```qml
+onClicked: backend.start()
+```
+
+Si mañana `backend` deja de existir como context property o se renombra, falla.
+
+### ✅ Correcto
+
+Inyecta dependencia explícita al componente (y si aplica, `required`):
+
+```qml
+Item {
+    id: root
+    required property Backend backend
+
+    Button {
+        onClicked: () => root.backend.start()
+    }
+}
+```
+
+Esto refuerza contrato + elimina lookup implícito.
+
+---
+
+## Conclusión
+
+“Avoid Implicit Lookup in the Root Scope” es básicamente: **no escribas QML como si tuviera variables globales mágicas**. En cuanto hay lógica, usa referencias explícitas (`root.` / `id.` / `Singleton.`). Ganas:
+
+* determinismo
+* refactor seguro
+* menos bugs intermitentes
+* mejor tooling
+
+# Avoid Referencing Objects Outside the Component (QML)
+
+Este principio significa: **un componente QML no debe “alcanzar” (reach out) y usar IDs/objetos que están fuera de su propio archivo/componente**, porque eso rompe el encapsulamiento y convierte tu UI en una red de dependencias implícitas.
+
+En otras palabras:
+
+* ✅ Un componente debe depender de **su API pública** (props/signals/methods).
+* ❌ No debe depender de `someExternalId.someProperty` si `someExternalId` vive fuera.
+
+---
+
+## 1) Qué se considera “referenciar fuera del componente”
+
+Ejemplo típico (mal):
+
+```qml
+// MyWidget.qml
+Item {
+    Text { text: header.title }     // header es un id del padre (fuera)
+    Button { onClicked: stack.pop() } // stack es un id del padre (fuera)
+}
+```
+
+Este `MyWidget` **no es reutilizable**: solo funciona si el padre tiene `id: header` y `id: stack` con esas APIs.
+
+---
+
+## 2) Por qué es un problema (impacto real)
+
+### 2.1 Acoplamiento duro y frágil
+
+Cambias el nombre del `id` o reestructuras el padre y el componente explota.
+
+### 2.2 Reutilización cero
+
+No puedes mover ese componente a otra pantalla o proyecto sin arrastrar toda la estructura externa.
+
+### 2.3 Tooling y refactor pobres
+
+El QML LS / qmllint no puede inferir bien contratos si “dependes de cosas mágicas”.
+
+### 2.4 Bugs sutiles por scopes / shadowing
+
+Si el componente se carga con `Loader`, en otro contexto o desde C++, ese lookup puede fallar o resolver otra cosa.
+
+---
+
+## 3) Forma correcta: inyección explícita de dependencias
+
+### Patrón A: `required property` (recomendado)
+
+```qml
+// MyWidget.qml
+import QtQuick
+import QtQuick.Controls
+
+Item {
+    id: root
+    required property string title
+    required property var navigator   // mejor tipar si es tipo registrado
+
+    Column {
+        Text { text: root.title }
+        Button {
+            text: "Back"
+            onClicked: () => root.navigator.pop()
+        }
+    }
+}
+```
+
+Uso:
+
+```qml
+MyWidget {
+    title: header.title
+    navigator: stack
+}
+```
+
+**Ventaja:** el componente declara lo que necesita. No “adivina” dónde está.
+
+> Ideal: no uses `var` si puedes registrar un tipo `Navigator` o pasar un `StackView` tipado (según tu arquitectura).
+
+---
+
+### Patrón B: exponer señales en vez de llamar “hacia fuera”
+
+En UI robusta, el componente no debería ejecutar navegación directamente. Debe **emitir intención**.
+
+```qml
+// MyWidget.qml
+Item {
+    id: root
+    required property string title
+    signal backRequested()
+
+    Column {
+        Text { text: root.title }
+        Button {
+            text: "Back"
+            onClicked: () => root.backRequested()
+        }
+    }
+}
+```
+
+Uso:
+
+```qml
+MyWidget {
+    title: header.title
+    onBackRequested: stack.pop()
+}
+```
+
+**Ventaja:** desacoplas UI de navegación/backends. Es el patrón más limpio.
+
+---
+
+### Patrón C: pasar callbacks explícitos (menos recomendable, pero válido)
+
+```qml
+Item {
+    id: root
+    required property var onBack
+
+    Button {
+        text: "Back"
+        onClicked: () => root.onBack()
+    }
+}
+```
+
+**Contras:** `var` + funciones reduce tipado/analizabilidad. Úsalo solo si no puedes modelar la dependencia.
+
+---
+
+## 4) Caso típico: componente que necesita backend
+
+### ❌ Anti-patrón: usar `backend` global/context property sin declararlo
+
+```qml
+Text { text: backend.temperature }      // ¿de dónde sale backend?
+Button { onClicked: backend.start() }
+```
+
+### ✅ Correcto: dependencia explícita
+
+```qml
+Item {
+    id: root
+    required property Backend backend
+
+    Text { text: `${root.backend.temperature.toFixed(1)} °C` }
+    Button { text: "Start"; onClicked: () => root.backend.start() }
+}
+```
+
+O mejor aún: **señales** y el padre decide:
+
+```qml
+signal startRequested()
+Button { onClicked: () => root.startRequested() }
+```
+
+---
+
+## 5) Delegates: el sitio donde más se rompe este principio
+
+Un delegate NO debería hacer:
+
+```qml
+delegate: Item {
+    MouseArea { onClicked: detailsPanel.show(model.id) } // detailsPanel fuera
+}
+```
+
+Correcto:
+
+```qml
+delegate: Item {
+    required property string deviceId
+    signal clicked(deviceId: string)
+
+    MouseArea { onClicked: () => clicked(deviceId) }
+}
+```
+
+Y en el `ListView`:
+
+```qml
+ListView {
+    delegate: MyDelegate {
+        deviceId: model.deviceId
+        onClicked: (id) => detailsPanel.show(id)
+    }
+}
+```
+
+---
+
+## 6) Excepciones razonables (cuándo sí referenciar “fuera”)
+
+### 6.1 Singletons intencionales (App-wide)
+
+Si defines un **Singleton** (QML singleton o C++ singleton) como dependencia global deliberada:
+
+* `Theme`
+* `Localization/I18n`
+* `AppSettings`
+* `Telemetry` (con cuidado)
+
+Ejemplo:
+
+```qml
+Text { color: Theme.textPrimary }
+```
+
+Esto no es “outside object” accidental; es una dependencia global explícita por diseño.
+
+**Regla:** si es global, debe ser global *de verdad* (Singleton importado), no un `id` del padre.
+
+---
+
+### 6.2 `parent` / `anchors` / `StackView.view` (APIs del framework)
+
+Referenciar `parent` es normal y parte del modelo visual.
+
+Pero no conviertas `parent` en “servicio”:
+
+* ❌ `parent.backend.doStuff()`
+* ✅ `anchors.fill: parent`
+
+---
+
+## 7) Regla operativa (rápida y aplicable)
+
+Dentro de un componente reutilizable (`Foo.qml`):
+
+* ✅ Referencia: `root.<prop>` / `id` internos / singletons importados / `Qt.*`
+* ❌ Referencia: IDs que no están declarados en el archivo (`header`, `stack`, `appWindow`, `mainView`, etc.)
+
+Si necesitas algo externo:
+
+1. `required property T dep` **o**
+2. `signal intent()` y el padre actúa.
+
+---
+
+## 8) Ejemplo “antes / después” (refactor típico)
+
+### Antes (acoplado)
+
+```qml
+// ControlPanel.qml
+Item {
+    Button { text: "Connect"; onClicked: backend.connect() } // backend fuera
+    Text { text: statusLabel.text }                          // statusLabel fuera
+}
+```
+
+### Después (encapsulado)
+
+```qml
+// ControlPanel.qml
+Item {
+    id: root
+    required property Backend backend
+    required property string statusText
+    signal connectRequested()
+
+    Button { text: "Connect"; onClicked: () => root.connectRequested() }
+    Text { text: root.statusText }
+}
+```
+
+Uso:
+
+```qml
+ControlPanel {
+    backend: backend
+    statusText: backend.statusText
+    onConnectRequested: backend.connect()
+}
+```
+
+Esto escala y es testeable.
+
+---
+
+## 9) Relación con los principios anteriores
+
+Este principio es el complemento de:
+
+* **Avoid implicit lookup in root scope** (nada “mágico”)
+* **Avoid duck typing** (contratos)
+* **Use required properties** (inyección)
+* **Prefer interaction signals** (intención vs estado)
+* **Delegates should not store state** (estado fuera)
+
+Todo converge a: **componente aislado + dependencias explícitas + flujo unidireccional**.
+
+---
+
+# Avoid Using `parent` for Property Qualification (QML)
+
+Este principio significa:
+
+> No uses `parent` como mecanismo para acceder a propiedades o lógica del contenedor.
+> Úsalo solo para relaciones puramente visuales (layout/anchoring).
+
+En QML, `parent` describe la **jerarquía visual**, no la **jerarquía lógica**.
+Si dependes de `parent.someProperty`, estás acoplando tu componente a su posición en el árbol.
+
+---
+
+## 1. El problema real
+
+Ejemplo típico (mal diseño):
+
+```qml
+Rectangle {
+    property string title: "Main"
+
+    MyWidget {
+        Text {
+            text: parent.title   // depende del parent
+        }
+    }
+}
+```
+
+`MyWidget` solo funciona si:
+
+* su `parent` tiene una propiedad `title`
+* y además con ese nombre exacto
+
+Si lo reutilizas en otro sitio:
+
+* rompe
+* o lee otra cosa
+* o produce `undefined`
+
+Esto es acoplamiento estructural implícito.
+
+---
+
+## 2. Por qué es peligroso
+
+### 2.1 Fragilidad ante refactor
+
+Si insertas un `Item` intermedio:
+
+```qml
+Rectangle {
+    property string title: "Main"
+
+    Item {
+        MyWidget { }
+    }
+}
+```
+
+Ahora `parent` ya no es el que creías.
+
+El comportamiento cambia sin warning claro.
+
+---
+
+### 2.2 Rompe reutilización
+
+El componente no puede moverse libremente.
+
+---
+
+### 2.3 Oculta dependencias
+
+El componente parece autónomo, pero depende de algo externo no declarado.
+
+---
+
+## 3. Cuándo SÍ usar `parent`
+
+Solo para:
+
+* `anchors`
+* posicionamiento visual
+* layout visual
+* tamaño visual
+
+Ejemplo correcto:
+
+```qml
+Rectangle {
+    anchors.fill: parent
+}
+```
+
+Esto es visual. Es legítimo.
+
+---
+
+## 4. Cuándo NO usar `parent`
+
+❌ Para acceder a estado lógico:
+
+```qml
+text: parent.temperature
+onClicked: parent.start()
+color: parent.active ? "green" : "gray"
+```
+
+Eso es dependencia lógica disfrazada de visual.
+
+---
+
+## 5. Solución correcta: inyección explícita
+
+### Patrón recomendado
+
+```qml
+// MyWidget.qml
+Item {
+    id: root
+    required property string title
+
+    Text {
+        text: root.title
+    }
+}
+```
+
+Uso:
+
+```qml
+Rectangle {
+    property string title: "Main"
+
+    MyWidget {
+        title: title
+    }
+}
+```
+
+Ahora el contrato es explícito.
+
+---
+
+## 6. Caso común en dashboards
+
+Mal diseño típico:
+
+```qml
+Gauge {
+    value: parent.currentTemperature
+}
+```
+
+Si cambias estructura:
+
+* Se rompe.
+* O toma otro parent.
+
+Correcto:
+
+```qml
+Gauge {
+    value: root.currentTemperature
+}
+```
+
+O mejor:
+
+```qml
+Gauge {
+    required property real value
+}
+```
+
+Y el contenedor pasa `value`.
+
+---
+
+## 7. Anti-patrón avanzado: `parent.parent`
+
+Si ves esto:
+
+```qml
+parent.parent.backend.doSomething()
+```
+
+Es señal clara de arquitectura defectuosa.
+
+Significa:
+
+* El componente depende de la estructura exacta del árbol.
+* Cualquier cambio rompe comportamiento.
+* Es imposible de reutilizar.
+
+Debe refactorizarse inmediatamente.
+
+---
+
+## 8. Diferencia importante: `parent` vs `id`
+
+Esto:
+
+```qml
+anchors.fill: parent
+```
+
+Está bien.
+
+Pero esto:
+
+```qml
+text: parent.title
+```
+
+Debería ser:
+
+```qml
+text: root.title
+```
+
+Porque `root` es estable; `parent` no lo es.
+
+---
+
+## 9. Patrón robusto: `id: root`
+
+Siempre define:
+
+```qml
+Item {
+    id: root
+}
+```
+
+Y usa:
+
+```qml
+text: root.someProperty
+```
+
+Nunca dependas de `parent` para lógica.
+
+---
+
+## 10. Caso especial: Delegates
+
+En delegates es aún más peligroso.
+
+```qml
+delegate: Item {
+    Text { text: parent.someProperty }
+}
+```
+
+Aquí `parent` puede ser:
+
+* el `ListView`
+* el `contentItem`
+* un wrapper interno
+
+No es contractual.
+
+Si necesitas algo del exterior:
+
+* pásalo como propiedad
+* o usa señal para comunicar intención
+
+---
+
+## 11. Excepción legítima
+
+Layouts automáticos pueden usar `parent` en relaciones visuales:
+
+```qml
+width: parent.width * 0.5
+```
+
+Eso es razonable si es estrictamente layout.
+
+Pero incluso ahí, en componentes reutilizables, suele ser mejor:
+
+```qml
+required property real availableWidth
+width: availableWidth * 0.5
+```
+
+Más explícito y testeable.
+
+---
+
+## 12. Comparación clara
+
+| Uso                          | Correcto   |
+| ---------------------------- | ---------- |
+| `anchors.fill: parent`       | ✔          |
+| `text: parent.title`         | ❌          |
+| `parent.backend.start()`     | ❌          |
+| `width: parent.width`        | ✔ (visual) |
+| `color: parent.active ? ...` | ❌          |
+
+---
+
+## 13. Relación con otros principios
+
+Este principio refuerza:
+
+* Avoid Referencing Objects Outside the Component
+* Avoid Implicit Lookup
+* Required Properties
+* Single source of truth
+* Declarative bindings
+
+Todos apuntan a lo mismo:
+
+> El árbol visual no es tu arquitectura lógica.
+
+---
+
+## 14. Regla operativa fuerte
+
+Si una referencia afecta:
+
+* comportamiento
+* estado
+* lógica
+* backend
+* navegación
+
+No debe usar `parent`.
+
+Solo layout puede usar `parent`.
+
+---
+# `??` y `?.` en QML (Nullish Coalescing + Optional Chaining)
+
+Qt ha ido incorporando features modernas de JavaScript al runtime de QML:
+
+* **Nullish coalescing `??`**: soportado **desde Qt 5.15**. ([Documentación de Qt][1])
+* **Optional chaining `?.`**: soportado **desde Qt 6.2**. ([Documentación de Qt][1])
+
+La idea es escribir bindings y handlers **más seguros** sin cascadas de `if (x && x.y && x.y.z)` ni defaults incorrectos con `||`.
+
+---
+
+## 1) `??` (Nullish coalescing): default solo para `null/undefined`
+
+**Semántica:**
+`a ?? b` devuelve `b` **solo si** `a` es `null` o `undefined`. Si `a` es `0`, `false` o `""`, **se queda con `a`**. ([MDN Web Docs][2])
+
+### Por qué importa en QML
+
+Muchísimas propiedades válidas son falsy:
+
+* `opacity: 0`
+* `index: 0`
+* `text: ""`
+* `checked: false`
+
+Con `||` las pisas por error.
+
+#### ❌ Mal (con `||`)
+
+```qml
+Text {
+    // si title == "" (válido), se sustituye por "Untitled" (no deseado)
+    text: title || "Untitled"
+}
+```
+
+#### ✅ Bien (con `??`)
+
+```qml
+Text {
+    // solo aplica default si title es null/undefined
+    text: title ?? "Untitled"
+}
+```
+
+### Caso típico con números
+
+```qml
+Text {
+    // si gain = 0, no queremos fallback
+    text: `Gain: ${(gain ?? 0).toFixed(1)}`
+}
+```
+
+---
+
+## 2) `?.` (Optional chaining): acceso seguro a propiedades/llamadas
+
+**Semántica básica:**
+
+* `obj?.prop` → si `obj` es `null/undefined`, devuelve `undefined` sin lanzar error.
+* `obj?.method?.()` → igual para métodos.
+* `arr?.[i]` → igual para indexación.
+
+### En QML, para qué sirve
+
+* Objetos que llegan tarde (Loader, async, context properties).
+* Estructuras opcionales (por ejemplo, backend aún no inicializado).
+* JSON dinámico (aunque idealmente lo tipas, esto reduce crashes).
+
+#### ❌ Mal (crashea si `backend` es null)
+
+```qml
+Text { text: backend.temperature.toFixed(1) }
+```
+
+#### ✅ Bien
+
+```qml
+Text { text: `${backend?.temperature?.toFixed(1) ?? "-"} °C` }
+```
+
+---
+
+## 3) `?.` + `??`: patrón estándar (safe read + default)
+
+Este es el uso canónico:
+
+```qml
+Text {
+    text: user?.profile?.address?.city ?? "Unknown"
+}
+```
+
+* `?.` evita el TypeError.
+* `??` da un valor por defecto cuando el resultado es `undefined`/`null`. ([MDN Web Docs][2])
+
+---
+
+## 4) Errores frecuentes y correcciones
+
+### Error A: usar `||` como default “rápido”
+
+Si el valor puede ser `0/false/""`, **no uses `||`**.
+
+**Usa `??`**, salvo que *quieras* que `0` se trate como “vacío” (raro en UI técnica).
+
+---
+
+### Error B: optional chaining como “parche” de diseño
+
+`?.` no debe ocultar APIs mal definidas. Si esperas que algo exista, **inyéctalo** con `required property` y tipado fuerte.
+
+Ejemplo de *mejor arquitectura*:
+
+```qml
+Item {
+    id: root
+    required property Backend backend  // contrato explícito
+
+    Text { text: `${root.backend.temperature.toFixed(1)} °C` }
+}
+```
+
+En este caso, `backend?.temperature` sería un olor: estás aceptando que falte algo que en realidad es obligatorio.
+
+---
+
+### Error C: optional chaining redundante (warning de qmllint)
+
+Qt tiene warning específico para `?.` redundante cuando el base **no puede** ser null/undefined (p.ej. enums, objetos garantizados). ([Documentación de Qt][3])
+
+Ejemplo conceptual:
+
+```qml
+// si 'Qt' o un enum está garantizado, Qt?.Something es redundante
+```
+
+**Regla:** no uses `?.` “por defecto”. Úsalo cuando la nulidad sea real.
+
+---
+
+### Error D: “mejor uso `?.` en vez de arreglar el origen”
+
+Si `device` puede ser null en un delegate, muchas veces el problema es el flujo de datos:
+
+* o el modelo no está tipado,
+* o falta `required property`,
+* o estás referenciando fuera del componente.
+
+Solución: arreglar contrato primero; `?.` como último recurso en zonas realmente opcionales.
+
+---
+
+## 5) Recomendaciones operativas
+
+### Cuándo usar `??`
+
+* Defaults en UI donde `0/false/""` son valores válidos.
+* Strings formateadas donde `undefined` debe mostrarse como `"-"` o `"N/A"`.
+
+### Cuándo usar `?.`
+
+* Objetos opcionales por ciclo de vida (Loader, inicialización, null temporal).
+* JSON y estructuras dinámicas (idealmente minimizadas).
+* Accesos encadenados donde sería ilegible validar manualmente.
+
+### Cuándo NO usar `?.`
+
+* Cuando la dependencia debería ser **obligatoria** → usa `required` + tipo.
+* Cuando te está escondiendo un bug (typo de propiedad, error de wiring, mala arquitectura).
+
+---
+
+## 6) Mini-guía “lista para copiar”
+
+* Default seguro:
+
+  ```qml
+  text: value ?? "—"
+  ```
+* Acceso seguro + default:
+
+  ```qml
+  text: obj?.sub?.value ?? "—"
+  ```
+* Llamada segura:
+
+  ```qml
+  backend?.start?.()
+  ```
+* Indexación segura:
+
+  ```qml
+  text: items?.[index] ?? "—"
+  ```
+
+---
+
+Si me dices tu versión de Qt (por ejemplo 6.2/6.5/6.6), te marco exactamente dónde puedes/conviene usar `?.` y `??` en tu código actual sin degradar el diseño (y dónde es mejor reforzar contratos con `required` y tipos).
+
+[1]: https://doc.qt.io/qt-6/qtqml-javascript-hostenvironment.html?utm_source=chatgpt.com "JavaScript Host Environment | Qt Qml | Qt 6.10.2"
+[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing?utm_source=chatgpt.com "Nullish coalescing operator (??) - JavaScript - MDN Web Docs"
+[3]: https://doc.qt.io/qt-6/qmllint-warnings-and-errors-redundant-optional-chaining.html?utm_source=chatgpt.com "Redundant Optional Chaining | Qt Qml | Qt 6.10.2"
+
+
+<---FILES--->
+
+<---Ejemplo Basico--->
+
+<---Ejemplo Avanzado--->
+

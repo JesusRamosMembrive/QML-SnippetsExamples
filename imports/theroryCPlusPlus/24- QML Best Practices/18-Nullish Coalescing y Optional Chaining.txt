@@ -1,0 +1,170 @@
+<---EXPLANATION--->
+### Nullish Coalescing (`??`) y Optional Chaining (`?.`) en QML
+
+Qt ha ido incorporando features modernas de JavaScript al runtime de QML:
+
+* **Nullish coalescing `??`**: soportado **desde Qt 5.15**.
+* **Optional chaining `?.`**: soportado **desde Qt 6.2**.
+
+La idea es escribir bindings y handlers **más seguros** sin cascadas de `if (x && x.y && x.y.z)` ni defaults incorrectos con `||`.
+
+---
+
+#### 1. `??` (Nullish coalescing): default solo para `null/undefined`
+
+`a ?? b` devuelve `b` **solo si** `a` es `null` o `undefined`. Si `a` es `0`, `false` o `""`, **se queda con `a`**.
+
+##### Por qué importa en QML
+
+Muchísimas propiedades válidas son falsy:
+
+* `opacity: 0`
+* `index: 0`
+* `text: ""`
+* `checked: false`
+
+Con `||` las pisas por error.
+
+##### Mal (con `||`)
+
+```qml
+Text {
+    // si title == "" (válido), se sustituye por "Untitled" (no deseado)
+    text: title || "Untitled"
+}
+```
+
+##### Bien (con `??`)
+
+```qml
+Text {
+    // solo aplica default si title es null/undefined
+    text: title ?? "Untitled"
+}
+```
+
+##### Caso típico con números
+
+```qml
+Text {
+    // si gain = 0, no queremos fallback
+    text: `Gain: ${(gain ?? 0).toFixed(1)}`
+}
+```
+
+---
+
+#### 2. `?.` (Optional chaining): acceso seguro a propiedades/llamadas
+
+* `obj?.prop` → si `obj` es `null/undefined`, devuelve `undefined` sin lanzar error.
+* `obj?.method?.()` → igual para métodos.
+* `arr?.[i]` → igual para indexación.
+
+##### En QML, para qué sirve
+
+* Objetos que llegan tarde (Loader, async, context properties).
+* Estructuras opcionales (backend aún no inicializado).
+* JSON dinámico.
+
+##### Mal (crashea si `backend` es null)
+
+```qml
+Text { text: backend.temperature.toFixed(1) }
+```
+
+##### Bien
+
+```qml
+Text { text: `${backend?.temperature?.toFixed(1) ?? "-"} °C` }
+```
+
+---
+
+#### 3. `?.` + `??`: patrón estándar (safe read + default)
+
+```qml
+Text {
+    text: user?.profile?.address?.city ?? "Unknown"
+}
+```
+
+* `?.` evita el TypeError.
+* `??` da un valor por defecto.
+
+---
+
+#### 4. Errores frecuentes y correcciones
+
+##### Error A: usar `||` como default "rápido"
+
+Si el valor puede ser `0/false/""`, **no uses `||`**. Usa `??`.
+
+##### Error B: optional chaining como "parche" de diseño
+
+`?.` no debe ocultar APIs mal definidas. Si esperas que algo exista, **inyéctalo** con `required property` y tipado fuerte.
+
+```qml
+Item {
+    id: root
+    required property Backend backend
+
+    Text { text: `${root.backend.temperature.toFixed(1)} °C` }
+}
+```
+
+##### Error C: optional chaining redundante
+
+Qt tiene warning específico para `?.` redundante cuando el base **no puede** ser null/undefined.
+
+**Regla:** no uses `?.` "por defecto". Úsalo cuando la nulidad sea real.
+
+##### Error D: "mejor uso `?.` en vez de arreglar el origen"
+
+Si `device` puede ser null en un delegate, muchas veces el problema es el flujo de datos. Solución: arreglar contrato primero; `?.` como último recurso.
+
+---
+
+#### 5. Recomendaciones operativas
+
+##### Cuándo usar `??`
+
+* Defaults en UI donde `0/false/""` son valores válidos.
+* Strings formateadas donde `undefined` debe mostrarse como `"-"` o `"N/A"`.
+
+##### Cuándo usar `?.`
+
+* Objetos opcionales por ciclo de vida (Loader, inicialización, null temporal).
+* JSON y estructuras dinámicas.
+* Accesos encadenados donde sería ilegible validar manualmente.
+
+##### Cuándo NO usar `?.`
+
+* Cuando la dependencia debería ser **obligatoria** → usa `required` + tipo.
+* Cuando te está escondiendo un bug.
+
+---
+
+#### 6. Mini-guía "lista para copiar"
+
+* Default seguro:
+
+  ```qml
+  text: value ?? "—"
+  ```
+* Acceso seguro + default:
+
+  ```qml
+  text: obj?.sub?.value ?? "—"
+  ```
+* Llamada segura:
+
+  ```qml
+  backend?.start?.()
+  ```
+* Indexación segura:
+
+  ```qml
+  text: items?.[index] ?? "—"
+  ```
+
+<---FILES--->

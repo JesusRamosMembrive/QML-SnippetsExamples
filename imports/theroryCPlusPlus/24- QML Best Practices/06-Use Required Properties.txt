@@ -1,0 +1,268 @@
+<---EXPLANATION--->
+### Use Required Properties in Components and Delegates
+
+`required` es una característica (Qt 6) para declarar **propiedades obligatorias**: el componente **no puede instanciarse** sin que esas propiedades reciban un valor (normalmente por binding) en el punto de uso.
+
+Esto es una herramienta de diseño para:
+
+* imponer **contratos explícitos**
+* eliminar **duck typing**
+* detectar fallos **al cargar QML** (no tarde en runtime)
+* endurecer delegates frente a cambios de modelo
+
+---
+
+#### 1. Problema que resuelve
+
+##### Delegate frágil (sin contrato)
+
+```qml
+delegate: Text {
+    text: model.name
+}
+```
+
+Si mañana el modelo cambia `name` por `displayName`:
+
+* `model.name` pasa a `undefined`
+* UI "funciona" pero enseña vacío
+* bug silencioso
+
+Esto es deuda técnica.
+
+---
+
+#### 2. Delegate robusto con `required`
+
+##### Delegate con contrato
+
+```qml
+delegate: Item {
+    required property string name
+    required property int age
+
+    Row {
+        Text { text: name }
+        Text { text: age.toString() }
+    }
+}
+```
+
+Uso (ejemplo con `ListView` + `ListModel`):
+
+```qml
+ListView {
+    model: ListModel {
+        ListElement { name: "Alice"; age: 30 }
+        ListElement { name: "Bob";   age: 28 }
+    }
+
+    delegate: Item {
+        required property string name
+        required property int age
+    }
+}
+```
+
+Ahora, si el modelo no proporciona `name` o `age`, QML lo considera un **error** (fallo temprano).
+
+---
+
+#### 3. `required` en componentes reutilizables
+
+##### Sin `required` (API blanda)
+
+```qml
+// WarningBadge.qml
+import QtQuick
+
+Rectangle {
+    property string text: ""
+    property color badgeColor: "red"
+}
+```
+
+Puedes instanciarlo sin `text` y te quedas con un componente "vacío".
+
+##### Con `required` (API dura)
+
+```qml
+// WarningBadge.qml
+import QtQuick
+
+Rectangle {
+    required property string text
+    property color badgeColor: "red"
+
+    Text {
+        anchors.centerIn: parent
+        text: parent.text
+    }
+}
+```
+
+Si alguien olvida `text`, se detecta al cargar.
+
+---
+
+#### 4. `required` en `Component` + `Loader`
+
+Cuando tienes componentes cargados dinámicamente, `required` te evita instancias incompletas.
+
+```qml
+Component {
+    id: cardComponent
+    Rectangle {
+        required property string title
+        required property int value
+    }
+}
+
+Loader {
+    sourceComponent: cardComponent
+    onLoaded: {
+        item.title = "Temp"   // OJO: esto es imperativo y además llega tarde
+        item.value = 42
+    }
+}
+```
+
+**Crítica importante:** asignar después en `onLoaded` es lo contrario de un contrato declarativo. Si el componente tiene `required`, lo ideal es **pasar propiedades antes**.
+
+---
+
+#### 5. Cómo "pasar" required properties correctamente
+
+##### Patrón recomendado: `Loader` + `setSource()` con `properties` (Qt 6)
+
+```qml
+Loader {
+    id: loader
+    sourceComponent: cardComponent
+    Component.onCompleted: {
+        loader.setSourceComponent(cardComponent, {
+            "title": "Temp",
+            "value": 42
+        })
+    }
+}
+```
+
+##### Alternativa: composición directa (mejor en UI declarativa)
+
+```qml
+Rectangle {
+    Card {
+        title: "Temp"
+        value: 42
+    }
+}
+```
+
+---
+
+#### 6. `required` + tipos: obligación doble
+
+`required` sin tipado es menos útil. El combo correcto es:
+
+```qml
+required property int index
+required property string displayName
+required property real temperature
+```
+
+Esto elimina:
+
+* ausencia del valor
+* tipo incorrecto
+
+---
+
+#### 7. `required` y Delegates: contrato contra "model drift"
+
+##### Delegate blindado
+
+```qml
+delegate: Row {
+    required property string label
+    required property real value
+
+    Text { text: label }
+    Text { text: value.toFixed(1) }
+}
+```
+
+Si alguien cambia el modelo, el delegate falla temprano, no "miente" mostrando vacío.
+
+---
+
+#### 8. Errores típicos con `required`
+
+##### Error 1: intentar asignar la required property dentro del propio componente
+
+```qml
+Rectangle {
+    required property string title
+    Component.onCompleted: title = "default" // MAL
+}
+```
+
+Esto contradice el contrato: la idea es que **el usuario del componente** lo provea.
+
+---
+
+##### Error 2: mezclar `required` con `var`
+
+```qml
+required property var data // flojo
+```
+
+Si es required, normalmente sabes el tipo. Si no lo sabes, probablemente estás aceptando JSON dinámico.
+
+---
+
+##### Error 3: romper el flujo declarativo con asignaciones tardías
+
+Si usas `required`, no la "rellenes" a posteriori con `onLoaded`.
+
+---
+
+#### 9. Criterios de uso (pragmáticos)
+
+Usa `required` cuando:
+
+* el componente no tiene sentido sin ese dato
+* el delegate depende de roles concretos
+* quieres que el fallo sea inmediato y visible
+
+No lo uses cuando:
+
+* el componente puede tener defaults útiles
+* la propiedad es opcional
+* el valor llega asincrónico
+
+---
+
+#### 10. Patrón recomendado de "placeholder" (cuando el dato llega tarde)
+
+```qml
+Item {
+    property string title: ""
+    readonly property bool ready: title.length > 0
+
+    Text { text: ready ? title : "Loading..." }
+}
+```
+
+Esto es explícito y evita falsos contratos.
+
+---
+
+#### 11. Resumen operativo
+
+* `required property T x` = contrato obligatorio en creación.
+* En delegates, evita "UI silenciosamente rota".
+* En componentes reutilizables, endurece la API y reduce errores de wiring.
+* No lo combines con asignación tardía imperativa: eso es un antipatrón.
+
+<---FILES--->

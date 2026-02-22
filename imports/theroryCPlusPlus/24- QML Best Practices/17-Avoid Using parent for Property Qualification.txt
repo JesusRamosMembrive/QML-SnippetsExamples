@@ -1,0 +1,217 @@
+<---EXPLANATION--->
+### Avoid Using parent for Property Qualification
+
+Este principio significa:
+
+> No uses `parent` como mecanismo para acceder a propiedades o lógica del contenedor.
+> Úsalo solo para relaciones puramente visuales (layout/anchoring).
+
+En QML, `parent` describe la **jerarquía visual**, no la **jerarquía lógica**.
+Si dependes de `parent.someProperty`, estás acoplando tu componente a su posición en el árbol.
+
+---
+
+#### 1. El problema real
+
+```qml
+Rectangle {
+    property string title: "Main"
+
+    MyWidget {
+        Text {
+            text: parent.title   // depende del parent
+        }
+    }
+}
+```
+
+`MyWidget` solo funciona si su `parent` tiene una propiedad `title`.
+
+Si lo reutilizas en otro sitio: rompe, o lee otra cosa, o produce `undefined`.
+
+---
+
+#### 2. Por qué es peligroso
+
+##### Fragilidad ante refactor
+
+Si insertas un `Item` intermedio:
+
+```qml
+Rectangle {
+    property string title: "Main"
+
+    Item {
+        MyWidget { }
+    }
+}
+```
+
+Ahora `parent` ya no es el que creías.
+
+##### Rompe reutilización
+
+El componente no puede moverse libremente.
+
+##### Oculta dependencias
+
+El componente parece autónomo, pero depende de algo externo no declarado.
+
+---
+
+#### 3. Cuándo SÍ usar `parent`
+
+Solo para:
+
+* `anchors`
+* posicionamiento visual
+* layout visual
+* tamaño visual
+
+```qml
+Rectangle {
+    anchors.fill: parent
+}
+```
+
+Esto es visual. Es legítimo.
+
+---
+
+#### 4. Cuándo NO usar `parent`
+
+Para acceder a estado lógico:
+
+```qml
+text: parent.temperature
+onClicked: parent.start()
+color: parent.active ? "green" : "gray"
+```
+
+Eso es dependencia lógica disfrazada de visual.
+
+---
+
+#### 5. Solución correcta: inyección explícita
+
+```qml
+// MyWidget.qml
+Item {
+    id: root
+    required property string title
+
+    Text {
+        text: root.title
+    }
+}
+```
+
+Uso:
+
+```qml
+Rectangle {
+    property string title: "Main"
+
+    MyWidget {
+        title: title
+    }
+}
+```
+
+---
+
+#### 6. Anti-patrón avanzado: `parent.parent`
+
+```qml
+parent.parent.backend.doSomething()
+```
+
+Señal clara de arquitectura defectuosa.
+
+Significa:
+
+* El componente depende de la estructura exacta del árbol.
+* Cualquier cambio rompe comportamiento.
+* Es imposible de reutilizar.
+
+---
+
+#### 7. Diferencia importante: `parent` vs `id`
+
+```qml
+anchors.fill: parent      // OK (visual)
+text: parent.title         // MAL (lógico) → debe ser root.title
+```
+
+`root` es estable; `parent` no lo es.
+
+---
+
+#### 8. Patrón robusto: `id: root`
+
+Siempre define `id: root` y usa `root.someProperty`.
+
+Nunca dependas de `parent` para lógica.
+
+---
+
+#### 9. Caso especial: Delegates
+
+En delegates es aún más peligroso.
+
+```qml
+delegate: Item {
+    Text { text: parent.someProperty }
+}
+```
+
+`parent` puede ser: el `ListView`, el `contentItem`, un wrapper interno.
+
+No es contractual. Pasa lo que necesites como propiedad.
+
+---
+
+#### 10. Excepción legítima
+
+Layouts automáticos pueden usar `parent` en relaciones visuales:
+
+```qml
+width: parent.width * 0.5
+```
+
+Pero en componentes reutilizables, suele ser mejor:
+
+```qml
+required property real availableWidth
+width: availableWidth * 0.5
+```
+
+---
+
+#### 11. Comparación clara
+
+| Uso                          | Correcto   |
+| ---------------------------- | ---------- |
+| `anchors.fill: parent`       | Sí         |
+| `text: parent.title`         | No         |
+| `parent.backend.start()`     | No         |
+| `width: parent.width`        | Sí (visual)|
+| `color: parent.active ? ...` | No         |
+
+---
+
+#### 12. Regla operativa fuerte
+
+Si una referencia afecta:
+
+* comportamiento
+* estado
+* lógica
+* backend
+* navegación
+
+No debe usar `parent`.
+
+Solo layout puede usar `parent`.
+
+<---FILES--->

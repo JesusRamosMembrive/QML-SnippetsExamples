@@ -1,0 +1,286 @@
+<---EXPLANATION--->
+### Delegates Should Not Store State
+
+Este principio es crítico en cualquier UI basada en `ListView`, `GridView`, `Repeater`, etc.
+
+> Un delegate no es una entidad de datos.
+> Es una representación visual temporal de un elemento del modelo.
+
+Si un delegate almacena estado interno, introduces:
+
+* incoherencias
+* bugs intermitentes
+* problemas con reciclado (view recycling)
+* pérdida de sincronización con el modelo
+
+---
+
+#### 1. Por qué este principio existe
+
+En `ListView` y similares:
+
+* Los delegates se **crean y destruyen dinámicamente**
+* Se **reciclan** cuando haces scroll
+* No existe una instancia fija por elemento del modelo
+
+Por tanto:
+
+> El delegate no es el dueño del estado.
+
+---
+
+#### 2. Error clásico
+
+```qml
+ListView {
+    model: myModel
+
+    delegate: Item {
+        property bool selected: false
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: selected = !selected
+        }
+
+        Rectangle {
+            color: selected ? "blue" : "white"
+        }
+    }
+}
+```
+
+Cuando haces scroll:
+
+* El delegate se recicla.
+* `selected` puede quedarse en `true`.
+* El elemento visual ahora representa otro índice.
+* Resultado: selección incorrecta.
+
+---
+
+#### 3. Regla fundamental
+
+> El estado pertenece al modelo, no al delegate.
+
+---
+
+#### 4. Solución correcta: mover estado al modelo
+
+##### Con `ListModel` QML
+
+```qml
+ListModel {
+    id: myModel
+    ListElement { name: "A"; selected: false }
+    ListElement { name: "B"; selected: false }
+}
+```
+
+Delegate:
+
+```qml
+delegate: Item {
+    required property bool selected
+    required property string name
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            myModel.setProperty(index, "selected", !selected)
+        }
+    }
+
+    Rectangle {
+        color: selected ? "blue" : "white"
+    }
+}
+```
+
+Ahora:
+
+* El estado vive en el modelo.
+* El delegate solo refleja estado.
+* El reciclado no rompe nada.
+
+---
+
+#### 5. Con modelo C++ (`QAbstractListModel`)
+
+Exponer el rol `selected`:
+
+```cpp
+enum Roles {
+    NameRole = Qt::UserRole + 1,
+    SelectedRole
+};
+```
+
+Delegate:
+
+```qml
+delegate: Item {
+    required property bool selected
+    required property string name
+
+    Rectangle {
+        color: selected ? "blue" : "white"
+    }
+}
+```
+
+---
+
+#### 6. Qué sí puede tener un delegate
+
+* estado puramente visual efímero
+* animaciones
+* hover temporal
+* propiedades derivadas
+
+Ejemplo válido:
+
+```qml
+property bool hovered: false
+```
+
+Si solo controla efecto visual temporal y no representa estado lógico persistente.
+
+---
+
+#### 7. Diferencia clave: estado persistente vs efímero
+
+| Tipo de estado        | ¿Debe ir en delegate? |
+| --------------------- | --------------------- |
+| Selección             | No                    |
+| Activado/desactivado  | No                    |
+| Datos del dispositivo | No                    |
+| Hover                 | Sí                    |
+| Animación activa      | Sí                    |
+| Opacidad temporal     | Sí                    |
+
+---
+
+#### 8. Error más sutil: almacenar datos derivados
+
+```qml
+// Incorrecto
+property real computedValue
+Component.onCompleted: {
+    computedValue = expensiveCalculation(model.value)
+}
+
+// Correcto (binding declarativo)
+property real computedValue: expensiveCalculation(model.value)
+```
+
+---
+
+#### 9. Interacción con reciclado
+
+`ListView` puede:
+
+* reutilizar delegates
+* reasignar nuevos `modelData`
+* cambiar `index`
+
+Si el delegate guarda estado interno, ese estado no corresponde al nuevo elemento.
+
+---
+
+#### 10. Patrón correcto: Unidirectional Data Flow
+
+Modelo → Delegate → Usuario → Modelo
+
+Nunca:
+
+Delegate → mantiene estado interno → Modelo opcional
+
+Siempre:
+
+Delegate comunica intención → Modelo cambia → Delegate reacciona
+
+---
+
+#### 11. Ejemplo completo bien diseñado
+
+```qml
+ListView {
+    model: deviceModel
+
+    delegate: Rectangle {
+        required property string deviceId
+        required property bool active
+
+        color: active ? "green" : "gray"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                deviceModel.toggleActive(index)
+            }
+        }
+    }
+}
+```
+
+---
+
+#### 12. Caso complejo: selección única
+
+Nunca hagas esto en el delegate:
+
+```qml
+property bool selected
+```
+
+Haz esto en el modelo:
+
+```qml
+ListModel {
+    property int selectedIndex: -1
+}
+```
+
+Y el delegate:
+
+```qml
+color: index === myModel.selectedIndex ? "blue" : "white"
+```
+
+---
+
+#### 13. Excepción legítima
+
+En `Repeater` (no reciclado), el riesgo es menor.
+
+Pero incluso ahí, si el estado es lógico, debe estar fuera.
+
+---
+
+#### 14. Resumen técnico
+
+No almacenar en delegate:
+
+* selección
+* flags persistentes
+* datos del backend
+* resultados de cálculo
+
+Sí puede almacenar:
+
+* hover
+* animaciones
+* estados transitorios puramente visuales
+
+---
+
+#### Conclusión
+
+Un delegate es una vista efímera del modelo.
+
+Si almacena estado persistente, estás violando el diseño de QML.
+
+En aplicaciones complejas (dashboards industriales, paneles con cientos de items), ignorar este principio produce bugs muy difíciles de rastrear.
+
+<---FILES--->

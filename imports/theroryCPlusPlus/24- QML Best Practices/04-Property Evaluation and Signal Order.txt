@@ -1,0 +1,288 @@
+<---EXPLANATION--->
+### Property Evaluation and Signal Emission Order
+
+Este principio es crítico en QML y suele ignorarse hasta que aparece un bug no determinista.
+
+> No debes basar tu lógica en el orden en que se evalúan bindings ni en el orden en que se emiten señales.
+
+El motor QML es reactivo y dirigido por un grafo de dependencias.
+No es un flujo imperativo secuencial garantizado.
+
+---
+
+#### 1. El problema real
+
+Muchos desarrolladores asumen implícitamente que:
+
+* Primero cambia A
+* Luego cambia B
+* Luego se ejecuta onAChanged
+* Luego onBChanged
+
+Eso **no está garantizado**.
+
+El motor:
+
+* Recalcula bindings según dependencias
+* Puede reordenar evaluaciones
+* Puede agrupar cambios
+* Puede optimizar ciclos
+
+Especialmente en Qt 6 con optimizaciones más agresivas.
+
+---
+
+#### 2. Ejemplo clásico incorrecto
+
+```qml
+Item {
+    property int a: 0
+    property int b: a + 1
+
+    onAChanged: {
+        console.log("A changed, B is:", b)
+    }
+}
+```
+
+Aquí estás asumiendo que cuando `onAChanged` se ejecuta:
+
+* `b` ya se ha recalculado.
+
+Eso **no es contractual**.
+
+Puede funcionar hoy.
+Puede romper mañana.
+
+---
+
+#### 3. Caso más peligroso: lógica dependiente del orden
+
+```qml
+Item {
+    property int a: 0
+    property int b: 0
+
+    onAChanged: {
+        b = a + 1
+    }
+
+    onBChanged: {
+        if (b > 10)
+            a = 0
+    }
+}
+```
+
+Esto introduce:
+
+* Dependencia circular
+* Comportamiento no determinista
+* Posibles loops
+* Orden dependiente del motor
+
+Es frágil.
+
+---
+
+#### 4. Qué hace realmente el motor
+
+Cuando cambia una propiedad:
+
+1. Marca dependencias como "dirty"
+2. Evalúa grafo
+3. Ejecuta handlers
+4. Puede colapsar evaluaciones
+
+No es una secuencia lineal simple.
+
+---
+
+#### 5. Solución: eliminar dependencia del orden
+
+##### Incorrecto (orden implícito)
+
+```qml
+onXChanged: {
+    y = computeFromX()
+}
+```
+
+##### Correcto (declarativo)
+
+```qml
+property int y: computeFromX(x)
+```
+
+Ahora:
+
+* No importa cuándo se evalúe
+* y siempre es coherente con x
+* No dependes del orden de señales
+
+---
+
+#### 6. Problema con múltiples dependencias
+
+Ejemplo incorrecto:
+
+```qml
+property int a
+property int b
+property int sum
+
+onAChanged: sum = a + b
+onBChanged: sum = a + b
+```
+
+Correcto:
+
+```qml
+property int sum: a + b
+```
+
+---
+
+#### 7. Signal emission order
+
+Si tienes:
+
+```qml
+Connections {
+    target: backend
+
+    function onStateChanged() {
+        updateUI()
+    }
+
+    function onTemperatureChanged() {
+        updateWarning()
+    }
+}
+```
+
+No puedes asumir que:
+
+* onStateChanged se ejecuta antes que onTemperatureChanged
+* O viceversa
+
+Especialmente si ambos cambios vienen de C++ en una misma transacción.
+
+---
+
+#### 8. Cuándo sí usar onXChanged
+
+Solo para:
+
+* Logging
+* Efectos secundarios (I/O, animaciones)
+* Interacción externa
+* Debug
+
+Nunca para mantener coherencia interna de estado.
+
+---
+
+#### 9. Caso crítico: inicialización
+
+Este bug es muy común:
+
+```qml
+Component.onCompleted: {
+    derived = compute(base)
+}
+```
+
+Pero si `base` cambia después:
+
+→ derived queda inconsistente.
+
+Correcto:
+
+```qml
+property int derived: compute(base)
+```
+
+---
+
+#### 10. Señales en C++ (muy importante)
+
+Si en C++ haces:
+
+```cpp
+setA(10);
+setB(20);
+```
+
+Y ambos emiten señales:
+
+QML puede recibirlos:
+
+* Separadamente
+* En orden no esperado
+* Incluso colapsados
+
+Si tu lógica depende del orden, estás mal diseñado.
+
+---
+
+#### 11. Versión robusta
+
+En vez de:
+
+```qml
+onAChanged: sum = a + b
+onBChanged: sum = a + b
+```
+
+Haz:
+
+```qml
+property int sum: a + b
+```
+
+Y si necesitas efecto:
+
+```qml
+onSumChanged: {
+    console.log("Sum updated:", sum)
+}
+```
+
+---
+
+#### 12. Regla arquitectónica
+
+Estado base → propiedades simples
+Estado derivado → bindings
+Efectos secundarios → handlers
+
+Nunca mezclar.
+
+---
+
+#### Resumen técnico
+
+No debes confiar en:
+
+* Orden de evaluación de bindings
+* Orden de ejecución de onXChanged
+* Orden de emisión de señales
+* Orden de señales C++ → QML
+
+Debes confiar en:
+
+* Grafo declarativo
+* Dependencias explícitas
+* Estado derivado puro
+
+---
+
+#### Conclusión
+
+Si tu diseño depende del orden de señales o evaluación,
+estás programando contra el modelo de ejecución de QML.
+
+QML es reactivo y basado en dependencias, no secuencial.
+
+<---FILES--->
