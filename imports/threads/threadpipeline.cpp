@@ -224,7 +224,6 @@ void ThreadPipeline::stop()
         QMetaObject::invokeMethod(m_generator, "stop", Qt::QueuedConnection);
 
     // Flush final counts
-    m_generatedCount = m_generatedCount; // already cached
     emit generatedCountChanged();
     emit processedCountChanged();
     emit matchedCountChanged();

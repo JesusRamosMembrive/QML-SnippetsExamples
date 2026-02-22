@@ -12,7 +12,7 @@
 // setDynamicSortFilter(true):
 //   Cuando el source model cambia (agrega/elimina/edita filas),
 //   el proxy re-evalua automaticamente filterAcceptsRow() y reordena.
-//   Sin esto, tendrias que llamar invalidateFilter() manualmente
+//   Sin esto, tendrias que llamar beginFilterChange()/endFilterChange() manualmente
 //   despues de cada cambio en el source.
 // ============================================================================
 
@@ -41,7 +41,7 @@ QString EmployeeProxyModel::filterText() const
 }
 
 // setFilterText() se llama desde QML cuando el usuario escribe en el campo
-// de busqueda. invalidateFilter() fuerza al proxy a re-evaluar
+// de busqueda. beginFilterChange()/endFilterChange() fuerza al proxy a re-evaluar
 // filterAcceptsRow() para TODAS las filas, mostrando/ocultando filas
 // segun el nuevo texto.
 void EmployeeProxyModel::setFilterText(const QString &text)
@@ -49,9 +49,10 @@ void EmployeeProxyModel::setFilterText(const QString &text)
     if (m_filterText == text)
         return;
     m_filterText = text;
-    // invalidateFilter(): le dice al proxy "tu filtro cambio, re-evalua todo".
-    // Internamente llama filterAcceptsRow() para cada fila del source.
-    invalidateFilter();
+    // beginFilterChange()/endFilterChange(): le dice al proxy "tu filtro cambio,
+    // re-evalua todo". Internamente llama filterAcceptsRow() para cada fila.
+    beginFilterChange();
+    endFilterChange();
     emit filterTextChanged();
 }
 
