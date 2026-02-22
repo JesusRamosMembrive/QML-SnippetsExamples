@@ -83,11 +83,11 @@ Rectangle {
                 Item { Layout.fillWidth: true }
 
                 // -- ComboBox integrado en la toolbar para seleccion de zoom.
-                //    onCurrentTextChanged se dispara al cambiar la seleccion.
+                //    onActivated se dispara al cambiar la seleccion.
                 ComboBox {
                     model: ["100%", "75%", "50%", "125%", "150%"]
                     implicitWidth: Style.resize(90)
-                    onCurrentTextChanged: root.log("Zoom: " + currentText)
+                    onActivated: root.log("Zoom: " + currentText)
                 }
             }
         }

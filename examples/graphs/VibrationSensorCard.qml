@@ -81,14 +81,14 @@ Rectangle {
         }
 
         // Slider de resolución: controla la cantidad de puntos de datos.
-        // onValueChanged llama a vibLine.change() para agregar o quitar puntos.
+        // onMoved llama a vibLine.change() para agregar o quitar puntos.
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Points: " + vibResSlider.value.toFixed(0); font.pixelSize: Style.resize(12); color: Style.fontPrimaryColor; Layout.preferredWidth: Style.resize(100) }
             Item {
                 Layout.fillWidth: true; Layout.preferredHeight: Style.resize(28)
                 Slider { id: vibResSlider; anchors.fill: parent; from: 10; to: 500; value: 500; stepSize: 10;
-                    onValueChanged: vibLine.change(value)
+                    onMoved: vibLine.change(value)
                 }
             }
         }

@@ -28,7 +28,7 @@ Rectangle {
     // currentRange es una property derivada (computed) que siempre refleja
     // el valor actual. Este patron evita duplicar estado.
     property int rangeIndex: 2
-    property var rangeValues: [10, 20, 40, 80, 160, 320]
+    property list<int> rangeValues: [10, 20, 40, 80, 160, 320]
     property real currentRange: rangeValues[rangeIndex]
 
     property real heading: 0

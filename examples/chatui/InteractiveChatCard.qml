@@ -31,7 +31,7 @@ Rectangle {
     property bool botTyping: false
 
     // Respuestas predefinidas del bot: se elige una al azar con Math.random().
-    readonly property var botResponses: [
+    readonly property list<string> botResponses: [
         "That's interesting! Tell me more.",
         "I'm just a demo bot, but thanks!",
         "QML is awesome, isn't it?",

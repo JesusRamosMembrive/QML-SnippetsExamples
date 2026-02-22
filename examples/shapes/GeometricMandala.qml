@@ -72,7 +72,7 @@ ColumnLayout {
             width: Math.min(parent.width - Style.resize(20), Style.resize(290))
             height: width
 
-            property var palette: ["#00D1A9", "#FF5900", "#9B59B6", "#4A90D9", "#E74C3C", "#FEA601", "#27AE60", "#F39C12"]
+            property list<color> palette: ["#00D1A9", "#FF5900", "#9B59B6", "#4A90D9", "#E74C3C", "#FEA601", "#27AE60", "#F39C12"]
 
             onPaint: {
                 var ctx = getContext("2d")

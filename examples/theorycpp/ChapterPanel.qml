@@ -83,7 +83,7 @@ Item {
                     color: "#FFFFFF"
                     font.pixelSize: Style.resize(13)
                     clip: true
-                    onTextChanged: root.searchText = text
+                    onTextEdited: root.searchText = text
 
                     // -- Placeholder manual: visible solo cuando no hay texto
                     Text {

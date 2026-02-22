@@ -50,7 +50,7 @@ ColumnLayout {
 
         // Array de 20 niveles (0.0 a 1.0), uno por banda del ecualizador.
         // Se inicializa con valores variados para un aspecto natural.
-        property var levels: [0.6, 0.8, 0.5, 0.9, 0.3, 0.7, 0.65, 0.85,
+        property list<real> levels: [0.6, 0.8, 0.5, 0.9, 0.3, 0.7, 0.65, 0.85,
                               0.4, 0.75, 0.55, 0.7, 0.6, 0.45, 0.8, 0.5,
                               0.9, 0.35, 0.65, 0.7]
 

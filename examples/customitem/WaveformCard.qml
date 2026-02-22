@@ -178,7 +178,7 @@ Rectangle {
             //    Demuestra binding bidireccional con propiedad booleana de C++.
             Switch {
                 checked: waveform.showGrid
-                onCheckedChanged: waveform.showGrid = checked
+                onToggled: waveform.showGrid = checked
             }
         }
     }

@@ -101,7 +101,7 @@ Rectangle {
                     id: speedSlider
                     anchors.fill: parent
                     from: 1; to: 200; value: 10; stepSize: 1
-                    onValueChanged: root.pipeline.generationInterval = value
+                    onMoved: root.pipeline.generationInterval = value
                 }
             }
         }

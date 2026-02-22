@@ -45,7 +45,7 @@ ColumnLayout {
         Layout.preferredHeight: Style.resize(130)
 
         property int currentStep: 2
-        property var stepLabels: ["Order", "Payment", "Processing", "Shipping", "Delivered"]
+        property list<string> stepLabels: ["Order", "Payment", "Processing", "Shipping", "Delivered"]
 
         Row {
             anchors.centerIn: parent

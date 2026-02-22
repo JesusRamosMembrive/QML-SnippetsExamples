@@ -88,14 +88,14 @@ Rectangle {
         }
 
         // ---- Barra de búsqueda ----
-        // onTextChanged dispara el filtrado en cada tecla. Para conjuntos
+        // onTextEdited dispara el filtrado en cada tecla del usuario. Para conjuntos
         // grandes, se debería usar un Timer para hacer debounce y evitar
         // reconstruir el modelo en cada pulsación.
         TextField {
             Layout.fillWidth: true
             placeholderText: "Filter by name or category..."
             font.pixelSize: Style.resize(13)
-            onTextChanged: {
+            onTextEdited: {
                 root.filterText = text
                 root.rebuildFilter()
             }

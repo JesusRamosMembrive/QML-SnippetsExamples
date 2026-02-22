@@ -105,7 +105,7 @@ Rectangle {
                         text: props.userName
                         font.pixelSize: Style.resize(11)
                         placeholderText: "userName"
-                        onTextChanged: props.userName = text
+                        onTextEdited: props.userName = text
                     }
 
                     Button {

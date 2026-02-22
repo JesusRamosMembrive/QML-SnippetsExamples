@@ -75,21 +75,21 @@ Rectangle {
                     font.bold: true
                     checkable: true
                     checked: root.isBold
-                    onCheckedChanged: root.isBold = checked
+                    onToggled: root.isBold = checked
                 }
                 ToolButton {
                     text: "I"
                     font.italic: true
                     checkable: true
                     checked: root.isItalic
-                    onCheckedChanged: root.isItalic = checked
+                    onToggled: root.isItalic = checked
                 }
                 ToolButton {
                     text: "U"
                     font.underline: true
                     checkable: true
                     checked: root.isUnderline
-                    onCheckedChanged: root.isUnderline = checked
+                    onToggled: root.isUnderline = checked
                 }
 
                 ToolSeparator {}

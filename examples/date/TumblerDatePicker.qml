@@ -30,7 +30,7 @@ Rectangle {
     color: Style.cardColor
     radius: Style.resize(8)
 
-    readonly property var monthNames: [
+    readonly property list<string> monthNames: [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ]

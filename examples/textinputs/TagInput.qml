@@ -64,7 +64,7 @@ ColumnLayout {
         // Estado: array de tags y paleta de colores ciclica
         property var tags: ["QML", "Qt Quick", "JavaScript"]
 
-        property var tagColors: [
+        property list<color> tagColors: [
             "#4FC3F7", "#66BB6A", "#FF8A65",
             "#CE93D8", "#FFD54F", "#EF5350",
             "#26A69A", "#AB47BC", "#42A5F5"

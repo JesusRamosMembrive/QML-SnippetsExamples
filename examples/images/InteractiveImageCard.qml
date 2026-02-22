@@ -136,7 +136,7 @@ Rectangle {
                 Slider {
                     Layout.fillWidth: true
                     from: 0; to: 360; value: root.imgRotation
-                    onValueChanged: root.imgRotation = value
+                    onMoved: root.imgRotation = value
                 }
             }
 
@@ -151,7 +151,7 @@ Rectangle {
                 Slider {
                     Layout.fillWidth: true
                     from: 0.3; to: 2.0; value: root.imgScale
-                    onValueChanged: root.imgScale = value
+                    onMoved: root.imgScale = value
                 }
             }
 

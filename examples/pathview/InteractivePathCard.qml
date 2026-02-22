@@ -120,7 +120,7 @@ Rectangle {
                 Slider {
                     Layout.fillWidth: true
                     from: 3; to: 12; value: root.itemCount; stepSize: 1
-                    onValueChanged: root.itemCount = value
+                    onMoved: root.itemCount = value
                 }
             }
 
@@ -130,7 +130,7 @@ Rectangle {
                 Slider {
                     Layout.fillWidth: true
                     from: 0.0; to: 1.0; value: root.pathHeight
-                    onValueChanged: root.pathHeight = value
+                    onMoved: root.pathHeight = value
                 }
             }
         }

@@ -146,7 +146,7 @@ ColumnLayout {
             maximumLength: pinContainer.pinLength
             validator: RegularExpressionValidator { regularExpression: /[0-9]*/ }
             inputMethodHints: Qt.ImhDigitsOnly
-            onTextChanged: pinContainer.pinValue = text
+            onTextEdited: pinContainer.pinValue = text
         }
 
         // MouseArea captura clics en toda el area y redirige el foco al input oculto

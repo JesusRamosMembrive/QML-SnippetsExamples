@@ -27,7 +27,7 @@ Rectangle {
 
     // Paleta de colores para las paginas, usada tanto en los circulos
     // de contenido como potencialmente en los indicadores
-    readonly property var pageColors: ["#00D1A9", "#FEA601", "#4FC3F7", "#FF7043", "#AB47BC"]
+    readonly property list<color> pageColors: ["#00D1A9", "#FEA601", "#4FC3F7", "#FF7043", "#AB47BC"]
 
     ColumnLayout {
         anchors.fill: parent

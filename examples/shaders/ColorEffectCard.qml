@@ -189,7 +189,7 @@ Rectangle {
                 Slider {
                     Layout.fillWidth: true
                     from: 0.0; to: 1.0; value: 0.0
-                    onValueChanged: root.desatAmount = value
+                    onMoved: root.desatAmount = value
                 }
             }
         }

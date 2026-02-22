@@ -16,7 +16,7 @@
 //   - int counter: lectura/escritura. Botones +/- llaman Q_INVOKABLE
 //     increment()/decrement() que modifican el valor en C++ y emiten
 //     counterChanged. QML actualiza el Label automaticamente.
-//   - QString userName: binding bidireccional con TextField. onTextChanged
+//   - QString userName: binding bidireccional con TextField. onTextEdited
 //     escribe en C++; el binding de text lee de C++.
 //   - double temperature: Slider vinculado con onMoved -> setter de C++.
 //   - bool active: Switch vinculado al getter/setter de C++.
@@ -105,7 +105,7 @@ Rectangle {
 
         // -- userName (QString): binding bidireccional.
         //    text: bridge.userName lee de C++ (via READ getter).
-        //    onTextChanged: bridge.userName = text escribe en C++ (via WRITE setter).
+        //    onTextEdited: bridge.userName = text escribe en C++ (via WRITE setter).
         //    Esto crea un ciclo reactivo: C++ -> QML -> C++ -> QML...
         //    No hay loop infinito porque el setter en C++ solo emite la signal
         //    si el valor realmente cambio (patron guard: if (m_val == val) return).
@@ -124,7 +124,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: bridge.userName
                 font.pixelSize: Style.resize(12)
-                onTextChanged: bridge.userName = text
+                onTextEdited: bridge.userName = text
             }
         }
 
@@ -169,7 +169,7 @@ Rectangle {
 
             Switch {
                 checked: bridge.active
-                onCheckedChanged: bridge.active = checked
+                onToggled: bridge.active = checked
             }
 
             Label {

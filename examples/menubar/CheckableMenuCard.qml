@@ -61,26 +61,26 @@ Rectangle {
 
                 // -- Cada MenuItem checkable tiene binding bidireccional:
                 //    checked lee el valor de la propiedad root, y
-                //    onCheckedChanged lo escribe de vuelta.
+                //    onTriggered lo escribe de vuelta.
                 MenuItem {
                     text: "Show Grid"
                     checkable: true
                     checked: root.showGrid
-                    onCheckedChanged: root.showGrid = checked
+                    onTriggered: root.showGrid = checked
                 }
 
                 MenuItem {
                     text: "Show Rulers"
                     checkable: true
                     checked: root.showRulers
-                    onCheckedChanged: root.showRulers = checked
+                    onTriggered: root.showRulers = checked
                 }
 
                 MenuItem {
                     text: "Snap to Grid"
                     checkable: true
                     checked: root.snapToGrid
-                    onCheckedChanged: root.snapToGrid = checked
+                    onTriggered: root.snapToGrid = checked
                 }
 
                 MenuSeparator {}

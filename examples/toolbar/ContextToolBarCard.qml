@@ -12,7 +12,7 @@
 //     estado de selectedItems.
 //   - Behavior on color en el background: la transicion de color del fondo
 //     (gris -> azul oscuro) anima suavemente el cambio de contexto.
-//   - CheckBox con contador: onCheckedChanged suma o resta 1 al contador.
+//   - CheckBox con contador: onToggled suma o resta 1 al contador.
 //     Este patron es simple pero tiene una limitacion: si el Repeater se
 //     recrea (por cambio de modelo), el contador se desincroniza.
 //   - Patron visual: el color azul (#1A3A5C, #4FC3F7) indica modo de
@@ -119,7 +119,7 @@ Rectangle {
                     CheckBox {
                         required property string modelData
                         text: modelData
-                        onCheckedChanged: {
+                        onToggled: {
                             root.selectedItems += checked ? 1 : -1
                         }
                     }

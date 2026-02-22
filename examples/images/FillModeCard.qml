@@ -85,7 +85,7 @@ Rectangle {
             Layout.fillWidth: true
             model: root.modes.map(function(m) { return m.name })
             currentIndex: root.selectedMode
-            onCurrentIndexChanged: root.selectedMode = currentIndex
+            onActivated: root.selectedMode = currentIndex
             font.pixelSize: Style.resize(12)
         }
 

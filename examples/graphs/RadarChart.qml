@@ -79,9 +79,9 @@ ColumnLayout {
             height: width
 
             // Datos: arrays de 5 valores (0-100) para cada estadística
-            property var playerStats: [85, 70, 60, 90, 55]
-            property var enemyStats: [60, 80, 75, 45, 70]
-            property var labels: ["ATK", "DEF", "SPD", "HP", "MP"]
+            property list<real> playerStats: [85, 70, 60, 90, 55]
+            property list<real> enemyStats: [60, 80, 75, 45, 70]
+            property list<string> labels: ["ATK", "DEF", "SPD", "HP", "MP"]
 
             // -----------------------------------------------------------
             // Función auxiliar para dibujar un dataset como polígono.

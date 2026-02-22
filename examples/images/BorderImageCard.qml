@@ -105,7 +105,7 @@ Rectangle {
             Slider {
                 Layout.fillWidth: true
                 from: 5; to: 28; value: root.borderSize; stepSize: 1
-                onValueChanged: root.borderSize = value
+                onMoved: root.borderSize = value
             }
         }
     }

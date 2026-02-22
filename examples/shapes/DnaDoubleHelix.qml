@@ -60,7 +60,7 @@ ColumnLayout {
             anchors.margins: Style.resize(4)
 
             property real phase: 0
-            property var basePairColors: ["#E74C3C", "#4A90D9", "#27AE60", "#FEA601"]
+            property list<color> basePairColors: ["#E74C3C", "#4A90D9", "#27AE60", "#FEA601"]
 
             Timer {
                 interval: 40

@@ -93,7 +93,7 @@ Rectangle {
                 // -- Llamada a Q_INVOKABLE: methods.transformText() llama
                 //    al metodo C++ y retorna un QString que QML recibe
                 //    como string. La conversion es automatica.
-                onCurrentIndexChanged: {
+                onActivated: {
                     root.resultText = methods.transformText(
                         transformInput.text, currentIndex)
                 }

@@ -32,7 +32,7 @@ Rectangle {
     // Filtros de archivo: el formato es "Descripcion (*.ext1 *.ext2)".
     // El dialogo nativo los muestra en un dropdown para que el usuario
     // filtre por tipo de archivo.
-    readonly property var filters: [
+    readonly property list<string> filters: [
         "All files (*)",
         "Images (*.png *.jpg *.svg)",
         "Documents (*.pdf *.txt *.md)",

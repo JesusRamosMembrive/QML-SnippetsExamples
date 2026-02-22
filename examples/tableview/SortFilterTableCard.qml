@@ -67,7 +67,7 @@ Rectangle {
                 id: filterField
                 Layout.fillWidth: true
                 placeholderText: "Search name or department..."
-                onTextChanged: root.proxyModel.filterText = text
+                onTextEdited: root.proxyModel.filterText = text
             }
         }
 

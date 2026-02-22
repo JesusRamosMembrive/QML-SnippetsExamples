@@ -30,7 +30,7 @@ Rectangle {
 
     // Datos de prueba: lista fija de strings que se procesaran tanto
     // de forma secuencial como paralela para poder comparar tiempos.
-    readonly property var itemsToProcess: [
+    readonly property list<string> itemsToProcess: [
         "Apple", "Banana", "Cherry", "Dragon fruit",
         "Elderberry", "Fig", "Grape", "Honeydew"
     ]

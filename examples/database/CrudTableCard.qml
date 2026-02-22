@@ -46,7 +46,7 @@ Rectangle {
     property var tableModel: null
     required property DatabaseManager dbManager
 
-    property var columnWidths: [
+    property list<real> columnWidths: [
         Style.resize(50),
         Style.resize(140),
         Style.resize(110),
@@ -91,7 +91,7 @@ Rectangle {
                 id: deptFilter
                 Layout.preferredWidth: Style.resize(150)
                 model: ["All", "Engineering", "Marketing", "Design", "Management"]
-                onCurrentTextChanged: {
+                onActivated: {
                     if (!root.tableModel) return
                     if (currentText === "All")
                         root.tableModel.setFilterString("")

@@ -199,7 +199,7 @@ Rectangle {
                 Layout.fillWidth: true
                 model: root.easings.map(function(e) { return e.name })
                 currentIndex: root.easingIndex
-                onCurrentIndexChanged: root.easingIndex = currentIndex
+                onActivated: root.easingIndex = currentIndex
                 font.pixelSize: Style.resize(11)
             }
 

@@ -48,7 +48,7 @@ Rectangle {
         // ---- Selector de tema ----
         // ComboBox vinculado a settings.theme (Q_PROPERTY QString).
         // currentIndex se inicializa buscando el valor actual en el modelo,
-        // y onCurrentTextChanged lo escribe de vuelta al C++.
+        // y onActivated lo escribe de vuelta al C++.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -64,7 +64,7 @@ Rectangle {
                 Layout.fillWidth: true
                 model: ["Dark", "Light", "System"]
                 currentIndex: model.indexOf(settings.theme)
-                onCurrentTextChanged: settings.theme = currentText
+                onActivated: settings.theme = currentText
             }
         }
 
@@ -116,7 +116,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: settings.userName
                 font.pixelSize: Style.resize(11)
-                onTextChanged: settings.userName = text
+                onTextEdited: settings.userName = text
             }
         }
 
@@ -137,7 +137,7 @@ Rectangle {
 
             Switch {
                 checked: settings.notifications
-                onCheckedChanged: settings.notifications = checked
+                onToggled: settings.notifications = checked
             }
 
             Label {

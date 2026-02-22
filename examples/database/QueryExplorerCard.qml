@@ -16,7 +16,7 @@
 //
 // Patrones clave:
 //   - ComboBox con textRole/valueRole: separa la etiqueta visible del SQL.
-//     onCurrentIndexChanged copia el SQL al TextArea automaticamente.
+//     onActivated copia el SQL al TextArea automaticamente.
 //   - Tabla dinamica con doble Repeater: el header y las filas usan
 //     queryModel.columnCount() como modelo numerico. Cada celda accede a
 //     los datos via getRow(rowIndex)[headerName(colIndex)]. Este patron
@@ -66,7 +66,7 @@ Rectangle {
 
         // ── Consultas predefinidas ──
         // El ComboBox usa textRole/valueRole para separar la etiqueta visible
-        // del SQL real. onCurrentIndexChanged copia el SQL al TextArea.
+        // del SQL real. onActivated copia el SQL al TextArea.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(8)
@@ -104,7 +104,7 @@ Rectangle {
                         sql: "SELECT * FROM products ORDER BY category, name"
                     }
                 }
-                onCurrentIndexChanged: {
+                onActivated: {
                     if (currentIndex >= 0 && currentValue !== undefined)
                         sqlInput.text = currentValue
                 }

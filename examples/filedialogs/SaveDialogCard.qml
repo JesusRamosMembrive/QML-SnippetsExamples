@@ -89,7 +89,7 @@ Rectangle {
                 text: root.fileName
                 font.pixelSize: Style.resize(13)
                 placeholderText: "Enter file name..."
-                onTextChanged: root.fileName = text
+                onTextEdited: root.fileName = text
             }
         }
 
