@@ -108,6 +108,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/customitem.png
         icons/qmlcppbridge.png
         icons/asynccpp.png
+        icons/ethernet.png
         images/particle.png
         images/Qt_logo_2016.svg
         images/ninepatch.png

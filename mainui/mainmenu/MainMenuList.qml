@@ -112,6 +112,7 @@ Item {
         ListElement { name: "QMLCppBridge" }
         ListElement { name: "AsyncCpp" }
         ListElement { name: "Settings" }
+        ListElement { name: "Ethernet" }
     }
 
     // --- Vista: ListView ---

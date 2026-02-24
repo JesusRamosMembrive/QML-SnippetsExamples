@@ -131,6 +131,8 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     websocketexpluginplugin
     networkpluginplugin
     chatuipluginplugin
+    ethernetpluginplugin
+    ethernetexpluginplugin
 
     # --- Páginas de integración C++ ---
     theoryparserpluginplugin

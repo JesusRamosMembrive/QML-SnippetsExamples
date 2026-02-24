@@ -103,7 +103,8 @@ Item {
         "CustomItem":   "qrc:/qt/qml/customitemex/Main.qml",
         "QMLCppBridge": "qrc:/qt/qml/qmlcppbridgeex/Main.qml",
         "AsyncCpp":     "qrc:/qt/qml/asynccppex/Main.qml",
-        "Settings":     "qrc:/qt/qml/settingsex/Main.qml"
+        "Settings":     "qrc:/qt/qml/settingsex/Main.qml",
+        "Ethernet":     "qrc:/qt/qml/ethernetex/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---
@@ -322,6 +323,7 @@ Item {
                             ListElement { name: "QMLCppBridge"; desc: "Q_PROPERTY, Q_INVOKABLE, Q_ENUM, C++ signals to QML" }
                             ListElement { name: "AsyncCpp";     desc: "QtConcurrent, QFuture, QPromise, progress and cancellation" }
                             ListElement { name: "Settings";     desc: "QSettings persistent preferences, key-value store, groups" }
+                            ListElement { name: "Ethernet";     desc: "UDP transport, STANAG 4586 BigEndian codec, bitmask payload, XOR checksum" }
                         }
 
                         // ColumnLayout con spacing 0: las filas van pegadas,
