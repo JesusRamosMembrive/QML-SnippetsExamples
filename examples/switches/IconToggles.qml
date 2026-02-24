@@ -14,7 +14,7 @@
 // icono, etiqueta y color de acento. Las propiedades 'required property var
 // modelData' y 'required property int index' dan acceso tipado a los datos.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

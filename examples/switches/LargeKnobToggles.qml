@@ -16,7 +16,7 @@
 //
 // Los Behavior on scale/color aseguran transiciones animadas en todo cambio.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

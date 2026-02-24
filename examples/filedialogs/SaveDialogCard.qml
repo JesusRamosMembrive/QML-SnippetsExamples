@@ -16,7 +16,7 @@
 //   gracias al binding sobre root.formats[root.formatIndex].filter.
 // - selectedFile (singular, no plural) retorna la URL del archivo guardado.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

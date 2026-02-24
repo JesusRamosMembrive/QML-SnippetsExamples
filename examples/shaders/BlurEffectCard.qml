@@ -18,6 +18,8 @@
 //     renderizado. En contenido complejo o con radius alto, puede
 //     afectar significativamente los FPS.
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

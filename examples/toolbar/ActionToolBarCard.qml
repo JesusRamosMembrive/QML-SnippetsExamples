@@ -17,7 +17,7 @@
 //   - Operador || en binding: "logText || placeholder" muestra texto por
 //     defecto cuando logText esta vacio (string vacio es falsy en JS).
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

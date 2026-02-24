@@ -15,7 +15,7 @@
 // distribuyen equitativamente en el espacio disponible, sin importar
 // cuantos haya. Esto crea un control que se adapta al contenido.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

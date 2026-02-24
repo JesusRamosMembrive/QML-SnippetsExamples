@@ -14,6 +14,7 @@
 // la logica necesaria para ajustar currentIndex al cerrar una pestana
 // (evitar indices fuera de rango).
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

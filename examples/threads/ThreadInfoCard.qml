@@ -29,7 +29,7 @@
 //     una explicacion paso a paso del patron moveToThread() con formato
 //     monospace, sirviendo como referencia rapida para el aprendiz.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

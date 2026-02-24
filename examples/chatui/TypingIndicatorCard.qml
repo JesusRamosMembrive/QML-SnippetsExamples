@@ -15,6 +15,7 @@
 // - Switch para activar/desactivar todas las animaciones a la vez mediante
 //   la propiedad `running` vinculada a root.showTyping.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

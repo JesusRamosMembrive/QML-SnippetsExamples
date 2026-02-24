@@ -30,6 +30,7 @@
 //      propiedad "dismissed". Esto es un patron pragmatico pero fragil;
 //      en produccion seria mejor usar un modelo ListModel.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

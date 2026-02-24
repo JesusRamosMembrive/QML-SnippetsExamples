@@ -30,7 +30,7 @@
 //     organigrama no permite agregar ni eliminar nodos. Son dos instancias
 //     separadas del mismo tipo de modelo (OrganizationTreeModel).
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

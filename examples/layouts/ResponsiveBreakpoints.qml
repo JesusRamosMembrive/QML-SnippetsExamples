@@ -22,7 +22,7 @@
 //   - Repeater con array de colores: asigna un color unico a cada tarjeta
 //     usando indice como clave del array, patron conciso para demos visuales.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

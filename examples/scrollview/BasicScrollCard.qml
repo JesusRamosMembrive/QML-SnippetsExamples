@@ -15,6 +15,7 @@
 // - clip: true es necesario para que el contenido no se dibuje fuera del área
 // - Repeater genera elementos dinámicamente a partir de un modelo numérico
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

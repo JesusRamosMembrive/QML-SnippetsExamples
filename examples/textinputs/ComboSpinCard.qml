@@ -16,7 +16,7 @@
 //     modelo mas complejo con roles.
 //   - `toFixed(0)` para formatear numeros sin decimales en el Label interno.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

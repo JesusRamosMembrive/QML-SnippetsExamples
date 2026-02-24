@@ -18,6 +18,7 @@
 //   - Indicadores duales (vertical + horizontal): el contenido es mas grande
 //     que el viewport en ambos ejes, asi que se necesitan dos scrollbars.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

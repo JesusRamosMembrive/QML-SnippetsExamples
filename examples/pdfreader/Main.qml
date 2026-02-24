@@ -31,6 +31,8 @@
 //     invisible sobre el visor PDF (para permitir reemplazar el documento).
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -370,10 +372,15 @@ Item {
                                     //    moderna a MouseArea cuando solo se necesita
                                     //    hover y tap por separado.
                                     Rectangle {
+                                        id: bookDelegate
                                         Layout.preferredWidth: Style.resize(280)
                                         Layout.preferredHeight: Style.resize(120)
                                         color: bookMouse.hovered ? Style.surfaceColor : Style.cardColor
                                         radius: Style.resize(8)
+
+                                        required property string title
+                                        required property string author
+                                        required property string filename
 
                                         RowLayout {
                                             anchors.fill: parent
@@ -402,7 +409,7 @@ Item {
                                                 spacing: Style.resize(4)
 
                                                 Label {
-                                                    text: model.title
+                                                    text: bookDelegate.title
                                                     font.pixelSize: Style.resize(15)
                                                     font.bold: true
                                                     color: Style.fontPrimaryColor
@@ -411,7 +418,7 @@ Item {
                                                 }
 
                                                 Label {
-                                                    text: model.author
+                                                    text: bookDelegate.author
                                                     font.pixelSize: Style.resize(12)
                                                     color: Style.fontSecondaryColor
                                                     elide: Text.ElideRight
@@ -433,7 +440,7 @@ Item {
                                         }
 
                                         TapHandler {
-                                            onTapped: pdfDoc.source = root.pdfFilePath(model.filename)
+                                            onTapped: pdfDoc.source = root.pdfFilePath(bookDelegate.filename)
                                         }
                                     }
                                 }

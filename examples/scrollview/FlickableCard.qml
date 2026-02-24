@@ -17,6 +17,7 @@
 // - ScrollBar.AsNeeded solo muestra la barra cuando el contenido excede el
 //   área visible en ese eje
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

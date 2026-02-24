@@ -16,6 +16,8 @@
 // actual del grupo, que se usa para mostrar el texto del encabezado.
 // ============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -104,6 +106,11 @@ Rectangle {
                 }
 
                 delegate: Rectangle {
+                    id: groceryDelegate
+
+                    required property string name
+                    required property string category
+
                     width: sectionListView.width
                     height: Style.resize(34)
                     radius: Style.resize(4)
@@ -121,7 +128,7 @@ Rectangle {
                             height: Style.resize(8)
                             radius: Style.resize(2)
                             color: {
-                                switch(model.category) {
+                                switch(groceryDelegate.category) {
                                     case "Fruits": return "#FF6B6B";
                                     case "Vegetables": return "#00D1A9";
                                     case "Dairy": return "#74B9FF";
@@ -132,7 +139,7 @@ Rectangle {
                         }
 
                         Label {
-                            text: model.name
+                            text: groceryDelegate.name
                             font.pixelSize: Style.resize(13)
                             color: Style.fontPrimaryColor
                             Layout.fillWidth: true

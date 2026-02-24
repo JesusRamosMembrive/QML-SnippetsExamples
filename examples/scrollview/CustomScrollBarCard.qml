@@ -16,6 +16,7 @@
 // - contentItem y background permiten reemplazar completamente la apariencia
 // - Los estados pressed/hovered permiten retroalimentación visual interactiva
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

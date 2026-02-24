@@ -23,6 +23,8 @@
 // cada módulo QML estático.
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -336,10 +338,15 @@ Item {
                                 model: examplesModel
 
                                 // Cada fila: nombre del ejemplo + descripción.
-                                // Se accede a los roles del modelo con model.name
-                                // y model.desc. La propiedad "index" también está
-                                // disponible automáticamente (fila actual en el modelo).
+                                // required property: declara explícitamente qué roles
+                                // del modelo usa el delegate (necesario con
+                                // ComponentBehavior Bound). Qt inyecta los valores
+                                // automáticamente al instanciar cada delegate.
                                 Item {
+                                    id: exampleDelegate
+                                    required property string name
+                                    required property string desc
+                                    required property int index
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: Style.resize(36)
 
@@ -350,7 +357,7 @@ Item {
                                         spacing: Style.resize(15)
 
                                         Label {
-                                            text: model.name
+                                            text: exampleDelegate.name
                                             font.pixelSize: Style.resize(14)
                                             font.bold: true
                                             color: Style.mainColor
@@ -361,7 +368,7 @@ Item {
                                         // si no cabe en el ancho disponible, evitando
                                         // desbordamiento horizontal.
                                         Label {
-                                            text: model.desc
+                                            text: exampleDelegate.desc
                                             font.pixelSize: Style.resize(13)
                                             color: Style.fontSecondaryColor
                                             Layout.fillWidth: true
@@ -380,7 +387,7 @@ Item {
                                         anchors.rightMargin: Style.resize(10)
                                         height: 1
                                         color: "#3A3D45"
-                                        visible: index < examplesModel.count - 1
+                                        visible: exampleDelegate.index < examplesModel.count - 1
                                     }
                                 }
                             }

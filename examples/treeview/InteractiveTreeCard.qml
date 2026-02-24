@@ -31,7 +31,7 @@
 //   - enabled: editSelModel.hasSelection: los botones de accion solo se
 //     activan cuando hay un nodo seleccionado, previniendo errores.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

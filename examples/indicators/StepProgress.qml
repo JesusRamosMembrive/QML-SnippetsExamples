@@ -21,7 +21,7 @@
 //     (completado → activo → pendiente) son suaves gracias a Behavior on color.
 //   - Checkmark Unicode (✓): reemplaza el número cuando el paso está completado.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

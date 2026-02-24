@@ -15,7 +15,7 @@
 // visible: false. OpacityMask los renderiza internamente; si fueran
 // visibles, se verian duplicados.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

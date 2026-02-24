@@ -45,6 +45,7 @@
 //      como en editores de codigo modernos.
 //
 // ============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

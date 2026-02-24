@@ -10,6 +10,8 @@
 // - currentRange como computed property derivada de rangeValues[rangeIndex].
 // - Panel de estado que lee datos de otros componentes via bindings.
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

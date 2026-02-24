@@ -17,7 +17,7 @@
 // Nota: FolderDialog no tiene nameFilters porque los directorios no
 // tienen extension. Solo se configura title y opcionalmente currentFolder.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

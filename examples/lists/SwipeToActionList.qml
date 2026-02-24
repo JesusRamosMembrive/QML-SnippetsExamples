@@ -20,6 +20,7 @@
 // Este patron NO usa SwipeDelegate de Qt Controls (que seria mas simple)
 // para demostrar como construirlo manualmente con MouseArea y animaciones.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

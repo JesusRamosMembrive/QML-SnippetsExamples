@@ -20,6 +20,8 @@
 //    que Flow maneja elementos de tamano variable.
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -140,14 +142,19 @@ Rectangle {
                     model: flowModel
 
                     Rectangle {
-                        width: model.itemWidth
+                        id: flowDelegate
+                        width: flowDelegate.itemWidth
                         height: Style.resize(30)
                         radius: Style.resize(4)
-                        color: model.itemColor
+                        color: flowDelegate.itemColor
+
+                        required property real itemWidth
+                        required property color itemColor
+                        required property int index
 
                         Label {
                             anchors.centerIn: parent
-                            text: (index + 1)
+                            text: (flowDelegate.index + 1)
                             font.pixelSize: Style.resize(11)
                             color: "white"
                             font.bold: true

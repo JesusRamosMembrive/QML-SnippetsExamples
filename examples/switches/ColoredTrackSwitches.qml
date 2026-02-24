@@ -15,7 +15,7 @@
 // Cada delegate del Repeater es un RowLayout (track + etiqueta) que ocupa
 // una celda completa gracias a Layout.fillWidth.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

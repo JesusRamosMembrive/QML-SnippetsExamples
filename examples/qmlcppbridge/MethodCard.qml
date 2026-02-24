@@ -27,6 +27,7 @@
 // Aprendizaje: Q_INVOKABLE es ideal para logica de negocio que necesita
 // la velocidad de C++ o acceso a APIs de C++ que QML no tiene.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

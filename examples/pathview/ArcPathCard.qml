@@ -17,6 +17,7 @@
 //   - incrementCurrentIndex()/decrementCurrentIndex(): navegacion programatica
 //     ademas del drag natural del PathView.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

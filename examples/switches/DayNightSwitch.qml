@@ -18,7 +18,7 @@
 // dayNightTrack.parent.isNight desde los hijos. Un diseno mas limpio
 // usaria un id dedicado, pero este patron demuestra la cadena de padres.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

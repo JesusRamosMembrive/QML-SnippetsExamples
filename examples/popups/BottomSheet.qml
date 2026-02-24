@@ -29,6 +29,7 @@
 //      icono y color. Cada una se renderiza como boton circular con label.
 //    - scale + Behavior on scale crea un efecto de hover sutil al pasar el mouse.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

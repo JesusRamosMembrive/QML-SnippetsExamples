@@ -18,6 +18,8 @@
 // superior muestra el nombre y hex del color seleccionado.
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -86,6 +88,12 @@ Rectangle {
                 currentIndex: -1
 
                 delegate: Item {
+                    id: colorDelegate
+
+                    required property int index
+                    required property string colorName
+                    required property string colorHex
+
                     width: colorGridView.cellWidth
                     height: colorGridView.cellHeight
 
@@ -97,19 +105,19 @@ Rectangle {
                             width: Style.resize(50)
                             height: Style.resize(50)
                             radius: Style.resize(8)
-                            color: model.colorHex
-                            border.width: GridView.isCurrentItem ? 3 : 0
+                            color: colorDelegate.colorHex
+                            border.width: colorDelegate.GridView.isCurrentItem ? 3 : 0
                             border.color: Style.fontPrimaryColor
                             Layout.alignment: Qt.AlignHCenter
 
-                            scale: GridView.isCurrentItem ? 1.1 : 1.0
+                            scale: colorDelegate.GridView.isCurrentItem ? 1.1 : 1.0
                             Behavior on scale {
                                 NumberAnimation { duration: 150 }
                             }
                         }
 
                         Label {
-                            text: model.colorName
+                            text: colorDelegate.colorName
                             font.pixelSize: Style.resize(10)
                             color: Style.fontSecondaryColor
                             Layout.alignment: Qt.AlignHCenter
@@ -119,8 +127,8 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            colorGridView.currentIndex = index
-                            gridInfoLabel.text = model.colorName + ": " + model.colorHex
+                            colorGridView.currentIndex = colorDelegate.index
+                            gridInfoLabel.text = colorDelegate.colorName + ": " + colorDelegate.colorHex
                         }
                     }
                 }

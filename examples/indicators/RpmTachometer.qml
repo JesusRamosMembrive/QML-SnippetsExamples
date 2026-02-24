@@ -20,7 +20,7 @@
 //     del arco activo, como una capa semi-transparente que siempre
 //     esta visible, recordando al usuario el limite seguro.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

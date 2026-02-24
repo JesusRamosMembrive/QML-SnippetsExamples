@@ -21,6 +21,7 @@
 // 'required property var modelData' y 'required property int index' son
 // obligatorios para acceder a los datos dentro del delegate.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

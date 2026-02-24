@@ -29,6 +29,7 @@
 //   - Los botones master solo estan activos (brillantes) cuando hay alertas
 //     en su modelo. Sin alertas, se muestran atenuados.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

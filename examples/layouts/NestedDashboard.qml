@@ -30,7 +30,7 @@
 //     ocupar todo el espacio sobrante, mientras que los paneles laterales
 //     y los headers/footers mantienen tamanos fijos.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

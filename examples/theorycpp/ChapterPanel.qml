@@ -22,7 +22,7 @@
 //   - Seleccion visual con Qt.rgba(): extrae componentes RGB del color
 //     del tema y aplica transparencia para el highlight de seleccion.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

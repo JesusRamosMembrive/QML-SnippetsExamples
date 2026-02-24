@@ -22,7 +22,7 @@
 //     para asegurar que solo se acepten digitos.
 //   - `scale: 1.05` con Behavior: efecto sutil de "zoom" en la caja activa.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

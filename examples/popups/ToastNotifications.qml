@@ -28,6 +28,7 @@
 //    - Cada tipo (success, error, warning, info) tiene colores de fondo y
 //      borde predefinidos, siguiendo convenciones de diseno estandar.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

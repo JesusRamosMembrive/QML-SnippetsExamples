@@ -21,6 +21,7 @@
 // El avatar usa sender[0] (primera letra del nombre) como inicial,
 // patron comun cuando no hay imagenes de perfil disponibles.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

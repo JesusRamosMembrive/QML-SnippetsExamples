@@ -21,7 +21,7 @@
 // Efecto hover: scale: 1.03 con Behavior da un zoom sutil al pasar
 // el raton, sin afectar el layout (scale no cambia width/height reales).
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

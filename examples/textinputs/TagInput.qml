@@ -27,7 +27,7 @@
 //     principal) y Enter (teclado numerico) son teclas distintas. Se
 //     manejan ambas para compatibilidad completa.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

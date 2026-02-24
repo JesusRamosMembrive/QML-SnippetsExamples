@@ -14,7 +14,7 @@
 // Patron de UI: estado vacio ("No files selected") visible solo cuando
 // la lista esta vacia, usando visible: root.selectedFiles.length === 0.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

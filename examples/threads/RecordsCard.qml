@@ -28,7 +28,7 @@
 //     es la sintaxis moderna de Qt 6 para conectar senales a handlers.
 //     Reemplaza al antiguo onRecordAdded: { ... } que es menos type-safe.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

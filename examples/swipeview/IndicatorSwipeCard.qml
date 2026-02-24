@@ -15,6 +15,7 @@
 // se construye manualmente con Repeater + Rectangle porque requiere
 // animacion de ancho que PageIndicator no soporta nativamente.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

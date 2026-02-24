@@ -18,6 +18,7 @@
 // El usuario puede arrastrar (drag) para rotar los elementos por la
 // elipse. PathView maneja el gesto internamente sin codigo adicional.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

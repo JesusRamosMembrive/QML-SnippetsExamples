@@ -19,6 +19,7 @@
 //   - Behavior on color (ColorAnimation): la transicion de color del
 //     label inferior se anima suavemente cuando cambia el item activo.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

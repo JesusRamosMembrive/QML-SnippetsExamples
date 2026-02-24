@@ -18,7 +18,7 @@
 //   - Superposicion Canvas + Column: el icono y porcentaje se colocan
 //     como hijos del mismo Item que el Canvas, centrados con anchors.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

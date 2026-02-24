@@ -24,7 +24,7 @@
 // aplicaciones de escritorio — header fijo, footer fijo, sidebar(s)
 // de ancho fijo, y contenido que llena el resto.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

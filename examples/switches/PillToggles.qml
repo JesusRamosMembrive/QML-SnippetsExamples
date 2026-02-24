@@ -13,7 +13,7 @@
 // y Style.surfaceColor (off), con ColorAnimation para transiciones suaves.
 // El borde sigue la misma logica: color de acento cuando activo, gris cuando no.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

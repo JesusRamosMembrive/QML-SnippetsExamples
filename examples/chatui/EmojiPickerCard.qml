@@ -14,6 +14,7 @@
 // - Indicacion visual de seleccion: borde + fondo condicional en el delegate
 //   cuando el emoji coincide con selectedEmoji.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

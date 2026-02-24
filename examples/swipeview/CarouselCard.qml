@@ -17,6 +17,7 @@
 // Aprendizaje clave: Repeater dentro de SwipeView + modelData para acceder
 // a objetos JS. Los indicadores personalizados con color por tarjeta.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -14,7 +14,7 @@
 // cancelled) con colores distintos, mostrando como manejar el ciclo de
 // vida completo de una operacion asincrona.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

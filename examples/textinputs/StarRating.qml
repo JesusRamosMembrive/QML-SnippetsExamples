@@ -22,7 +22,7 @@
 //     con el rating/hoverRating actual para decidir si esta llena o vacia.
 //     Es un patron comun en controles discretos (rating, stepper, etc.).
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

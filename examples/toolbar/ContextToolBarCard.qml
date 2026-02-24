@@ -18,7 +18,7 @@
 //   - Patron visual: el color azul (#1A3A5C, #4FC3F7) indica modo de
 //     seleccion activo, una convencion de Material Design.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

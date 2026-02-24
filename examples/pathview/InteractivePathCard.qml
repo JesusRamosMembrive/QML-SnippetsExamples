@@ -18,6 +18,7 @@
 //   - pathItemCount: Math.min(itemCount, 7) limita los delegados visibles
 //     para evitar solapamiento cuando hay muchos elementos.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

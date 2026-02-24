@@ -31,7 +31,7 @@
 //     TODOS los nodos del arbol. El -1 indica "desde la raiz" y "sin limite
 //     de profundidad".
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

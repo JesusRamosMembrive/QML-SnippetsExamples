@@ -13,7 +13,7 @@
 // Caso de uso real: marcos de botones, burbujas de chat, paneles que
 // necesitan esquinas redondeadas que no se deformen al redimensionar.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

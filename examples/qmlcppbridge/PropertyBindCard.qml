@@ -30,6 +30,7 @@
 // Sin las signals NOTIFY, QML no detectaria cambios y la UI se quedaria
 // desactualizada.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

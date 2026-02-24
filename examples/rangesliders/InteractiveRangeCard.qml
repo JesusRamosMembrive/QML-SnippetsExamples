@@ -15,6 +15,7 @@
 // dividimos el valor del slider (0-100) entre 100. El Repeater calcula la
 // posicion central de cada bloque para determinar si esta dentro del rango.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

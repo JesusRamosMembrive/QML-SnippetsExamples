@@ -21,6 +21,8 @@
 //     los tres simultaneamente pero solo uno es visible. Esto es mas
 //     eficiente que Loader para pocos elementos.
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

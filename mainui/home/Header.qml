@@ -30,6 +30,8 @@
 // diseños que no son posibles con un simple rectángulo.
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
@@ -110,12 +112,15 @@ Item {
                 Repeater {
                     model: ["Green", "Orange"]
                     delegate: RadioButton {
+                        id: themeDelegate
+                        required property string modelData
+                        required property int index
                         width: Style.resize(100)
                         height: Style.resize(26)
-                        text: qsTr("%1").arg(modelData)
+                        text: qsTr("%1").arg(themeDelegate.modelData)
                         checked: (Style.theme === text.toLowerCase())
                         onClicked: {
-                            if (modelData === "Green") {
+                            if (themeDelegate.modelData === "Green") {
                                 Style.setGreenTheme();
                             } else {
                                 Style.setOrangeTheme();

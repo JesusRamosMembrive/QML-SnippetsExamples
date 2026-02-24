@@ -17,7 +17,7 @@
 //   - Altura proporcional al indice: height = 10 + index * 8 crea el
 //     efecto escalonado clasico de las barras de senal.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

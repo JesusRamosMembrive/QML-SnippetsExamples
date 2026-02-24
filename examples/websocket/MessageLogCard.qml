@@ -18,7 +18,7 @@
 // var, permitiendo que Main.qml sea el unico que lo manipula. Este
 // componente es puramente de lectura/presentacion.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

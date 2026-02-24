@@ -13,6 +13,8 @@
 // - Qt.hsla() genera colores dinámicamente usando el modelo HSL, ideal para
 //   crear paletas de colores programáticas (variando el hue).
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

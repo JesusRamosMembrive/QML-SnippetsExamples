@@ -15,6 +15,7 @@
 // - Component.onCompleted en el modelo: inicialización imperativa del
 //   ListModel, útil cuando los datos iniciales se generan con lógica.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -14,6 +14,7 @@
 //   datos del item seleccionado fuera del delegate.
 // - Doble animación (opacity + scale) para feedback de selección visual.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

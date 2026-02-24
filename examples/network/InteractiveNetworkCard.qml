@@ -30,6 +30,7 @@
 //    - Verde (200-299): exito. Rojo (400+): error. Amarillo: otros.
 //    - Las expresiones ternarias encadenadas manejan los rangos de status.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

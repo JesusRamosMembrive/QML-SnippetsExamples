@@ -20,7 +20,7 @@
 //     topMargin negativo (-10) para que se superponga con el tubo, creando
 //     la ilusión de un termómetro continuo.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

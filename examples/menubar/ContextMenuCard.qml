@@ -17,6 +17,7 @@
 // reutiliza para todos los items. Esto es mas eficiente que crear un Menu
 // por cada item del Repeater.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

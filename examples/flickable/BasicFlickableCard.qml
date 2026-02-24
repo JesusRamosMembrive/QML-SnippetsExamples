@@ -16,6 +16,7 @@
 //   - Qt.hsla(): genera colores distribuyendo el hue uniformemente,
 //     creando un efecto arcoiris en las filas.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

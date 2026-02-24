@@ -31,7 +31,7 @@
 //   - Modelo compartido: el mismo employeeModel se usa en SortFilterTableCard.
 //     Editar una celda aqui actualiza la otra card automaticamente.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

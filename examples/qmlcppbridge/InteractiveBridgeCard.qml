@@ -24,6 +24,7 @@
 // separados para que cada tarjeta del ejemplo pueda ensenar un mecanismo
 // de forma aislada.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

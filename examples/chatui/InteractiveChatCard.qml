@@ -16,6 +16,7 @@
 // - Indicador de escritura con animacion de desvanecimiento en 3 puntos,
 //   visible solo mientras botTyping es true.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

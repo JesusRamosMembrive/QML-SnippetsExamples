@@ -17,6 +17,8 @@
 // necesidad de codigo imperativo — solo se declaran y ListView las aplica.
 // ============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -120,6 +122,10 @@ Rectangle {
 
                 delegate: Rectangle {
                     id: dynamicDelegate
+
+                    required property int index
+                    required property string itemText
+
                     width: dynamicListView.width
                     height: Style.resize(40)
                     radius: Style.resize(6)
@@ -139,7 +145,7 @@ Rectangle {
                         }
 
                         Label {
-                            text: model.itemText
+                            text: dynamicDelegate.itemText
                             font.pixelSize: Style.resize(13)
                             color: Style.fontPrimaryColor
                             Layout.fillWidth: true
@@ -167,7 +173,7 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 // remove(index) elimina el item en la posicion actual del delegate
-                                onClicked: dynamicModel.remove(index)
+                                onClicked: dynamicModel.remove(dynamicDelegate.index)
                             }
                         }
                     }

@@ -23,7 +23,7 @@
 //     no esta visible, evitando 200 actualizaciones de color innecesarias
 //     cada 100ms.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

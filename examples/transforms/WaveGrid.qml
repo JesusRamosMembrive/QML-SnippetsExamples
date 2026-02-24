@@ -28,6 +28,7 @@
 // Repeater genera los 60 items. col/row se calculan a partir del index
 // usando aritmetica modular (% y Math.floor).
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

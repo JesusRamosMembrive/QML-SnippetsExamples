@@ -20,6 +20,7 @@
 //      manuales (anchors.left: timelineDot.right) para posicionar
 //      los elementos respecto al punto central, dando mas control.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

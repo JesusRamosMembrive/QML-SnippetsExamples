@@ -23,7 +23,7 @@
 //   de seleccion. selectedColor se almacena en una propiedad QML del root
 //   y se vincula a drawCanvas.penColor (Q_PROPERTY de C++).
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -30,7 +30,7 @@
 //     QueuedConnection automaticamente porque los objetos viven en hilos
 //     diferentes.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

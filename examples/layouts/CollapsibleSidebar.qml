@@ -23,7 +23,7 @@
 // 4. Hover con MouseArea: cada item del menu cambia color al pasar el
 //    raton (containsMouse), dando retroalimentacion visual inmediata.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

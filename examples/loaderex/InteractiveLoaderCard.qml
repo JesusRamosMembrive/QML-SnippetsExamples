@@ -16,6 +16,8 @@
 // Cada componente simula una vista real (Profile, Settings, Stats)
 // demostrando que el Loader puede cargar contenido arbitrariamente complejo.
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

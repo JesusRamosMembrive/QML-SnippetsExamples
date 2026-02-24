@@ -20,6 +20,8 @@
 // dando un efecto elastico sutil al cambiar de direccion.
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -90,8 +92,15 @@ ColumnLayout {
             // la animacion de colapso (mientras height se reduce).
             delegate: Rectangle {
                 id: accordionItem
+
+                required property int index
+                required property bool expanded
+                required property string title
+                required property string body
+                required property string icon
+
                 width: accordionList.width
-                height: accordionHeader.height + (model.expanded ? accordionBody.height + Style.resize(10) : 0)
+                height: accordionHeader.height + (accordionItem.expanded ? accordionBody.height + Style.resize(10) : 0)
                 radius: Style.resize(8)
                 color: Style.surfaceColor
                 clip: true
@@ -113,7 +122,7 @@ ColumnLayout {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                accordionModel.setProperty(index, "expanded", !model.expanded)
+                                accordionModel.setProperty(accordionItem.index, "expanded", !accordionItem.expanded)
                             }
                         }
 
@@ -124,12 +133,12 @@ ColumnLayout {
                             spacing: Style.resize(10)
 
                             Label {
-                                text: model.icon
+                                text: accordionItem.icon
                                 font.pixelSize: Style.resize(18)
                             }
 
                             Label {
-                                text: model.title
+                                text: accordionItem.title
                                 font.pixelSize: Style.resize(14)
                                 font.bold: true
                                 color: Style.fontPrimaryColor
@@ -137,7 +146,7 @@ ColumnLayout {
                             }
 
                             Label {
-                                text: model.expanded ? "▲" : "▼"
+                                text: accordionItem.expanded ? "▲" : "▼"
                                 font.pixelSize: Style.resize(12)
                                 color: Style.mainColor
 
@@ -156,7 +165,7 @@ ColumnLayout {
                         id: accordionBody
                         width: parent.width
                         height: bodyLabel.implicitHeight + Style.resize(20)
-                        opacity: model.expanded ? 1 : 0
+                        opacity: accordionItem.expanded ? 1 : 0
 
                         Behavior on opacity {
                             NumberAnimation { duration: 200 }
@@ -179,7 +188,7 @@ ColumnLayout {
                             anchors.top: parent.top
                             anchors.margins: Style.resize(14)
                             anchors.topMargin: Style.resize(10)
-                            text: model.body
+                            text: accordionItem.body
                             font.pixelSize: Style.resize(12)
                             color: Style.fontSecondaryColor
                             wrapMode: Text.WordWrap

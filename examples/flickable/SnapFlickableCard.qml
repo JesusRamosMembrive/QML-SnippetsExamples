@@ -18,6 +18,7 @@
 //   - ListModel: modelo declarativo con roles personalizados (title, icon,
 //     clr) que el Repeater/delegate consume via required properties.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -26,7 +26,7 @@
 //   - selected property en delegate: propiedad inyectada por TableView cuando
 //     se configura selectionModel. Cambia el color de la fila seleccionada.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

@@ -37,6 +37,7 @@
 //      estructuras JSON diferentes (posts, users, todos, comments).
 //
 // ============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

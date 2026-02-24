@@ -21,6 +21,7 @@
 // cacheBuffer: 1000 pre-crea delegates fuera de la vista visible para
 // que las tarjetas laterales ya existan al hacer scroll (evita flickeo).
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

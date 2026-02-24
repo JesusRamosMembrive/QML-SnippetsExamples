@@ -29,6 +29,7 @@
 //      circular de color. El chip tiene fondo de cardColor para legibilidad
 //      sobre el overlay oscurecido.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

@@ -19,6 +19,7 @@
 // La vista previa reacciona en tiempo real a los cambios de las propiedades,
 // demostrando el binding declarativo de QML en accion.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

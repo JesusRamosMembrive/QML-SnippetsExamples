@@ -15,6 +15,8 @@
 // el item seleccionado, con animacion automatica al cambiar currentIndex.
 // ============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -89,6 +91,13 @@ Rectangle {
                 // 'model' da acceso a las propiedades del ListElement correspondiente,
                 // e 'index' indica la posicion del item en el modelo.
                 delegate: Item {
+                    id: contactDelegate
+
+                    required property int index
+                    required property string name
+                    required property string role
+                    required property color avatarColor
+
                     width: contactListView.width
                     height: Style.resize(52)
 
@@ -103,11 +112,11 @@ Rectangle {
                             width: Style.resize(36)
                             height: Style.resize(36)
                             radius: width / 2
-                            color: model.avatarColor
+                            color: contactDelegate.avatarColor
 
                             Label {
                                 anchors.centerIn: parent
-                                text: model.name[0]
+                                text: contactDelegate.name[0]
                                 font.pixelSize: Style.resize(16)
                                 font.bold: true
                                 color: "white"
@@ -119,7 +128,7 @@ Rectangle {
                             spacing: Style.resize(2)
 
                             Label {
-                                text: model.name
+                                text: contactDelegate.name
                                 font.pixelSize: Style.resize(14)
                                 font.bold: true
                                 color: Style.fontPrimaryColor
@@ -127,7 +136,7 @@ Rectangle {
                             }
 
                             Label {
-                                text: model.role
+                                text: contactDelegate.role
                                 font.pixelSize: Style.resize(11)
                                 color: Style.fontSecondaryColor
                                 Layout.fillWidth: true
@@ -141,8 +150,8 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            contactListView.currentIndex = index
-                            contactInfoLabel.text = "Selected: " + model.name + " — " + model.role
+                            contactListView.currentIndex = contactDelegate.index
+                            contactInfoLabel.text = "Selected: " + contactDelegate.name + " — " + contactDelegate.role
                         }
                     }
                 }

@@ -18,7 +18,7 @@
 //   con color solido encima para crear un "chip" visual.
 // - unshift() + pop() mantiene un maximo de 8 entradas (FIFO invertido).
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

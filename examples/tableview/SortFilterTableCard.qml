@@ -27,7 +27,7 @@
 //     usa EditableTableCard. Cambios en una card se reflejan en la otra
 //     gracias al sistema de senales de Qt.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

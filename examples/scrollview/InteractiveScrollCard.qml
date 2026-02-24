@@ -16,6 +16,7 @@
 // - positionViewAtBeginning/End() permite navegación programática
 // - ListView es preferible a ScrollView+Repeater para listas de datos
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

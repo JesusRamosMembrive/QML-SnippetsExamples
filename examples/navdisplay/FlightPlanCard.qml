@@ -9,6 +9,8 @@
 // - Resaltado condicional: el waypoint seleccionado cambia a cyan,
 //   el hover muestra un fondo diferente, y filas alternas usan zebra striping.
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

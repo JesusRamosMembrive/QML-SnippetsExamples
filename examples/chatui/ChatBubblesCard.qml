@@ -14,6 +14,7 @@
 // - Colores condicionales (ternario) segun si el mensaje fue enviado o
 //   recibido, patron comun en interfaces de chat.
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

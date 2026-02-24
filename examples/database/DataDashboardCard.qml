@@ -27,6 +27,8 @@
 //     stock < 50 muestra naranja. Patron comun para alertas visuales.
 // =============================================================================
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -99,19 +101,23 @@ Rectangle {
                 }
 
                 Rectangle {
+                    id: statDelegate
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.resize(60)
                     color: Style.bgColor
                     radius: Style.resize(6)
 
-                    required property var model
+                    required property string label
+                    required property string field
+                    required property string prefix
+                    required property string suffix
 
                     ColumnLayout {
                         anchors.centerIn: parent
                         spacing: Style.resize(2)
 
                         Label {
-                            text: model.label
+                            text: statDelegate.label
                             font.pixelSize: Style.resize(10)
                             color: Style.inactiveColor
                             Layout.alignment: Qt.AlignHCenter
@@ -121,9 +127,9 @@ Rectangle {
                             text: {
                                 if (statsModel.rowCount === 0) return "..."
                                 var row = statsModel.getRow(0)
-                                var val = row[model.field]
+                                var val = row[statDelegate.field]
                                 if (val === undefined) return "—"
-                                return model.prefix + Number(val).toLocaleString(Qt.locale("en_US"), 'f', 0) + model.suffix
+                                return statDelegate.prefix + Number(val).toLocaleString(Qt.locale("en_US"), 'f', 0) + statDelegate.suffix
                             }
                             font.pixelSize: Style.resize(18)
                             font.bold: true
@@ -164,10 +170,13 @@ Rectangle {
                         model: deptModel
 
                         ColumnLayout {
+                            id: deptDelegate
                             Layout.fillWidth: true
                             spacing: Style.resize(2)
 
-                            required property var model
+                            required property string department
+                            required property int count
+                            required property real avg_salary
                             required property int index
 
                             RowLayout {
@@ -178,7 +187,7 @@ Rectangle {
                                     height: Style.resize(10)
                                     radius: Style.resize(2)
                                     color: {
-                                        var dept = model.department || ""
+                                        var dept = deptDelegate.department || ""
                                         if (dept === "Engineering") return "#2196F3"
                                         if (dept === "Marketing") return "#FF9800"
                                         if (dept === "Design") return "#9C27B0"
@@ -188,14 +197,14 @@ Rectangle {
                                 }
 
                                 Label {
-                                    text: (model.department || "") + " (" + (model.count || 0) + ")"
+                                    text: (deptDelegate.department || "") + " (" + (deptDelegate.count || 0) + ")"
                                     font.pixelSize: Style.resize(11)
                                     color: Style.fontPrimaryColor
                                     Layout.fillWidth: true
                                 }
 
                                 Label {
-                                    text: "$" + Number(model.avg_salary || 0).toLocaleString(Qt.locale("en_US"), 'f', 0)
+                                    text: "$" + Number(deptDelegate.avg_salary || 0).toLocaleString(Qt.locale("en_US"), 'f', 0)
                                     font.pixelSize: Style.resize(11)
                                     color: Style.inactiveColor
                                 }
@@ -209,11 +218,11 @@ Rectangle {
                                 color: Qt.rgba(1, 1, 1, 0.05)
 
                                 Rectangle {
-                                    width: parent.width * Math.min(1, (model.count || 0) / 6)
+                                    width: parent.width * Math.min(1, (deptDelegate.count || 0) / 6)
                                     height: parent.height
                                     radius: Style.resize(3)
                                     color: {
-                                        var dept = model.department || ""
+                                        var dept = deptDelegate.department || ""
                                         if (dept === "Engineering") return "#2196F3"
                                         if (dept === "Marketing") return "#FF9800"
                                         if (dept === "Design") return "#9C27B0"
@@ -259,20 +268,22 @@ Rectangle {
                             model: topSalaryModel
 
                             RowLayout {
+                                id: salaryDelegate
                                 Layout.fillWidth: true
 
-                                required property var model
+                                required property string name
+                                required property real salary
                                 required property int index
 
                                 Label {
-                                    text: (index + 1) + "."
+                                    text: (salaryDelegate.index + 1) + "."
                                     font.pixelSize: Style.resize(11)
                                     color: Style.inactiveColor
                                     Layout.preferredWidth: Style.resize(20)
                                 }
 
                                 Label {
-                                    text: model.name || ""
+                                    text: salaryDelegate.name || ""
                                     font.pixelSize: Style.resize(11)
                                     color: Style.fontPrimaryColor
                                     Layout.fillWidth: true
@@ -280,7 +291,7 @@ Rectangle {
                                 }
 
                                 Label {
-                                    text: "$" + Number(model.salary || 0).toLocaleString(Qt.locale("en_US"), 'f', 0)
+                                    text: "$" + Number(salaryDelegate.salary || 0).toLocaleString(Qt.locale("en_US"), 'f', 0)
                                     font.pixelSize: Style.resize(11)
                                     font.bold: true
                                     color: Style.mainColor
@@ -315,13 +326,15 @@ Rectangle {
                             model: lowStockModel
 
                             RowLayout {
+                                id: stockDelegate
                                 Layout.fillWidth: true
 
-                                required property var model
+                                required property string name
+                                required property int stock
                                 required property int index
 
                                 Label {
-                                    text: model.name || ""
+                                    text: stockDelegate.name || ""
                                     font.pixelSize: Style.resize(11)
                                     color: Style.fontPrimaryColor
                                     Layout.fillWidth: true
@@ -333,7 +346,7 @@ Rectangle {
                                     height: Style.resize(18)
                                     radius: Style.resize(3)
                                     color: {
-                                        var s = model.stock || 0
+                                        var s = stockDelegate.stock || 0
                                         return s < 15 ? Qt.rgba(0.96, 0.26, 0.21, 0.2)
                                              : Qt.rgba(1, 0.6, 0, 0.2)
                                     }
@@ -341,10 +354,10 @@ Rectangle {
                                     Label {
                                         id: stockLabel
                                         anchors.centerIn: parent
-                                        text: (model.stock || 0) + " units"
+                                        text: (stockDelegate.stock || 0) + " units"
                                         font.pixelSize: Style.resize(10)
                                         color: {
-                                            var s = model.stock || 0
+                                            var s = stockDelegate.stock || 0
                                             return s < 15 ? "#F44336" : "#FF9800"
                                         }
                                     }

@@ -23,7 +23,7 @@
 //   - Feedback visual: el campo cambia de fondo transparente a surfaceColor
 //     y muestra un borde coloreado durante la edicion, con animacion suave.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

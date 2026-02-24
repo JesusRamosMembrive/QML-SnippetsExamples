@@ -14,6 +14,7 @@
 // transiciones. NumberAnimation anima propiedades numericas, ColorAnimation
 // anima colores.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

@@ -17,7 +17,7 @@
 //   - required property var modelData + required property int index: patrón
 //     moderno Qt 6 para acceso seguro a datos del modelo en delegates.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

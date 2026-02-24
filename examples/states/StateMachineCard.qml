@@ -16,6 +16,7 @@
 // - enabled: !root.autoMode desactiva los botones manuales cuando el
 //   ciclo automatico esta activo, evitando conflictos.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

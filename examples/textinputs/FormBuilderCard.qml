@@ -18,7 +18,7 @@
 //   - substring(0, 30) trunca el bio en el resumen para mantener el texto
 //     compacto, un patron comun en interfaces de previsualizacion.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

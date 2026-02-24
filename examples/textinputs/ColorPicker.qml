@@ -21,7 +21,7 @@
 //   - font.family: "monospace" para el codigo hexadecimal, porque los
 //     caracteres de ancho fijo alinean mejor los codigos de color.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

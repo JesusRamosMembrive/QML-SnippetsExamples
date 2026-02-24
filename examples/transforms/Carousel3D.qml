@@ -21,6 +21,7 @@
 // PATRON ACTIVE/SECTIONACTIVE: Timer solo corre si la pagina esta visible
 // (active) Y el usuario ha presionado Start (carouselActive).
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

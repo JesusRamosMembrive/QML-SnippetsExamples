@@ -21,6 +21,7 @@
 // Este ejemplo es puramente visual (no tiene drag & drop entre columnas),
 // pero establece la estructura base para agregar esa funcionalidad.
 // =============================================================================
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls

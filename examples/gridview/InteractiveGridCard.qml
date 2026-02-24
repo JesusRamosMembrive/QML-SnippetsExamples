@@ -19,6 +19,7 @@
 // 1. Texto libre (busca en tag y category)
 // 2. Botones de categoría (All, language, framework, tool)
 // =============================================================================
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

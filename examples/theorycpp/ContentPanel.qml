@@ -23,7 +23,7 @@
 //   - implicitHeight basado en contenido: los TextEdit y CodeBlocks reportan
 //     su altura ideal, y el Flickable la usa como contentHeight.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

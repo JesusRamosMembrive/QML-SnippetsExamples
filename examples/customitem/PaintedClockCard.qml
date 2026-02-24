@@ -23,7 +23,7 @@
 // la configuracion y la logica de la UI viven en QML (Timer, selector de
 // color). Esto separa responsabilidades de manera eficiente.
 // =============================================================================
-
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts

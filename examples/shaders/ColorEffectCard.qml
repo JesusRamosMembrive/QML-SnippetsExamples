@@ -18,6 +18,8 @@
 //     grises completa. Combinar desaturacion parcial con overlay de color
 //     es una tecnica comun para crear filtros tipo Instagram.
 // =============================================================================
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
