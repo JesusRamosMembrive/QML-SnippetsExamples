@@ -58,6 +58,7 @@ Item {
         "RangeSliders": "qrc:/qt/qml/rangesliders/Main.qml",
         "ComboBox":     "qrc:/qt/qml/combobox/Main.qml",
         "TabBar":       "qrc:/qt/qml/tabbar/Main.qml",
+        "LensTabs":     "qrc:/qt/qml/lenstabs/Main.qml",
         "SwipeView":    "qrc:/qt/qml/swipeview/Main.qml",
         "SplitView":    "qrc:/qt/qml/splitview/Main.qml",
         "ToolBar":      "qrc:/qt/qml/toolbar/Main.qml",

@@ -84,6 +84,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     rangesliderspluginplugin
     comboboxpluginplugin
     tabbarpluginplugin
+    lenstabspluginplugin
     swipeviewpluginplugin
     splitviewpluginplugin
     toolbarpluginplugin

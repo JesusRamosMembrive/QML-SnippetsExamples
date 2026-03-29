@@ -66,6 +66,7 @@ Item {
         ListElement { name: "RangeSliders" }
         ListElement { name: "ComboBox" }
         ListElement { name: "TabBar" }
+        ListElement { name: "LensTabs" }
         ListElement { name: "SwipeView" }
         ListElement { name: "SplitView" }
         ListElement { name: "ToolBar" }
