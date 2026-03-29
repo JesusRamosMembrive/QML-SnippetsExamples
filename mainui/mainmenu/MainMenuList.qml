@@ -114,6 +114,7 @@ Item {
         ListElement { name: "Settings" }
         ListElement { name: "Ethernet" }
         ListElement { name: "Multiplane" }
+        ListElement { name: "Cards2D5" }
     }
 
     // --- Vista: ListView ---

@@ -159,4 +159,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
 
     # --- Página de efectos visuales 2.5D ---
     multiplanepluginplugin
+    cards2d5pluginplugin
 )

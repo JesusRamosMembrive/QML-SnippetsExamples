@@ -53,7 +53,15 @@
       "Bash(done)",
       "Bash(wc:*)",
       "Bash(tail:*)",
-      "Bash(sleep 2:*)"
+      "Bash(sleep 2:*)",
+      "WebFetch(domain:ui.aceternity.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:aceternity.sveltekit.io)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:codepen.io)",
+      "WebFetch(domain:ibelick.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:www.letsbuildui.dev)"
     ]
   }
 }
