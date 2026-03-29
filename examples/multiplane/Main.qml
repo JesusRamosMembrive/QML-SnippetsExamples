@@ -222,6 +222,7 @@ Item {
             cameraX:    root.camX
             cameraY:    root.camY
             cameraZoom: root.camZoom
+            active:     root.fullSize   // detener animación cuando la página no es visible
         }
 
         // ── Sección de explicación matemática ──────────────────────────────

@@ -106,7 +106,9 @@ Item {
         "Settings":     "qrc:/qt/qml/settingsex/Main.qml",
         "Ethernet":     "qrc:/qt/qml/ethernetex/Main.qml",
         "Multiplane":   "qrc:/qt/qml/multiplane/Main.qml",
-        "Cards2D5":     "qrc:/qt/qml/cards2d5/Main.qml"
+        "Cards2D5":     "qrc:/qt/qml/cards2d5/Main.qml",
+        "SpriteStack":  "qrc:/qt/qml/spritestack/Main.qml",
+        "Diorama":      "qrc:/qt/qml/diorama/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---
