@@ -1,0 +1,4 @@
+module multiplane
+Main 1.0 Main.qml
+MultiplaneScene 1.0 MultiplaneScene.qml
+SceneLayer 1.0 SceneLayer.qml

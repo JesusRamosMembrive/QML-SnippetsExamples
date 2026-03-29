@@ -9,7 +9,6 @@
 #   1. cmake -B build -S .    → Configura (lee este archivo)
 #   2. cmake --build build    → Compila todo
 # =============================================================================
-
 # Versión mínima de CMake. Qt 6 necesita al menos 3.16 para funcionar
 # correctamente con qt_add_qml_module y otras macros modernas de Qt.
 cmake_minimum_required(VERSION 3.16)

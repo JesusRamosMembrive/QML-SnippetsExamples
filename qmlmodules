@@ -156,4 +156,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     multimediapluginplugin
     settingsmgrpluginplugin
     settingsexpluginplugin
+
+    # --- Página de efectos visuales 2.5D ---
+    multiplanepluginplugin
 )

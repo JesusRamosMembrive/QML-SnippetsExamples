@@ -104,7 +104,8 @@ Item {
         "QMLCppBridge": "qrc:/qt/qml/qmlcppbridgeex/Main.qml",
         "AsyncCpp":     "qrc:/qt/qml/asynccppex/Main.qml",
         "Settings":     "qrc:/qt/qml/settingsex/Main.qml",
-        "Ethernet":     "qrc:/qt/qml/ethernetex/Main.qml"
+        "Ethernet":     "qrc:/qt/qml/ethernetex/Main.qml",
+        "Multiplane":   "qrc:/qt/qml/multiplane/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---

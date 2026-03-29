@@ -113,6 +113,7 @@ Item {
         ListElement { name: "AsyncCpp" }
         ListElement { name: "Settings" }
         ListElement { name: "Ethernet" }
+        ListElement { name: "Multiplane" }
     }
 
     // --- Vista: ListView ---
