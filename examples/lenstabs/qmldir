@@ -1,3 +1,5 @@
 module lenstabs
 Main 1.0 Main.qml
 LensTabStrip 1.0 LensTabStrip.qml
+LensEffectRect 1.0 LensEffectRect.qml
+LensCircleEffect 1.0 LensCircleEffect.qml

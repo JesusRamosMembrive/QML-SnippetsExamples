@@ -164,4 +164,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     spritestackpluginplugin
     dioramapluginplugin
     lensphotopluginplugin
+    frostglasspluginplugin
 )

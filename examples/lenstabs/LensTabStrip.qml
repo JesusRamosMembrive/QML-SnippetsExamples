@@ -6,43 +6,39 @@ import utils
 Item {
     id: root
 
-    property var tabs: ["Explore", "Library", "Signals", "Profile"]
-    property int currentIndex: 0
-    property int travelDuration: 320
-    property real lensInset: Style.resize(5)
-    property real magnification: 1.08
-    property real glowStrength: 0.30
-    property color trackColor: Style.surfaceColor
-    property color tabTextColor: Style.fontSecondaryColor
-    property color lensTextColor: "#0D1A16"
-
-    // Lens geometry — updated by syncLensGeometry(), animated via Behaviors on lensWindow
-    property real lensX: lensInset
-    property real lensWidth: 100
+    property var  tabs:          ["Explore", "Library", "Signals", "Profile"]
+    property int  currentIndex:  0
+    property int  travelDuration: 320
+    property real magnification:  1.6
+    property real glowStrength:   0.30
+    property real aberration:     0.012
+    property real rimBrightness:  0.6
+    property real lensWiden:      2.2    // ensanche horizontal (1.0=circular, 2.0=doble ancho)
+    property real lensInset:      Style.resize(5)   // no usado visualmente; mantenido por compatibilidad API
+    property color trackColor:    Style.surfaceColor
+    property color tabTextColor:  Style.fontSecondaryColor
 
     readonly property int tabCount: Math.max(1, tabs.length)
 
     signal tabTriggered(int index, string label)
 
-    implicitHeight: Style.resize(52)
+    implicitHeight: Style.resize(56)
 
-    function syncLensGeometry() {
-        if (!tabRepeater.count)
-            return
-        const idx = Math.max(0, Math.min(currentIndex, tabRepeater.count - 1))
-        const tabItem = tabRepeater.itemAt(idx)
-        if (!tabItem)
-            return
-        lensX = tabItem.x + lensInset
-        lensWidth = Math.max(Style.resize(60), tabItem.width - lensInset * 2)
+    // ── Posición animada de la lente (centro X en píxeles dentro del track) ─
+    property real lensTargetX: 0.0
+
+    function syncLens() {
+        if (track.width <= 0) return
+        const tabW = track.width / root.tabCount
+        root.lensTargetX = (root.currentIndex + 0.5) * tabW
     }
 
-    onCurrentIndexChanged: Qt.callLater(syncLensGeometry)
-    onWidthChanged:        Qt.callLater(syncLensGeometry)
-    onTabsChanged:         Qt.callLater(syncLensGeometry)
-    Component.onCompleted: Qt.callLater(syncLensGeometry)
+    onCurrentIndexChanged: Qt.callLater(syncLens)
+    onWidthChanged:        Qt.callLater(syncLens)
+    onTabsChanged:         Qt.callLater(syncLens)
+    Component.onCompleted: Qt.callLater(syncLens)
 
-    // ── Track ─────────────────────────────────────────────────────────────
+    // ── Track ─────────────────────────────────────────────────────────────────
     Rectangle {
         id: track
         anchors.fill: parent
@@ -52,7 +48,7 @@ Item {
         border.width: 1
         clip: false
 
-        // Inner depth gradient
+        // Gradiente interior de profundidad
         Rectangle {
             anchors.fill: parent
             anchors.margins: 1
@@ -63,155 +59,106 @@ Item {
             }
         }
 
-        // ── Base text row (always visible, muted) ─────────────────────────
-        Row {
-            id: baseRow
+        // ── Contenido capturado como textura para el shader ────────────────
+        // Este ítem se oculta via hideSource=true; el shader lo renderiza.
+        Item {
+            id: tabContent
             anchors.fill: parent
 
-            Repeater {
-                id: tabRepeater
-                model: root.tabs
+            // Fondo sólido (mismo color que el track) para que la textura
+            // no sea transparente y la lente tenga contenido que ampliar.
+            Rectangle {
+                anchors.fill: parent
+                radius: parent.height / 2
+                color: root.trackColor
+            }
 
-                delegate: Item {
-                    id: tabItem
-                    required property int index
-                    required property var modelData
+            // Etiquetas de las tabs
+            Row {
+                anchors.fill: parent
 
-                    width: baseRow.width / root.tabCount
-                    height: baseRow.height
+                Repeater {
+                    id: tabRepeater
+                    model: root.tabs
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: String(tabItem.modelData)
-                        font.family: Style.fontFamilyBold
-                        font.pixelSize: Style.resize(15)
-                        font.letterSpacing: 0.3
-                        color: root.tabTextColor
-                    }
+                    delegate: Item {
+                        id: tabDelegate
+                        required property int  index
+                        required property var  modelData
 
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.currentIndex = tabItem.index
-                            root.tabTriggered(tabItem.index, String(tabItem.modelData))
+                        width:  tabContent.width  / root.tabCount
+                        height: tabContent.height
+
+                        Text {
+                            anchors.centerIn: parent
+                            text:             String(tabDelegate.modelData)
+                            font.family:      Style.fontFamilyBold
+                            font.pixelSize:   Style.resize(14)
+                            font.letterSpacing: 0.4
+                            color:            root.tabTextColor
                         }
                     }
                 }
             }
         }
 
-        // ── Teal ambient glow behind the lens ─────────────────────────────
-        Rectangle {
-            x: root.lensX - Style.resize(5)
-            y: -Style.resize(3)
-            width: root.lensWidth + Style.resize(10)
-            height: track.height + Style.resize(6)
-            radius: height / 2
-            color: Qt.rgba(0.0, 0.82, 0.66, root.glowStrength * 0.28)
-
-            Behavior on x     { NumberAnimation { duration: root.travelDuration; easing.type: Easing.InOutCubic } }
-            Behavior on width { NumberAnimation { duration: root.travelDuration; easing.type: Easing.InOutCubic } }
+        // Textura fuente para el ShaderEffect
+        ShaderEffectSource {
+            id: tabSource
+            sourceItem: tabContent
+            hideSource:  true   // oculta tabContent; el shader lo muestra
+            anchors.fill: parent
+            visible:      false
         }
 
-        // ── Moving lens pill ───────────────────────────────────────────────
+        // ── Lente circular GPU ─────────────────────────────────────────────
+        // Cubre todo el track: fuera de la lente muestra el contenido normal
+        // (pass-through del source); dentro aplica los efectos ópticos.
+        LensCircleEffect {
+            id: lensEffect
+            anchors.fill: parent
+            source:        tabSource
+            lensX:         lensProxy.x / parent.width
+            lensY:         0.5
+            lensRadius:    0.54
+            aspectRatio:   width / height
+            magnification: root.magnification
+            aberration:    root.aberration
+            rimBrightness: root.rimBrightness
+            lensWiden:     root.lensWiden
+        }
+
+        // ── Proxy de animación para la posición X de la lente ─────────────
         Item {
-            id: lensWindow
-            x: root.lensX
-            y: root.lensInset
-            width: root.lensWidth
-            height: track.height - root.lensInset * 2
-
-            Behavior on x     { NumberAnimation { duration: root.travelDuration; easing.type: Easing.InOutCubic } }
-            Behavior on width { NumberAnimation { duration: root.travelDuration; easing.type: Easing.InOutCubic } }
-
-            // Drop shadow
-            Rectangle {
-                anchors.fill: parent
-                anchors.topMargin: Style.resize(5)
-                anchors.bottomMargin: Style.resize(-4)
-                anchors.leftMargin: Style.resize(-1)
-                anchors.rightMargin: Style.resize(-1)
-                radius: height / 2
-                color: Qt.rgba(0.0, 0.0, 0.0, 0.28)
+            id: lensProxy
+            x: root.lensTargetX
+            Behavior on x {
+                NumberAnimation { duration: root.travelDuration; easing.type: Easing.InOutCubic }
             }
+        }
 
-            // Teal outer rim glow
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: Style.resize(-1.5)
-                radius: height / 2
-                color: "transparent"
-                border.color: Qt.rgba(0.0, 0.82, 0.66, root.glowStrength * 0.55)
-                border.width: Style.resize(2.5)
-            }
+        // ── Capa de MouseAreas (encima del shader, invisible) ──────────────
+        Row {
+            anchors.fill: parent
 
-            // Lens body — white-to-mint gradient
-            Rectangle {
-                anchors.fill: parent
-                radius: height / 2
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: Qt.rgba(0.92, 1.00, 0.98, 0.98) }
-                    GradientStop { position: 0.55; color: Qt.rgba(0.78, 0.97, 0.93, 0.93) }
-                    GradientStop { position: 1.0;  color: Qt.rgba(0.60, 0.92, 0.86, 0.86) }
-                }
-                border.color: Qt.rgba(1, 1, 1, 0.78)
-                border.width: 1
-            }
+            Repeater {
+                model: root.tabs
 
-            // Top specular highlight
-            Rectangle {
-                width: parent.width * 0.80
-                height: parent.height * 0.34
-                radius: height / 2
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                anchors.topMargin: Style.resize(4)
-                color: Qt.rgba(1, 1, 1, 0.58)
-            }
+                delegate: Item {
+                    id: mouseDelegate
+                    required property int  index
+                    required property var  modelData
 
-            // Bottom soft shadow line
-            Rectangle {
-                width: parent.width * 0.50
-                height: Style.resize(2)
-                radius: height / 2
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: Style.resize(5)
-                color: Qt.rgba(0, 0, 0, 0.12)
-            }
-
-            // ── Clipped text layer — dark text inside the lens ─────────────
-            Item {
-                id: lensClip
-                anchors.fill: parent
-                clip: true
-
-                Row {
-                    x: -lensWindow.x
-                    y: -root.lensInset
-                    width: track.width
+                    width:  track.width / root.tabCount
                     height: track.height
 
-                    Repeater {
-                        model: root.tabs
-
-                        delegate: Item {
-                            required property var modelData
-
-                            width: track.width / root.tabCount
-                            height: track.height
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: String(parent.modelData)
-                                font.family: Style.fontFamilyBold
-                                font.pixelSize: Style.resize(15)
-                                font.bold: true
-                                font.letterSpacing: 0.3
-                                color: root.lensTextColor
-                                scale: root.magnification
-                            }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.currentIndex = mouseDelegate.index
+                            root.tabTriggered(mouseDelegate.index,
+                                              String(mouseDelegate.modelData))
                         }
                     }
                 }

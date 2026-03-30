@@ -119,6 +119,7 @@ Item {
         ListElement { name: "SpriteStack" }
         ListElement { name: "Diorama" }
         ListElement { name: "LensPhoto" }
+        ListElement { name: "FrostGlass" }
     }
 
     // --- Vista: ListView ---
