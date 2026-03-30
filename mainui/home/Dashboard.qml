@@ -109,7 +109,8 @@ Item {
         "Multiplane":   "qrc:/qt/qml/multiplane/Main.qml",
         "Cards2D5":     "qrc:/qt/qml/cards2d5/Main.qml",
         "SpriteStack":  "qrc:/qt/qml/spritestack/Main.qml",
-        "Diorama":      "qrc:/qt/qml/diorama/Main.qml"
+        "Diorama":      "qrc:/qt/qml/diorama/Main.qml",
+        "LensPhoto":    "qrc:/qt/qml/lensphoto/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---

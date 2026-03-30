@@ -118,6 +118,7 @@ Item {
         ListElement { name: "Cards2D5" }
         ListElement { name: "SpriteStack" }
         ListElement { name: "Diorama" }
+        ListElement { name: "LensPhoto" }
     }
 
     // --- Vista: ListView ---

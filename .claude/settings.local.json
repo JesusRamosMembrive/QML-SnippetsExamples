@@ -61,7 +61,9 @@
       "WebFetch(domain:codepen.io)",
       "WebFetch(domain:ibelick.com)",
       "WebFetch(domain:medium.com)",
-      "WebFetch(domain:www.letsbuildui.dev)"
+      "WebFetch(domain:www.letsbuildui.dev)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -n \"qrc:/assets\" \"/h/Git_Overture/QML-SnippetsExamples/examples/images\"/*.qml)"
     ]
   }
 }

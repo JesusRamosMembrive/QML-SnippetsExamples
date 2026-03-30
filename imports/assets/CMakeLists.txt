@@ -112,6 +112,8 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/ethernet.png
         icons/multiplane.png
         icons/cards2d5.png
+        icons/lensphoto.png
+        images/piedad.jpg
         images/particle.png
         images/Qt_logo_2016.svg
         images/ninepatch.png

@@ -1,0 +1,4 @@
+module lensphoto
+prefer :/qt/qml/lensphoto/
+Main 1.0 Main.qml
+LensEffect 1.0 LensEffect.qml

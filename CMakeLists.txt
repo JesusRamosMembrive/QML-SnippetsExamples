@@ -35,7 +35,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #   - Sql: Acceso a bases de datos SQLite
 #   - Multimedia: Reproducción de audio/video
 #   - Concurrent: Operaciones asíncronas en hilos secundarios
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Graphs WebSockets Location Positioning Pdf PdfQuick Sql Multimedia Concurrent Network)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Graphs WebSockets Location Positioning Pdf PdfQuick Sql Multimedia Concurrent Network ShaderTools)
 
 # --- Políticas de CMake y Qt ---
 # CMP0071: Controla el procesamiento automático de archivos generados por MOC
