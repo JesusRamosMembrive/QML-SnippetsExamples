@@ -254,7 +254,7 @@ Item {
                         }
 
                         Label {
-                            text: "51 pages"
+                            text: Object.keys(root.pageMap).length + " pages"
                             font.pixelSize: Style.resize(14)
                             color: Style.inactiveColor
                         }
@@ -284,6 +284,7 @@ Item {
                             ListElement { name: "RangeSliders"; desc: "RangeSlider with formatted labels, vertical, interactive" }
                             ListElement { name: "ComboBox";   desc: "Editable, ListModel roles, validators, interactive demo" }
                             ListElement { name: "TabBar";     desc: "StackLayout, icons, dynamic closable tabs, interactive" }
+                            ListElement { name: "LensTabs";   desc: "Custom tab strip with draggable lens distortion and shader-based transitions" }
                             ListElement { name: "SwipeView";  desc: "PageIndicator, card carousel, onboarding wizard" }
                             ListElement { name: "SplitView";  desc: "Horizontal, vertical, nested IDE layout, color mixer" }
                             ListElement { name: "ToolBar";    desc: "ToolButtons, actions, contextual toolbar, text editor" }
@@ -331,6 +332,12 @@ Item {
                             ListElement { name: "AsyncCpp";     desc: "QtConcurrent, QFuture, QPromise, progress and cancellation" }
                             ListElement { name: "Settings";     desc: "QSettings persistent preferences, key-value store, groups" }
                             ListElement { name: "Ethernet";     desc: "UDP transport, STANAG 4586 BigEndian codec, bitmask payload, XOR checksum" }
+                            ListElement { name: "Multiplane";   desc: "Layered aircraft scene with synchronized motion and multi-depth composition" }
+                            ListElement { name: "Cards2D5";     desc: "Depth cards with pointer tilt, parallax text, glare and animated shadows" }
+                            ListElement { name: "SpriteStack";  desc: "Pseudo-3D voxel look from stacked sprites with rotation and lighting cues" }
+                            ListElement { name: "Diorama";      desc: "Miniature scene with layered parallax, atmosphere and camera-driven depth" }
+                            ListElement { name: "LensPhoto";    desc: "Interactive photo lens distortion, magnification and focus-driven image effects" }
+                            ListElement { name: "FrostGlass";   desc: "Glassmorphism panels with blur, tint, highlights and layered translucency" }
                         }
 
                         // ColumnLayout con spacing 0: las filas van pegadas,

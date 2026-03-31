@@ -119,6 +119,9 @@ Rectangle {
                     required property int column
                     required property bool current
                     required property bool selected
+                    required property string fileName
+                    required property bool isFolder
+                    required property string fileSize
 
                     Rectangle {
                         anchors.fill: parent
@@ -154,25 +157,25 @@ Rectangle {
 
                         // Folder/file icon
                         Label {
-                            text: model.isFolder ? "\uD83D\uDCC1" : "\uD83D\uDCC4"
+                            text: fsDelegate.isFolder ? "\uD83D\uDCC1" : "\uD83D\uDCC4"
                             font.pixelSize: Style.resize(13)
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         // File name
                         Label {
-                            text: model.fileName
+                            text: fsDelegate.fileName
                             color: fsDelegate.selected
                                 ? Style.mainColor : Style.fontPrimaryColor
                             font.pixelSize: Style.resize(12)
-                            font.bold: model.isFolder
+                            font.bold: fsDelegate.isFolder
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         // File size
                         Label {
-                            visible: !model.isFolder
-                            text: model.fileSize
+                            visible: !fsDelegate.isFolder
+                            text: fsDelegate.fileSize
                             color: Style.inactiveColor
                             font.pixelSize: Style.resize(11)
                             anchors.verticalCenter: parent.verticalCenter

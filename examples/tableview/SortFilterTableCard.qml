@@ -104,6 +104,9 @@ Rectangle {
                 clip: true
 
                 delegate: Rectangle {
+                    id: sortHeaderCell
+                    required property int column
+                    required property var display
                     implicitWidth: Style.resize(120)
                     implicitHeight: Style.resize(34)
                     color: Style.bgColor
@@ -115,14 +118,14 @@ Rectangle {
                         spacing: Style.resize(4)
 
                         Label {
-                            text: model.display
+                            text: sortHeaderCell.display
                             color: Style.mainColor
                             font.pixelSize: Style.resize(12)
                             font.bold: true
                             Layout.fillWidth: true
                         }
                         Label {
-                            visible: root.proxyModel.sortColumn === model.index
+                            visible: root.proxyModel.sortColumn === sortHeaderCell.column
                             text: root.proxyModel.currentSortOrder === Qt.AscendingOrder ? "▲" : "▼"
                             color: Style.mainColor
                             font.pixelSize: Style.resize(10)
@@ -137,7 +140,7 @@ Rectangle {
                     }
 
                     TapHandler {
-                        onTapped: root.proxyModel.toggleSort(model.index)
+                        onTapped: root.proxyModel.toggleSort(sortHeaderCell.column)
                     }
                 }
             }
@@ -163,28 +166,32 @@ Rectangle {
                 }
 
                 delegate: Rectangle {
+                    id: sortCell
                     required property bool selected
                     required property bool current
+                    required property int row
+                    required property int column
+                    required property var display
                     implicitWidth: Style.resize(100)
                     implicitHeight: Style.resize(32)
-                    color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                         : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                    color: sortCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                         : (sortCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
 
                     Label {
                         anchors.fill: parent
                         anchors.leftMargin: Style.resize(8)
                         verticalAlignment: Text.AlignVCenter
                         text: {
-                            if (column === 4) return model.display ? "Yes" : "No"
-                            if (column === 3) return "$" + Number(model.display).toLocaleString()
-                            return model.display
+                            if (sortCell.column === 4) return sortCell.display ? "Yes" : "No"
+                            if (sortCell.column === 3) return "$" + Number(sortCell.display).toLocaleString()
+                            return sortCell.display
                         }
                         color: {
-                            if (column === 4) return model.display ? "#4CAF50" : "#F44336"
-                            return selected ? Style.mainColor : Style.fontPrimaryColor
+                            if (sortCell.column === 4) return sortCell.display ? "#4CAF50" : "#F44336"
+                            return sortCell.selected ? Style.mainColor : Style.fontPrimaryColor
                         }
                         font.pixelSize: Style.resize(12)
-                        font.bold: column === 4
+                        font.bold: sortCell.column === 4
                     }
                 }
             }

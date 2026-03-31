@@ -66,7 +66,8 @@
       "Bash(grep -n \"qrc:/assets\" \"/h/Git_Overture/QML-SnippetsExamples/examples/images\"/*.qml)",
       "Bash(gh api:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:api.github.com)"
+      "WebFetch(domain:api.github.com)",
+      "Bash(identify h:/Git_Overture/QML-SnippetsExamples/imports/assets/icons/multimedia.png)"
     ]
   }
 }

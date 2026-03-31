@@ -25,6 +25,7 @@ Rectangle {
     id: root
     color: Style.cardColor
     radius: Style.resize(8)
+    implicitHeight: contentColumn.implicitHeight + Style.resize(30)
 
     // API publica del componente: propiedades de entrada y senales de salida.
     // Este patron desacopla la tarjeta de la implementacion del WebSocket.
@@ -36,6 +37,7 @@ Rectangle {
     signal disconnectClicked()
 
     ColumnLayout {
+        id: contentColumn
         anchors.fill: parent
         anchors.margins: Style.resize(15)
         spacing: Style.resize(10)
@@ -104,12 +106,14 @@ Rectangle {
             Button {
                 text: "Connect"
                 enabled: !root.connected
+                Layout.alignment: Qt.AlignVCenter
                 onClicked: root.connectClicked()
             }
 
             Button {
                 text: "Disconnect"
                 enabled: root.connected
+                Layout.alignment: Qt.AlignVCenter
                 onClicked: root.disconnectClicked()
             }
         }

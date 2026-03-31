@@ -91,6 +91,8 @@ Rectangle {
                 clip: true
 
                 delegate: Rectangle {
+                    id: basicHeaderCell
+                    required property int column
                     implicitWidth: Style.resize(150)
                     implicitHeight: Style.resize(32)
                     color: Style.bgColor
@@ -99,7 +101,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.leftMargin: Style.resize(10)
                         verticalAlignment: Text.AlignVCenter
-                        text: model.display
+                        text: ["Name", "Language", "Year", "Type"][basicHeaderCell.column] || ""
                         color: Style.mainColor
                         font.pixelSize: Style.resize(12)
                         font.bold: true
@@ -136,19 +138,22 @@ Rectangle {
                 }
 
                 delegate: Rectangle {
+                    id: basicCell
                     required property bool selected
                     required property bool current
+                    required property int row
+                    required property var display
                     implicitWidth: Style.resize(120)
                     implicitHeight: Style.resize(34)
-                    color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                         : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                    color: basicCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                         : (basicCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
 
                     Label {
                         anchors.fill: parent
                         anchors.leftMargin: Style.resize(10)
                         verticalAlignment: Text.AlignVCenter
-                        text: model.display
-                        color: selected ? Style.mainColor : Style.fontPrimaryColor
+                        text: basicCell.display
+                        color: basicCell.selected ? Style.mainColor : Style.fontPrimaryColor
                         font.pixelSize: Style.resize(12)
                     }
                 }

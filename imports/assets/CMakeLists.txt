@@ -13,9 +13,8 @@
 #   fonts/Quicksand_Bold.otf → "qrc:/assets/fonts/Quicksand_Bold.otf"
 #
 # ─── Tipos de recursos incluidos ───
-#   - icons/    → PNGs de 25x26px en color teal (#00D1A9), uno por pagina
-#                 de ejemplo. Se usan en el menu lateral y se tiñen de blanco
-#                 con ColorOverlay cuando estan seleccionados.
+#   - icons/    → PNGs legados + SVGs de reemplazo. Style.icon() usa .svg.
+#                 Los iconos se tiñen de blanco con ColorOverlay cuando estan seleccionados.
 #   - images/   → Graficos de UI (fondo de tarjeta, dropdown, textura de
 #                 particulas, logos, blueprint del avion, etc.)
 #   - fonts/    → Quicksand Book y Bold, cargadas por el singleton Style
@@ -29,6 +28,8 @@
 # qt_add_resources agrega los recursos al target EXISTENTE
 # "QMLSnippetsExamples" (el ejecutable), no crea una biblioteca separada.
 # =============================================================================
+
+file(GLOB ASSET_SVG_ICONS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "icons/*.svg")
 
 qt_add_resources(QMLSnippetsExamples "assets"
     PREFIX "/assets"
@@ -114,6 +115,9 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/cards2d5.png
         icons/lensphoto.png
         icons/frostglass.png
+        icons/spritestack.png
+        icons/diorama.png
+        ${ASSET_SVG_ICONS}
         images/piedad.jpg
         images/particle.png
         images/Qt_logo_2016.svg
@@ -144,3 +148,92 @@ qt_add_resources(QMLSnippetsExamples "assets"
         fonts/Quicksand_Bold.otf
         fonts/Quicksand_Book.otf
 )
+
+# =============================================================================
+# Iconos SVG del menú lateral
+# =============================================================================
+# Style.icon(name) devuelve "qrc:/assets/icons/<name>.svg"
+# Para añadir un icono nuevo: ver docs/ICONOS_SVG.md
+#
+# INSTRUCCIONES:
+# 1. Cuando tengas el primer SVG, descomenta el bloque qt_add_resources de abajo.
+# 2. Descomenta solo las líneas de los iconos que ya hayas añadido a icons/.
+# =============================================================================
+
+# qt_add_resources(QMLSnippetsExamples "icons_svg"
+#     PREFIX "/assets"
+#     FILES
+#         # --- Controles Qt ---
+#         # icons/buttons.svg
+#         # icons/sliders.svg
+#         # icons/rangesliders.svg
+#         # icons/combobox.svg
+#         # icons/tabbar.svg
+#         # icons/lenstabs.svg
+#         # icons/swipeview.svg
+#         # icons/splitview.svg
+#         # icons/toolbar.svg
+#         # icons/scrollview.svg
+#         # icons/menubar.svg
+#         # icons/switches.svg
+#         # icons/textinputs.svg
+#         # icons/indicators.svg
+#         # icons/pathview.svg
+#         # icons/gridview.svg
+#         # icons/flickable.svg
+#         # icons/loader.svg
+#         # icons/states.svg
+#         # icons/filedialogs.svg
+#         # icons/tableview.svg
+#         # icons/treeview.svg
+#
+#         # --- Vistas y Layout ---
+#         # icons/animations.svg
+#         # icons/popups.svg
+#         # icons/lists.svg
+#         # icons/canvas.svg
+#         # icons/layouts.svg
+#         # icons/transforms.svg
+#         # icons/particles.svg
+#         # icons/shapes.svg
+#
+#         # --- Gráficos y Efectos ---
+#         # icons/shaders.svg
+#         # icons/images.svg
+#         # icons/graphs.svg
+#
+#         # --- Aviónica / Proyectos propios ---
+#         # icons/pfd.svg
+#         # icons/hud.svg
+#         # icons/ecam.svg
+#         # icons/navdisplay.svg
+#         # icons/aircraftmap.svg
+#         # icons/multiplane.svg
+#         # icons/cards2d5.svg
+#         # icons/lensphoto.svg
+#         # icons/frostglass.svg
+#         # icons/spritestack.svg
+#         # icons/diorama.svg
+#
+#         # --- Red y Sistema ---
+#         # icons/websocket.svg
+#         # icons/network.svg
+#         # icons/ethernet.svg
+#         # icons/database.svg
+#         # icons/threads.svg
+#         # icons/multimedia.svg
+#
+#         # --- C++ / Integración ---
+#         # icons/qmlcppbridge.svg
+#         # icons/asynccpp.svg
+#         # icons/customitem.svg
+#
+#         # --- Otros ---
+#         # icons/chatui.svg
+#         # icons/maps.svg
+#         # icons/pdfreader.svg
+#         # icons/teoria.svg
+#         # icons/date.svg
+#         # icons/dashboard.svg
+#         # icons/settings.svg
+# )

@@ -206,6 +206,9 @@ Rectangle {
                     required property int column
                     required property bool current
                     required property bool selected
+                    required property string name
+                    required property string title
+                    required property string department
 
                     Rectangle {
                         anchors.fill: parent
@@ -243,7 +246,7 @@ Rectangle {
 
                         // Name
                         Label {
-                            text: model.name
+                            text: editDelegate.name
                             color: editDelegate.selected
                                 ? Style.mainColor : Style.fontPrimaryColor
                             font.pixelSize: Style.resize(12)
@@ -252,7 +255,7 @@ Rectangle {
 
                         // Title
                         Label {
-                            text: model.title
+                            text: editDelegate.title
                             color: Style.fontSecondaryColor
                             font.pixelSize: Style.resize(11)
                             Layout.fillWidth: true
@@ -265,16 +268,16 @@ Rectangle {
                             Layout.preferredHeight: Style.resize(18)
                             radius: Style.resize(4)
                             color: {
-                                var c = Qt.color(root.deptColor(model.department))
+                                var c = Qt.color(root.deptColor(editDelegate.department))
                                 return Qt.rgba(c.r, c.g, c.b, 0.2)
                             }
 
                             Label {
                                 id: editDeptLabel
                                 anchors.centerIn: parent
-                                text: model.department
+                                text: editDelegate.department
                                 font.pixelSize: Style.resize(9)
-                                color: root.deptColor(model.department)
+                                color: root.deptColor(editDelegate.department)
                             }
                         }
                     }

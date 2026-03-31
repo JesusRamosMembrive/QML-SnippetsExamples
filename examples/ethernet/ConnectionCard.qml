@@ -67,7 +67,8 @@ Rectangle {
                 to: 65535
                 value: 5000
                 enabled: !root.bound
-                Layout.preferredWidth: Style.resize(110)
+                Layout.minimumWidth: implicitWidth
+                Layout.preferredWidth: implicitWidth
                 editable: true
             }
 
@@ -83,7 +84,8 @@ Rectangle {
                 to: 65535
                 value: 5001
                 enabled: !root.bound
-                Layout.preferredWidth: Style.resize(110)
+                Layout.minimumWidth: implicitWidth
+                Layout.preferredWidth: implicitWidth
                 editable: true
             }
         }

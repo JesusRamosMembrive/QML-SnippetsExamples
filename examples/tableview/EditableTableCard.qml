@@ -108,6 +108,8 @@ Rectangle {
                 clip: true
 
                 delegate: Rectangle {
+                    id: editHeaderCell
+                    required property var display
                     implicitWidth: Style.resize(120)
                     implicitHeight: Style.resize(34)
                     color: Style.bgColor
@@ -116,7 +118,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.leftMargin: Style.resize(8)
                         verticalAlignment: Text.AlignVCenter
-                        text: model.display
+                        text: editHeaderCell.display
                         color: Style.mainColor
                         font.pixelSize: Style.resize(12)
                         font.bold: true
@@ -159,16 +161,19 @@ Rectangle {
                     DelegateChoice {
                         column: 0
                         delegate: Rectangle {
+                            id: idCell
                             required property bool selected
+                            required property int row
+                            required property var display
                             implicitWidth: Style.resize(50)
                             implicitHeight: Style.resize(32)
-                            color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                                 : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                            color: idCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                                 : (idCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
                             Label {
                                 anchors.fill: parent
                                 anchors.leftMargin: Style.resize(8)
                                 verticalAlignment: Text.AlignVCenter
-                                text: model.display
+                                text: idCell.display
                                 color: Style.fontSecondaryColor
                                 font.pixelSize: Style.resize(12)
                             }
@@ -179,29 +184,33 @@ Rectangle {
                     DelegateChoice {
                         column: 1
                         delegate: Rectangle {
+                            id: nameCell
                             required property bool selected
                             required property bool editing
+                            required property int row
+                            required property var display
                             implicitWidth: Style.resize(140)
                             implicitHeight: Style.resize(32)
-                            color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                                 : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                            color: nameCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                                 : (nameCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
 
                             Label {
-                                visible: !parent.editing
+                                visible: !nameCell.editing
                                 anchors.fill: parent
                                 anchors.leftMargin: Style.resize(8)
                                 verticalAlignment: Text.AlignVCenter
-                                text: model.display
+                                text: nameCell.display
                                 color: Style.fontPrimaryColor
                                 font.pixelSize: Style.resize(12)
                             }
 
                             TableView.editDelegate: TextField {
                                 anchors.fill: parent
-                                text: model.display
+                                required property var edit
+                                text: nameCell.display
                                 Component.onCompleted: selectAll()
                                 onAccepted: {
-                                    model.display = text
+                                    edit = text
                                     TableView.commit()
                                 }
                             }
@@ -212,29 +221,33 @@ Rectangle {
                     DelegateChoice {
                         column: 2
                         delegate: Rectangle {
+                            id: departmentCell
                             required property bool selected
                             required property bool editing
+                            required property int row
+                            required property var display
                             implicitWidth: Style.resize(110)
                             implicitHeight: Style.resize(32)
-                            color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                                 : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                            color: departmentCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                                 : (departmentCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
 
                             Label {
-                                visible: !parent.editing
+                                visible: !departmentCell.editing
                                 anchors.fill: parent
                                 anchors.leftMargin: Style.resize(8)
                                 verticalAlignment: Text.AlignVCenter
-                                text: model.display
+                                text: departmentCell.display
                                 color: Style.fontPrimaryColor
                                 font.pixelSize: Style.resize(12)
                             }
 
                             TableView.editDelegate: TextField {
                                 anchors.fill: parent
-                                text: model.display
+                                required property var edit
+                                text: departmentCell.display
                                 Component.onCompleted: selectAll()
                                 onAccepted: {
-                                    model.display = text
+                                    edit = text
                                     TableView.commit()
                                 }
                             }
@@ -245,30 +258,34 @@ Rectangle {
                     DelegateChoice {
                         column: 3
                         delegate: Rectangle {
+                            id: salaryCell
                             required property bool selected
                             required property bool editing
+                            required property int row
+                            required property var display
                             implicitWidth: Style.resize(90)
                             implicitHeight: Style.resize(32)
-                            color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                                 : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                            color: salaryCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                                 : (salaryCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
 
                             Label {
-                                visible: !parent.editing
+                                visible: !salaryCell.editing
                                 anchors.fill: parent
                                 anchors.leftMargin: Style.resize(8)
                                 verticalAlignment: Text.AlignVCenter
-                                text: "$" + Number(model.display).toLocaleString()
+                                text: "$" + Number(salaryCell.display).toLocaleString()
                                 color: Style.fontPrimaryColor
                                 font.pixelSize: Style.resize(12)
                             }
 
                             TableView.editDelegate: TextField {
                                 anchors.fill: parent
-                                text: model.display
+                                required property var edit
+                                text: salaryCell.display
                                 validator: DoubleValidator { bottom: 0 }
                                 Component.onCompleted: selectAll()
                                 onAccepted: {
-                                    model.display = parseFloat(text)
+                                    edit = parseFloat(text)
                                     TableView.commit()
                                 }
                             }
@@ -279,16 +296,20 @@ Rectangle {
                     DelegateChoice {
                         column: 4
                         delegate: Rectangle {
+                            id: activeCell
                             required property bool selected
+                            required property int row
+                            required property var display
+                            required property var edit
                             implicitWidth: Style.resize(60)
                             implicitHeight: Style.resize(32)
-                            color: selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
-                                 : (row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
+                            color: activeCell.selected ? Qt.rgba(0, 0.82, 0.66, 0.15)
+                                 : (activeCell.row % 2 === 0 ? Style.cardColor : Style.surfaceColor)
 
                             CheckBox {
                                 anchors.centerIn: parent
-                                checked: model.display === true
-                                onToggled: model.display = checked
+                                checked: activeCell.display === true
+                                onToggled: activeCell.edit = checked
                             }
                         }
                     }

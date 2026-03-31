@@ -310,17 +310,20 @@ Item {
                     }
 
                     Rectangle {
+                        id: instructionsCard
                         Layout.fillWidth: true
-                        Layout.preferredHeight: implicitHeight + Style.resize(24)
+                        Layout.preferredHeight: implicitHeight
+                        implicitHeight: instructionsContent.implicitHeight + Style.resize(32)
                         color:        Style.surfaceColor
                         radius:       Style.resize(12)
                         border.color: "#323641"
                         border.width: 1
 
                         ColumnLayout {
+                            id: instructionsContent
                             anchors.fill: parent
                             anchors.margins: Style.resize(16)
-                            spacing: Style.resize(8)
+                            spacing: Style.resize(10)
 
                             Text {
                                 text:           "Cómo funciona"

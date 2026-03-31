@@ -59,27 +59,46 @@ Item {
     property real perspectiveDist: 800   // distancia de perspectiva simulada (px)
     property real textSpring:      2.0
     property real textDamping:     0.85
+    property real textDetachLift:  12    // lift extra del contenido al despegarse
 
     // ── Visual ────────────────────────────────────────────────────────────────
     property real shadowIntensity: 0.4
     property bool glareEnabled:    true
 
     // ── Estado interno ────────────────────────────────────────────────────────
-    property bool hovered:       false
-    property real cardTiltX:     0.0
-    property real cardTiltY:     0.0
-    property real cardLiftY:     0.0
-    property real textParallaxX: 0.0
-    property real textParallaxY: 0.0
-    property real textScale:     1.0
+    property bool hovered: mouseArea.containsMouse
+    readonly property real degToRad: Math.PI / 180
+    readonly property real pointerNormX: root.hovered
+                                       ? root.clamp((mouseArea.mouseX - root.width  / 2) / (root.width  / 2), -1, 1)
+                                       : 0.0
+    readonly property real pointerNormY: root.hovered
+                                       ? root.clamp((mouseArea.mouseY - root.height / 2) / (root.height / 2), -1, 1)
+                                       : 0.0
+    readonly property real tiltTargetX: root.pointerNormY * root.cardTiltStrength
+    readonly property real tiltTargetY: -root.pointerNormX * root.cardTiltStrength
+    property real textDepthProgress: root.hovered ? 1.0 : 0.0
+    readonly property real effectiveTextZDepth: root.textZDepth * root.textDepthProgress
+    property real cardTiltX: root.tiltTargetX
+    property real cardTiltY: root.tiltTargetY
+    property real cardLiftY: root.hovered ? -root.cardLiftStrength : 0.0
+    property real textParallaxX: root.hovered ? Math.sin(root.tiltTargetY * root.degToRad) * root.effectiveTextZDepth : 0.0
+    property real textParallaxY: root.hovered ? -Math.sin(root.tiltTargetX * root.degToRad) * root.effectiveTextZDepth : 0.0
+    property real textScale: root.perspectiveDist / (root.perspectiveDist - root.effectiveTextZDepth)
+    property real textDetachY: -Style.resize(root.textDetachLift) * root.textDepthProgress
 
     // ── Behaviors ─────────────────────────────────────────────────────────────
-    Behavior on cardTiltX  { SpringAnimation { spring: root.cardSpring; damping: root.cardDamping } }
-    Behavior on cardTiltY  { SpringAnimation { spring: root.cardSpring; damping: root.cardDamping } }
-    Behavior on cardLiftY  { SpringAnimation { spring: root.cardSpring; damping: root.cardDamping } }
-    Behavior on textParallaxX { SpringAnimation { spring: root.textSpring; damping: root.textDamping } }
-    Behavior on textParallaxY { SpringAnimation { spring: root.textSpring; damping: root.textDamping } }
-    Behavior on textScale  { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+    // Mientras hay hover, el tilt sigue al puntero sin interpolación temporal,
+    // igual que en el patrón de Aceternity. El resorte se usa solo al salir.
+    Behavior on cardTiltX  { enabled: !root.hovered; SpringAnimation { spring: root.cardSpring; damping: root.cardDamping } }
+    Behavior on cardTiltY  { enabled: !root.hovered; SpringAnimation { spring: root.cardSpring; damping: root.cardDamping } }
+    Behavior on cardLiftY  { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+    Behavior on textDepthProgress { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+    Behavior on textParallaxX { enabled: !root.hovered; SpringAnimation { spring: root.textSpring; damping: root.textDamping } }
+    Behavior on textParallaxY { enabled: !root.hovered; SpringAnimation { spring: root.textSpring; damping: root.textDamping } }
+
+    function clamp(value, minValue, maxValue) {
+        return Math.max(minValue, Math.min(maxValue, value))
+    }
 
     // =========================================================================
     // CAPA 1: Superficie de la tarjeta
@@ -97,7 +116,7 @@ Item {
             horizontalOffset: root.cardTiltY * 0.5
             verticalOffset:   Style.resize(6) + root.cardLiftY * 0.7 - root.cardTiltX * 0.4
             radius:           Style.resize(20) + root.cardLiftY * 1.5
-            samples:          25
+            samples:          17
             color:            Qt.rgba(0, 0, 0,
                                       root.shadowIntensity
                                       + (root.cardLiftY / root.cardLiftStrength) * 0.18)
@@ -178,11 +197,11 @@ Item {
         Item {
             id: glareContainer
             anchors.fill: parent
-            visible:  root.glareEnabled
+            visible:  root.glareEnabled && opacity > 0.01
             opacity:  root.hovered ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 400 } }
 
-            layer.enabled: true
+            layer.enabled: visible
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
                     width:  glareContainer.width
@@ -250,7 +269,7 @@ Item {
             // Parallax perspectivo + lift compartido con cardBody
             Translate {
                 x: root.textParallaxX
-                y: root.textParallaxY + root.cardLiftY
+                y: root.textParallaxY + root.cardLiftY + root.textDetachY
             }
         ]
 
@@ -365,7 +384,7 @@ Item {
             }
             Text {
                 text: "Z " + root.textZDepth.toFixed(0)
-                      + "px · spring " + root.textSpring.toFixed(1)
+                      + "px · return " + root.textSpring.toFixed(1)
                 font.pixelSize: Style.resize(12)
                 color:          Style.fontSecondaryColor
                 anchors.verticalCenter: parent.verticalCenter
@@ -379,37 +398,5 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape:  Qt.PointingHandCursor
-
-        onEntered: {
-            root.hovered   = true
-            root.cardLiftY = -root.cardLiftStrength
-            root.textScale = root.perspectiveDist / (root.perspectiveDist - root.textZDepth)
-        }
-
-        onExited: {
-            root.hovered       = false
-            root.cardTiltX     = 0
-            root.cardTiltY     = 0
-            root.cardLiftY     = 0
-            root.textParallaxX = 0
-            root.textParallaxY = 0
-            root.textScale     = 1.0
-        }
-
-        onPositionChanged: function(mouse) {
-            var normX = (mouse.x - root.width  / 2) / (root.width  / 2)
-            var normY = (mouse.y - root.height / 2) / (root.height / 2)
-            var rad   = Math.PI / 180
-
-            var tiltXTarget = normY * root.cardTiltStrength
-            var tiltYTarget = -normX * root.cardTiltStrength
-            root.cardTiltX = tiltXTarget
-            root.cardTiltY = tiltYTarget
-
-            // Desplazamiento perspectivo: replica CSS preserve-3d
-            // shiftX = sin(tiltY) * zDepth,  shiftY = -sin(tiltX) * zDepth
-            root.textParallaxX = Math.sin(tiltYTarget * rad) * root.textZDepth
-            root.textParallaxY = -Math.sin(tiltXTarget * rad) * root.textZDepth
-        }
     }
 }

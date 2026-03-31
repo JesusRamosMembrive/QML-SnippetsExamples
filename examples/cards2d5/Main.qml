@@ -2,15 +2,14 @@
 // Main.qml — Página: 2.5D Depth Cards
 // =============================================================================
 // Presenta cuatro tarjetas DepthCard con distintos colores de acento y
-// parámetros de resorte. Cada tarjeta demuestra el mismo modelo de movimiento
-// con variaciones que permiten comparar cómo el diferencial de spring afecta
-// la profundidad percibida.
+// profundidades virtuales. La rotación sigue el puntero en tiempo real y
+// el hover eleva el contenido para replicar el patrón 3D de Aceternity.
 //
 // COMPARATIVA DE TARJETAS:
-//   Components (teal)   — parámetros por defecto: spring 5.0 / 2.0
-//   Analytics  (azul)   — resortes más cercanos: spring 6.0 / 2.5 (menor separación)
-//   Motion     (rosa)   — máximo lag: spring 5.0 / 1.5, offset 22px (mayor separación)
-//   System     (naranja) — inclinación más pronunciada: tilt 14°, lift 10px
+//   Components (teal)   — profundidad equilibrada: Z 60px
+//   Analytics  (azul)   — contenido más cercano al plano: Z 30px
+//   Motion     (rosa)   — contenido muy flotante: Z 110px
+//   System     (naranja) — inclinación más pronunciada y lift mayor
 // =============================================================================
 
 import QtQuick
@@ -61,11 +60,10 @@ Item {
 
                     Text {
                         text: "El cuerpo de cada tarjeta y su texto reciben la misma posición del "
-                              + "cursor simultáneamente, pero la siguen con constantes de resorte "
-                              + "distintas. La tarjeta reacciona rápido (spring 5.0); el texto "
-                              + "llega tarde (spring 2.0). Ese desfase temporal de ~180ms basta "
-                              + "para que el ojo perciba los dos elementos en planos de profundidad "
-                              + "separados — sin valores z, sin escena 3D."
+                              + "cursor simultáneamente. La rotación sigue el movimiento del ratón "
+                              + "en tiempo real y el hover eleva visualmente el contenido con un "
+                              + "despegue animado para crear la sensación de profundidad del efecto "
+                              + "3D Card de Aceternity."
                         font.pixelSize: Style.fontSizeS
                         color:          Style.fontSecondaryColor
                         wrapMode:       Text.WordWrap
@@ -93,8 +91,7 @@ Item {
                         // defaults: tilt 18°, textZDepth 60, textSpring 2.0
                     }
 
-                    // Tarjeta 2 — azul: texto cerca de la superficie
-                    // textZDepth bajo = texto casi pegado al plano del card.
+                    // Tarjeta 2 — azul: contenido cerca de la superficie
                     DepthCard {
                         Layout.preferredWidth:  Style.resize(280)
                         Layout.preferredHeight: Style.resize(340)
@@ -104,11 +101,11 @@ Item {
                         accentColor: "#7B8FFF"
                         bgColor:     Style.cardColor
                         textZDepth:  30         // texto poco elevado
-                        textSpring:  3.0        // respuesta rápida, poco lag
+                        textSpring:  3.0        // retorno algo más rápido al reposo
                     }
 
                     // Tarjeta 3 — rosa: máxima profundidad percibida
-                    // textZDepth alto + spring muy suave = texto muy flotante.
+                    // textZDepth alto = contenido muy flotante.
                     DepthCard {
                         Layout.preferredWidth:  Style.resize(280)
                         Layout.preferredHeight: Style.resize(340)
@@ -118,7 +115,7 @@ Item {
                         accentColor: "#FF6B9D"
                         bgColor:     Style.cardColor
                         textZDepth:  110        // texto muy elevado (Aceternity: 100px)
-                        textSpring:  1.2        // lag máximo
+                        textSpring:  1.2        // retorno más elástico
                         textDamping: 0.92
                     }
 
@@ -205,35 +202,37 @@ Item {
                             wrapMode:       Text.Wrap
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
-                            text: "<b>Cuerpo de la tarjeta:</b>  SpringAnimation spring:5.0, "
-                                  + "damping:0.65 — reactivo, ligero rebote. Llega al destino en ~120ms."
+                            text: "<b>Cuerpo de la tarjeta:</b>  La rotación se calcula directamente "
+                                  + "desde la posición actual del puntero, sin esperar a que el ratón "
+                                  + "se detenga. El resorte spring:5.0 / damping:0.65 solo actúa al salir."
                         }
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
-                            text: "<b>Capa de texto:</b>  SpringAnimation spring:2.0, "
-                                  + "damping:0.90 — suave, sin rebote. Llega al destino en ~300ms."
+                            text: "<b>Capa de texto:</b>  Comparte el mismo tilt de la tarjeta y añade "
+                                  + "un desplazamiento perspectivo basado en Z. Al entrar en hover se "
+                                  + "despega con una animación un poco más larga y luego sigue al puntero "
+                                  + "en tiempo real."
                         }
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
-                            text: "<b>La ilusión:</b>  Ambas capas reciben el mismo dato del cursor "
-                                  + "en el mismo instante. El desfase de ~180ms entre sus llegadas "
-                                  + "es interpretado por el sistema visual como separación espacial "
-                                  + "— el objeto más lento parece estar más lejos del ojo."
+                            text: "<b>La ilusión:</b>  El plano base rota con el cursor y el contenido "
+                                  + "se proyecta como si estuviera más cerca del espectador. Esa diferencia "
+                                  + "de profundidad aparente produce el efecto 2.5D."
                         }
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
-                            text: "<b>Sin valores z.</b>  El efecto es puramente temporal: "
-                                  + "mismo estímulo, velocidades de respuesta distintas "
-                                  + "→ separación de profundidad percibida."
+                            text: "<b>Sin escena 3D completa.</b>  El efecto se construye con rotación "
+                                  + "3D, perspectiva simulada y desplazamientos proyectados, manteniendo "
+                                  + "la interacción ligera y continua."
                         }
                         Item { height: Style.resize(8) }
                     }

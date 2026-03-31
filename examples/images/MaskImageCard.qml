@@ -30,6 +30,19 @@ Rectangle {
     // Indice de la forma de mascara activa (0=circulo, 1=redondeado, 2=diamante, 3=estrella)
     property int maskShape: 0
 
+    function repaintMaskCanvases() {
+        for (var i = 0; i < maskItem.children.length; i++) {
+            var child = maskItem.children[i]
+            if (child.requestPaint)
+                child.requestPaint()
+        }
+        for (var j = 0; j < maskOutline.children.length; j++) {
+            var outlineChild = maskOutline.children[j]
+            if (outlineChild.requestPaint)
+                outlineChild.requestPaint()
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Style.resize(20)
@@ -46,18 +59,47 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            Rectangle {
+                id: previewFrame
+                anchors.centerIn: parent
+                width: Style.resize(220)
+                height: Style.resize(220)
+                radius: Style.resize(12)
+                color: Style.surfaceColor
+                border.width: 1
+                border.color: "#3A3D45"
+
+                Canvas {
+                    anchors.fill: parent
+                    anchors.margins: Style.resize(10)
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        var cell = 16
+                        ctx.clearRect(0, 0, width, height)
+                        for (var y = 0; y < height; y += cell) {
+                            for (var x = 0; x < width; x += cell) {
+                                var even = ((x / cell) + (y / cell)) % 2 === 0
+                                ctx.fillStyle = even ? "#2C3038" : "#232730"
+                                ctx.fillRect(x, y, cell, cell)
+                            }
+                        }
+                    }
+                    Component.onCompleted: requestPaint()
+                }
+            }
+
             // -----------------------------------------------------------------
             // Imagen fuente: paisaje generado con Canvas.
-            // visible: false porque OpacityMask la consume como textura interna.
+            // Se captura mediante ShaderEffectSource con hideSource:true para que
+            // no se vea duplicada, pero siga actualizándose correctamente.
             // Canvas permite crear graficos procedurales sin archivos de imagen,
             // ideal para demos y prototipos.
             // -----------------------------------------------------------------
             Canvas {
                 id: landscape
-                anchors.centerIn: parent
+                anchors.centerIn: previewFrame
                 width: Style.resize(180)
                 height: Style.resize(180)
-                visible: false
                 onPaint: {
                     var ctx = getContext("2d")
                     // Sky gradient
@@ -104,7 +146,7 @@ Rectangle {
             }
 
             // -----------------------------------------------------------------
-            // Contenedor de mascaras: tambien visible: false.
+            // Contenedor de mascaras.
             // Contiene multiples formas; solo la activa (segun maskShape)
             // se muestra internamente. Las formas simples (circulo, redondeado)
             // usan Rectangle con radius; las complejas (diamante, estrella)
@@ -113,7 +155,6 @@ Rectangle {
             Item {
                 id: maskItem
                 anchors.fill: landscape
-                visible: false
 
                 // Circulo (radius = 50%) o rectangulo redondeado
                 Rectangle {
@@ -169,17 +210,90 @@ Rectangle {
                 }
             }
 
+            ShaderEffectSource {
+                id: landscapeSource
+                anchors.fill: landscape
+                sourceItem: landscape
+                live: true
+                hideSource: true
+            }
+
+            ShaderEffectSource {
+                id: maskTexture
+                anchors.fill: maskItem
+                sourceItem: maskItem
+                live: true
+                hideSource: true
+            }
+
             // OpacityMask combina source y maskSource: muestra los pixeles
             // del source donde el maskSource tiene opacidad (blanco).
             OpacityMask {
                 anchors.fill: landscape
-                source: landscape
-                maskSource: maskItem
+                source: landscapeSource
+                maskSource: maskTexture
+                cached: false
+            }
+
+            Item {
+                id: maskOutline
+                anchors.fill: landscape
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: root.maskShape === 0 ? width / 2
+                          : root.maskShape === 1 ? Style.resize(16)
+                          : 0
+                    color: "transparent"
+                    border.width: root.maskShape <= 1 ? 2 : 0
+                    border.color: Qt.rgba(0, 0.82, 0.66, 0.9)
+                    visible: root.maskShape <= 1
+                }
+
+                Canvas {
+                    anchors.fill: parent
+                    visible: root.maskShape === 2
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.clearRect(0, 0, width, height)
+                        ctx.strokeStyle = "#00D1A9"
+                        ctx.lineWidth = 2
+                        ctx.beginPath()
+                        ctx.moveTo(width / 2, 0)
+                        ctx.lineTo(width, height / 2)
+                        ctx.lineTo(width / 2, height)
+                        ctx.lineTo(0, height / 2)
+                        ctx.closePath()
+                        ctx.stroke()
+                    }
+                }
+
+                Canvas {
+                    anchors.fill: parent
+                    visible: root.maskShape === 3
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.clearRect(0, 0, width, height)
+                        ctx.strokeStyle = "#00D1A9"
+                        ctx.lineWidth = 2
+                        ctx.beginPath()
+                        var cx = width / 2, cy = height / 2
+                        var outerR = Math.min(width, height) / 2
+                        var innerR = outerR * 0.4
+                        for (var i = 0; i < 10; i++) {
+                            var angle = (i * Math.PI / 5) - Math.PI / 2
+                            var r = (i % 2 === 0) ? outerR : innerR
+                            if (i === 0) ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle))
+                            else ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle))
+                        }
+                        ctx.closePath()
+                        ctx.stroke()
+                    }
+                }
             }
         }
 
-        // Selector de forma: al cambiar, se fuerza requestPaint() en los
-        // Canvas hijos para que redibujen la mascara correspondiente.
+        // Selector de forma.
         RowLayout {
             Layout.fillWidth: true
             spacing: Style.resize(6)
@@ -193,16 +307,11 @@ Rectangle {
                     text: modelData
                     font.pixelSize: Style.resize(11)
                     highlighted: root.maskShape === index
-                    onClicked: {
-                        root.maskShape = index
-                        // Repaint Canvas masks
-                        for (var i = 0; i < maskItem.children.length; i++) {
-                            var child = maskItem.children[i]
-                            if (child.requestPaint) child.requestPaint()
-                        }
-                    }
+                    onClicked: root.maskShape = index
                 }
             }
         }
     }
+
+    onMaskShapeChanged: repaintMaskCanvases()
 }

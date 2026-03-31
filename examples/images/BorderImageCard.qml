@@ -27,6 +27,10 @@ Rectangle {
     // Grosor del borde en pixeles. Controla cuanto de la imagen se
     // considera "esquina" (no escalable) vs "centro" (escalable).
     property int borderSize: 20
+    readonly property int sourceImageSize: 90
+    readonly property int minBorderSize: 2
+    readonly property int maxBorderSize: 42
+    readonly property int centerPatchSize: Math.max(0, sourceImageSize - borderSize * 2)
 
     ColumnLayout {
         anchors.fill: parent
@@ -41,51 +45,149 @@ Rectangle {
         }
 
         Label {
-            text: "Corners stay fixed, edges stretch"
+            text: "Move the cut lines: corners stay fixed while only the center patch stretches"
             font.pixelSize: Style.resize(14)
             color: Style.fontSecondaryColor
         }
 
-        Item {
+        RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            spacing: Style.resize(18)
 
-            // Tres variantes lado a lado para comparar visualmente
-            // como BorderImage adapta la misma imagen a distintas proporciones.
-            Row {
-                anchors.centerIn: parent
-                spacing: Style.resize(15)
+            Rectangle {
+                Layout.preferredWidth: Style.resize(190)
+                Layout.fillHeight: true
+                radius: Style.resize(8)
+                color: Style.surfaceColor
 
-                Repeater {
-                    model: [
-                        { w: 60, h: 60, lbl: "Original" },
-                        { w: 140, h: 80, lbl: "Wide" },
-                        { w: 80, h: 130, lbl: "Tall" }
-                    ]
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: Style.resize(12)
+                    spacing: Style.resize(10)
 
-                    ColumnLayout {
-                        required property var modelData
-                        spacing: Style.resize(4)
+                    Label {
+                        text: "Slice Guide"
+                        font.pixelSize: Style.resize(13)
+                        font.bold: true
+                        color: Style.mainColor
+                    }
 
-                        // border.left/right/top/bottom definen cuantos pixeles
-                        // desde cada borde se consideran zona fija (esquinas).
-                        // Valores iguales en los 4 lados = esquinas simetricas.
-                        BorderImage {
-                            source: "qrc:/assets/images/ninepatch.png"
-                            width: Style.resize(modelData.w)
-                            height: Style.resize(modelData.h)
-                            border.left: root.borderSize
-                            border.right: root.borderSize
-                            border.top: root.borderSize
-                            border.bottom: root.borderSize
-                            Layout.alignment: Qt.AlignHCenter
+                    Item {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.preferredWidth: Style.resize(150)
+                        Layout.preferredHeight: Style.resize(150)
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: Style.resize(6)
+                            color: Style.cardColor
+                            border.width: 1
+                            border.color: "#3A3D45"
                         }
 
-                        Label {
-                            text: modelData.lbl
-                            font.pixelSize: Style.resize(11)
-                            color: Style.fontSecondaryColor
-                            Layout.alignment: Qt.AlignHCenter
+                        Image {
+                            id: sourcePreview
+                            anchors.fill: parent
+                            anchors.margins: Style.resize(8)
+                            source: "qrc:/assets/images/ninepatch.png"
+                            fillMode: Image.PreserveAspectFit
+                            smooth: false
+                        }
+
+                        Rectangle {
+                            width: 2
+                            color: Style.mainColor
+                            anchors.top: sourcePreview.top
+                            anchors.bottom: sourcePreview.bottom
+                            x: sourcePreview.x + sourcePreview.width * root.borderSize / root.sourceImageSize
+                        }
+                        Rectangle {
+                            width: 2
+                            color: Style.mainColor
+                            anchors.top: sourcePreview.top
+                            anchors.bottom: sourcePreview.bottom
+                            x: sourcePreview.x + sourcePreview.width * (root.sourceImageSize - root.borderSize) / root.sourceImageSize
+                        }
+                        Rectangle {
+                            height: 2
+                            color: Style.mainColor
+                            anchors.left: sourcePreview.left
+                            anchors.right: sourcePreview.right
+                            y: sourcePreview.y + sourcePreview.height * root.borderSize / root.sourceImageSize
+                        }
+                        Rectangle {
+                            height: 2
+                            color: Style.mainColor
+                            anchors.left: sourcePreview.left
+                            anchors.right: sourcePreview.right
+                            y: sourcePreview.y + sourcePreview.height * (root.sourceImageSize - root.borderSize) / root.sourceImageSize
+                        }
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: "Border: " + root.borderSize + " px"
+                        font.pixelSize: Style.resize(12)
+                        color: Style.fontPrimaryColor
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: "Stretchable center: " + root.centerPatchSize + " x " + root.centerPatchSize + " px"
+                        font.pixelSize: Style.resize(11)
+                        color: Style.fontSecondaryColor
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: Style.resize(8)
+                color: Style.surfaceColor
+
+                GridLayout {
+                    anchors.fill: parent
+                    anchors.margins: Style.resize(12)
+                    columns: 2
+                    columnSpacing: Style.resize(18)
+                    rowSpacing: Style.resize(14)
+
+                    Repeater {
+                        model: [
+                            { w: 90,  h: 90,  lbl: "Original" },
+                            { w: 240, h: 90,  lbl: "Ultra Wide" },
+                            { w: 90,  h: 220, lbl: "Ultra Tall" },
+                            { w: 240, h: 180, lbl: "Large Panel" }
+                        ]
+
+                        ColumnLayout {
+                            id: patchVariant
+                            required property var modelData
+                            Layout.fillWidth: true
+                            spacing: Style.resize(6)
+
+                            BorderImage {
+                                source: "qrc:/assets/images/ninepatch.png"
+                                width: Style.resize(patchVariant.modelData.w)
+                                height: Style.resize(patchVariant.modelData.h)
+                                border.left: root.borderSize
+                                border.right: root.borderSize
+                                border.top: root.borderSize
+                                border.bottom: root.borderSize
+                                horizontalTileMode: BorderImage.Stretch
+                                verticalTileMode: BorderImage.Stretch
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+
+                            Label {
+                                text: patchVariant.modelData.lbl
+                                font.pixelSize: Style.resize(11)
+                                color: Style.fontSecondaryColor
+                                Layout.alignment: Qt.AlignHCenter
+                            }
                         }
                     }
                 }
@@ -104,8 +206,11 @@ Rectangle {
             }
             Slider {
                 Layout.fillWidth: true
-                from: 5; to: 28; value: root.borderSize; stepSize: 1
-                onMoved: root.borderSize = value
+                from: root.minBorderSize
+                to: root.maxBorderSize
+                value: root.borderSize
+                stepSize: 1
+                onValueChanged: root.borderSize = Math.round(value)
             }
         }
     }

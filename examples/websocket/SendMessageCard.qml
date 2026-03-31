@@ -24,6 +24,7 @@ Rectangle {
     id: root
     color: Style.cardColor
     radius: Style.resize(8)
+    implicitHeight: contentColumn.implicitHeight + Style.resize(30)
 
     // Propiedades de entrada y senal de salida. El padre vincula "connected"
     // al estado real del WebSocket y escucha "messageSent" para enviar datos.
@@ -32,6 +33,7 @@ Rectangle {
     signal messageSent(string message)
 
     ColumnLayout {
+        id: contentColumn
         anchors.fill: parent
         anchors.margins: Style.resize(15)
         spacing: Style.resize(10)
@@ -70,6 +72,7 @@ Rectangle {
             Button {
                 text: "Send"
                 enabled: root.connected && messageField.text.length > 0
+                Layout.alignment: Qt.AlignVCenter
                 onClicked: {
                     root.messageSent(messageField.text)
                     messageField.text = ""

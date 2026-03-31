@@ -115,7 +115,7 @@ Item {
             ConnectionCard {
                 id: connectionCard
                 Layout.fillWidth: true
-                Layout.preferredHeight: Style.resize(120)
+                Layout.preferredHeight: implicitHeight
                 connected: wsClient.connected
                 statusText: wsClient.statusText
                 onConnectClicked: wsClient.connectToServer()
@@ -125,7 +125,7 @@ Item {
             // Tarjeta de envio: campo de texto + boton Send
             SendMessageCard {
                 Layout.fillWidth: true
-                Layout.preferredHeight: Style.resize(75)
+                Layout.preferredHeight: implicitHeight
                 connected: wsClient.connected
                 onMessageSent: (message) => wsClient.sendMessage(message)
             }

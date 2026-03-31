@@ -209,12 +209,14 @@ Item {
                 // monocromáticos.
                 Image {
                     id: iconImage
-                    width: Style.resize(sourceSize.width)
-                    height: Style.resize(sourceSize.height)
+                    width: Style.resize(22)
+                    height: Style.resize(22)
                     anchors.left: parent.left
                     anchors.leftMargin: Style.resize(40)
                     anchors.verticalCenter: parent.verticalCenter
                     source: Style.icon(menuDelegate.name.toLowerCase())
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
                     layer.enabled: true
                     layer.effect: ColorOverlay {
                         color: "#ffffff"

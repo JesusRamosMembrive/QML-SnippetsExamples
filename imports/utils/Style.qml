@@ -78,6 +78,48 @@ QtObject {
     property string iconPath: "/assets/icons/"
     property string imagePath: "/assets/images/"
     property string meshPath: "/assets/mesh/"
+    property var svgIconFiles: ({
+        "aircraftmap": "aircraftmap.svg",
+        "animations": "animations.svg",
+        "canvas": "canvas.svg",
+        "cards2d5": "cards2d5.svg",
+        "combobox": "combobox.svg",
+        "dashboard": "dashboard.svg",
+        "database": "database.svg",
+        "date": "date.svg",
+        "diorama": "diorama.svg",
+        "ecam": "ECAM.svg",
+        "ethernet": "ethernet.svg",
+        "flickable": "flickable.svg",
+        "frostglass": "frostglass.svg",
+        "graphs": "graphs.svg",
+        "gridview": "gridview.svg",
+        "hud": "hud.svg",
+        "images": "images.svg",
+        "indicators": "indicators.svg",
+        "lensphoto": "lensphoto.svg",
+        "loader": "loader.svg",
+        "maps": "maps.svg",
+        "multimedia": "multimedia.svg",
+        "multiplane": "multiplane.svg",
+        "navdisplay": "navdisplay.svg",
+        "network": "network.svg",
+        "particles": "particles.svg",
+        "pathview": "pathview.svg",
+        "pdfreader": "pdfreader.svg",
+        "pfd": "pfd.svg",
+        "scrollview": "scrollview.svg",
+        "settings": "settings.svg",
+        "shaders": "shaders.svg",
+        "splitview": "splitView.svg",
+        "spritestack": "spritestack.svg",
+        "switches": "switches.svg",
+        "tableview": "tableview.svg",
+        "threads": "threads.svg",
+        "toolbar": "toolbar.svg",
+        "treeview": "treeview.svg",
+        "websocket": "websocket.svg"
+    })
 
     // --- Funciones helper para assets ---
     // Simplifican el acceso a recursos. En vez de escribir:
@@ -90,9 +132,12 @@ QtObject {
     // porque las rutas de recursos qrc necesitan el prefijo completo para
     // funcionar correctamente desde cualquier módulo.
 
-    // Devuelve la URL completa de un icono PNG por nombre (sin extensión).
+    // Devuelve la URL completa de un icono. Usa SVG cuando ya existe un
+    // reemplazo compatible en recursos; en caso contrario, mantiene el PNG.
     function icon(name) {
-        return Qt.resolvedUrl(iconPath + name + ".png");
+        var normalized = String(name).toLowerCase()
+        var svgFile = svgIconFiles[normalized]
+        return Qt.resolvedUrl(iconPath + (svgFile ? svgFile : normalized + ".png"));
     }
 
     // Devuelve la URL completa de una imagen PNG por nombre (sin extensión).
