@@ -27,17 +27,27 @@ Item {
     // Fondo real para frost glass y fuente óptica de la lente
     property Item backgroundItem: null
 
+    // Color del texto de los tabs (blanco en dark, negro en light)
+    property color tabTextColor: Qt.rgba(1, 1, 1, 0.70)
+
     // Frost glass
+    property bool frostEnabled:   true   // false = fondo plano sin blur
     property real blurRadius:     28
     property real tintOpacity:    0.14
     property real borderOpacity:  0.30
 
     // Óptica de la lente
-    // magnification = fuerza de distorsión en el borde (0 = lente plana, 0.6 = suave)
-    property real magnification:  0.6
-    property real aberration:     0.016
-    property real rimBrightness:  0.75
-    property real lensRadius:     0.48   // en UV-Y (0.5 = toca los bordes)
+    property real magnification:        0.6    // distorsión en los caps (0=plana)
+    property real aberration:           0.016  // aberración cromática en los caps
+    property real rimBrightness:        0.0    // sheen superior suave (0=off)
+    property real lensRadius:           0.48   // radio UV-Y (0.5 = toca los bordes)
+
+    // Efectos de vidrio (todos a 0 por defecto — configúralos desde Main)
+    property real tintStrength:         0.0    // tinte teal (0=transparente)
+    property real noiseStrength:        0.0    // micro-textura de superficie
+    property real vignetteStrength:     0.0    // viñeta lateral
+    property real causticStrength:      0.0    // destellos en los caps
+    property real bottomShadowStrength: 0.0    // sombra inferior / grosor
 
     readonly property int tabCount: Math.max(1, tabs.length)
 
@@ -84,7 +94,7 @@ Item {
             visible:      root.backgroundItem === null || root.backgroundItem === undefined
         }
 
-        // ── Capa 1: captura del fondo + blur ───────────────────────────────
+        // ── Capa 1: captura del fondo ──────────────────────────────────────
         // Desplazado en (-root.x, -root.y) para que el clip muestre
         // exactamente la región del fondo que queda detrás del track.
         ShaderEffectSource {
@@ -99,13 +109,16 @@ Item {
             visible:    false   // MultiEffect lo renderiza
         }
 
+        // ── Blur (frost glass) — desactivable con frostEnabled: false ──────
         MultiEffect {
             source:  bgCapture
             x:       bgCapture.x
             y:       bgCapture.y
             width:   bgCapture.width
             height:  bgCapture.height
-            blurEnabled:    root.backgroundItem !== null && root.backgroundItem !== undefined
+            blurEnabled:    root.frostEnabled
+                            && root.backgroundItem !== null
+                            && root.backgroundItem !== undefined
             blur:           1.0
             blurMax:        Math.max(4, Math.round(root.blurRadius))
             blurMultiplier: 0.5
@@ -138,6 +151,28 @@ Item {
             border.width: 1
         }
 
+        // ── Capa 5: arista superior (grosor del cristal) ───────────────────
+        // Una línea fina y brillante en el borde superior del pill simula la
+        // arista pulida de un cristal real de 2–3 mm de grosor.
+        Rectangle {
+            anchors.left:   parent.left
+            anchors.right:  parent.right
+            anchors.top:    parent.top
+            anchors.leftMargin:  parent.radius
+            anchors.rightMargin: parent.radius
+            anchors.topMargin:   1
+            height: 1.5
+            radius: 1
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.0) }
+                GradientStop { position: 0.2; color: Qt.rgba(1, 1, 1, 0.75) }
+                GradientStop { position: 0.5; color: Qt.rgba(1, 1, 1, 0.90) }
+                GradientStop { position: 0.8; color: Qt.rgba(1, 1, 1, 0.75) }
+                GradientStop { position: 1.0; color: Qt.rgba(1, 1, 1, 0.0) }
+            }
+        }
+
         // ── Todos los tabs en su posición fija — la lente es puro overlay ────
         // Ningún contenido sigue a la lente: al desplazarse, el shader amplifica
         // y distorsiona lo que hay debajo en cada frame (las tabs intermedias
@@ -164,7 +199,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text:           root.tabIcon(tabDel.modelData)
                             font.pixelSize: Style.resize(20)
-                            color:          Qt.rgba(1, 1, 1, 0.70)
+                            color:          root.tabTextColor
                             visible:        text !== ""
                         }
 
@@ -173,7 +208,7 @@ Item {
                             text:           root.tabLabel(tabDel.modelData)
                             font.family:    Style.fontFamilyBold
                             font.pixelSize: Style.resize(13)
-                            color:          Qt.rgba(1, 1, 1, 0.65)
+                            color:          root.tabTextColor
                         }
                     }
                 }
@@ -212,15 +247,20 @@ Item {
     LensCircleEffect {
         id: lensEffect
         anchors.fill: track
-        source:        trackCapture
-        lensX:         lensProxy.x / track.width
-        lensY:         0.5
-        lensRadius:    root.lensRadius
-        aspectRatio:   track.width / track.height
-        magnification: root.magnification
-        aberration:    root.aberration
-        rimBrightness: root.rimBrightness
-        lensWiden:     1.8   // pill: 100% más ancha que alta (~25% más grande)
+        source:               trackCapture
+        lensX:                lensProxy.x / track.width
+        lensY:                0.5
+        lensRadius:           root.lensRadius
+        aspectRatio:          track.width / track.height
+        magnification:        root.magnification
+        aberration:           root.aberration
+        rimBrightness:        root.rimBrightness
+        lensWiden:            1.8
+        tintStrength:         root.tintStrength
+        noiseStrength:        root.noiseStrength
+        vignetteStrength:     root.vignetteStrength
+        causticStrength:      root.causticStrength
+        bottomShadowStrength: root.bottomShadowStrength
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

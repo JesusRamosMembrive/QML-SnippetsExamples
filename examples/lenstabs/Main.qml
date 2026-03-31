@@ -29,13 +29,22 @@ Item {
 
     property int  currentTabIndex:   0
     property int  travelDuration:    320
-    property real magnification:     0.9
+    property real magnification:     0.6
     property real aberration:        0.016
-    property real rimBrightness:     0.75
+    property real rimBrightness:     0.0
     property real lensRadius:        0.46
     property real blurRadius:        28
     property real tintOpacity:       0.14
     property real borderOpacity:     0.30
+    property bool frostEnabled:      true
+    property bool lightMode:         false
+
+    // Efectos de vidrio (todos a 0 por defecto)
+    property real tintStrength:         0.0
+    property real noiseStrength:        0.0
+    property real vignetteStrength:     0.0
+    property real causticStrength:      0.0
+    property real bottomShadowStrength: 0.0
 
     readonly property var currentTab: tabItems[Math.max(0, Math.min(currentTabIndex, tabItems.length - 1))]
 
@@ -148,10 +157,10 @@ Item {
                                 id: demoBackground
                                 anchors.fill: parent
 
-                                // Base oscura
+                                // Base (oscura o blanca según lightMode)
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: "#0a0d1a"
+                                    color: root.lightMode ? "#ffffff" : "#0a0d1a"
                                 }
 
                                 // Blob magenta — arriba a la izquierda
@@ -231,8 +240,15 @@ Item {
                                 rimBrightness:  root.rimBrightness
                                 lensRadius:     root.lensRadius
                                 blurRadius:     root.blurRadius
-                                tintOpacity:    root.tintOpacity
-                                borderOpacity:  root.borderOpacity
+                                tintOpacity:          root.tintOpacity
+                                borderOpacity:        root.borderOpacity
+                                frostEnabled:         root.frostEnabled
+                                tabTextColor:         root.lightMode ? Qt.rgba(0,0,0,0.75) : Qt.rgba(1,1,1,0.70)
+                                tintStrength:         root.tintStrength
+                                noiseStrength:        root.noiseStrength
+                                vignetteStrength:     root.vignetteStrength
+                                causticStrength:      root.causticStrength
+                                bottomShadowStrength: root.bottomShadowStrength
 
                                 onTabTriggered: function(index) {
                                     root.currentTabIndex = index
@@ -415,12 +431,12 @@ Item {
                                 }
                             }
 
-                            // Rim brightness
+                            // Rim brightness (sheen suave)
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: Style.resize(6)
                                 RowLayout {
-                                    Text { text: "Rim brightness"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Text { text: "Sheen"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
                                     Item { Layout.fillWidth: true }
                                     Text { text: root.rimBrightness.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
                                 }
@@ -429,6 +445,119 @@ Item {
                                     from: 0.0; to: 1.0; stepSize: 0.05
                                     value: root.rimBrightness
                                     onValueChanged: root.rimBrightness = value
+                                }
+                            }
+
+                            // Frost glass toggle
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Frost glass"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Switch {
+                                        checked: root.frostEnabled
+                                        onToggled: root.frostEnabled = checked
+                                    }
+                                }
+                            }
+
+                            // Light mode toggle
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Fondo blanco"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Switch {
+                                        checked: root.lightMode
+                                        onToggled: root.lightMode = checked
+                                    }
+                                }
+                            }
+
+                            // Tinte de cristal
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Tinte cristal"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: root.tintStrength.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
+                                }
+                                Slider {
+                                    Layout.fillWidth: true
+                                    from: 0.0; to: 0.30; stepSize: 0.01
+                                    value: root.tintStrength
+                                    onValueChanged: root.tintStrength = value
+                                }
+                            }
+
+                            // Micro-textura
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Micro-textura"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: root.noiseStrength.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
+                                }
+                                Slider {
+                                    Layout.fillWidth: true
+                                    from: 0.0; to: 0.40; stepSize: 0.01
+                                    value: root.noiseStrength
+                                    onValueChanged: root.noiseStrength = value
+                                }
+                            }
+
+                            // Viñeta lateral
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Viñeta"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: root.vignetteStrength.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
+                                }
+                                Slider {
+                                    Layout.fillWidth: true
+                                    from: 0.0; to: 0.50; stepSize: 0.01
+                                    value: root.vignetteStrength
+                                    onValueChanged: root.vignetteStrength = value
+                                }
+                            }
+
+                            // Caustics caps
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Caustics"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: root.causticStrength.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
+                                }
+                                Slider {
+                                    Layout.fillWidth: true
+                                    from: 0.0; to: 1.0; stepSize: 0.05
+                                    value: root.causticStrength
+                                    onValueChanged: root.causticStrength = value
+                                }
+                            }
+
+                            // Sombra inferior / grosor
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: Style.resize(6)
+                                RowLayout {
+                                    Text { text: "Grosor / sombra"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Item { Layout.fillWidth: true }
+                                    Text { text: root.bottomShadowStrength.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
+                                }
+                                Slider {
+                                    Layout.fillWidth: true
+                                    from: 0.0; to: 0.60; stepSize: 0.01
+                                    value: root.bottomShadowStrength
+                                    onValueChanged: root.bottomShadowStrength = value
                                 }
                             }
                         }

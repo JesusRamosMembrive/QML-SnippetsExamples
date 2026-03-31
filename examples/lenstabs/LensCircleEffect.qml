@@ -1,47 +1,28 @@
 // =============================================================================
-// LensCircleEffect.qml — Lente circular GPU con magnificación real del contenido
+// LensCircleEffect.qml — Lente GPU con forma de cápsula (pill)
 // =============================================================================
-// ShaderEffect que aplica una lente convexa circular a una textura fuente.
-// Usa barrel distortion + magnificación + aberración cromática + tinte de cristal.
-//
-// Uso en LensTabStrip:
-//   LensCircleEffect {
-//       anchors.fill: track
-//       source:         tabSource          // ShaderEffectSource del contenido
-//       lensX:          lensProxy.x / width
-//       lensY:          0.5
-//       lensRadius:     0.50               // radio = semialtura del ítem → círculo inscrito
-//       aspectRatio:    width / height
-//       magnification:  1.6
-//       aberration:     0.012
-//       rimBrightness:  0.6
-//   }
-// =============================================================================
-
 import QtQuick
 
 ShaderEffect {
     id: root
 
-    // ── Fuente de la textura ─────────────────────────────────────────────────
-    property var source
+    property var  source
 
-    // ── Centro de la lente en UV (0..1) ─────────────────────────────────────
-    property real lensX:         0.5
-    property real lensY:         0.5
+    property real lensX:                0.5
+    property real lensY:                0.5
+    property real lensRadius:           0.20
+    property real aspectRatio:          width / height
+    property real magnification:        0.6    // distorsión en los caps (0=plana)
+    property real aberration:           0.008
+    property real rimBrightness:        0.0    // sheen superior (0=off)
+    property real lensWiden:            1.8    // ensanche horizontal
 
-    // ── Radio de la lente en unidades UV-Y ──────────────────────────────────
-    // lensRadius = 0.5 → círculo que ocupa exactamente la altura del ítem.
-    property real lensRadius:    0.20
-
-    // ── Corrección de aspecto ─────────────────────────────────────────────────
-    property real aspectRatio:   width / height
-
-    // ── Óptica ────────────────────────────────────────────────────────────────
-    property real magnification: 1.1    // 1.0 = sin magnificación
-    property real aberration:    0.008  // aberración cromática (0=off, 0.04=fuerte)
-    property real rimBrightness: 1.6    // intensidad del highlight en el borde
-    property real lensWiden:     1.3    // ensanche horizontal (1.0=circular, 2.0=doble ancho)
+    // ── Efectos de vidrio configurables ──────────────────────────────────────
+    property real tintStrength:         0.0    // tinte teal (0=off)
+    property real noiseStrength:        0.0    // micro-textura (0=off)
+    property real vignetteStrength:     0.0    // viñeta lateral (0=off)
+    property real causticStrength:      0.0    // destellos en los caps (0=off)
+    property real bottomShadowStrength: 0.0    // sombra inferior / grosor (0=off)
 
     vertexShader:   "qrc:/qt/qml/lenstabs/shaders/lens_circle.vert.qsb"
     fragmentShader: "qrc:/qt/qml/lenstabs/shaders/lens_circle.frag.qsb"
