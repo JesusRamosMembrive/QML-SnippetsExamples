@@ -33,7 +33,8 @@ Item {
     property real borderOpacity:  0.30
 
     // Óptica de la lente
-    property real magnification:  1.9
+    // magnification = fuerza de distorsión en el borde (0 = lente plana, 0.6 = suave)
+    property real magnification:  0.6
     property real aberration:     0.016
     property real rimBrightness:  0.75
     property real lensRadius:     0.48   // en UV-Y (0.5 = toca los bordes)
@@ -137,7 +138,10 @@ Item {
             border.width: 1
         }
 
-        // ── Tabs no seleccionadas (icon + label, dimmer) ───────────────────
+        // ── Todos los tabs en su posición fija — la lente es puro overlay ────
+        // Ningún contenido sigue a la lente: al desplazarse, el shader amplifica
+        // y distorsiona lo que hay debajo en cada frame (las tabs intermedias
+        // son visibles y deformadas durante la transición).
         Row {
             anchors.fill: parent
 
@@ -152,10 +156,6 @@ Item {
                     width:  track.width / root.tabCount
                     height: track.height
 
-                    // Ocultar la tab seleccionada (la renderiza el indicator)
-                    opacity: tabDel.index === root.currentIndex ? 0.0 : 1.0
-                    Behavior on opacity { NumberAnimation { duration: 150 } }
-
                     Column {
                         anchors.centerIn: parent
                         spacing: Style.resize(3)
@@ -164,7 +164,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text:           root.tabIcon(tabDel.modelData)
                             font.pixelSize: Style.resize(20)
-                            color:          Qt.rgba(1, 1, 1, 0.65)
+                            color:          Qt.rgba(1, 1, 1, 0.70)
                             visible:        text !== ""
                         }
 
@@ -173,7 +173,7 @@ Item {
                             text:           root.tabLabel(tabDel.modelData)
                             font.family:    Style.fontFamilyBold
                             font.pixelSize: Style.resize(13)
-                            color:          Qt.rgba(1, 1, 1, 0.60)
+                            color:          Qt.rgba(1, 1, 1, 0.65)
                         }
                     }
                 }
@@ -186,38 +186,6 @@ Item {
             x: root.lensTargetX
             Behavior on x {
                 NumberAnimation { duration: root.travelDuration; easing.type: Easing.InOutCubic }
-            }
-        }
-
-        // ── Contenido del tab seleccionado (encima del frost glass, debajo
-        //    de la lente; visible dentro del círculo óptico) ─────────────────
-        Item {
-            x: lensProxy.x - track.width / root.tabCount / 2
-            y: 0
-            width:  track.width / root.tabCount
-            height: track.height
-
-            Column {
-                anchors.centerIn: parent
-                spacing: Style.resize(3)
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: root.tabs.length > root.currentIndex
-                          ? root.tabIcon(root.tabs[root.currentIndex]) : ""
-                    font.pixelSize: Style.resize(22)
-                    color:          Qt.rgba(1, 1, 1, 0.92)
-                    visible:        text !== ""
-                }
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: root.tabs.length > root.currentIndex
-                          ? root.tabLabel(root.tabs[root.currentIndex]) : ""
-                    font.family:    Style.fontFamilyBold
-                    font.pixelSize: Style.resize(14)
-                    color:          Qt.rgba(1, 1, 1, 0.92)
-                }
             }
         }
     }
@@ -252,7 +220,7 @@ Item {
         magnification: root.magnification
         aberration:    root.aberration
         rimBrightness: root.rimBrightness
-        lensWiden:     1.6   // pill: 60% más ancha que alta
+        lensWiden:     1.8   // pill: 100% más ancha que alta (~25% más grande)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

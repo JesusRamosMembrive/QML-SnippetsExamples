@@ -10,7 +10,7 @@ layout(std140, binding = 0) uniform buf {
     float lensY;          // Centro Y de la lente en UV (0..1)
     float lensRadius;     // Radio de las semicircunferencias de la cápsula (UV-Y)
     float aspectRatio;    // itemWidth / itemHeight
-    float magnification;  // Factor de magnificación (1.0 = sin cambio, <1 = zoom out)
+    float magnification;  // Fuerza de distorsión en el borde (0=plana, 0.6=media, 1.5=fuerte)
     float aberration;     // Intensidad de aberración cromática (0..0.04)
     float rimBrightness;  // Intensidad del highlight en el borde (0..1)
     float lensWiden;      // Forma: 1.0 = círculo, >1 = cápsula (pill) más ancha
@@ -43,19 +43,26 @@ void main()
         return;
     }
 
-    // ── r2 radial desde el centro geométrico (barrel + aberración uniformes) ─
+    // ── r2 radial desde el centro geométrico (para aberración cromática) ─────
     float r2 = min((delta.x * delta.x + delta.y * delta.y)
                    / (lensRadius * lensRadius * max(1.0, lensWiden * lensWiden * 0.25)),
                    1.0);
 
-    // ── Barrel distortion + magnificación ──────────────────────────────────
-    vec2 warped = delta * (1.0 + 0.22 * r2);
-    vec2 lensUV = clamp(center + vec2(warped.x / aspectRatio, warped.y) / magnification,
+    // ── Distorsión sólo en los caps horizontales ──────────────────────────
+    // capOffset = 0 en la zona recta del pill (arriba/abajo) → sin distorsión.
+    // capOffset > 0 en los semicírculos izquierdo/derecho → distorsión creciente.
+    // Así las aristas superiores/inferiores son planas y la refracción sólo
+    // aparece en los extremos laterales (visible al pasar por encima en tránsito).
+    float capOffset  = abs(delta.x - closestX);          // 0 en zona recta, >0 en caps
+    float capWeight  = capOffset / lensRadius;            // 0..1 normalizado al radio
+    float edgeFactor = normDist * normDist * capWeight;
+    vec2 warped = delta * (1.0 + magnification * edgeFactor);
+    vec2 lensUV = clamp(center + vec2(warped.x / aspectRatio, warped.y),
                         vec2(0.0), vec2(1.0));
 
-    // ── Aberración cromática ────────────────────────────────────────────────
+    // ── Aberración cromática (también concentrada en los caps horizontales) ──
     vec2 cDir = (dist > 0.0001) ? normalize(delta) : vec2(0.0);
-    vec2 cOff = vec2(cDir.x / aspectRatio, cDir.y) * aberration * r2;
+    vec2 cOff = vec2(cDir.x / aspectRatio, cDir.y) * aberration * r2 * capWeight;
 
     float R = texture(source, clamp(lensUV + cOff, vec2(0.0), vec2(1.0))).r;
     float G = texture(source, lensUV).g;

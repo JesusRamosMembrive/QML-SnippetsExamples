@@ -32,16 +32,16 @@ ShaderEffect {
 
     // ── Radio de la lente en unidades UV-Y ──────────────────────────────────
     // lensRadius = 0.5 → círculo que ocupa exactamente la altura del ítem.
-    property real lensRadius:    0.50
+    property real lensRadius:    0.20
 
     // ── Corrección de aspecto ─────────────────────────────────────────────────
     property real aspectRatio:   width / height
 
     // ── Óptica ────────────────────────────────────────────────────────────────
-    property real magnification: 1.6    // 1.0 = sin magnificación
-    property real aberration:    0.012  // aberración cromática (0=off, 0.04=fuerte)
-    property real rimBrightness: 0.6    // intensidad del highlight en el borde
-    property real lensWiden:     1.0    // ensanche horizontal (1.0=circular, 2.0=doble ancho)
+    property real magnification: 1.1    // 1.0 = sin magnificación
+    property real aberration:    0.008  // aberración cromática (0=off, 0.04=fuerte)
+    property real rimBrightness: 1.6    // intensidad del highlight en el borde
+    property real lensWiden:     1.3    // ensanche horizontal (1.0=circular, 2.0=doble ancho)
 
     vertexShader:   "qrc:/qt/qml/lenstabs/shaders/lens_circle.vert.qsb"
     fragmentShader: "qrc:/qt/qml/lenstabs/shaders/lens_circle.frag.qsb"

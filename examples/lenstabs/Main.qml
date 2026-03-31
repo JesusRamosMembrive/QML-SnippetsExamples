@@ -364,18 +364,18 @@ Item {
                                 }
                             }
 
-                            // Magnification
+                            // Edge distortion
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: Style.resize(6)
                                 RowLayout {
-                                    Text { text: "Magnificación"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
+                                    Text { text: "Distorsión borde"; font.pixelSize: Style.resize(14); color: Style.fontPrimaryColor }
                                     Item { Layout.fillWidth: true }
-                                    Text { text: root.magnification.toFixed(2) + "x"; font.pixelSize: Style.resize(13); color: Style.mainColor }
+                                    Text { text: root.magnification.toFixed(2); font.pixelSize: Style.resize(13); color: Style.mainColor }
                                 }
                                 Slider {
                                     Layout.fillWidth: true
-                                    from: 0.3; to: 3.5; stepSize: 0.05
+                                    from: 0.0; to: 2.0; stepSize: 0.05
                                     value: root.magnification
                                     onValueChanged: root.magnification = value
                                 }
