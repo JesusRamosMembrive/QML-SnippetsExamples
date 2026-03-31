@@ -8,12 +8,12 @@ layout(std140, binding = 0) uniform buf {
     float qt_Opacity;
     float lensX;          // Centro X de la lente en UV (0..1)
     float lensY;          // Centro Y de la lente en UV (0..1)
-    float lensRadius;     // Radio vertical de la lente en unidades UV-Y
+    float lensRadius;     // Radio de las semicircunferencias de la cápsula (UV-Y)
     float aspectRatio;    // itemWidth / itemHeight
-    float magnification;  // Factor de magnificación (1.0 = sin magnificación)
+    float magnification;  // Factor de magnificación (1.0 = sin cambio, <1 = zoom out)
     float aberration;     // Intensidad de aberración cromática (0..0.04)
     float rimBrightness;  // Intensidad del highlight en el borde (0..1)
-    float lensWiden;      // Ensanche horizontal de la lente (1.0=circular, 2.0=doble ancho)
+    float lensWiden;      // Forma: 1.0 = círculo, >1 = cápsula (pill) más ancha
 };
 
 layout(binding = 1) uniform sampler2D source;
@@ -23,26 +23,33 @@ void main()
     vec2  uv     = qt_TexCoord0;
     vec2  center = vec2(lensX, lensY);
 
-    // ── Delta en espacio de pantalla (corregido por aspecto) ───────────────
-    vec2  delta    = vec2((uv.x - lensX) * aspectRatio, uv.y - lensY);
-    float dist     = length(delta);
+    // ── Delta en espacio corregido por aspecto ─────────────────────────────
+    // Ambas componentes están en "unidades de altura", lo que permite que
+    // el SDF opere en espacio isótropo independientemente del aspect ratio.
+    vec2  delta = vec2((uv.x - lensX) * aspectRatio, uv.y - lensY);
+    float dist  = length(delta);
 
-    // ── Forma elíptica: dividir X por lensWiden antes de medir la distancia ─
-    // lensWiden > 1  →  la lente es más ancha que alta en pantalla.
-    vec2  shapeP   = vec2(delta.x / lensWiden, delta.y);
-    float normDist = length(shapeP) / lensRadius;
+    // ── SDF de cápsula (pill) ──────────────────────────────────────────────
+    // halfLen: extensión horizontal del segmento central plano.
+    // lensWiden = 1.0 → círculo; lensWiden = 1.6 → pill 60% más ancha que alta.
+    float halfLen  = max(0.0, lensWiden - 1.0) * lensRadius;
+    float closestX = clamp(delta.x, -halfLen, halfLen);
+    float normDist = length(vec2(delta.x - closestX, delta.y)) / lensRadius;
 
-    // ── Fuera de la lente: pass-through ────────────────────────────────────
+    // ── Fuera de la cápsula: pass-through del track (frost glass normal) ────
     vec4 outside = texture(source, uv);
     if (normDist >= 1.0) {
         fragColor = outside * qt_Opacity;
         return;
     }
 
-    float r2 = normDist * normDist;
+    // ── r2 radial desde el centro geométrico (barrel + aberración uniformes) ─
+    float r2 = min((delta.x * delta.x + delta.y * delta.y)
+                   / (lensRadius * lensRadius * max(1.0, lensWiden * lensWiden * 0.25)),
+                   1.0);
 
     // ── Barrel distortion + magnificación ──────────────────────────────────
-    vec2 warped = delta * (1.0 + 0.30 * r2);
+    vec2 warped = delta * (1.0 + 0.22 * r2);
     vec2 lensUV = clamp(center + vec2(warped.x / aspectRatio, warped.y) / magnification,
                         vec2(0.0), vec2(1.0));
 
@@ -57,11 +64,11 @@ void main()
 
     vec4 col = vec4(R, G, B, A);
 
-    // ── Viñeta interior (más pronunciada) ─────────────────────────────────
-    col.rgb *= 1.0 - smoothstep(0.40, 1.0, normDist) * 0.45;
+    // ── Viñeta interior suave ──────────────────────────────────────────────
+    col.rgb *= 1.0 - smoothstep(0.40, 1.0, normDist) * 0.28;
 
-    // ── Tinte de cristal (mint/teal) — más intenso ─────────────────────────
-    col.rgb = mix(col.rgb, vec3(0.72, 0.97, 0.90), 0.38);
+    // ── Tinte de cristal muy sutil ─────────────────────────────────────────
+    col.rgb = mix(col.rgb, vec3(0.72, 0.97, 0.90), 0.07);
 
     // ── Specular superior (reflejo cenital) ────────────────────────────────
     float upperSpec = smoothstep(0.0, -0.18, delta.y / lensRadius)
@@ -69,13 +76,8 @@ void main()
                     * smoothstep(1.0,  0.78, normDist);
     col.rgb = mix(col.rgb, vec3(1.0), upperSpec * rimBrightness * 0.85);
 
-    // ── Rim highlight general ───────────────────────────────────────────────
-    float rim = smoothstep(0.74, 0.88, normDist)
-              * smoothstep(1.0,  0.84, normDist);
-    col.rgb = mix(col.rgb, vec3(0.90, 1.0, 0.96), rim * 0.65);
-
-    // ── Brillo central (lente convexa — centro más brillante) ──────────────
-    float center_glow = (1.0 - normDist * normDist) * 0.18;
+    // ── Brillo central suave ───────────────────────────────────────────────
+    float center_glow = (1.0 - r2) * 0.06;
     col.rgb += vec3(center_glow * 0.6, center_glow, center_glow * 0.95);
 
     // ── Anti-alias del borde ───────────────────────────────────────────────
