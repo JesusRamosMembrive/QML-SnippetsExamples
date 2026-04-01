@@ -120,7 +120,8 @@ QtObject {
         "treeview": "treeview.svg",
         "websocket": "websocket.svg",
         "graphics3d": "diorama.svg",
-        "visualeffects": "shaders.svg"
+        "visualeffects": "shaders.svg",
+        "drawers": "splitView.svg"
     })
 
     // --- Funciones helper para assets ---

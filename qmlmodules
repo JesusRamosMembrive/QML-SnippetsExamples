@@ -167,4 +167,5 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     frostglasspluginplugin
     graphics3dpluginplugin
     visualeffectspluginplugin
+    drawerspluginplugin
 )

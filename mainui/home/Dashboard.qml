@@ -113,7 +113,8 @@ Item {
         "LensPhoto":    "qrc:/qt/qml/lensphoto/Main.qml",
         "FrostGlass":   "qrc:/qt/qml/frostglass/Main.qml",
         "Graphics3D":   "qrc:/qt/qml/graphics3d/Main.qml",
-        "VisualEffects": "qrc:/qt/qml/visualeffects/Main.qml"
+        "VisualEffects": "qrc:/qt/qml/visualeffects/Main.qml",
+        "Drawers":      "qrc:/qt/qml/drawers/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---
