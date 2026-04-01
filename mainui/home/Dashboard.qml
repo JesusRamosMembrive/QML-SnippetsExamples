@@ -111,7 +111,9 @@ Item {
         "SpriteStack":  "qrc:/qt/qml/spritestack/Main.qml",
         "Diorama":      "qrc:/qt/qml/diorama/Main.qml",
         "LensPhoto":    "qrc:/qt/qml/lensphoto/Main.qml",
-        "FrostGlass":   "qrc:/qt/qml/frostglass/Main.qml"
+        "FrostGlass":   "qrc:/qt/qml/frostglass/Main.qml",
+        "Graphics3D":   "qrc:/qt/qml/graphics3d/Main.qml",
+        "VisualEffects": "qrc:/qt/qml/visualeffects/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---
@@ -338,6 +340,8 @@ Item {
                             ListElement { name: "Diorama";      desc: "Miniature scene with layered parallax, atmosphere and camera-driven depth" }
                             ListElement { name: "LensPhoto";    desc: "Interactive photo lens distortion, magnification and focus-driven image effects" }
                             ListElement { name: "FrostGlass";   desc: "Glassmorphism panels with blur, tint, highlights and layered translucency" }
+                            ListElement { name: "Graphics3D";   desc: "Interactive 3D scene with Qt Quick 3D primitives and lighting" }
+                            ListElement { name: "VisualEffects"; desc: "Blur, DropShadow y efectos gráficos usando QtQuick.Effects" }
                         }
 
                         // ColumnLayout con spacing 0: las filas van pegadas,

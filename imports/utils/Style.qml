@@ -118,7 +118,9 @@ QtObject {
         "threads": "threads.svg",
         "toolbar": "toolbar.svg",
         "treeview": "treeview.svg",
-        "websocket": "websocket.svg"
+        "websocket": "websocket.svg",
+        "graphics3d": "diorama.svg",
+        "visualeffects": "shaders.svg"
     })
 
     // --- Funciones helper para assets ---

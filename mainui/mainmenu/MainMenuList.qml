@@ -120,6 +120,8 @@ Item {
         ListElement { name: "Diorama" }
         ListElement { name: "LensPhoto" }
         ListElement { name: "FrostGlass" }
+        ListElement { name: "Graphics3D" }
+        ListElement { name: "VisualEffects" }
     }
 
     // --- Vista: ListView ---

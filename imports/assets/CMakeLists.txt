@@ -119,6 +119,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/diorama.png
         ${ASSET_SVG_ICONS}
         images/piedad.jpg
+        images/Modestia.jpg
         images/particle.png
         images/Qt_logo_2016.svg
         images/ninepatch.png
