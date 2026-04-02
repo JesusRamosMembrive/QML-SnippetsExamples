@@ -87,6 +87,7 @@ Item {
         ListElement { name: "Indicators" }
         ListElement { name: "Animations" }
         ListElement { name: "Popups" }
+        ListElement { name: "Toasts" }
         ListElement { name: "Lists" }
         ListElement { name: "Canvas" }
         ListElement { name: "Layouts" }

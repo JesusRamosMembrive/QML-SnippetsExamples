@@ -79,6 +79,7 @@ Item {
         "Indicators":   "qrc:/qt/qml/indicators/Main.qml",
         "Animations":   "qrc:/qt/qml/animations/Main.qml",
         "Popups":       "qrc:/qt/qml/popups/Main.qml",
+        "Toasts":       "qrc:/qt/qml/toasts/Main.qml",
         "Lists":        "qrc:/qt/qml/lists/Main.qml",
         "Canvas":       "qrc:/qt/qml/canvas/Main.qml",
         "Layouts":      "qrc:/qt/qml/layouts/Main.qml",
@@ -308,6 +309,7 @@ Item {
                             ListElement { name: "Indicators"; desc: "Progress bars, busy indicators, gauges" }
                             ListElement { name: "Animations"; desc: "Transitions, behaviors, state animations" }
                             ListElement { name: "Popups";     desc: "Dialogs, drawers, tooltips, menus" }
+                            ListElement { name: "Toasts";     desc: "React-style toast host, queue limits, placements and undo actions" }
                             ListElement { name: "Lists";      desc: "ListView, delegates, sections" }
                             ListElement { name: "Canvas";     desc: "2D drawing, shapes, paths, pie charts" }
                             ListElement { name: "Layouts";    desc: "Row, Column, Grid, Flow layouts" }

@@ -116,6 +116,7 @@ QtObject {
         "switches": "switches.svg",
         "tableview": "tableview.svg",
         "threads": "threads.svg",
+        "toasts": "popup.svg",
         "toolbar": "toolbar.svg",
         "treeview": "treeview.svg",
         "websocket": "websocket.svg",

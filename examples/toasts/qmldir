@@ -1,0 +1,7 @@
+module toasts
+prefer :/qt/qml/toasts/
+Main 1.0 Main.qml
+ToastHost 1.0 ToastHost.qml
+ToastPlaygroundCard 1.0 ToastPlaygroundCard.qml
+ToastQueueCard 1.0 ToastQueueCard.qml
+ToastApiCard 1.0 ToastApiCard.qml
