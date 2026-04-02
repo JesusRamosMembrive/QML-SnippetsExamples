@@ -51,32 +51,14 @@ Rectangle {
         }
     }
 
-    Drawer {
+    ContainedDrawer {
         id: rightDrawer
-        parent: root
         edge: Qt.RightEdge
-        width: parent.width * 0.7
-        height: parent.height
-        
-        interactive: true
-        modal: true
-
-        background: Rectangle {
-            color: Style.bgColor
-            border.color: Style.surfaceColor
-            border.width: 1
-            
-            Rectangle {
-                width: 4
-                height: parent.height
-                anchors.left: parent.left
-                color: "#3498DB"
-            }
-        }
+        sizeRatio: 0.7
+        accentColor: "#3498DB"
 
         Column {
             anchors.fill: parent
-            anchors.margins: Style.resize(20)
             spacing: Style.resize(15)
 
             Label {
@@ -97,6 +79,7 @@ Rectangle {
             Button {
                 text: "Aplicar y Cerrar"
                 width: parent.width
+                palette.button: "#3498DB"
                 onClicked: rightDrawer.close()
             }
         }

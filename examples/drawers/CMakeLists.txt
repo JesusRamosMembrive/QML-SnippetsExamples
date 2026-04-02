@@ -4,6 +4,7 @@ qt_add_qml_module(drawersplugin
     VERSION 1.0
     QML_FILES
         Main.qml
+        ContainedDrawer.qml
         LeftDrawerCard.qml
         RightDrawerCard.qml
         TopDrawerCard.qml

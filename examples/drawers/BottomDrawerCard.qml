@@ -51,32 +51,14 @@ Rectangle {
         }
     }
 
-    Drawer {
+    ContainedDrawer {
         id: bottomDrawer
-        parent: root
         edge: Qt.BottomEdge
-        width: parent.width
-        height: parent.height * 0.6
-        
-        interactive: true
-        modal: true // Si es true, todo fuera se atenúa. Interactivo=true significa que al clicar fuera, se cierra.
-
-        background: Rectangle {
-            color: Style.bgColor
-            border.color: Style.surfaceColor
-            border.width: 1
-            
-            Rectangle {
-                width: parent.width
-                height: 4
-                anchors.top: parent.top
-                color: "#9B59B6"
-            }
-        }
+        sizeRatio: 0.6
+        accentColor: "#9B59B6"
 
         Column {
             anchors.fill: parent
-            anchors.margins: Style.resize(20)
             spacing: Style.resize(15)
 
             Label {

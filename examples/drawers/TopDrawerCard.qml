@@ -51,28 +51,11 @@ Rectangle {
         }
     }
 
-    Drawer {
+    ContainedDrawer {
         id: topDrawer
-        parent: root
         edge: Qt.TopEdge
-        width: parent.width
-        height: parent.height * 0.45
-        
-        interactive: true
-        modal: true
-
-        background: Rectangle {
-            color: Style.bgColor
-            border.color: Style.surfaceColor
-            border.width: 1
-            
-            Rectangle {
-                width: parent.width
-                height: 4
-                anchors.bottom: parent.bottom
-                color: "#F39C12"
-            }
-        }
+        sizeRatio: 0.45
+        accentColor: "#F39C12"
 
         Row {
             anchors.centerIn: parent
@@ -80,18 +63,20 @@ Rectangle {
 
             Button {
                 text: "WiFi"
-                icon.name: "network"
                 display: AbstractButton.TextUnderIcon
+                palette.button: "#F39C12"
                 onClicked: topDrawer.close()
             }
             Button {
                 text: "Bluetooth"
                 display: AbstractButton.TextUnderIcon
+                palette.button: "#F39C12"
                 onClicked: topDrawer.close()
             }
             Button {
                 text: "Silencio"
                 display: AbstractButton.TextUnderIcon
+                palette.button: "#F39C12"
                 onClicked: topDrawer.close()
             }
         }

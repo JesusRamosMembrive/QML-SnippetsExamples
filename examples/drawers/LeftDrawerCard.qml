@@ -51,34 +51,14 @@ Rectangle {
         }
     }
 
-    Drawer {
+    ContainedDrawer {
         id: leftDrawer
-        parent: root // Enclose it within the card
         edge: Qt.LeftEdge
-        width: parent.width * 0.6
-        height: parent.height
-        
-        // Modal and interactive options
-        interactive: true
-        modal: true // Dims the background
-
-        background: Rectangle {
-            color: Style.bgColor
-            border.color: Style.surfaceColor
-            border.width: 1
-            
-            // Decorative line on the pulling edge
-            Rectangle {
-                width: 4
-                height: parent.height
-                anchors.right: parent.right
-                color: Style.mainColor
-            }
-        }
+        sizeRatio: 0.6
+        accentColor: Style.mainColor
 
         Column {
             anchors.fill: parent
-            anchors.margins: Style.resize(20)
             spacing: Style.resize(20)
 
             Label {
