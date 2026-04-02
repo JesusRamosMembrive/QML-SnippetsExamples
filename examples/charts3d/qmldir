@@ -1,0 +1,6 @@
+module charts3d
+prefer :/qt/qml/charts3d/
+Main 1.0 Main.qml
+Bars3DCard 1.0 Bars3DCard.qml
+Scatter3DCard 1.0 Scatter3DCard.qml
+Surface3DCard 1.0 Surface3DCard.qml

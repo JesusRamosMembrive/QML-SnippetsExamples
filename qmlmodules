@@ -169,4 +169,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
     graphics3dpluginplugin
     visualeffectspluginplugin
     drawerspluginplugin
+
+    # --- Páginas de gráficos 3D ---
+    charts3dpluginplugin
 )

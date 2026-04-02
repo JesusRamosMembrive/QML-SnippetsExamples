@@ -124,6 +124,7 @@ Item {
         ListElement { name: "Graphics3D" }
         ListElement { name: "VisualEffects" }
         ListElement { name: "Drawers" }
+        ListElement { name: "Charts3D" }
     }
 
     // --- Vista: ListView ---

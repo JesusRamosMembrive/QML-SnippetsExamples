@@ -80,6 +80,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/transforms.png
         icons/particles.png
         icons/graphs.png
+        icons/charts3d.png
         icons/pfd.png
         icons/hud.png
         icons/websocket.png
