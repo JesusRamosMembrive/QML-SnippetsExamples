@@ -67,7 +67,21 @@
       "Bash(gh api:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
-      "Bash(identify h:/Git_Overture/QML-SnippetsExamples/imports/assets/icons/multimedia.png)"
+      "Bash(identify h:/Git_Overture/QML-SnippetsExamples/imports/assets/icons/multimedia.png)",
+      "Bash(sed -i '/^add_subdirectory\\(calendario\\)$/d' examples/CMakeLists.txt)",
+      "Bash(sed -i '/calendariopluginplugin/d' qmlmodules)",
+      "Bash(sed -i '/\"Calendario\"/d' mainui/home/Dashboard.qml)",
+      "Bash(sed -i '/ListElement { name: \"Calendario\" }/d' mainui/mainmenu/MainMenuList.qml)",
+      "Bash(git checkout:*)",
+      "Bash(pip install:*)",
+      "Bash(.venv/bin/pip install:*)",
+      "Read(//tmp/**)",
+      "Bash(rm -rf TestApp)",
+      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge new:*)",
+      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-page:*)",
+      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge doctor:*)",
+      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-component:*)",
+      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-bridge:*)"
     ]
   }
 }
