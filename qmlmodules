@@ -172,4 +172,7 @@ target_link_libraries(QMLSnippetsExamples PRIVATE
 
     # --- Páginas de gráficos 3D ---
     charts3dpluginplugin
+
+    # --- Efectos canvas avanzados ---
+    portalpluginplugin
 )

@@ -76,6 +76,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         icons/popups.png
         icons/lists.png
         icons/canvas.png
+        icons/portal.png
         icons/layouts.png
         icons/transforms.png
         icons/particles.png

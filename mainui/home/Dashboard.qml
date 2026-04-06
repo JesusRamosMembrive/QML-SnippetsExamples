@@ -116,7 +116,8 @@ Item {
         "Graphics3D":   "qrc:/qt/qml/graphics3d/Main.qml",
         "VisualEffects": "qrc:/qt/qml/visualeffects/Main.qml",
         "Drawers":      "qrc:/qt/qml/drawers/Main.qml",
-        "Charts3D":     "qrc:/qt/qml/charts3d/Main.qml"
+        "Charts3D":     "qrc:/qt/qml/charts3d/Main.qml",
+        "Portal":       "qrc:/qt/qml/portal/Main.qml"
     })
 
     // --- Workaround para repintar Canvas tras cambio de página ---
@@ -347,6 +348,7 @@ Item {
                             ListElement { name: "Graphics3D";   desc: "Interactive 3D scene with Qt Quick 3D primitives and lighting" }
                             ListElement { name: "VisualEffects"; desc: "Blur, DropShadow y efectos gráficos usando QtQuick.Effects" }
                             ListElement { name: "Charts3D";     desc: "Bars3D, Scatter3D y Surface3D con múltiples ejes y datos interactivos" }
+                            ListElement { name: "Portal";       desc: "Canvas 2D portal animation with reflection, glow and rotation controls" }
                         }
 
                         // ColumnLayout con spacing 0: las filas van pegadas,
