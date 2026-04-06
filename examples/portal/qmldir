@@ -1,0 +1,5 @@
+module portal
+Main 1.0 Main.qml
+PortalCanvas 1.0 PortalCanvas.qml
+ReflectionCanvas 1.0 ReflectionCanvas.qml
+PortalControls 1.0 PortalControls.qml
