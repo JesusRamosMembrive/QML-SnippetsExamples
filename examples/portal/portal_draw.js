@@ -107,9 +107,18 @@ function drawPortal(ctx, w, h, angle, shadowBlur, opacity) {
 
     ctx.restore()   // quitar clip
 
-    // ── 4. Borde exterior del óvalo ──────────────────────────────────────────
+    // ── 4. Borde exterior del óvalo con halo ────────────────────────────────
+    // Primera pasada: halo difuso grande (reemplaza al MultiEffect eliminado)
     ctx.shadowColor = "#7FFF00"
-    ctx.shadowBlur  = shadowBlur * 0.6
+    ctx.shadowBlur  = shadowBlur * 2.5
+    ctx.beginPath()
+    ctx.ellipse(cx, cy, rx, ry, tilt, 0, Math.PI * 2)
+    ctx.strokeStyle = "rgba(100,220,0,0.35)"
+    ctx.lineWidth   = 8
+    ctx.stroke()
+
+    // Segunda pasada: borde nítido encima
+    ctx.shadowBlur  = shadowBlur * 0.8
     ctx.beginPath()
     ctx.ellipse(cx, cy, rx, ry, tilt, 0, Math.PI * 2)
     ctx.strokeStyle = "#ADFF2F"

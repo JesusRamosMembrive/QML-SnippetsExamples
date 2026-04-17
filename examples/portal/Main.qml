@@ -2,10 +2,12 @@
 // Main.qml — Página "Portal Rick & Morty"
 // =============================================================================
 // Ensambla:
-//   - PortalCanvas: espiral animada + destellos + glow interno (Canvas 2D)
-//   - MultiEffect:  halo verde exterior (QtQuick.Effects, Qt 6.5+, nativo)
+//   - PortalCanvas: espiral animada + destellos + halo (Canvas 2D puro)
 //   - ReflectionCanvas: reflejo invertido del portal
 //   - PortalControls: sliders de velocidad y glow
+//
+// El halo exterior se dibuja dentro de portal_draw.js con shadowBlur de doble
+// pasada, evitando MultiEffect (demasiado costoso con Canvas animado a 30ms).
 //
 // Patrón de visibilidad estándar del proyecto:
 //   fullSize controla si el Timer del portal consume CPU.
@@ -14,7 +16,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Effects
 import utils
 
 Item {
@@ -77,29 +78,14 @@ Item {
                         radius: Style.resize(8)
                     }
 
-                    // ── Halo exterior (MultiEffect detrás del portal) ─────────
-                    // Se posiciona ligeramente más grande que el portal para
-                    // que el blur "se derrame" fuera del borde del óvalo.
-                    MultiEffect {
-                        id: glowHalo
-                        source: portalCanvas
-                        anchors.centerIn: portalCanvas
-                        width:  portalCanvas.width  + (controls.glowValue * 1.2)
-                        height: portalCanvas.height + (controls.glowValue * 1.2)
-                        blurEnabled: true
-                        blurMax: controls.glowValue + (portalCanvas.hovered ? 16 : 0)
-                        Behavior on blurMax {
-                            NumberAnimation { duration: 200 }
-                        }
-                        opacity: 0.75
-                        z: 0
-                    }
-
-                    // ── Portal (encima del halo) ─────────────────────────────
+                    // ── Portal ───────────────────────────────────────────────
+                    // El halo exterior se dibuja dentro del Canvas (portal_draw.js)
+                    // con shadowBlur de doble pasada. Esto evita MultiEffect, que
+                    // era demasiado costoso combinado con Canvas animado a 30ms.
                     PortalCanvas {
                         id: portalCanvas
-                        width:  Style.resize(260)
-                        height: Style.resize(320)
+                        width:  Style.resize(320)
+                        height: Style.resize(380)
                         anchors {
                             horizontalCenter: parent.horizontalCenter
                             verticalCenter:   parent.verticalCenter
