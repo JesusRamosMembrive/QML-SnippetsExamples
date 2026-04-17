@@ -54,7 +54,7 @@ Item {
                 }
 
                 Label {
-                    text: "Click en el portal para abrirlo o cerrarlo. Pasa el ratón por encima para intensificar el halo verde."
+                    text: "Click en el portal para abrirlo o cerrarlo. Pasa el ratón por encima para intensificar el brillo."
                     font.pixelSize: Style.resize(13)
                     color: Style.fontSecondaryColor
                     wrapMode: Text.WordWrap
@@ -102,7 +102,7 @@ Item {
                             horizontalCenter: portalCanvas.horizontalCenter
                             top: portalCanvas.bottom
                         }
-                        gifSource:  portalCanvas.gifItem
+                        portalSource: portalCanvas
                         glowValue:  controls.glowValue
                         z: 1
                     }
