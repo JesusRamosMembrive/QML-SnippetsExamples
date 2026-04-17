@@ -1,70 +1,75 @@
 // =============================================================================
-// PortalCanvas.qml — Canvas principal del portal de Rick & Morty
+// PortalCanvas.qml — Portal Rick & Morty basado en AnimatedImage + Glow
 // =============================================================================
-// Dibuja el portal (espiral verde, glow, destellos) usando Canvas 2D.
-// Delega el dibujo a portal_draw.js para compartir la lógica con
-// ReflectionCanvas.
+// Capas (de abajo hacia arriba):
+//   1. Glow (Qt5Compat.GraphicalEffects) — halo verde, actúa sobre gifCapture
+//   2. AnimatedImage — el GIF nítido
+//   3. ShaderEffectSource — captura offscreen del GIF para el Glow
+//   4. MouseArea — click para abrir/cerrar, hover para ampliar glow
 //
 // API pública:
-//   active      (bool)  — activa/desactiva el Timer (CPU off cuando no visible)
-//   open        (bool)  — anima apertura/cierre del portal via scale
-//   rotSpeed    (real)  — velocidad de rotación (incremento de angle por tick)
-//   glowValue   (int)   — shadowBlur pasado a drawPortal (0–60)
-//   hovered     (bool)  — true mientras el ratón está dentro (leído por Main)
-//   angle       (alias) — alias de canvas.angle, expuesto para ReflectionCanvas
+//   active    (bool)  — activa/pausa la reproducción del GIF
+//   open      (bool)  — escala entre 0 y 1 con Easing.OutBack
+//   glowValue (int)   — radio base del glow (0–60), controlado por slider
+//   hovered   (bool)  — true mientras el ratón está dentro
+//   gifItem   (alias) — expone el AnimatedImage interno para ReflectionCanvas
 // =============================================================================
 import QtQuick
-import utils
-import "portal_draw.js" as Draw
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
 
-    // ── API pública ──────────────────────────────────────────────────────────
     property bool active:    false
     property bool open:      true
-    property real rotSpeed:  0.025   // radianes por tick
     property int  glowValue: 30
     property bool hovered:   false
-
-    // Expone el ángulo interno para que ReflectionCanvas lo sincronice
-    // (los ids internos de un componente no son accesibles desde fuera)
-    property alias angle: canvas.angle
+    property alias gifItem:  gif
 
     // ── Animación de apertura/cierre ─────────────────────────────────────────
-    // scale va de 0 (cerrado) a 1 (abierto). OutBack da el "rebote" característico.
     scale: open ? 1.0 : 0.0
     Behavior on scale {
         NumberAnimation { duration: 600; easing.type: Easing.OutBack }
     }
 
-    // ── Canvas ───────────────────────────────────────────────────────────────
-    Canvas {
-        id: canvas
-        anchors.fill: parent
-        onAvailableChanged: if (available) requestPaint()
-
-        // Estado interno de animación
-        property real angle: 0.0
-
-        Timer {
-            interval: 30
-            repeat:   true
-            running:  root.active
-            onTriggered: {
-                canvas.angle = canvas.angle + root.rotSpeed
-                canvas.requestPaint()
-            }
-        }
-
-        onPaint: {
-            var ctx = getContext("2d")
-            ctx.clearRect(0, 0, width, height)
-            Draw.drawPortal(ctx, width, height, canvas.angle, root.glowValue, 1.0)
+    // ── 1. Glow detrás — emite el halo verde ────────────────────────────────
+    // Declarado primero para quedar debajo del GIF en el z-order.
+    // Usa gifCapture como fuente para no interferir con la visibilidad de gif.
+    Glow {
+        anchors.fill: gif
+        source:  gifCapture
+        radius:  root.hovered ? Math.min(root.glowValue * 1.5, 80)
+                              : root.glowValue
+        samples: 17
+        color:   "#7FFF00"
+        spread:  0.0
+        Behavior on radius {
+            NumberAnimation { duration: 200 }
         }
     }
 
-    // ── MouseArea: click para abrir/cerrar ───────────────────────────────────
+    // ── 2. GIF principal (nítido, encima del glow) ───────────────────────────
+    AnimatedImage {
+        id: gif
+        anchors.fill: parent
+        source:   "qrc:/assets/images/portalRickAndMorty.gif"
+        fillMode: Image.PreserveAspectFit
+        playing:  root.active
+    }
+
+    // ── 3. Captura offscreen del GIF para el Glow ────────────────────────────
+    // hideSource: false — gif permanece visible. visible: false — este item
+    // no se renderiza directamente, solo sirve de fuente al efecto Glow.
+    ShaderEffectSource {
+        id: gifCapture
+        sourceItem: gif
+        anchors.fill: gif
+        hideSource: false
+        live:       true
+        visible:    false
+    }
+
+    // ── 4. MouseArea ─────────────────────────────────────────────────────────
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true

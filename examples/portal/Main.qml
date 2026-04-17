@@ -2,15 +2,12 @@
 // Main.qml — Página "Portal Rick & Morty"
 // =============================================================================
 // Ensambla:
-//   - PortalCanvas: espiral animada + destellos + halo (Canvas 2D puro)
-//   - ReflectionCanvas: reflejo invertido del portal
-//   - PortalControls: sliders de velocidad y glow
-//
-// El halo exterior se dibuja dentro de portal_draw.js con shadowBlur de doble
-// pasada, evitando MultiEffect (demasiado costoso con Canvas animado a 30ms).
+//   - PortalCanvas: AnimatedImage del GIF + Glow (Qt5Compat) + interacción
+//   - ReflectionCanvas: reflejo via ShaderEffectSource + degradado
+//   - PortalControls: slider de intensidad del halo
 //
 // Patrón de visibilidad estándar del proyecto:
-//   fullSize controla si el Timer del portal consume CPU.
+//   fullSize controla la reproducción del GIF (playing: root.fullSize).
 //   opacity + visible con Behavior es el patrón animado del dashboard.
 // =============================================================================
 import QtQuick
@@ -57,7 +54,7 @@ Item {
                 }
 
                 Label {
-                    text: "Click en el portal para abrirlo o cerrarlo. Pasa el ratón por encima para intensificar el halo."
+                    text: "Click en el portal para abrirlo o cerrarlo. Pasa el ratón por encima para intensificar el halo verde."
                     font.pixelSize: Style.resize(13)
                     color: Style.fontSecondaryColor
                     wrapMode: Text.WordWrap
@@ -92,7 +89,6 @@ Item {
                             verticalCenterOffset: Style.resize(-40)
                         }
                         active:    root.fullSize
-                        rotSpeed:  controls.rotSpeed
                         glowValue: controls.glowValue
                         z: 1
                     }
@@ -106,8 +102,8 @@ Item {
                             horizontalCenter: portalCanvas.horizontalCenter
                             top: portalCanvas.bottom
                         }
-                        angle:     portalCanvas.angle
-                        glowValue: controls.glowValue
+                        gifSource:  portalCanvas.gifItem
+                        glowValue:  controls.glowValue
                         z: 1
                     }
                 }

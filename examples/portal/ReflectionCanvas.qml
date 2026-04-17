@@ -1,44 +1,40 @@
 // =============================================================================
-// ReflectionCanvas.qml — Reflejo del portal en el suelo
+// ReflectionCanvas.qml — Reflejo del portal usando ShaderEffectSource
 // =============================================================================
-// Replica el dibujo de portal_draw.js con ctx.scale(1,-1) para invertirlo,
-// luego superpone un degradado negro para simular el desvanecimiento en el suelo.
+// Técnica:
+//   1. ShaderEffectSource captura el frame actual del GIF (live: true)
+//      y le aplica Scale(yScale: -1) para el volteo vertical.
+//   2. Rectangle con Gradient cubre el reflejo de arriba (transparente)
+//      a abajo (negro opaco) para el efecto de desvanecimiento en el suelo.
 //
 // API pública:
-//   angle       (real)  — ángulo de rotación actual (sincronizado con PortalCanvas)
-//   glowValue   (int)   — shadowBlur (mismo valor que PortalCanvas)
-//
-// No tiene Timer propio: repinta reactivamente cuando cambia `angle`,
-// que está enlazado al alias de PortalCanvas. Esto garantiza que el
-// reflejo solo se actualiza cuando el portal lo hace.
+//   gifSource  (Item) — el AnimatedImage interno de PortalCanvas (alias gifItem)
+//   glowValue  (int)  — reservado para uso futuro (opacidad del reflejo)
 // =============================================================================
 import QtQuick
-import "portal_draw.js" as Draw
 
-Canvas {
+Item {
     id: root
 
-    property real angle:     0.0
+    property Item gifSource
     property int  glowValue: 30
 
-    onAvailableChanged: if (available) requestPaint()
-    onAngleChanged:     requestPaint()
-    onGlowValueChanged: requestPaint()
+    clip: true
 
-    onPaint: {
-        var ctx = getContext("2d")
-        ctx.clearRect(0, 0, width, height)
+    ShaderEffectSource {
+        sourceItem: root.gifSource
+        width:  parent.width
+        height: parent.height
+        transform: Scale { yScale: -1; origin.y: parent.height / 2 }
+        live:    true
+        opacity: 0.35
+    }
 
-        // Invertir verticalmente: transladar al borde inferior, escalar Y=-1
-        // Así el "suelo" del portal queda arriba del canvas de reflejo,
-        // que visualmente está debajo del canvas del portal.
-        ctx.save()
-        ctx.translate(0, height)
-        ctx.scale(1, -1)
-        Draw.drawPortal(ctx, width, height, root.angle, root.glowValue * 0.5, 0.35)
-        ctx.restore()
-
-        // Degradado de desvanecimiento: transparente arriba, negro abajo
-        Draw.applyReflectionGradient(ctx, width, height)
+    Rectangle {
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "transparent" }
+            GradientStop { position: 1.0; color: "#050505" }
+        }
     }
 }

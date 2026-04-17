@@ -131,6 +131,7 @@ qt_add_resources(QMLSnippetsExamples "assets"
         images/graph.png
         images/outercircle.png
         images/user.png
+        images/portalRickAndMorty.gif
         images/radio_stations/station_logo.png
         images/radio_stations/BBC\ Radio\ 1.png
         images/radio_stations/BBC\ Radio\ 2.png
