@@ -28,7 +28,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import utils
 
 ColumnLayout {
@@ -92,12 +92,14 @@ ColumnLayout {
                         visible: false
                     }
 
-                    Glow {
-                        anchors.fill: neon1Label
+                    MultiEffect {
                         source: neon1Label
-                        radius: 6 + 12 * Math.max(0, Math.sin(neonContainer.neonTime))
-                        samples: 25
-                        color: "#FF1493"
+                        anchors.fill: neon1Label
+                        blurEnabled: true
+                        blurMax: 30
+                        blur: (6 + 12 * Math.max(0, Math.sin(neonContainer.neonTime))) / 30
+                        colorization: 1.0
+                        colorizationColor: "#FF1493"
                     }
                 }
 
@@ -116,12 +118,14 @@ ColumnLayout {
                         visible: false
                     }
 
-                    Glow {
-                        anchors.fill: neon2Label
+                    MultiEffect {
                         source: neon2Label
-                        radius: 6 + 12 * Math.max(0, Math.sin(neonContainer.neonTime + 2.1))
-                        samples: 25
-                        color: "#00BFFF"
+                        anchors.fill: neon2Label
+                        blurEnabled: true
+                        blurMax: 30
+                        blur: (6 + 12 * Math.max(0, Math.sin(neonContainer.neonTime + 2.1))) / 30
+                        colorization: 1.0
+                        colorizationColor: "#00BFFF"
                     }
                 }
 
@@ -140,12 +144,14 @@ ColumnLayout {
                         visible: false
                     }
 
-                    Glow {
-                        anchors.fill: neon3Label
+                    MultiEffect {
                         source: neon3Label
-                        radius: 6 + 12 * Math.max(0, Math.sin(neonContainer.neonTime + 4.2))
-                        samples: 25
-                        color: "#39FF14"
+                        anchors.fill: neon3Label
+                        blurEnabled: true
+                        blurMax: 30
+                        blur: (6 + 12 * Math.max(0, Math.sin(neonContainer.neonTime + 4.2))) / 30
+                        colorization: 1.0
+                        colorizationColor: "#39FF14"
                     }
                 }
             }

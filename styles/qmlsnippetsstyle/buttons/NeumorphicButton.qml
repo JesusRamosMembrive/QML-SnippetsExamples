@@ -30,7 +30,8 @@
 
 import QtQuick
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
+import Qt5Compat.GraphicalEffects   // InnerShadow: sin equivalente en MultiEffect
 import utils
 
 T.Button {
@@ -51,28 +52,28 @@ T.Button {
         // Qt.lighter(baseColor, 1.3) genera un tono mas claro del color base.
         // Offset negativo = desplaza la sombra hacia arriba-izquierda.
         // Se oculta al presionar para dar paso al efecto de hundimiento.
-        DropShadow {
-            anchors.fill: backgroundRect
+        MultiEffect {
             source: backgroundRect
-            horizontalOffset: -Style.resize(root.shadowDistance)
-            verticalOffset: -Style.resize(root.shadowDistance)
-            radius: Style.resize(root.shadowBlur)
-            samples: 17
-            color: Qt.lighter(root.baseColor, 1.3)
+            anchors.fill: backgroundRect
+            shadowEnabled: true
+            shadowHorizontalOffset: -Style.resize(root.shadowDistance)
+            shadowVerticalOffset: -Style.resize(root.shadowDistance)
+            shadowBlur: Math.min(1.0, Style.resize(root.shadowBlur) / 63)
+            shadowColor: Qt.lighter(root.baseColor, 1.3)
             visible: !root.pressed
         }
 
         // Sombra oscura abajo-derecha: simula la sombra proyectada por la "luz".
         // Qt.darker(baseColor, 1.3) genera un tono mas oscuro del color base.
         // Offset positivo = desplaza la sombra hacia abajo-derecha.
-        DropShadow {
-            anchors.fill: backgroundRect
+        MultiEffect {
             source: backgroundRect
-            horizontalOffset: Style.resize(root.shadowDistance)
-            verticalOffset: Style.resize(root.shadowDistance)
-            radius: Style.resize(root.shadowBlur)
-            samples: 17
-            color: Qt.darker(root.baseColor, 1.3)
+            anchors.fill: backgroundRect
+            shadowEnabled: true
+            shadowHorizontalOffset: Style.resize(root.shadowDistance)
+            shadowVerticalOffset: Style.resize(root.shadowDistance)
+            shadowBlur: Math.min(1.0, Style.resize(root.shadowBlur) / 63)
+            shadowColor: Qt.darker(root.baseColor, 1.3)
             visible: !root.pressed
         }
 

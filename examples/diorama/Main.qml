@@ -19,7 +19,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import utils
 
@@ -70,15 +70,14 @@ Item {
 
             // Layer offscreen para que DropShadow funcione
             layer.enabled: layerItem.depthIndex > 0
-            layer.effect: DropShadow {
+            layer.effect: MultiEffect {
+                shadowEnabled: true
                 // La sombra se proyecta en dirección opuesta a la luz
                 // Capa más cercana (depthIndex alto) → sombra más grande
-                horizontalOffset: -layerItem.depthIndex * root.shadowDepth * root.shadowDx
-                verticalOffset:   -layerItem.depthIndex * root.shadowDepth * root.shadowDy
-                radius:           root.shadowSoftness
-                samples:          17
-                color:            Qt.rgba(0.08, 0.02, 0.0, 0.70)
-                transparentBorder: true
+                shadowHorizontalOffset: -layerItem.depthIndex * root.shadowDepth * root.shadowDx
+                shadowVerticalOffset:   -layerItem.depthIndex * root.shadowDepth * root.shadowDy
+                shadowBlur:             Math.min(1.0, root.shadowSoftness / 63)
+                shadowColor:            Qt.rgba(0.08, 0.02, 0.0, 0.70)
             }
         }
 

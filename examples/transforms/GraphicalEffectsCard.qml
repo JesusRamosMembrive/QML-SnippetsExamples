@@ -24,7 +24,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
+import Qt5Compat.GraphicalEffects   // Colorize: sin equivalente en MultiEffect
 import utils
 
 Rectangle {
@@ -127,14 +128,14 @@ Rectangle {
                     }
 
                     // DropShadow dibuja el item original + su sombra
-                    DropShadow {
-                        anchors.fill: shadowSource
+                    MultiEffect {
                         source: shadowSource
-                        horizontalOffset: Style.resize(3)
-                        verticalOffset: Style.resize(3)
-                        radius: shadowSlider.value
-                        samples: 25
-                        color: Qt.rgba(0, 0, 0, 0.4)
+                        anchors.fill: shadowSource
+                        shadowEnabled: true
+                        shadowHorizontalOffset: Style.resize(3)
+                        shadowVerticalOffset: Style.resize(3)
+                        shadowBlur: shadowSlider.value / 30
+                        shadowColor: Qt.rgba(0, 0, 0, 0.4)
                     }
                 }
 
@@ -188,12 +189,12 @@ Rectangle {
                         }
                     }
 
-                    GaussianBlur {
-                        anchors.fill: blurSource
+                    MultiEffect {
                         source: blurSource
-                        radius: blurSlider.value
-                        // Formula: samples = radius * 2 + 1 garantiza calidad optima
-                        samples: blurSlider.value * 2 + 1
+                        anchors.fill: blurSource
+                        blurEnabled: true
+                        blurMax: 40
+                        blur: blurSlider.value / 20
                     }
                 }
 

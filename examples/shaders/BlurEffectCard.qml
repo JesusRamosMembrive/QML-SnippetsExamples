@@ -23,7 +23,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import utils
 
 Rectangle {
@@ -108,11 +108,12 @@ Rectangle {
             // renderiza con desenfoque. samples = radius*2+1 es la formula
             // recomendada por Qt para obtener calidad optima sin desperdiciar
             // ciclos de GPU en muestras innecesarias.
-            GaussianBlur {
-                anchors.fill: blurSource
+            MultiEffect {
                 source: blurSource
-                radius: blurSlider.value
-                samples: Math.round(blurSlider.value) * 2 + 1
+                anchors.fill: blurSource
+                blurEnabled: true
+                blurMax: 32
+                blur: blurSlider.value / 16
             }
         }
 

@@ -26,7 +26,7 @@
 
 import QtQuick
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+
 import utils
 
 T.Button {

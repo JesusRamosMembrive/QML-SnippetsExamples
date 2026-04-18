@@ -59,7 +59,7 @@ QtObject {
     // inactiveColor: texto deshabilitado o de baja prioridad
     property string bgColor: "#1A1D23"
     property string bgColorDark: "#14171C"
-    property string mainColor: (theme === "green") ? "#00D1A9" : "#FEA601"
+    readonly property string mainColor: (theme === "green") ? "#00D1A9" : "#FEA601"
     property string bgColorDashBoradMenu: "#14171C"
     property string inactiveColor: "#999999"
 
@@ -184,9 +184,9 @@ QtObject {
     // Se pasan por resize() para que escalen con el resto de la UI.
     // S/M/L proporcionan consistencia: en vez de inventar tamaños ad-hoc,
     // todos los componentes usan estos tres niveles.
-    property int fontSizeS: root.resize(15)
-    property int fontSizeM: root.resize(19)
-    property int fontSizeL: root.resize(26)
+    readonly property int fontSizeS: root.resize(15)
+    readonly property int fontSizeM: root.resize(19)
+    readonly property int fontSizeL: root.resize(26)
 
     // --- Carga de fuentes personalizadas ---
     // fontFamilyRegular/Bold: exponen el nombre de la fuente como string.
@@ -200,8 +200,8 @@ QtObject {
     // propiedades del Singleton para que se carguen UNA sola vez al inicio
     // y estén disponibles globalmente. Si se pusieran en cada componente,
     // se cargarían múltiples veces innecesariamente.
-    property string fontFamilyRegular: quicksandBook.name
-    property string fontFamilyBold: quicksandBold.name
+    readonly property string fontFamilyRegular: quicksandBook.name
+    readonly property string fontFamilyBold: quicksandBold.name
 
     property FontLoader quicksandBook: FontLoader {
         source: "/assets/fonts/Quicksand_Book.otf"

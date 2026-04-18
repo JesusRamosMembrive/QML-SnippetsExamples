@@ -24,7 +24,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import utils
 
 T.Button {
@@ -45,12 +45,14 @@ T.Button {
         // 'source' indica de que item se toma la silueta para generar el brillo.
         // 'radius' controla que tan lejos se expande el resplandor.
         // 'samples' debe ser >= 2*radius+1 para buena calidad (17 es buen valor).
-        Glow {
-            anchors.fill: backgroundRect
+        MultiEffect {
             source: backgroundRect
-            radius: Style.resize(root.glowRadius)
-            samples: 17
-            color: root.glowColor
+            anchors.fill: backgroundRect
+            blurEnabled: true
+            blur: 1.0
+            blurMax: Style.resize(root.glowRadius) * 2
+            colorization: 1.0
+            colorizationColor: root.glowColor
             opacity: root.glowIntensity
             visible: root.enabled
         }

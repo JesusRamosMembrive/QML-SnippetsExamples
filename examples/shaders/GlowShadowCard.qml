@@ -26,7 +26,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
+import Qt5Compat.GraphicalEffects   // InnerShadow: sin equivalente en MultiEffect
 import utils
 
 Rectangle {
@@ -100,27 +101,28 @@ Rectangle {
             // Glow: emision de luz hacia afuera. spread controla que tan
             // concentrada esta la luz (0.0 = difusa, 1.0 = concentrada).
             // El color del glow coincide con el source para un efecto neon.
-            Glow {
-                anchors.fill: shadowSource
+            MultiEffect {
                 source: shadowSource
-                radius: glowRadius.value
-                samples: Math.round(glowRadius.value) * 2 + 1
-                color: "#00D1A9"
-                spread: 0.3
+                anchors.fill: shadowSource
+                blurEnabled: true
+                blurMax: 32
+                blur: glowRadius.value / 16
+                colorization: 1.0
+                colorizationColor: "#00D1A9"
                 visible: root.effectIndex === 0
             }
 
             // DropShadow: sombra exterior con desplazamiento. El color
             // "#80000000" es negro al 50% de opacidad. Los offsets simulan
             // una fuente de luz desde la esquina superior izquierda.
-            DropShadow {
-                anchors.fill: shadowSource
+            MultiEffect {
                 source: shadowSource
-                radius: glowRadius.value
-                samples: Math.round(glowRadius.value) * 2 + 1
-                color: "#80000000"
-                horizontalOffset: Style.resize(6)
-                verticalOffset: Style.resize(6)
+                anchors.fill: shadowSource
+                shadowEnabled: true
+                shadowHorizontalOffset: Style.resize(6)
+                shadowVerticalOffset: Style.resize(6)
+                shadowBlur: glowRadius.value / 32
+                shadowColor: "#80000000"
                 visible: root.effectIndex === 1
             }
 

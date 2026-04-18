@@ -22,7 +22,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects   // Para ColorOverlay (tintado de iconos)
+import QtQuick.Effects
 
 import utils
 import controls
@@ -229,8 +229,9 @@ Item {
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     layer.enabled: true
-                    layer.effect: ColorOverlay {
-                        color: "#ffffff"
+                    layer.effect: MultiEffect {
+                        colorization: 1.0
+                        colorizationColor: "#ffffff"
                     }
                 }
 

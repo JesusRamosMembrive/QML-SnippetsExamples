@@ -36,7 +36,7 @@
 
 import QtQuick
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import utils
 
@@ -61,8 +61,9 @@ T.ToolButton {
             // !!icon.color: doble negacion convierte a bool.
             // Si hay color definido, activa el overlay para teñir el icono
             layer.enabled: !!root.icon.color
-            layer.effect: ColorOverlay {
-                color: root.icon.color
+            layer.effect: MultiEffect {
+                colorization: 1.0
+                colorizationColor: root.icon.color
             }
         }
     }

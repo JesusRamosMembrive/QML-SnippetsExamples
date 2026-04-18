@@ -48,7 +48,7 @@
 // ============================================================================
 
 import QtQuick
-import Qt5Compat.GraphicalEffects
+
 
 import utils
 

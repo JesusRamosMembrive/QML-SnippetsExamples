@@ -35,7 +35,7 @@
 // =============================================================================
 
 import QtQuick
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import utils
 
 Item {
@@ -112,14 +112,14 @@ Item {
         // Sombra: el offset horizontal sigue la inclinación Y para dar sensación
         // de fuente de luz fija arriba. El radio crece con la elevación.
         layer.enabled: true
-        layer.effect: DropShadow {
-            horizontalOffset: root.cardTiltY * 0.5
-            verticalOffset:   Style.resize(6) + root.cardLiftY * 0.7 - root.cardTiltX * 0.4
-            radius:           Style.resize(20) + root.cardLiftY * 1.5
-            samples:          17
-            color:            Qt.rgba(0, 0, 0,
-                                      root.shadowIntensity
-                                      + (root.cardLiftY / root.cardLiftStrength) * 0.18)
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowHorizontalOffset: root.cardTiltY * 0.5
+            shadowVerticalOffset:   Style.resize(6) + root.cardLiftY * 0.7 - root.cardTiltX * 0.4
+            shadowBlur:             Math.min(1.0, (Style.resize(20) + root.cardLiftY * 1.5) / 63)
+            shadowColor:            Qt.rgba(0, 0, 0,
+                                            root.shadowIntensity
+                                            + (root.cardLiftY / root.cardLiftStrength) * 0.18)
         }
 
         transform: [
@@ -193,6 +193,15 @@ Item {
             Behavior on border.color { ColorAnimation { duration: 250 } }
         }
 
+        // Máscara de forma para recortar el glare al radio de la tarjeta
+        Rectangle {
+            id: glareMask
+            anchors.fill: parent
+            radius: cardBody.radius
+            visible: false
+            layer.enabled: true
+        }
+
         // Glare especular
         Item {
             id: glareContainer
@@ -202,12 +211,9 @@ Item {
             Behavior on opacity { NumberAnimation { duration: 400 } }
 
             layer.enabled: visible
-            layer.effect: OpacityMask {
-                maskSource: Rectangle {
-                    width:  glareContainer.width
-                    height: glareContainer.height
-                    radius: cardBody.radius
-                }
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: glareMask
             }
 
             Rectangle {

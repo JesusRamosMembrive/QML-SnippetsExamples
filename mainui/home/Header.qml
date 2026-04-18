@@ -34,7 +34,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import utils
 
@@ -45,13 +45,13 @@ Item {
     property bool reorderDashBoardItems: false
     property bool reorderSwitchVisible: false
 
-    DropShadow {
-        anchors.fill: backgroundColor
-        verticalOffset: Style.resize(3)
-        radius: 8.0
-        samples: 17
-        color: "#80000000"
+    MultiEffect {
         source: backgroundColor
+        anchors.fill: backgroundColor
+        shadowEnabled: true
+        shadowVerticalOffset: Style.resize(3)
+        shadowBlur: 0.15
+        shadowColor: "#80000000"
     }
 
     Rectangle {

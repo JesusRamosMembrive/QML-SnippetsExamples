@@ -19,7 +19,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 import utils
 
 Rectangle {
@@ -228,11 +228,11 @@ Rectangle {
 
             // OpacityMask combina source y maskSource: muestra los pixeles
             // del source donde el maskSource tiene opacidad (blanco).
-            OpacityMask {
-                anchors.fill: landscape
+            MultiEffect {
                 source: landscapeSource
                 maskSource: maskTexture
-                cached: false
+                maskEnabled: true
+                anchors.fill: landscape
             }
 
             Item {

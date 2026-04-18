@@ -64,7 +64,7 @@
 
 import QtQuick
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import utils
 
@@ -114,14 +114,14 @@ T.Button {
     background: Item {
         anchors.fill: parent
         // DropShadow: solo visible en botones no-flat. highlighted = mas sombra
-        DropShadow {
+        MultiEffect {
+            source: backgroundFill
             anchors.fill: backgroundFill
             visible: !root.flat
-            verticalOffset: root.highlighted ? Style.resize(4) : Style.resize(3)
-            radius: root.highlighted ? Style.resize(12) : Style.resize(8)
-            samples: 17
-            color: root.highlighted ? "#90000000" : "#80000000"
-            source: backgroundFill
+            shadowEnabled: true
+            shadowVerticalOffset: root.highlighted ? Style.resize(4) : Style.resize(3)
+            shadowBlur: root.highlighted ? 0.20 : 0.13
+            shadowColor: root.highlighted ? "#90000000" : "#80000000"
         }
         Rectangle {
             id: backgroundFill

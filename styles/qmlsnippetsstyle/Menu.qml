@@ -33,7 +33,7 @@
 
 import QtQuick
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import utils
 
@@ -74,13 +74,12 @@ T.Menu {
         // DropShadow para apariencia flotante
         // transparentBorder: true previene artefactos de sombra en los bordes
         layer.enabled: true
-        layer.effect: DropShadow {
-            transparentBorder: true
-            horizontalOffset: 0
-            verticalOffset: Style.resize(4)
-            radius: Style.resize(12)
-            samples: 25
-            color: Qt.rgba(0, 0, 0, 0.15)
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: Style.resize(4)
+            shadowBlur: 0.3
+            shadowColor: Qt.rgba(0, 0, 0, 0.15)
         }
     }
 

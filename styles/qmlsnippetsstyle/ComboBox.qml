@@ -42,7 +42,7 @@
 
 import QtQuick
 import QtQuick.Templates as T
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 import utils
 
@@ -133,11 +133,11 @@ T.ComboBox {
             border.color: Style.inactiveColor
 
             layer.enabled: true
-            layer.effect: DropShadow {
-                verticalOffset: Style.resize(3)
-                radius: Style.resize(8)
-                samples: 17
-                color: "#40000000"
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowVerticalOffset: Style.resize(3)
+                shadowBlur: 0.15
+                shadowColor: "#40000000"
             }
         }
     }
