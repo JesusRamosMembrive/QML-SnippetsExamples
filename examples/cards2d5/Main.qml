@@ -200,6 +200,7 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
+                            textFormat:     Text.RichText
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
                             text: "<b>Cuerpo de la tarjeta:</b>  La rotación se calcula directamente "
@@ -209,6 +210,7 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
+                            textFormat:     Text.RichText
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
                             text: "<b>Capa de texto:</b>  Comparte el mismo tilt de la tarjeta y añade "
@@ -219,6 +221,7 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
+                            textFormat:     Text.RichText
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
                             text: "<b>La ilusión:</b>  El plano base rota con el cursor y el contenido "
@@ -228,6 +231,7 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             wrapMode:       Text.Wrap
+                            textFormat:     Text.RichText
                             font.pixelSize: Style.fontSizeS
                             color:          Style.fontSecondaryColor
                             text: "<b>Sin escena 3D completa.</b>  El efecto se construye con rotación "

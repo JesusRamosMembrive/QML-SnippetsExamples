@@ -186,7 +186,7 @@ Rectangle {
                     FrameAnimation {
                         running: root.active && root.animRunning
                         onTriggered: {
-                            sawSeries.time += 0.03
+                            sawSeries.time = (sawSeries.time + 0.03) % 1000.0
                             let freq = multiFreqSlider.value
                             let phase = multiPhaseSlider.value
 

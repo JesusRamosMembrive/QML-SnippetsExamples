@@ -80,6 +80,9 @@ Rectangle {
             // color de fondo (index % 2) mejora la legibilidad en listas
             // densas, un patron comun en interfaces tipo log/terminal.
             delegate: Rectangle {
+                required property int index
+                required property var model
+
                 width: logView.width
                 height: Style.resize(32)
                 color: index % 2 === 0 ? Style.surfaceColor : Style.cardColor

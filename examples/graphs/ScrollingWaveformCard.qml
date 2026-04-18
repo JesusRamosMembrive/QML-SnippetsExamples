@@ -148,7 +148,7 @@ Rectangle {
                     FrameAnimation {
                         running: root.active && root.animRunning
                         onTriggered: {
-                            scrollLine.time += 0.04 * scrollSpeedSlider.value
+                            scrollLine.time = (scrollLine.time + 0.04 * scrollSpeedSlider.value) % 1000.0
                             var waveType = waveSelector.waveType
 
                             for (let i = 0; i < scrollLine.pointCount; ++i) {

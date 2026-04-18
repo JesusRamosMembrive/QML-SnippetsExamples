@@ -45,7 +45,7 @@ Item {
     // ── Reloj de animación ───────────────────────────────────────────────────
     FrameAnimation {
         running: root.active
-        onTriggered: portalEffect.time += Math.min(frameTime, 0.05)
+        onTriggered: portalEffect.time = (portalEffect.time + Math.min(frameTime, 0.05)) % 1000.0
     }
 
     // ── MouseArea en el root: siempre a tamaño completo ──────────────────────

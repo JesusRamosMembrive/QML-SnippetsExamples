@@ -25,6 +25,9 @@ Rectangle {
     property real tintOpacity:   0.10
     property real borderOpacity: 0.25
 
+    readonly property color _tintColor:   Qt.rgba(1, 1, 1, root.tintOpacity)
+    readonly property color _borderColor: Qt.rgba(1, 1, 1, root.borderOpacity)
+
     clip:   true
     color:  "transparent"
     radius: 20
@@ -61,7 +64,7 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         radius:       root.radius
-        color:        Qt.rgba(1, 1, 1, root.tintOpacity)
+        color:        root._tintColor
     }
 
     // ── Capa 3: gradiente de profundidad ───────────────────────────────────
@@ -80,7 +83,7 @@ Rectangle {
         anchors.fill: parent
         radius:       root.radius
         color:        "transparent"
-        border.color: Qt.rgba(1, 1, 1, root.borderOpacity)
+        border.color: root._borderColor
         border.width: 1
     }
 }

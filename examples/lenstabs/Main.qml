@@ -171,7 +171,7 @@ Item {
                                     height: Style.resize(240)
                                     radius: width / 2
                                     color:  Qt.rgba(0.85, 0.10, 0.50, 0.80)
-                                    layer.enabled: true
+                                    layer.enabled: root.opacity > 0.0
                                     layer.effect: MultiEffect {
                                         blurEnabled: true; blur: 1.0; blurMax: 60
                                     }
@@ -185,7 +185,7 @@ Item {
                                     height: Style.resize(200)
                                     radius: width / 2
                                     color:  Qt.rgba(0.35, 0.08, 0.90, 0.70)
-                                    layer.enabled: true
+                                    layer.enabled: root.opacity > 0.0
                                     layer.effect: MultiEffect {
                                         blurEnabled: true; blur: 1.0; blurMax: 60
                                     }
@@ -199,7 +199,7 @@ Item {
                                     height: Style.resize(160)
                                     radius: width / 2
                                     color:  Qt.rgba(0.0, 0.80, 0.65, 0.55)
-                                    layer.enabled: true
+                                    layer.enabled: root.opacity > 0.0
                                     layer.effect: MultiEffect {
                                         blurEnabled: true; blur: 1.0; blurMax: 50
                                     }
@@ -213,7 +213,7 @@ Item {
                                     height: Style.resize(18)
                                     radius: height / 2
                                     color:  Qt.rgba(1.0, 0.50, 0.05, 0.60)
-                                    layer.enabled: true
+                                    layer.enabled: root.opacity > 0.0
                                     layer.effect: MultiEffect {
                                         blurEnabled: true; blur: 1.0; blurMax: 16
                                     }

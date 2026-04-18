@@ -41,7 +41,7 @@ Item {
         height: Style.resize(300)
         radius: width / 2
         color:  Qt.rgba(0.80, 0.10, 0.45, 0.30)
-        layer.enabled: true
+        layer.enabled: root.opacity > 0.0
         layer.effect: MultiEffect { blurEnabled: true; blur: 1.0; blurMax: 80 }
     }
 
@@ -53,7 +53,7 @@ Item {
         height: Style.resize(300)
         radius: width / 2
         color:  Qt.rgba(0.40, 0.05, 0.80, 0.25)
-        layer.enabled: true
+        layer.enabled: root.opacity > 0.0
         layer.effect: MultiEffect { blurEnabled: true; blur: 1.0; blurMax: 80 }
     }
 
@@ -125,7 +125,7 @@ Item {
                         height: Style.resize(260)
                         radius: width / 2
                         color:  Qt.rgba(0.95, 0.15, 0.55, 1.0)
-                        layer.enabled: true
+                        layer.enabled: root.opacity > 0.0
                         layer.effect: MultiEffect {
                             blurEnabled: true; blur: 1.0; blurMax: 12
                         }
@@ -139,7 +139,7 @@ Item {
                         height: Style.resize(220)
                         radius: width / 2
                         color:  Qt.rgba(0.50, 0.08, 0.95, 1.0)
-                        layer.enabled: true
+                        layer.enabled: root.opacity > 0.0
                         layer.effect: MultiEffect {
                             blurEnabled: true; blur: 1.0; blurMax: 12
                         }
@@ -153,7 +153,7 @@ Item {
                         height: Style.resize(28)
                         radius: height / 2
                         color:  Qt.rgba(0.95, 0.50, 0.05, 0.85)
-                        layer.enabled: true
+                        layer.enabled: root.opacity > 0.0
                         layer.effect: MultiEffect {
                             blurEnabled: true; blur: 1.0; blurMax: 8
                         }

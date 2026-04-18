@@ -42,7 +42,10 @@ Item {
     // hijo → padre. El padre conecta con onMenuItemClicked: function(name) {...}
     // Se usa "var" como tipo del parámetro por flexibilidad, aunque "string"
     // también funcionaría aquí.
-    property string currentItemName: menuModel.get(listView.currentIndex).name
+    property string currentItemName: {
+        let item = menuModel.get(listView.currentIndex)
+        return item ? item.name : "Dashboard"
+    }
     signal menuItemClicked(var name)
 
     // --- Modelo de datos: ListModel ---
@@ -221,6 +224,8 @@ Item {
                     anchors.leftMargin: Style.resize(40)
                     anchors.verticalCenter: parent.verticalCenter
                     source: Style.icon(menuDelegate.name.toLowerCase())
+                    sourceSize.width: Style.resize(22)
+                    sourceSize.height: Style.resize(22)
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                     layer.enabled: true
