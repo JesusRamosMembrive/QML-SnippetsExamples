@@ -12,11 +12,12 @@
 // setDynamicSortFilter(true):
 //   Cuando el source model cambia (agrega/elimina/edita filas),
 //   el proxy re-evalua automaticamente filterAcceptsRow() y reordena.
-//   Sin esto, tendrias que llamar beginFilterChange()/endFilterChange() manualmente
-//   despues de cada cambio en el source.
+//   Sin esto, habria que invalidar el filtro manualmente despues de cambios
+//   que afecten a la visibilidad de las filas.
 // ============================================================================
 
 #include "employeeproxymodel.h"
+#include <QtGlobal>
 
 EmployeeProxyModel::EmployeeProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -41,7 +42,7 @@ QString EmployeeProxyModel::filterText() const
 }
 
 // setFilterText() se llama desde QML cuando el usuario escribe en el campo
-// de busqueda. beginFilterChange()/endFilterChange() fuerza al proxy a re-evaluar
+// de busqueda. Al cambiar el texto, el proxy debe re-evaluar
 // filterAcceptsRow() para TODAS las filas, mostrando/ocultando filas
 // segun el nuevo texto.
 void EmployeeProxyModel::setFilterText(const QString &text)
@@ -49,10 +50,14 @@ void EmployeeProxyModel::setFilterText(const QString &text)
     if (m_filterText == text)
         return;
     m_filterText = text;
-    // beginFilterChange()/endFilterChange(): le dice al proxy "tu filtro cambio,
-    // re-evalua todo". Internamente llama filterAcceptsRow() para cada fila.
+    // Qt 6.9+ expone begin/endFilterChange(); en Qt 6.8 seguimos usando
+    // invalidateFilter() para mantener compatibilidad con el CI.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
     beginFilterChange();
     endFilterChange();
+#else
+    invalidateFilter();
+#endif
     emit filterTextChanged();
 }
 

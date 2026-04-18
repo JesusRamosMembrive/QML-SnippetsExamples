@@ -1,184 +1,239 @@
-# QML Snippets Examples - Component Library
+🇪🇸 [Versión en español](README.es.md)
 
-Proyecto QML Snippets Examples para crear una biblioteca de componentes reutilizables y ejemplos.
+# Qt Quick / QML Examples Collection
 
-## 👀 Feedback Visual
+> **66 copy-paste-ready QML examples** — from buttons and sliders to full avionics displays, industrial HMIs, shaders, and C++ integration.
 
-La galería visual del proyecto está dividida en dos bloques para mantener una historia de commits más manejable.
+[![Qt](https://img.shields.io/badge/Qt-6.4%2B-41CD52?logo=qt&logoColor=white)](https://www.qt.io/)
+[![CMake](https://img.shields.io/badge/CMake-3.16%2B-064F8C?logo=cmake&logoColor=white)](https://cmake.org/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey)](#-quick-start)
+[![Build](https://github.com/JesusRamosMembrive/QML-SnippetsExamples/actions/workflows/build.yml/badge.svg)](https://github.com/JesusRamosMembrive/QML-SnippetsExamples/actions/workflows/build.yml)
 
-<details open>
-<summary><strong>Galería 1 de 2</strong></summary>
+<p align="center">
+  <img src="gifs/HUD.gif" alt="Head-Up Display" width="720"/>
+</p>
 
-<p><img src="gifs/animationsExample.gif" alt="animationsExample" width="720" /></p>
-<p><img src="gifs/AsyncCpp.gif" alt="AsyncCpp" width="720" /></p>
-<p><img src="gifs/ButtonExample.gif" alt="ButtonExample" width="720" /></p>
-<p><img src="gifs/Canvas.gif" alt="Canvas" width="720" /></p>
-<p><img src="gifs/card2d5.gif" alt="card2d5" width="720" /></p>
-<p><img src="gifs/Chatui.gif" alt="Chatui" width="720" /></p>
-<p><img src="gifs/ComboBox.gif" alt="ComboBox" width="720" /></p>
-<p><img src="gifs/DatabaBase.gif" alt="DatabaBase" width="720" /></p>
-<p><img src="gifs/Date.gif" alt="Date" width="720" /></p>
-<p><img src="gifs/Drawer.gif" alt="Drawer" width="720" /></p>
-<p><img src="gifs/ECAM.gif" alt="ECAM" width="720" /></p>
-<p><img src="gifs/FileDialog.gif" alt="FileDialog" width="720" /></p>
-<p><img src="gifs/flickable.gif" alt="flickable" width="720" /></p>
-<p><img src="gifs/FrostGlass.gif" alt="FrostGlass" width="720" /></p>
-<p><img src="gifs/Graphs.gif" alt="Graphs" width="720" /></p>
-<p><img src="gifs/Gridview.gif" alt="Gridview" width="720" /></p>
-<p><img src="gifs/HUD.gif" alt="HUD" width="720" /></p>
-<p><img src="gifs/images.gif" alt="images" width="720" /></p>
-<p><img src="gifs/InidicatorsAndDials.gif" alt="InidicatorsAndDials" width="720" /></p>
-<p><img src="gifs/Layouts.gif" alt="Layouts" width="720" /></p>
-<p><img src="gifs/LensMagnification.gif" alt="LensMagnification" width="720" /></p>
-<p><img src="gifs/LensTab.gif" alt="LensTab" width="720" /></p>
-<p><img src="gifs/Lists.gif" alt="Lists" width="720" /></p>
-<p><img src="gifs/MENUbAR.gif" alt="MENUbAR" width="720" /></p>
-<p><img src="gifs/Multimedia.gif" alt="Multimedia" width="720" /></p>
+---
 
-</details>
+## Table of Contents
 
-<details open>
-<summary><strong>Galería 2 de 2</strong></summary>
+- [Featured Components](#-featured-components)
+- [Component Catalog](#-component-catalog)
+- [Quick Start](#-quick-start)
+- [Requirements](#-requirements)
+- [Project Structure](#-project-structure)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [About the Author](#-about-the-author)
 
-<p><img src="gifs/Multiplane.gif" alt="Multiplane" width="720" /></p>
-<p><img src="gifs/NavigationDisplay.gif" alt="NavigationDisplay" width="720" /></p>
-<p><img src="gifs/NetWork.gif" alt="NetWork" width="720" /></p>
-<p><img src="gifs/Particles.gif" alt="Particles" width="720" /></p>
-<p><img src="gifs/Pathview.gif" alt="Pathview" width="720" /></p>
-<p><img src="gifs/pdfReader.gif" alt="pdfReader" width="720" /></p>
-<p><img src="gifs/popupAndDialog.gif" alt="popupAndDialog" width="720" /></p>
-<p><img src="gifs/PrimaryFlightDisplay.gif" alt="PrimaryFlightDisplay" width="720" /></p>
-<p><img src="gifs/RangeSlider.gif" alt="RangeSlider" width="720" /></p>
-<p><img src="gifs/ScrollView.gif" alt="ScrollView" width="720" /></p>
-<p><img src="gifs/shaderandeffects.gif" alt="shaderandeffects" width="720" /></p>
-<p><img src="gifs/Shapes.gif" alt="Shapes" width="720" /></p>
-<p><img src="gifs/SliderExample.gif" alt="SliderExample" width="720" /></p>
-<p><img src="gifs/SplitView.gif" alt="SplitView" width="720" /></p>
-<p><img src="gifs/states.gif" alt="states" width="720" /></p>
-<p><img src="gifs/StreetMaps.gif" alt="StreetMaps" width="720" /></p>
-<p><img src="gifs/SwipeView.gif" alt="SwipeView" width="720" /></p>
-<p><img src="gifs/Switch.gif" alt="Switch" width="720" /></p>
-<p><img src="gifs/tabbar.gif" alt="tabbar" width="720" /></p>
-<p><img src="gifs/TextInput.gif" alt="TextInput" width="720" /></p>
-<p><img src="gifs/Toast.gif" alt="Toast" width="720" /></p>
-<p><img src="gifs/Toolbar.gif" alt="Toolbar" width="720" /></p>
-<p><img src="gifs/Transforms.gif" alt="Transforms" width="720" /></p>
-<p><img src="gifs/TreeView.gif" alt="TreeView" width="720" /></p>
-<p><img src="gifs/websockets.gif" alt="websockets" width="720" /></p>
+---
 
-</details>
+## ✈️ Featured Components
 
-## 🚀 Inicio Rápido
+The highlight of this collection — components you won't find in a basic Qt tutorial.
 
-### Compilar el proyecto
+<table>
+  <tr>
+    <td align="center"><img src="gifs/HUD.gif" width="360"/><br><b>Head-Up Display (HUD)</b></td>
+    <td align="center"><img src="gifs/PrimaryFlightDisplay.gif" width="360"/><br><b>Primary Flight Display (PFD)</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="gifs/NavigationDisplay.gif" width="360"/><br><b>Navigation Display (ND)</b></td>
+    <td align="center"><img src="gifs/ECAM.gif" width="360"/><br><b>ECAM System Display</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="gifs/FrostGlass.gif" width="360"/><br><b>Frosted Glass Effect</b></td>
+    <td align="center"><img src="gifs/LensMagnification.gif" width="360"/><br><b>Lens Magnification</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="gifs/shaderandeffects.gif" width="360"/><br><b>Custom GLSL Shaders</b></td>
+    <td align="center"><img src="gifs/Multiplane.gif" width="360"/><br><b>Multiplane Parallax</b></td>
+  </tr>
+</table>
+
+👉 **[View the full gallery (66 components) →](docs/GALLERY.md)**
+
+---
+
+## 🧩 Component Catalog
+
+### Controls & Inputs
+`Buttons` · `Sliders` · `RangeSlider` · `ComboBox` · `Switch` · `TextInput` · `Date` · `MenuBar` · `TabBar` · `ToolBar`
+
+### Views & Containers
+`ListView` · `GridView` · `PathView` · `TreeView` · `TableView` · `SwipeView` · `SplitView` · `ScrollView` · `Flickable` · `Drawer` · `Popup & Dialog` · `Toast` · `Cards`
+
+### Layouts
+`Layouts` · `Portal`
+
+### Visual Effects & Rendering
+`Animations` · `Frosted Glass` · `Lens Magnification` · `Lens Tabs` · `Multiplane Parallax` · `Particles` · `GLSL Shaders` · `Transforms` · `Visual Effects` · `Diorama` · `Sprite Stack` · `3D Graphics`
+
+### ✈️ Aviation & Industrial HMI
+`Head-Up Display (HUD)` · `Primary Flight Display (PFD)` · `Navigation Display` · `ECAM` · `Indicators & Dials` · `Aircraft Map`
+
+### Data, Charts & Canvas
+`Canvas` · `3D Charts` · `Graphs` · `Shapes`
+
+### System, Network & Integration
+`Database (SQLite)` · `Ethernet` · `File Dialogs` · `Images` · `Multimedia` · `Network` · `PDF Reader` · `Street Maps` · `Settings` · `WebSockets` · `Loader`
+
+### C++ Integration
+`Async C++` · `QML–C++ Bridge` · `C++ Theory` · `Threads`
+
+### QML Patterns
+`States & Transitions` · `Custom Items` · `Chat UI`
+
+---
+
+## 🚀 Quick Start
 
 ```bash
-cmake -B build -S .
+git clone https://github.com/JesusRamosMembrive/QML-SnippetsExamples.git
+cd QML-SnippetsExamples
+
+# Configure (point to your Qt installation if needed)
+cmake -B build -S . -DCMAKE_PREFIX_PATH="/path/to/Qt/6.x.x/gcc_64"
+
+# Build
 cmake --build build
+
+# Run (Linux)
 ./build/QMLSnippetsExamples
+
+# Run (Windows)
+build\Debug\QMLSnippetsExamples.exe
 ```
 
-### Rebuild completo (recomendado después de cambios estructurales)
+### Full clean rebuild (required after CMake structural changes)
 
 ```bash
-./rebuild.sh
+rm -rf build
+cmake -B build -S . -DCMAKE_PREFIX_PATH="/path/to/Qt/6.x.x/gcc_64"
+cmake --build build
 ```
 
-## 📚 Documentación
+> **Windows users:** replace `/path/to/Qt/6.x.x/gcc_64` with your actual Qt path,
+> e.g. `C:/Qt/6.11.0/msvc2022_64` or `C:/Qt/6.11.0/mingw_64`.
 
-- **[Cómo crear una nueva página de ejemplos](docs/CREAR_NUEVA_PAGINA.md)** - Guía completa para agregar nuevas páginas al dashboard
+---
 
-## 🎨 Componentes Especializados
+## 🛠️ Requirements
 
-El proyecto incluye componentes reutilizables en `styles/qmlsnippetsstyle/buttons/`:
+| Dependency | Version |
+|---|---|
+| Qt | 6.4+ |
+| CMake | 3.16+ |
+| C++ compiler | C++17 (GCC, Clang, MSVC) |
 
-- **GlowButton** - Botón con efecto de resplandor
-- **GradientButton** - Botón con gradiente de colores
-- **PulseButton** - Botón con animación de pulso
-- **NeumorphicButton** - Botón con estilo neumórfico (sombras suaves 3D)
+**Qt modules used:** Quick · QuickControls2 · Graphs · WebSockets · Location · Positioning · Pdf · PdfQuick · Sql · Multimedia · Concurrent · Network · ShaderTools · Quick3D · QuickEffects · Qt5Compat.GraphicalEffects
 
-Estos componentes son **completamente reutilizables** entre diferentes páginas de ejemplos.
+---
 
-## 📋 Páginas de Ejemplos
+## 📁 Project Structure
 
-### Buttons
-Muestra ejemplos de todos los tipos de botones:
-- Botones estándar (default, highlighted, flat, disabled)
-- Botones de iconos (ToolButton)
-- Estados e interacciones (pressed, hovered, checkable)
-- Botones personalizados (colores, estilos)
-- Componentes especializados reutilizables
-
-### Sliders
-Demuestra el uso de sliders y la reutilización de componentes:
-- Sliders horizontales y verticales
-- Sliders con pasos (stepped)
-- Control interactivo de propiedades de componentes
-- Ejemplo de reutilización: GlowButton controlado por sliders
-
-## ⚠️ Problemas Comunes
-
-### Error: "module plugin not found"
-
-Si ves un error como:
 ```
-module "buttons" plugin "buttonspluginplugin" not found
+QML-SnippetsExamples/
+├── examples/                  # 66 example pages (one module each)
+│   ├── hud/                   #   Head-Up Display
+│   ├── pfd/                   #   Primary Flight Display
+│   ├── navdisplay/            #   Navigation Display
+│   ├── ecam/                  #   ECAM system display
+│   ├── buttons/               #   Button examples
+│   ├── sliders/               #   Slider examples
+│   └── ...                    #   (63 more)
+├── imports/
+│   ├── assets/                # Icons, images, fonts
+│   ├── controls/              # Reusable custom controls (BaseCard, Separator)
+│   └── utils/                 # Style singleton (colors, fonts, resize helper)
+├── mainui/
+│   ├── home/                  # Dashboard shell and page switcher
+│   └── mainmenu/              # Sidebar navigation
+├── styles/
+│   └── qmlsnippetsstyle/      # Qt Quick Controls 2 style overrides
+│       └── buttons/           # GlowButton, GradientButton, PulseButton, NeumorphicButton
+├── src/
+│   └── main.cpp               # Application entry point
+├── docs/                      # Documentation and guides
+├── gifs/                      # Demo GIFs for the gallery
+├── Main.qml                   # Root QML entry point
+├── SplashScreen.qml           # Splash screen
+├── CMakeLists.txt             # Root build configuration
+├── qmlmodules                 # Module registration (included by CMakeLists.txt)
+└── qtquickcontrols2.conf      # Qt Quick Controls 2 style config
 ```
 
-**Solución:**
+### Navigation Architecture
+
+Each example page has a `fullSize` bool property. `Dashboard.qml` drives visibility by matching a `state` string to menu item text:
+
+```qml
+// Dashboard.qml
+Hud.Main { fullSize: (root.state === "Hud") }
+
+// Each example's Main.qml
+property bool fullSize: false
+opacity: fullSize ? 1.0 : 0.0
+visible: opacity > 0.0
+Behavior on opacity { NumberAnimation { duration: 200 } }
+```
+
+### Style Singleton
+
+`imports/utils/Style.qml` is a `pragma Singleton`. Use `Style.resize(value)` for all dimensions and `Style.mainColor`, `Style.bgColor` etc. for colors — never hardcode either.
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|---|---|
+| [Full Gallery](docs/GALLERY.md) | All 66 component GIFs organized by category |
+| [Creating a New Page](docs/CREATING_NEW_PAGE.md) | Step-by-step guide to adding a new example page |
+| [Crear una Nueva Página (ES)](docs/CREAR_NUEVA_PAGINA.md) | Versión en español de la guía anterior |
+
+### Common Error: "module plugin not found"
+
+If you see `module "buttons" plugin "buttonspluginplugin" not found`, you need a full clean rebuild:
+
 ```bash
-./rebuild.sh
+rm -rf build && cmake -B build -S . && cmake --build build
 ```
 
-Este error ocurre cuando:
-- Cambias el nombre de una biblioteca en CMakeLists.txt
-- Agregas o eliminas módulos QML
-- Modificas la estructura de plugins
+See [Creating a New Page](docs/CREATING_NEW_PAGE.md#️-critical-error-module-plugin-not-found) for the full explanation.
 
-Ver [documentación completa](docs/CREAR_NUEVA_PAGINA.md#-error-recurrente-module-plugin-not-found) para más detalles.
+---
 
-## 🏗️ Estructura del Proyecto
+## 🤝 Contributing
 
-```
-QML-Dashboard-jdqt-import/
-├── docs/                      # Documentación
-├── examples/                  # Páginas de ejemplos
-│   ├── buttons/              # Ejemplo: Botones
-│   └── sliders/              # Ejemplo: Sliders
-├── imports/                   # Assets y utilidades
-│   ├── assets/               # Iconos, imágenes, fuentes
-│   ├── controls/             # Controles personalizados
-│   └── utils/                # Utilidades (Style singleton)
-├── mainui/                    # UI principal del dashboard
-│   ├── home/                 # Página principal y dashboard
-│   └── mainmenu/             # Menú lateral
-├── styles/                    # Estilos y temas
-│   └── qmlsnippetsstyle/      # Estilo de los snippets
-│       └── buttons/          # Componentes especializados de botones
-├── Main.qml                   # Punto de entrada
-├── rebuild.sh                 # Script de rebuild completo
-└── CMakeLists.txt            # Configuración principal de CMake
-```
+Contributions are welcome! To add a new example page:
 
-## 🛠️ Requisitos
+1. Fork the repo and create a feature branch
+2. Follow the guide in [docs/CREATING_NEW_PAGE.md](docs/CREATING_NEW_PAGE.md)
+3. Make sure the project builds cleanly: `cmake -B build -S . && cmake --build build`
+4. Add a demo GIF to `gifs/` and update [docs/GALLERY.md](docs/GALLERY.md)
+5. Open a pull request
 
-- Qt 6.4 o superior
-- CMake 3.16 o superior
-- C++ compiler compatible
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting.
 
-## 📝 Crear una Nueva Página
+---
 
-Para agregar una nueva página de ejemplos (Charts, TextInputs, etc.), sigue la [guía completa](docs/CREAR_NUEVA_PAGINA.md).
+## 📄 License
 
-Resumen rápido:
-1. Crear directorio en `examples/nuevapagina/`
-2. Crear archivos: `Main.qml`, `CMakeLists.txt`, `qmldir`
-3. Actualizar `examples/CMakeLists.txt`
-4. Actualizar `/qmlmodules`
-5. Agregar entrada al menú en `mainui/mainmenu/MainMenuList.qml`
-6. Importar en `mainui/home/Dashboard.qml`
-7. Ejecutar `./rebuild.sh`
+This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for details.
 
-## 📄 Licencia
+> **Note:** The author is considering relicensing to MIT for broader adoption.
+> If that matters to you, leave a comment on the issue tracker.
 
-Este es un proyecto de ejemplo basado en Qt Dashboard Examples.
+---
+
+## 👤 About the Author
+
+Built and maintained by **Jesús Ramos Membrive** — C++/Qt developer specializing in
+industrial HMIs, embedded systems, and avionics displays. Based in Madrid, Spain.
+
+🔗 LinkedIn: [linkedin.com/in/jesus-ramos-membrive-91a896101](https://www.linkedin.com/in/jesus-ramos-membrive-91a896101)
+
+💼 Available for Qt/QML consulting and HMI development projects.

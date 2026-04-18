@@ -31,10 +31,12 @@ cmake_install.cmake
 Makefile
 *.cmake.in
 
-# IDE and OS files
+# IDE
 .DS_Store
 .vscode/
 .idea/
+.qtcreator/
+*.autosave
 *.swp
 *.swo
 *~
@@ -46,9 +48,19 @@ Makefile
 *.dll
 *.exe
 
-# Generated import directories
-imports/com/
+# AI tooling
+.claude/
+.codex
+CLAUDE.md
 
+# Temporary / personal
+tmp/
+_to_delete/
+
+# Logs and artifacts
+*.log
+build_errors.txt
 nul
 
-tmp/Actia Prueba Tecnica/
+# Generated import directories
+imports/com/
