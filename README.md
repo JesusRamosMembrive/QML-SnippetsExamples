@@ -2,6 +2,43 @@
 
 Proyecto QML Snippets Examples para crear una biblioteca de componentes reutilizables y ejemplos.
 
+## 👀 Feedback Visual
+
+La galería visual del proyecto está dividida en dos bloques para mantener una historia de commits más manejable.
+
+<details open>
+<summary><strong>Galería 1 de 2</strong></summary>
+
+<p>
+  <img src="gifs/animationsExample.gif" alt="animationsExample" width="280" />
+  <img src="gifs/AsyncCpp.gif" alt="AsyncCpp" width="280" />
+  <img src="gifs/ButtonExample.gif" alt="ButtonExample" width="280" />
+  <img src="gifs/Canvas.gif" alt="Canvas" width="280" />
+  <img src="gifs/card2d5.gif" alt="card2d5" width="280" />
+  <img src="gifs/Chatui.gif" alt="Chatui" width="280" />
+  <img src="gifs/ComboBox.gif" alt="ComboBox" width="280" />
+  <img src="gifs/DatabaBase.gif" alt="DatabaBase" width="280" />
+  <img src="gifs/Date.gif" alt="Date" width="280" />
+  <img src="gifs/Drawer.gif" alt="Drawer" width="280" />
+  <img src="gifs/ECAM.gif" alt="ECAM" width="280" />
+  <img src="gifs/FileDialog.gif" alt="FileDialog" width="280" />
+  <img src="gifs/flickable.gif" alt="flickable" width="280" />
+  <img src="gifs/FrostGlass.gif" alt="FrostGlass" width="280" />
+  <img src="gifs/Graphs.gif" alt="Graphs" width="280" />
+  <img src="gifs/Gridview.gif" alt="Gridview" width="280" />
+  <img src="gifs/HUD.gif" alt="HUD" width="280" />
+  <img src="gifs/images.gif" alt="images" width="280" />
+  <img src="gifs/InidicatorsAndDials.gif" alt="InidicatorsAndDials" width="280" />
+  <img src="gifs/Layouts.gif" alt="Layouts" width="280" />
+  <img src="gifs/LensMagnification.gif" alt="LensMagnification" width="280" />
+  <img src="gifs/LensTab.gif" alt="LensTab" width="280" />
+  <img src="gifs/Lists.gif" alt="Lists" width="280" />
+  <img src="gifs/MENUbAR.gif" alt="MENUbAR" width="280" />
+  <img src="gifs/Multimedia.gif" alt="Multimedia" width="280" />
+</p>
+
+</details>
+
 ## 🚀 Inicio Rápido
 
 ### Compilar el proyecto
