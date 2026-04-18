@@ -9,33 +9,62 @@ La galería visual del proyecto está dividida en dos bloques para mantener una 
 <details open>
 <summary><strong>Galería 1 de 2</strong></summary>
 
-<p>
-  <img src="gifs/animationsExample.gif" alt="animationsExample" width="280" />
-  <img src="gifs/AsyncCpp.gif" alt="AsyncCpp" width="280" />
-  <img src="gifs/ButtonExample.gif" alt="ButtonExample" width="280" />
-  <img src="gifs/Canvas.gif" alt="Canvas" width="280" />
-  <img src="gifs/card2d5.gif" alt="card2d5" width="280" />
-  <img src="gifs/Chatui.gif" alt="Chatui" width="280" />
-  <img src="gifs/ComboBox.gif" alt="ComboBox" width="280" />
-  <img src="gifs/DatabaBase.gif" alt="DatabaBase" width="280" />
-  <img src="gifs/Date.gif" alt="Date" width="280" />
-  <img src="gifs/Drawer.gif" alt="Drawer" width="280" />
-  <img src="gifs/ECAM.gif" alt="ECAM" width="280" />
-  <img src="gifs/FileDialog.gif" alt="FileDialog" width="280" />
-  <img src="gifs/flickable.gif" alt="flickable" width="280" />
-  <img src="gifs/FrostGlass.gif" alt="FrostGlass" width="280" />
-  <img src="gifs/Graphs.gif" alt="Graphs" width="280" />
-  <img src="gifs/Gridview.gif" alt="Gridview" width="280" />
-  <img src="gifs/HUD.gif" alt="HUD" width="280" />
-  <img src="gifs/images.gif" alt="images" width="280" />
-  <img src="gifs/InidicatorsAndDials.gif" alt="InidicatorsAndDials" width="280" />
-  <img src="gifs/Layouts.gif" alt="Layouts" width="280" />
-  <img src="gifs/LensMagnification.gif" alt="LensMagnification" width="280" />
-  <img src="gifs/LensTab.gif" alt="LensTab" width="280" />
-  <img src="gifs/Lists.gif" alt="Lists" width="280" />
-  <img src="gifs/MENUbAR.gif" alt="MENUbAR" width="280" />
-  <img src="gifs/Multimedia.gif" alt="Multimedia" width="280" />
-</p>
+<p><img src="gifs/animationsExample.gif" alt="animationsExample" width="720" /></p>
+<p><img src="gifs/AsyncCpp.gif" alt="AsyncCpp" width="720" /></p>
+<p><img src="gifs/ButtonExample.gif" alt="ButtonExample" width="720" /></p>
+<p><img src="gifs/Canvas.gif" alt="Canvas" width="720" /></p>
+<p><img src="gifs/card2d5.gif" alt="card2d5" width="720" /></p>
+<p><img src="gifs/Chatui.gif" alt="Chatui" width="720" /></p>
+<p><img src="gifs/ComboBox.gif" alt="ComboBox" width="720" /></p>
+<p><img src="gifs/DatabaBase.gif" alt="DatabaBase" width="720" /></p>
+<p><img src="gifs/Date.gif" alt="Date" width="720" /></p>
+<p><img src="gifs/Drawer.gif" alt="Drawer" width="720" /></p>
+<p><img src="gifs/ECAM.gif" alt="ECAM" width="720" /></p>
+<p><img src="gifs/FileDialog.gif" alt="FileDialog" width="720" /></p>
+<p><img src="gifs/flickable.gif" alt="flickable" width="720" /></p>
+<p><img src="gifs/FrostGlass.gif" alt="FrostGlass" width="720" /></p>
+<p><img src="gifs/Graphs.gif" alt="Graphs" width="720" /></p>
+<p><img src="gifs/Gridview.gif" alt="Gridview" width="720" /></p>
+<p><img src="gifs/HUD.gif" alt="HUD" width="720" /></p>
+<p><img src="gifs/images.gif" alt="images" width="720" /></p>
+<p><img src="gifs/InidicatorsAndDials.gif" alt="InidicatorsAndDials" width="720" /></p>
+<p><img src="gifs/Layouts.gif" alt="Layouts" width="720" /></p>
+<p><img src="gifs/LensMagnification.gif" alt="LensMagnification" width="720" /></p>
+<p><img src="gifs/LensTab.gif" alt="LensTab" width="720" /></p>
+<p><img src="gifs/Lists.gif" alt="Lists" width="720" /></p>
+<p><img src="gifs/MENUbAR.gif" alt="MENUbAR" width="720" /></p>
+<p><img src="gifs/Multimedia.gif" alt="Multimedia" width="720" /></p>
+
+</details>
+
+<details open>
+<summary><strong>Galería 2 de 2</strong></summary>
+
+<p><img src="gifs/Multiplane.gif" alt="Multiplane" width="720" /></p>
+<p><img src="gifs/NavigationDisplay.gif" alt="NavigationDisplay" width="720" /></p>
+<p><img src="gifs/NetWork.gif" alt="NetWork" width="720" /></p>
+<p><img src="gifs/Particles.gif" alt="Particles" width="720" /></p>
+<p><img src="gifs/Pathview.gif" alt="Pathview" width="720" /></p>
+<p><img src="gifs/pdfReader.gif" alt="pdfReader" width="720" /></p>
+<p><img src="gifs/popupAndDialog.gif" alt="popupAndDialog" width="720" /></p>
+<p><img src="gifs/PrimaryFlightDisplay.gif" alt="PrimaryFlightDisplay" width="720" /></p>
+<p><img src="gifs/RangeSlider.gif" alt="RangeSlider" width="720" /></p>
+<p><img src="gifs/ScrollView.gif" alt="ScrollView" width="720" /></p>
+<p><img src="gifs/shaderandeffects.gif" alt="shaderandeffects" width="720" /></p>
+<p><img src="gifs/Shapes.gif" alt="Shapes" width="720" /></p>
+<p><img src="gifs/SliderExample.gif" alt="SliderExample" width="720" /></p>
+<p><img src="gifs/SplitView.gif" alt="SplitView" width="720" /></p>
+<p><img src="gifs/states.gif" alt="states" width="720" /></p>
+<p><img src="gifs/StreetMaps.gif" alt="StreetMaps" width="720" /></p>
+<p><img src="gifs/SwipeView.gif" alt="SwipeView" width="720" /></p>
+<p><img src="gifs/Switch.gif" alt="Switch" width="720" /></p>
+<p><img src="gifs/tabbar.gif" alt="tabbar" width="720" /></p>
+<p><img src="gifs/TextInput.gif" alt="TextInput" width="720" /></p>
+<p><img src="gifs/Toast.gif" alt="Toast" width="720" /></p>
+<p><img src="gifs/Toolbar.gif" alt="Toolbar" width="720" /></p>
+<p><img src="gifs/Transforms.gif" alt="Transforms" width="720" /></p>
+<p><img src="gifs/TreeView.gif" alt="TreeView" width="720" /></p>
+<p><img src="gifs/websockets.gif" alt="websockets" width="720" /></p>
 
 </details>
 
