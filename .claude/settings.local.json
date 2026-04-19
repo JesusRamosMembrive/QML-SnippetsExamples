@@ -81,7 +81,8 @@
       "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-page:*)",
       "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge doctor:*)",
       "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-component:*)",
-      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-bridge:*)"
+      "Bash(/home/jesusramos/Workspace/QMLForge/.venv/bin/qmlforge add-bridge:*)",
+      "PowerShell(cmake --build build 2>&1)"
     ]
   }
 }
